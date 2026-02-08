@@ -6,6 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "../ui/tooltip"
+import Link from "next/link"
 
 const StoreSidebar = () => {
   return (
@@ -49,9 +50,11 @@ const StoreSidebar = () => {
 
           <Tooltip>
             <TooltipTrigger asChild>
+              <Link href="/shop/products">
               <Button size="icon" variant="ghost">
                 <Store />
               </Button>
+              </Link>
             </TooltipTrigger>
             <TooltipContent side="right">
               <p>Products</p>
