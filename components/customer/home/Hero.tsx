@@ -4,7 +4,7 @@ import { ShoppingCart } from "lucide-react";
 import SelectCity from "./SelectCity";
 import Agreement from "./Agreement";
 import { useAtom } from "jotai";
-import { agreementCompAtom } from "@/atoms/home";
+import { agreementCompAtom } from "@/atoms/customer/home";
 
 const Hero = () => {
   const [agreementComp] = useAtom(agreementCompAtom);
@@ -25,7 +25,6 @@ const Hero = () => {
             The exclusive family-only grocery delivery platform.
           </div>
           {agreementComp ? <Agreement /> : <SelectCity />}
-          
         </div>
       </Card>
     </div>

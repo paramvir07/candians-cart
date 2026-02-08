@@ -8,9 +8,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MapPin } from "lucide-react";
-import { Button } from "../ui/button";
 import { useSetAtom } from "jotai";
-import { agreementCompAtom } from "@/atoms/home";
+import { agreementCompAtom } from "@/atoms/customer/home";
+import { Button } from "@/components/ui/button";
 
 const SelectCity = () => {
   const setAgreementComp = useSetAtom(agreementCompAtom);

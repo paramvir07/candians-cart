@@ -1,6 +1,5 @@
 "use client"
 
-import { TrendingUp } from "lucide-react"
 import { Pie, PieChart } from "recharts"
 
 import {
@@ -21,44 +20,45 @@ import {
 export const description = "A simple pie chart"
 
 const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 90, fill: "var(--color-other)" },
+  { store: "Store A", orders: 420, fill: "var(--chart-1)" },
+  { store: "Store B", orders: 310, fill: "var(--chart-2)" },
+  { store: "Store C", orders: 220, fill: "var(--chart-3)" },
+  { store: "Store D", orders: 180, fill: "var(--chart-4)" },
+  { store: "Store E", orders: 140, fill: "var(--chart-5)" },
 ]
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
+  orders: {
+    label: "Orders Completed",
   },
-  chrome: {
-    label: "Chrome",
+  "Store A": {
+    label: "Store A",
     color: "var(--chart-1)",
   },
-  safari: {
-    label: "Safari",
+  "Store B": {
+    label: "Store B",
     color: "var(--chart-2)",
   },
-  firefox: {
-    label: "Firefox",
+  "Store C": {
+    label: "Store C",
     color: "var(--chart-3)",
   },
-  edge: {
-    label: "Edge",
+  "Store D": {
+    label: "Store D",
     color: "var(--chart-4)",
   },
-  other: {
-    label: "Other",
+  "Store E": {
+    label: "Store E",
     color: "var(--chart-5)",
   },
 } satisfies ChartConfig
+
 
 export function ChartPieSimple() {
   return (
 <Card className="flex flex-col overflow-hidden shrink-0 lg:h-full">
       <CardHeader className="items-center pb-4 shrink-0">
-        <CardTitle>Pie Chart</CardTitle>
+        <CardTitle>Orders completed</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
 
@@ -75,11 +75,12 @@ export function ChartPieSimple() {
             />
             <Pie
               data={chartData}
-              dataKey="visitors"
-              nameKey="browser"
+              dataKey="orders"
+              nameKey="store"
               innerRadius="45%"
               outerRadius="80%"
             />
+
           </PieChart>
         </ChartContainer>
       </CardContent>

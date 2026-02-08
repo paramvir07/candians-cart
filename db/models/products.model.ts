@@ -29,7 +29,7 @@ inStock -: [true, false] .
         required: true
     },
     price: {
-        type: Number,
+        type: Number,  // in cents
         required: true,
     },
     inStock:{

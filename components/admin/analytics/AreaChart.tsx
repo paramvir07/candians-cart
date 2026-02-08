@@ -43,9 +43,9 @@ export function ChartAreaStacked() {
   return (
 <Card className="flex flex-col lg:h-full">
       <CardHeader className="shrink-0">
-        <CardTitle>Area Chart - Stacked</CardTitle>
+        <CardTitle>Revenue by stores</CardTitle>
         <CardDescription>
-          Showing total visitors for the last 6 months
+          January - June 2024
         </CardDescription>
       </CardHeader>
 

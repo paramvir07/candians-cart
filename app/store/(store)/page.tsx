@@ -1,16 +1,15 @@
-import React from 'react'
-import StoreSidebar from '@/components/shop/StoreSidebar'
-import DashboardHome from '@/components/shop/Dashboard'
+import StoreSidebar from "@/components/store/StoreSidebar";
+import DashboardHome from "@/components/store/Dashboard";
 
 const store = () => {
   return (
     <div className="flex min-h-screen">
-            <StoreSidebar />
+      <StoreSidebar />
       <main className="flex-1 p-6">
-       <DashboardHome/>
+        <DashboardHome />
       </main>
 
-    {/* 
+      {/* 
         Orders
             ordered by username
             previous orders
@@ -38,15 +37,19 @@ const store = () => {
 
 
             backend
-            Products
-            cart
-            orders
-            promotions
+              Products
+              cart
+              orders
+              promotions
+
+            
+            
+            check proxy.ts for middleware and other checks
+            
             
     */}
-
     </div>
-  )
-}
+  );
+};
 
-export default store
+export default store;
