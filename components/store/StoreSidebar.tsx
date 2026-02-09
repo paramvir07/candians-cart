@@ -17,9 +17,11 @@ const StoreSidebar = () => {
         <div className="flex flex-col gap-4">
           <Tooltip>
             <TooltipTrigger asChild>
+               <Link href="/store/">
               <Button size="icon" variant='ghost'>
                 <HomeIcon />
               </Button>
+              </Link>
             </TooltipTrigger>
             <TooltipContent side="right">
               <p>Dashboard</p>
@@ -50,7 +52,7 @@ const StoreSidebar = () => {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link href="/shop/products">
+              <Link href="/store/products">
               <Button size="icon" variant="ghost">
                 <Store />
               </Button>
