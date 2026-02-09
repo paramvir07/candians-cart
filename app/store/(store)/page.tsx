@@ -15,12 +15,19 @@ const store = () => {
             previous orders
             Return/refund
             previous orders
+
+
+            order status -: pending, ready_for_pickup, completed, cancled, refund requested, refunded, failed
+
         Products
             add products
             edit products
             delete products
             Out of stock
             Change Images
+
+
+            
         Information
             change store information
             Location

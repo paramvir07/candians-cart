@@ -65,9 +65,11 @@ const StoreSidebar = () => {
 
             <Tooltip>
                 <TooltipTrigger asChild>
+                  <Link href="/store/orders">
                     <Button size="icon" variant="ghost">
                         <PackageCheck />
                     </Button>
+                    </Link>
                 </TooltipTrigger>
             <TooltipContent side="right">
               <p>Orders</p>

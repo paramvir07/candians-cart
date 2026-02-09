@@ -29,8 +29,7 @@ inStock -: [true, false] .
         type: String,
         required: true
     },
-
-    // category, sub-category, tax, disposable fee
+    
     category:{
         type: String,
         enum: ["Fruits", "Vegetables", "Dairy", "Meat", "Bakery", "Beverages", "Snacks", "Household", "Personal Care", "Other"],
