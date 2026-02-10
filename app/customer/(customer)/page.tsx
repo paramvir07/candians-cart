@@ -1,7 +1,6 @@
-
 const page = () => {
   return (
-    <div>Customer Profile</div>
+    <div>Customer home page</div>
   )
 }
 

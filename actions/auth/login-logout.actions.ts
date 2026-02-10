@@ -1,8 +1,9 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-import { FormActionResponse } from "@/types/forms/auth";
+import { auth } from "@/lib/auth/auth";
+import { FormActionResponse } from "@/types/form";
 import { loginSchema } from "@/zod/schemas/login";
+import { zodErrorResponse } from "@/zod/validation/error";
 import { formDataToObject } from "@/zod/validation/form";
 import { headers } from "next/headers";
 
@@ -10,23 +11,20 @@ export const loginAction = async (
   prevState: FormActionResponse,
   formData: FormData,
 ): Promise<FormActionResponse> => {
-  const rawData = formDataToObject(formData);
-  const result = loginSchema.safeParse(rawData);
-
-  if (!result.success) {
-    const firstError = result.error.issues[0];
-    const message = ` ${firstError ? `${firstError.path}: ${firstError.message}` : "Validation Error"}`;
-    return {
-      success: false,
-      message,
-    };
-  }
-
   try {
+    const rawData = formDataToObject(formData);
+    const result = loginSchema.safeParse(rawData);
+    if (!result.success) {
+      const errorMessage = zodErrorResponse(result);
+      return { success: false, message: errorMessage || "Validation error" };
+    }
+
+    const data = result.data;
+
     await auth.api.signInEmail({
       body: {
-        email: result.data.email,
-        password: result.data.password,
+        email: data.email,
+        password: data.password,
       },
     });
     return {

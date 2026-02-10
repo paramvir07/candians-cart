@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,22 +17,27 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { redirect } from "next/navigation";
-import { loginAction } from "@/actions/auth/auth.actions";
+import { loginAction } from "@/actions/auth/login-logout.actions";
 import { Spinner } from "../ui/spinner";
+import { UserRole } from "@/types/auth";
+import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const initialState = {
   success: false,
   message: "",
 };
 
-export function LoginForm({
-  role,
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+type loginProps = React.ComponentProps<"div"> & { userRole: UserRole };
+export function LoginForm({ userRole, className, ...props }: loginProps) {
+  const customer = userRole === "customer";
+  const admin = userRole === "admin";
+  const store = userRole === "store";
+
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
   const [state, formAction, isPending] = useActionState(
     loginAction,
     initialState,
@@ -41,22 +46,30 @@ export function LoginForm({
     if (state.message) {
       if (state.success) {
         toast.success(state.message);
-        role === "customer"
-          ? redirect("/customer/profile")
-          : role === "store"
-            ? redirect("/store")
-            : redirect("/admin");
+        customer
+          ? router.push("/customer")
+          : store
+            ? router.push("/store")
+            : admin
+              ? router.push("/admin")
+              : router.push("/customer/login");
       } else {
         toast.error(state.message);
       }
     }
-  }, [state.message, state.success]);
+  }, [state]);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>
+            {store
+              ? "Login to your store account"
+              : admin
+                ? "Login to your admin account"
+                : "Login to your account"}
+          </CardTitle>
           <CardDescription>
             Enter your email below to login to your account
           </CardDescription>
@@ -75,16 +88,22 @@ export function LoginForm({
                 />
               </Field>
               <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                <FieldLabel htmlFor="password">Password *</FieldLabel>
+                <div style={{ position: "relative" }}>
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-none border-0 cursor-pointer text-sm"
                   >
-                    Forgot your password?
-                  </a>
+                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
                 </div>
-                <Input id="password" type="password" name="password" required />
               </Field>
               <Field>
                 <Button type="submit">
@@ -93,7 +112,7 @@ export function LoginForm({
                 <Button variant="outline" type="button">
                   Login with Google
                 </Button>
-                {role === "customer" && (
+                {customer && (
                   <FieldDescription className="text-center">
                     Don&apos;t have an account?{" "}
                     <Link href="/customer/signup">Sign up</Link>

@@ -1,4 +1,3 @@
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -11,20 +10,16 @@ export default async function RootLayout({
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session) redirect("/store/login");
+  if (!session) redirect("/customer/login");
 
   const role = session.user.role;
-  if (role !== "store") {
-    if (role === "customer" || role === "admin") {
+  if (role !== "customer") {
+    if (role === "store" || role === "admin") {
       redirect(`/${role}`);
-    } else {
-      redirect("/store/login");
     }
-  }
-  return (
-    <div className="bg-[#F3F1ED]">
-      <TooltipProvider>{children}</TooltipProvider>
-    </div>
-  );
+    else {
+      redirect("/customer/login");
+    }
+  };
+    return <>{children}</>;
 }
-
