@@ -1,6 +1,5 @@
 import { Download, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import OrderRow from './OrderRow'; 
-import OrderRowSkeleton from './Skeleton/OrderRowSkeleton';
 
 // Sample Data to match your screenshot
 const SAMPLE_ORDERS = [
@@ -53,11 +52,11 @@ const OrdersTable = () => {
             </tr>
           </thead>
           <tbody className="text-sm">
-            {SAMPLE_ORDERS.map((order, index) => (
+            {/* {SAMPLE_ORDERS.map((order, index) => (
               <OrderRow key={index} order={order} />
             //   This is where skeleton will come
             // <OrderRowSkeleton key={1} />
-            ))}
+            ))} */}
           </tbody>
         </table>
       </div>
