@@ -1,21 +1,27 @@
-import mongoose from "mongoose";
+import mongoose, {Schema} from "mongoose";
 
 const ProductSchema = new mongoose.Schema({
 
 /*
-shopId
+
+_id in shop info
+shopId -: refer to the storeInfo model, this is the store
 id
 name . 
 description . 
-price . 
-images .
-inStock -: [true, false] .
+category -: enum of categories, for example fruits, vegetables, dairy, meat, bakery, beverages, snacks, household, personal care, other
+markup -: percentage markup for the product for 30 % 
+tax -: percentage tax for the product, for example no tax, GST 5%, PST 7%, GST+PST 12%
+disposableFee -: in cents, for example milk carten disposdable fee, for example 10 cents
+price . in cents
+stock .
+images required false as of now.
 
 */ 
 
-    shopId:{
+    storeId:{  //Refer to the _id storeInfo model
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Shop',
+        ref: 'storeInfo',
         required: true,
         index: true
     },
@@ -52,14 +58,15 @@ inStock -: [true, false] .
         required: false, // milk carten disposdable fee, for example 10 cents
     },
 
-    Price: {
+    price: {
         type: Number,  // in cents
         required: true,
     },
 
-    inStock:{
-        type: Boolean,
-        default: true
+    stock:{
+        type: Number,
+        default: 0,
+        required: true,
     },
 
     images:{
@@ -67,7 +74,7 @@ inStock -: [true, false] .
             url: {type: String, required: true},
             fileId: {type: String, required: true}
         }],
-
+        required: false,  // For the time being this is false, have to integrate Imagekit
     }
 }, {timestamps: true});
 

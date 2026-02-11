@@ -9,9 +9,10 @@ export interface IStoreInfo {
 }
 
 const storeInfoSchema = new Schema<IStoreInfo>({
-  userId: {
+  // _id here is the actual storeId
+  userId: {  //This is the Auth
     type: Schema.Types.ObjectId,
-    rewuired: true,
+    required: true,
   },
   name: {
     type: String,

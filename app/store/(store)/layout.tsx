@@ -2,6 +2,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import {Toaster} from "@/components/ui/sonner";
 
 export default async function RootLayout({
   children,
@@ -23,7 +24,10 @@ export default async function RootLayout({
   }
   return (
     <div className="bg-[#F3F1ED]">
-      <TooltipProvider>{children}</TooltipProvider>
+      <TooltipProvider>
+        {children}
+        <Toaster richColors position="top-right" />
+      </TooltipProvider>
     </div>
   );
 }
