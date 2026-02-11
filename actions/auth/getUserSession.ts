@@ -26,19 +26,18 @@ import { redirect } from "next/navigation";
  */
 
 export default async function getUserSession() {
-    try{
-        const session = await auth.api.getSession({
-            headers: await headers(),
-        });
-      
-        if(!session){
-            redirect("/customer/login");
-        }
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
 
-      return session;
-
-    } catch(error){
-        console.log("Error fetching user session:", error);
-        redirect("/customer/login");
+    if (!session) {
+      redirect("/customer/login");
     }
+
+    return session;
+  } catch (error) {
+    console.log("Error fetching user session:", error);
+    redirect("/customer/login");
+  }
 }

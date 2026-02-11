@@ -2,7 +2,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import {Toaster} from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
+import StoreSidebar from "@/components/store/StoreSidebar";
 
 export default async function RootLayout({
   children,
@@ -25,10 +26,12 @@ export default async function RootLayout({
   return (
     <div className="bg-[#F3F1ED]">
       <TooltipProvider>
-        {children}
+        <div className="flex min-h-screen bg-[#F3F1ED]">
+          <StoreSidebar />
+          <main className="flex-1 p-6">{children}</main>
+        </div>
         <Toaster richColors position="top-right" />
       </TooltipProvider>
     </div>
   );
 }
-

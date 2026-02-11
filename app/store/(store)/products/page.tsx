@@ -8,12 +8,7 @@ import {CirclePlus} from 'lucide-react'
 
 const products = () => {
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar stays on the left */}
-      <StoreSidebar />
-
-      {/* Main content area needs to be a vertical flex container */}
-      <div className="flex-1 flex flex-col">
+      <div>
         
         {/* Header goes at the top of the content area */}
         <header className="border-b p-6">
@@ -31,13 +26,11 @@ const products = () => {
                 Add product
               </Link>
             </Button>
-
           </div>
 
           <GetProducts />
         </main>
       </div>
-    </div>
   )
 }
 

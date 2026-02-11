@@ -1,4 +1,3 @@
-import StoreSidebar from "@/components/store/StoreSidebar";
 import DashboardHome from "@/components/store/Dashboard";
 
 const store = () => {
@@ -6,11 +5,8 @@ const store = () => {
   // store@demo.com
   //Store@123
   return (
-    <div className="flex min-h-screen">
-      <StoreSidebar />
-      <main className="flex-1 p-6">
+    <div>
         <DashboardHome />
-      </main>
 
       {/* 
         Orders
