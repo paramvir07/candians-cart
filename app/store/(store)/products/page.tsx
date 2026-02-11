@@ -1,6 +1,5 @@
 'use client'
 import GetProducts from '@/components/store/products/GetProducts';
-import StoreSidebar from "@/components/store/StoreSidebar";
 import ProductHeader from '@/components/store/products/Header';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
