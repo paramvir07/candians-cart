@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache"
 import { dbConnect } from "@/db/dbConnect"
 import Product from "@/db/models/store/products.model"
 import { ProductFormSchema, ProductFormValues } from "@/zod/validation/products/addProductsValidation"
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth/auth";
+
+import getUserSession from "@/actions/auth/getUserSession";
 
 interface ActionResponse{
     success: boolean;
@@ -14,17 +14,8 @@ interface ActionResponse{
 }
 
 export async function createProduct(data: ProductFormValues): Promise<ActionResponse> {
-      const session = await auth.api.getSession({
-        headers: await headers(),
-      });
+        const session = await getUserSession();
         const CurrentstoreId = session?.user?.id;
-
-        if(!CurrentstoreId){
-            return{
-                success: false,
-                message: "Unauthorized"
-            }
-        }
 
     try{
         const validationResult = ProductFormSchema.safeParse(data);
