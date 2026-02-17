@@ -1,0 +1,61 @@
+import DashboardHome from "@/components/store/Dashboard";
+
+const store = () => {
+
+  // store@demo.com
+  //Store@123
+  return (
+    <div>
+        <DashboardHome />
+
+      {/* 
+        Orders
+            ordered by username
+            previous orders
+            Return/refund
+            previous orders
+
+
+            order status -: pending, ready_for_pickup, completed, cancled, refund requested, refunded, failed
+
+        Products
+            add products
+            edit products
+            delete products
+            Out of stock
+            Change Images
+
+
+            
+        Information
+            change store information
+            Location
+            Contact information
+        Prmotions
+            add new promomotions
+            edit promotions
+            delete promotions
+        Analytics
+            sales data
+            customer data
+        
+
+
+
+            backend
+              Products
+              cart
+              orders
+              promotions
+
+            
+            
+            check proxy.ts for middleware and other checks
+            
+            
+    */}
+    </div>
+  );
+};
+
+export default store;

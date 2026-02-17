@@ -1,0 +1,128 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { useActionState, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { loginAction } from "@/actions/auth/login-logout.actions";
+import { Spinner } from "../ui/spinner";
+import { UserRole } from "@/types/auth";
+import { Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+const initialState = {
+  success: false,
+  message: "",
+};
+
+type loginProps = React.ComponentProps<"div"> & { userRole: UserRole };
+export function LoginForm({ userRole, className, ...props }: loginProps) {
+  const customer = userRole === "customer";
+  const admin = userRole === "admin";
+  const store = userRole === "store";
+
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [state, formAction, isPending] = useActionState(
+    loginAction,
+    initialState,
+  );
+  useEffect(() => {
+    if (state.message) {
+      if (state.success) {
+        toast.success(state.message);
+        customer
+          ? router.push("/customer")
+          : store
+            ? router.push("/store")
+            : admin
+              ? router.push("/admin")
+              : router.push("/customer/login");
+      } else {
+        toast.error(state.message);
+      }
+    }
+  }, [state]);
+
+  return (
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            {store
+              ? "Login to your store account"
+              : admin
+                ? "Login to your admin account"
+                : "Login to your account"}
+          </CardTitle>
+          <CardDescription>
+            Enter your email below to login to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={formAction}>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="password">Password *</FieldLabel>
+                <div style={{ position: "relative" }}>
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-none border-0 cursor-pointer text-sm"
+                  >
+                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+              </Field>
+              <Field>
+                <Button type="submit">
+                  {isPending ? <Spinner /> : "Login"}
+                </Button>
+                <Button variant="outline" type="button">
+                  Login with Google
+                </Button>
+                {customer && (
+                  <FieldDescription className="text-center">
+                    Don&apos;t have an account?{" "}
+                    <Link href="/customer/signup">Sign up</Link>
+                  </FieldDescription>
+                )}
+              </Field>
+            </FieldGroup>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
