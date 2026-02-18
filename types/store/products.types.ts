@@ -1,5 +1,6 @@
 import {Types} from "mongoose";
 
+// Interface for the Server/DB (Raw Mongoose Documents)
 export interface IProductDB {
   _id: Types.ObjectId;
   storeId: Types.ObjectId;
@@ -10,7 +11,7 @@ export interface IProductDB {
   tax: TaxRate;
   disposableFee?: number;
   price: number;
-  stock: number;
+  stock: boolean; // Changed to boolean
   images: (ProductImage & { _id?: Types.ObjectId })[];
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +37,7 @@ export interface ProductImage {
   _id?: string; // Mongoose adds IDs to subdocuments by default
 }
 
+// Interface for the Frontend (Serialized data coming from Server Action)
 export interface IProduct {
   _id: string; // Serialized ObjectId
   storeId: string; // Serialized ObjectId
@@ -46,7 +48,7 @@ export interface IProduct {
   tax: TaxRate;
   disposableFee?: number; // Optional
   price: number; // In cents
-  stock: number;
+  stock: boolean;  // Changed it to boolean from number
   images: ProductImage[];
   createdAt: string; // ISO Date string
   updatedAt: string; // ISO Date string

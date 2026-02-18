@@ -2,9 +2,9 @@ import ProductForm from '@/components/store/products/ProductForm'
 
 const productsAdd = () => {
   return (
-      <div>
+    <div>
 
-        <ProductForm />
+        <ProductForm initialData={null} />
 
       </div>
   )

@@ -52,11 +52,11 @@ const OrdersTable = () => {
             </tr>
           </thead>
           <tbody className="text-sm">
-            {/* {SAMPLE_ORDERS.map((order, index) => (
+            {SAMPLE_ORDERS.map((order, index) => (
               <OrderRow key={index} order={order} />
             //   This is where skeleton will come
             // <OrderRowSkeleton key={1} />
-            ))} */}
+            ))}
           </tbody>
         </table>
       </div>

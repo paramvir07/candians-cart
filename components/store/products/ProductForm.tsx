@@ -1,55 +1,64 @@
-"use client"
+"use client";
+
 import { useState } from "react";
 import { Plus, Image as ImageIcon, Save } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { createProduct } from "@/actions/store/products/addProducts";
-import { ProductFormValues } from "@/zod/validation/products/addProductsValidation";
-import { toast } from "sonner"
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-// 1. Define the interface strictly matching the Schema for the final payload
-interface ProductPayload {
-  storeId?: string; // Assumed injected elsewhere
-  name: string;
-  description: string;
-  category: string;
-  markup: number;
-  tax: number;
-  disposableFee: number; // in cents
-  price: number; // in cents
-  stock: number;
-  images: Array<{ url: string; fileId: string }>;
+// Actions
+import { createProduct } from "@/actions/store/products/addProducts";
+import { updateProduct } from "@/actions/store/products/editProduct";
+import { ProductFormValues } from "@/zod/validation/products/addProductsValidation";
+
+// Types
+import { IProduct } from "@/types/store/products.types";
+
+interface ProductFormProps {
+  initialData?: IProduct | null; // If null, we are in "Add Mode"
 }
 
-const AddProductForm = () => {
-
-    const router = useRouter();
-
-
-  // 2. Form State: Stores values as strings/display format (e.g., "10.99" not 1099)
-  // This prevents the input from jumping around while the user types.
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    category: "",
-    markup: "", // Default as string for input
-    tax: "", // Default string match for select
-    disposableFee: "", // Display value in dollars
-    price: "", // Display value in dollars
-    stock: "", // Input handles numbers as strings initially
-    images: []
-  });
-
+const ProductForm = ({ initialData }: ProductFormProps) => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | string[]>([]);
 
-  const [loading, setLoading] = useState(false);
+  // 1. DYNAMIC INITIALIZATION
+  // If initialData exists, we convert DB format (cents/decimals) -> Form format (strings)
+  const [formData, setFormData] = useState({
+    name: initialData?.name || "",
+    description: initialData?.description || "",
+    category: initialData?.category || "",
+    markup: initialData?.markup?.toString() || "",
 
-  // Helper to handle text/number inputs
+    // DB stores 0.05, Form expects "5"
+    tax: initialData ? Math.round(initialData.tax * 100).toString() : "",
+
+    // DB stores 1000 (cents), Form expects "10.00"
+    price: initialData ? (initialData.price / 100).toFixed(2) : "",
+
+    // DB stores 10 (cents), Form expects "0.10"
+    disposableFee: initialData?.disposableFee
+      ? (initialData.disposableFee / 100).toFixed(2)
+      : "",
+
+    // DB stores boolean, Form Select expects "true"/"false" string
+    stock: initialData ? String(initialData.stock) : "true",
+
+    images: initialData?.images || [],
+  });
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -61,69 +70,79 @@ const AddProductForm = () => {
     setLoading(true);
     setError([]);
 
-    try{
-        const payload = {
-          name: formData.name,
-          description: formData.description,
-          category: formData.category as ProductFormValues["category"],
-          markup: parseFloat(formData.markup) || 0,
-          tax: parseFloat(formData.tax) || 0,
-          
-          // Convert Dollars to Cents
-          disposableFee: parseFloat(formData.disposableFee) || 0,
-          price: parseFloat(formData.price) || 0,
-          
-          stock: parseInt(formData.stock) || 0,
-          images: formData.images,
-        };
-        
-        const result = await createProduct(payload);
+    try {
+      // Prepare Payload (Matches Zod Schema)
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        category: formData.category as ProductFormValues["category"],
+        markup: parseFloat(formData.markup) || 0,
+        tax: parseFloat(formData.tax) || 0,
+        disposableFee: parseFloat(formData.disposableFee) || 0,
+        price: parseFloat(formData.price) || 0,
+        stock: formData.stock === "true", // Convert string back to boolean
+        images: formData.images,
+      };
 
-        if(result.success){
-          console.log("Product created successfully");
-          toast.success("Product Created Successfully!", {
-            description: `${formData.name} has been added to your store.`
-          })
-          router.push("/store/products");
-        } else{
-          if(result.errors){
-            console.log("Validation errors:", result.errors);
-            toast.error("Validation Failed", {
-              description: `Please correct the highlighted errors and try again. ${result.errors ? "Errors: " + JSON.stringify(result.errors) : ""}`
-            })
-          } else {
-            toast.error("Error",{
-              description: result.message || "An error occurred while creating the product. Please try again."
-            })
-          }
+      let result;
+
+      // 2. CONDITIONAL SUBMISSION
+      if (initialData) {
+        // --- EDIT MODE ---
+        result = await updateProduct(initialData._id, payload);
+      } else {
+        // --- CREATE MODE ---
+        result = await createProduct(payload);
+      }
+
+      if (result.success) {
+        toast.success(initialData ? "Product Updated" : "Product Created", {
+          description: `${formData.name} has been saved successfully.`,
+        });
+        router.push("/store/products");
+        router.refresh(); // Ensure the list page shows new data
+      } else {
+        if (result.errors) {
+          toast.error("Validation Failed");
+          console.log(result.errors);
+        } else {
+          toast.error(result.message || "An error occurred.");
         }
-    } catch(err){
-        setError("An unexpected error occurred. Please try again." + err);
-        toast.error("Something went wrong!", {
-          description: `Something went wrong while creating the product. Please try again.`
-        })
-        setLoading(false);
-        return;
-    } finally{
-        setLoading(false);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred.");
+      toast.error("Something went wrong!");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCancle = () => {
+  const handleCancel = () => {
     router.push("/store/products");
-  }
+  };
+
+  // 3. UI TEXT CHANGES based on mode
+  const title = initialData ? "Edit Product" : "Add Product";
+  const buttonText = loading
+    ? "Saving..."
+    : initialData
+      ? "Update Product"
+      : "Create Product";
 
   return (
     <div className="max-w-6xl mx-auto p-8 bg-[#F9FAFB] min-h-screen">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Add Product</h1>
-        <Button variant="outline" className="bg-white border-slate-200 shadow-sm px-6" onClick={handleCancle}>
+        <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
+        <Button
+          variant="outline"
+          className="bg-white border-slate-200 shadow-sm px-6"
+          onClick={handleCancel}
+        >
           Cancel
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         {/* LEFT COLUMN: Main Info */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="border-none shadow-sm ring-1 ring-slate-200">
@@ -131,20 +150,24 @@ const AddProductForm = () => {
               <h2 className="text-lg font-semibold">Basic Information</h2>
 
               <div className="space-y-2">
-                <Label htmlFor="name">Product Name <span className="text-red-500">*</span></Label>
-                <Input 
-                  id="name" 
-                  placeholder="e.g. Organic Whole Milk" 
+                <Label htmlFor="name">
+                  Product Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="e.g. Organic Whole Milk"
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
-                  className="bg-white" 
+                  className="bg-white"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Description <span className="text-red-500">*</span></Label>
-                <Textarea 
-                  placeholder="Describe the product features..." 
+                <Label>
+                  Description <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  placeholder="Describe the product features..."
                   value={formData.description}
                   onChange={(e) => handleChange("description", e.target.value)}
                   className="min-h-40 bg-white"
@@ -153,29 +176,37 @@ const AddProductForm = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  {/* CHANGED: From Boolean Select to Number Input */}
-                  <Label>Stock Quantity <span className="text-red-500">*</span></Label>
-                  <Input 
-                    type="number"
-                    min="0"
-                    placeholder="0"
+                  <Label>
+                    Stock Status <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
                     value={formData.stock}
-                    onChange={(e) => handleChange("stock", e.target.value)}
-                    className="bg-white"
-                  />
+                    onValueChange={(val) => handleChange("stock", val)}
+                  >
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">In Stock</SelectItem>
+                      <SelectItem value="false">Out of Stock</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Base Price (CAD) <span className="text-red-500">*</span></Label>
-                  <Input 
-                    type="number" 
-                    step="0.01" 
-                    placeholder="0.00" 
+                  <Label>
+                    Base Price (CAD) <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
                     value={formData.price}
                     onChange={(e) => handleChange("price", e.target.value)}
-                    className="bg-white" 
+                    className="bg-white"
                   />
                   <p className="text-[10px] text-slate-500">
-                    Will be stored as: {Math.round((parseFloat(formData.price) || 0) * 100)} cents
+                    Will be stored as:{" "}
+                    {Math.round((parseFloat(formData.price) || 0) * 100)} cents
                   </p>
                 </div>
               </div>
@@ -187,23 +218,26 @@ const AddProductForm = () => {
               <h2 className="text-lg font-semibold">Financials & Fees</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Markup (%) <span className="text-red-500">*</span></Label>
-                  <Input 
-                    type="number" 
-                    placeholder="30" 
+                  <Label>
+                    Markup (%) <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    placeholder="30"
                     value={formData.markup}
                     onChange={(e) => handleChange("markup", e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Tax Rate <span className="text-red-500">*</span></Label>
-                  <Select 
-                    value={formData.tax} // If this is "", the placeholder will show
+                  <Label>
+                    Tax Rate <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={formData.tax}
                     onValueChange={(val) => handleChange("tax", val)}
                   >
                     <SelectTrigger className="bg-white">
-                      {/* This text only shows when value is "" or undefined */}
-                      <SelectValue placeholder="Select Tax Rate" /> 
+                      <SelectValue placeholder="Select Tax Rate" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="0">No Tax (0%)</SelectItem>
@@ -215,12 +249,14 @@ const AddProductForm = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Disposable Fee (CAD)</Label>
-                  <Input 
-                    type="number" 
-                    step="0.01" 
-                    placeholder="0.10" 
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.10"
                     value={formData.disposableFee}
-                    onChange={(e) => handleChange("disposableFee", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("disposableFee", e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -235,14 +271,24 @@ const AddProductForm = () => {
               <h2 className="text-lg font-semibold">Images</h2>
               <div className="border-2 border-dashed border-slate-100 rounded-xl p-6 flex flex-col items-center text-center bg-white">
                 <ImageIcon className="h-8 w-8 text-slate-300 mb-2" />
-                <p className="text-[10px] text-slate-400 mb-4">PNG, JPG up to 10MB</p>
-                <Button variant="secondary" size="sm" className="w-full bg-indigo-50 text-indigo-600">
+                <p className="text-[10px] text-slate-400 mb-4">
+                  PNG, JPG up to 10MB
+                </p>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full bg-indigo-50 text-indigo-600"
+                >
                   Upload Image
                 </Button>
               </div>
               <div className="grid grid-cols-4 gap-2">
+                {/* Image mapping logic would go here */}
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="aspect-square rounded border border-slate-100 bg-white flex items-center justify-center">
+                  <div
+                    key={i}
+                    className="aspect-square rounded border border-slate-100 bg-white flex items-center justify-center"
+                  >
                     <Plus className="h-4 w-4 text-indigo-500 opacity-50" />
                   </div>
                 ))}
@@ -255,18 +301,31 @@ const AddProductForm = () => {
               <h2 className="text-lg font-semibold">Classification</h2>
               <div className="space-y-2">
                 <Label className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
-                    Category <span className="text-red-500">*</span>
+                  Category <span className="text-red-500">*</span>
                 </Label>
-                <Select 
-                    value={formData.category} 
-                    onValueChange={(val) => handleChange("category", val)}
+                <Select
+                  value={formData.category}
+                  onValueChange={(val) => handleChange("category", val)}
                 >
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {["Fruits", "Vegetables", "Dairy", "Meat", "Bakery", "Beverages", "Snacks", "Household", "Personal Care", "Other"].map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    {[
+                      "Fruits",
+                      "Vegetables",
+                      "Dairy",
+                      "Meat",
+                      "Bakery",
+                      "Beverages",
+                      "Snacks",
+                      "Household",
+                      "Personal Care",
+                      "Other",
+                    ].map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -274,19 +333,18 @@ const AddProductForm = () => {
             </CardContent>
           </Card>
 
-          <Button 
+          <Button
             onClick={handleSubmit}
             disabled={loading}
             className="w-full bg-indigo-600 hover:bg-indigo-700 py-6 text-base font-semibold shadow-lg shadow-indigo-100 flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
-            {loading ? "Saving..." : "Save Product"}
+            {buttonText}
           </Button>
         </div>
-
       </div>
     </div>
   );
 };
 
-export default AddProductForm;
+export default ProductForm;
