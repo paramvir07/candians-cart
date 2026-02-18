@@ -4,7 +4,7 @@ const productsAdd = () => {
   return (
     <div>
 
-        <ProductForm />
+        <ProductForm initialData={null} />
 
       </div>
   )

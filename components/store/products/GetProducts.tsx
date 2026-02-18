@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import getProducts from "@/actions/store/products/getProductsStore";
 import { toast } from "sonner";
+import { IProduct } from "@/types/store/products.types";
+import Link from "next/link";
 
 import { deleteProduct } from "@/actions/store/products/deleteProduct";
 
@@ -48,7 +50,7 @@ const ProductCardSkeleton = () => {
 };
 
 const GetProducts = () => {
-  const [products, setProducts] = useState<any[]>([]); // Initialize empty array  // Using any for now, will be replaced with Types/store/product.type.ts
+  const [products, setProducts] = useState<IProduct[]>([]); // Initialize empty array
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null); // Track which product is being deleted
@@ -215,7 +217,7 @@ const GetProducts = () => {
                   <div className="flex gap-2 text-[10px] text-slate-400">
                     {product.tax > 0 && (
                       <span className="bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
-                        Tax {product.tax * 100}%
+                        Tax {Math.round(product.tax * 100)}%
                       </span>
                     )}
                   </div>
@@ -223,10 +225,13 @@ const GetProducts = () => {
               </div>
 
               <div className="p-3 bg-slate-50 border-t border-slate-200 grid grid-cols-2 gap-3">
-                <button className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 hover:text-slate-900 transition-colors">
+                <Link
+                  href={`/store/products/${product._id}/edit`}
+                  className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 hover:text-slate-900 transition-colors"
+                >
                   <Edit className="w-4 h-4" />
                   Edit
-                </button>
+                </Link>
 
                 <button
                   className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-100 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors"

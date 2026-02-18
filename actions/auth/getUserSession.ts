@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 /**
  * Fetches the authenticated user's session on the server.
@@ -37,6 +38,9 @@ export default async function getUserSession() {
 
     return session;
   } catch (error) {
+    if(isRedirectError(error)){
+      throw error
+    }
     console.log("Error fetching user session:", error);
     redirect("/customer/login");
   }
