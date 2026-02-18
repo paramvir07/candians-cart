@@ -18,7 +18,7 @@ export interface ICustomerInfo {
 const customerInfoSchema = new Schema<ICustomerInfo>({
   userId: {
     type: Schema.Types.ObjectId,
-    rewuired: true,
+    required: true,
   },
   name: {
     type: String,
