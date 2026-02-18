@@ -22,7 +22,7 @@ interface ProductPayload {
   tax: number;
   disposableFee: number; // in cents
   price: number; // in cents
-  stock: number;
+  stock: boolean;
   images: Array<{ url: string; fileId: string }>;
 }
 
@@ -41,7 +41,7 @@ const AddProductForm = () => {
     tax: "", // Default string match for select
     disposableFee: "", // Display value in dollars
     price: "", // Display value in dollars
-    stock: "", // Input handles numbers as strings initially
+    stock: "true", // 
     images: []
   });
 
@@ -73,7 +73,7 @@ const AddProductForm = () => {
           disposableFee: parseFloat(formData.disposableFee) || 0,
           price: parseFloat(formData.price) || 0,
           
-          stock: parseInt(formData.stock) || 0,
+          stock: formData.stock === "true",
           images: formData.images,
         };
         
@@ -154,15 +154,29 @@ const AddProductForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   {/* CHANGED: From Boolean Select to Number Input */}
-                  <Label>Stock Quantity <span className="text-red-500">*</span></Label>
-                  <Input 
+                  <Label>Stock<span className="text-red-500">*</span></Label>
+
+                  <Select
+                   value={formData.stock}
+                   onValueChange={(val) => handleChange("stock", val)}
+                  > 
+                  <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">In Stock</SelectItem>
+                      <SelectItem value="false">Out of Stock</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {/* <Input 
                     type="number"
                     min="0"
                     placeholder="0"
                     value={formData.stock}
                     onChange={(e) => handleChange("stock", e.target.value)}
                     className="bg-white"
-                  />
+                  /> */}
                 </div>
                 <div className="space-y-2">
                   <Label>Base Price (CAD) <span className="text-red-500">*</span></Label>

@@ -15,7 +15,7 @@ interface ActionResponse{
 
 export async function createProduct(data: ProductFormValues): Promise<ActionResponse> {
         const session = await getUserSession();
-        const CurrentstoreId = session?.user?.id;
+        const CurrentstoreId = session.user.id;
 
     try{
         const validationResult = ProductFormSchema.safeParse(data);

@@ -2,7 +2,7 @@ import ProductForm from '@/components/store/products/ProductForm'
 
 const productsAdd = () => {
   return (
-      <div>
+    <div>
 
         <ProductForm />
 

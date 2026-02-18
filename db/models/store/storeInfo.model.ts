@@ -14,19 +14,19 @@ const storeInfoSchema = new Schema<IStoreInfo>({
     type: Schema.Types.ObjectId,
     required: true,
   },
-  name: {
+  name: {   // Name of the store
     type: String,
     required: true,
   },
-  email: {
+  email: {  // Contact email for the store
     type: String,
     required: true,
   },
-  address: {
+  address: { // Physical address of the store
     type: String,
     required: true,
   },
-  mobile: {
+  mobile: { // Contact mobile number for the store
     type: String,
     required: true,
   },

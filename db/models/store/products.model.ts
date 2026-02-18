@@ -1,8 +1,9 @@
-import mongoose, {Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import { boolean } from "zod";
 
-const ProductSchema = new mongoose.Schema({
-
-/*
+const ProductSchema = new mongoose.Schema(
+  {
+    /*
 
 _id in shop info
 shopId -: refer to the storeInfo model, this is the store
@@ -17,65 +18,85 @@ price . in cents
 stock .
 images required false as of now.
 
-*/ 
+*/
 
-    storeId:{  //Refer to the _id storeInfo model
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'storeInfo',
-        required: true,
-        index: true
+    storeId: {
+      //Refer to the _id storeInfo model
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "storeInfo",
+      required: true,
+      index: true,
     },
 
     name: {
-        type: String,
-        required: true,
-        trim: true
+      type: String,
+      required: true,
+      trim: true,
     },
     description: {
-        type: String,
-        required: true
-    },
-    
-    category:{
-        type: String,
-        enum: ["Fruits", "Vegetables", "Dairy", "Meat", "Bakery", "Beverages", "Snacks", "Household", "Personal Care", "Other"],
-        required: true,
+      type: String,
+      required: false,
     },
 
-    markup:{
-        type: Number,  // percentage markup for the product for 30 %
-        required: true,
+    category: {
+      type: String,
+      enum: [
+        "Fruits",
+        "Vegetables",
+        "Dairy",
+        "Meat",
+        "Bakery",
+        "Beverages",
+        "Snacks",
+        "Household",
+        "Personal Care",
+        "Other",
+      ],
+      required: true,
     },
 
-    tax:{
-        type: Number,  // percentage tax for the product
-        enum: [0.00, 0.05, 0.07, 0.12], // no tax, GST 5%, PST 7%, GST+PST 12%
-        required: true,
+    markup: {
+      type: Number, // percentage markup for the product for 30 %
+      required: true,
+    },
+
+    tax: {
+      type: Number, // percentage tax for the product
+      enum: [0.0, 0.05, 0.07, 0.12], // no tax, GST 5%, PST 7%, GST+PST 12%
+      required: true,
     },
 
     disposableFee: {
-        type: Number,  // in cents
-        required: false, // milk carten disposdable fee, for example 10 cents
+      type: Number, // in cents
+      required: false, // milk carten disposdable fee, for example 10 cents
     },
 
     price: {
-        type: Number,  // in cents
-        required: true,
+      type: Number, // in cents
+      required: true,
     },
 
-    stock:{
-        type: Number,
-        default: 0,
-        required: true,
+    stock: {
+      // Changed it to boolean since we are not storing the quantity of products, we are just storing whether the product is in stock or not.
+      type: Boolean,
+      default: true,
+      required: true,
     },
 
-    images:{
-        type: [{
-            url: {type: String, required: true},
-            fileId: {type: String, required: true}
-        }],
-        required: false,  // For the time being this is false, have to integrate Imagekit
-    }
-}, {timestamps: true});
+    // weight or quantity of products like onions which are sold by weight will also be stored by weight in KGs. It is not required now since we are storing the boolean
 
-export default mongoose.models.Product || mongoose.model('Product', ProductSchema);
+    images: {
+      type: [
+        {
+          url: { type: String, required: true },
+          fileId: { type: String, required: true },
+        },
+      ],
+      required: false, // For the time being this is false, have to integrate Imagekit
+    },
+  },
+  { timestamps: true },
+);
+
+export default mongoose.models.Product ||
+  mongoose.model("Product", ProductSchema);

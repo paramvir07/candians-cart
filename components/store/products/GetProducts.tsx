@@ -5,6 +5,9 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import getProducts from "@/actions/store/products/getProductsStore";
+import { toast } from "sonner";
+
+import { deleteProduct } from "@/actions/store/products/deleteProduct";
 
 // --- SKELETON COMPONENT ---
 // This perfectly mirrors the padding, margins, and borders of your real card.
@@ -45,9 +48,10 @@ const ProductCardSkeleton = () => {
 };
 
 const GetProducts = () => {
-  const [products, setProducts] = useState<any[]>([]); // Initialize empty array
+  const [products, setProducts] = useState<any[]>([]); // Initialize empty array  // Using any for now, will be replaced with Types/store/product.type.ts
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null); // Track which product is being deleted
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -69,6 +73,42 @@ const GetProducts = () => {
 
     fetchInventory();
   }, []);
+
+  // Handle delete product action
+  const handleDelete = async (productId: string) => {
+    if (
+      !confirm(
+        "Are you sure you want to delete this product? This cannot be undone.",
+      )
+    )
+      return;
+
+    setDeletingId(productId); // Set the ID of the product being deleted
+
+    try {
+      const result = await deleteProduct(productId);
+
+      if (result.success) {
+        toast.success("Product deleted successfully");
+        console.log("Product deleted successfully");
+
+        setProducts((prevProducts) =>
+          prevProducts.filter((product) => product._id !== productId),
+        );
+      } else {
+        toast.error(result.message || "Failed to delete product");
+        console.error(result.message || "Failed to delete product");
+      }
+    } catch (error) {
+      console.error(
+        "An unexpected error occurred while deleting the product",
+        error,
+      );
+      toast.error("An unexpected error occurred while deleting the product");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const formatPrice = (cents: number) => {
     return new Intl.NumberFormat("en-CA", {
@@ -119,7 +159,7 @@ const GetProducts = () => {
             >
               <div className="relative aspect-4/3 bg-slate-100 overflow-hidden">
                 {/* Out of Stock Overlay - checking stock number instead of boolean */}
-                {product.stock <= 0 && (
+                {product.stock === false && (
                   <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center backdrop-blur-[2px]">
                     <span className="bg-slate-900 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                       Out of Stock
@@ -187,9 +227,14 @@ const GetProducts = () => {
                   <Edit className="w-4 h-4" />
                   Edit
                 </button>
-                <button className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-100 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors">
+
+                <button
+                  className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-100 rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors"
+                  onClick={() => handleDelete(product._id)}
+                  disabled={deletingId === product._id} // Disable button if this product is being deleted
+                >
                   <Trash2 className="w-4 h-4" />
-                  Delete
+                  {deletingId === product._id ? "..." : "Delete"}
                 </button>
               </div>
             </div>
