@@ -1,7 +1,7 @@
 // "use client";
 
 // import * as React from "react";
-// import { OrderForm } from "@/components/store/orders/addOrder/OrderForm"; 
+// import { OrderForm } from "@/components/store/orders/addOrder/OrderForm";
 // import { OrderSummary } from "@/components/store/orders/addOrder/SummmaryCard";
 
 // // Define types locally or import them
@@ -90,3 +90,10 @@
 //     </div>
 //   );
 // }
+import React from "react";
+
+const page = () => {
+  return <div>Sample</div>;
+};
+
+export default page;
