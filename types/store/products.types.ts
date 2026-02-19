@@ -49,7 +49,7 @@ export interface IProduct {
   disposableFee?: number; // Optional
   price: number; // In cents
   stock: boolean;  // Changed it to boolean from number
-  images: ProductImage[];
+  images: ProductImage[]; 
   createdAt: string; // ISO Date string
   updatedAt: string; // ISO Date string
 }
