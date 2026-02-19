@@ -5,7 +5,7 @@ const GiftWallet = () => {
         <div>
       <div className="p-4">
         <div
-          className="relative rounded-2xl p-6 space-y-12 overflow-hidden text-white bg-black"
+          className="relative rounded-2xl p-6 space-y-12 lg:space-y-17 overflow-hidden text-white bg-black"
           style={{
             boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
           }}

@@ -8,8 +8,8 @@ const WalletSwitcher = () => {
     //  console.log(active);
     
      return (
-    <div className="flex items-center justify-center mt-5">
-        <div className="relative bg-primary p-1 rounded-full flex w-82">
+    <div className="flex items-center justify-center mt-5 md:hidden">
+        <div className="relative bg-primary p-1 rounded-full flex w-82 md:w-[70%] lg:w-1/2">
 
           {/* Sliding Indicator */}
           <div

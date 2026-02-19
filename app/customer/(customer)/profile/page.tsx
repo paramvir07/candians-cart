@@ -72,6 +72,10 @@ const page = async() => {
               Opened
             </span>
           </div>
+
+          <div>
+            
+          </div>
       </div>
     </div>
   )

@@ -6,7 +6,7 @@ const TopupWallet = () => {
     <div>
          <div className="p-4 text-white">
         <div
-          className="relative rounded-2xl p-6 space-y-21 overflow-hidden"
+          className="relative rounded-2xl p-6 space-y-21 lg:space-y-32 overflow-hidden"
           style={{ 
             backgroundColor: "#2d6a35",
             boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",}}

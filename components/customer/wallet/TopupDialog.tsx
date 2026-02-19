@@ -31,6 +31,24 @@ export function TopUpDialog() {
     setInputVal("")
   }
 
+  const handleCheckout = async () => {
+  if (!amount) return
+
+  const res = await fetch("/api/stripe/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount }),
+  })
+
+  const data = await res.json()
+
+  if (data.url) {
+    window.location.assign(data.url)
+  } else {
+    console.error(data.error)
+  }
+}
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -146,6 +164,7 @@ export function TopUpDialog() {
         {/* CTA */}
         <div className="px-5 pb-5">
           <Button
+            onClick={handleCheckout}
             disabled={!amount}
             className="w-full py-5 rounded-2xl font-bold text-base transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
