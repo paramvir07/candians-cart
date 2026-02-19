@@ -13,6 +13,7 @@ export interface ICustomerInfo {
   carYear?: number;
   referalCode?: string;
   referredBy?: Types.ObjectId;
+  associatedStoreId?: Types.ObjectId;
 }
 
 const customerInfoSchema = new Schema<ICustomerInfo>({
@@ -65,8 +66,14 @@ const customerInfoSchema = new Schema<ICustomerInfo>({
     ref: "user",
     required: false,
   },
+  associatedStoreId: {
+    type: Schema.Types.ObjectId,
+    ref: "storeInfo",
+  },
 });
 
-const CustomerInfo: Model<ICustomerInfo> = models.customerInfo || model<ICustomerInfo>("customerInfo", customerInfoSchema);
+const CustomerInfo: Model<ICustomerInfo> =
+  models.customerInfo ||
+  model<ICustomerInfo>("customerInfo", customerInfoSchema);
 
 export default CustomerInfo;

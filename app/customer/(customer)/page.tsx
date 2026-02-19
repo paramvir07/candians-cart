@@ -1,16 +1,18 @@
-import Banner from "@/components/customer/landing/Banner"
-import Navbar from "@/components/customer/landing/Navbar"
+import Banner from "@/components/customer/landing/Banner";
+import Navbar from "@/components/customer/landing/Navbar";
 
-const page = async() => {
+
+const page = async () => {
+
 
   return (
     <div>
-      <Navbar/>
+      <Navbar />
       <div className="p-4 hidden md:block">
-        <Banner/>
+        <Banner />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;
