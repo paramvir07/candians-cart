@@ -8,7 +8,7 @@ import {
   storeIdAtom,
   storeNameAtom,
 } from "@/atoms/customer/signUp";
-import { StoreDetails, StoreDocument } from "@/types/store";
+import { StoreDetails, StoreDocument } from "@/types/store/store";
 import { StoreInfoDialog } from "./StoreInfoDialog";
 import { useState } from "react";
 import { Types } from "mongoose";
@@ -23,7 +23,7 @@ const SelectStore = ({ stores }: { stores: StoreDocument[] }) => {
   );
   const handleStoreSelect = (storeName: string, storeId: Types.ObjectId) => {
     setStore(storeName);
-    setStoreId(storeId)
+    setStoreId(storeId);
     setIsStoreSelectedDialogOpen(true);
   };
 
@@ -56,7 +56,10 @@ const SelectStore = ({ stores }: { stores: StoreDocument[] }) => {
                 >
                   <Info className="h-4 w-4 mr-2" /> More Info
                 </Button>
-                <Button size="sm" onClick={() => handleStoreSelect(s.name, s._id)}>
+                <Button
+                  size="sm"
+                  onClick={() => handleStoreSelect(s.name, s._id)}
+                >
                   Select
                 </Button>
               </div>

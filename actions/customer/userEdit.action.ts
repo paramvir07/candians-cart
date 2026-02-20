@@ -5,10 +5,11 @@ import { editProfileSchema } from "@/zod/schemas/customer/customerSignup";
 import { z } from "zod";
 import { getUserSession } from "../auth/getUserSession.actions";
 import { dbConnect } from "@/db/dbConnect";
-import CustomerInfo, {
-  ICustomerInfo,
-} from "@/db/models/customer/customerInfo.model";
+
 import mongoose from "mongoose";
+import Customer, { ICustomer } from "@/db/models/customer/customer.model";
+import { zodErrorResponse } from "@/zod/validation/error";
+import { formDataToObject } from "@/zod/validation/form";
 
 export type ProfileState = {
   errors?: {
@@ -17,9 +18,6 @@ export type ProfileState = {
     city?: string[];
     province?: string[];
     mobile?: string[];
-    hasCar?: string[];
-    carModel?: string[];
-    carYear?: string[];
   };
   message?: string | null;
   success?: boolean;
@@ -38,40 +36,23 @@ export async function editUserProfile(
       message: "Unauthorized: Only customer can edit this",
     };
   }
-  const rawData = {
-    name: formData.get("name")?.toString() ?? "",
-    address: formData.get("address")?.toString() ?? "",
-    city: formData.get("city")?.toString() ?? "",
-    province: formData.get("province")?.toString() ?? "",
-    mobile: formData.get("mobile")?.toString() ?? "",
-    // check box returns on,
-    hasCar:
-      formData.get("hasCar") === "on" || formData.get("hasCar") === "true",
-    carModel: formData.get("carModel"),
-    carYear: formData.get("carYear"),
-  };
-
+  const rawData = formDataToObject(formData);
   const result = editProfileSchema.safeParse(rawData);
 
   if (!result.success) {
-    const { fieldErrors } = z.flattenError(result.error);
-    return {
-      errors: fieldErrors,
-      message: "Please Fix the errors below",
-      success: false,
-    };
+    const errorMessage = zodErrorResponse(result);
+    return { success: false, message: errorMessage || "Validation error" };
   }
 
-  const { name, address, city, province, mobile, hasCar, carModel, carYear } =
-    result.data;
+  const { name, address, city, province, mobile } = result.data;
 
   try {
     await dbConnect();
-    // to update the name on both user table and customerInfo table we use session
+    // to update the name on both user table and customer table we use session
     const session = await mongoose.startSession();
 
     await session.withTransaction(async () => {
-      const customerProfile = await CustomerInfo.findOne({
+      const customerProfile = await Customer.findOne({
         userId: currentUser.user.id,
       }).session(session);
 
@@ -79,7 +60,7 @@ export async function editUserProfile(
         throw new Error("Customer_Not_Found");
       }
 
-      const updatePayload: Partial<ICustomerInfo> = {
+      const updatePayload: Partial<ICustomer> = {
         name,
         address,
         city,
@@ -87,24 +68,8 @@ export async function editUserProfile(
         mobile,
       };
 
-      // If user dont have a car, allow the update
-      if (
-        customerProfile.hasCar === false ||
-        customerProfile.hasCar === null ||
-        customerProfile.hasCar === undefined
-      ) {
-        updatePayload.hasCar = hasCar;
-
-        // allowing append if form says the car is available
-        if (hasCar) {
-          updatePayload.carYear = carYear;
-          updatePayload.carModel = carModel;
-        }
-      }
-      // Doing noting when the user hasCar, LOCKED
-
-      // updating in CustomerInfo table
-      await CustomerInfo.updateOne(
+      // updating in Customer table
+      await Customer.updateOne(
         { _id: customerProfile._id },
         { $set: updatePayload },
         { session },

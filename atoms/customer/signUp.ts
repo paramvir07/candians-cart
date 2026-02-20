@@ -1,5 +1,5 @@
 import { Step } from "@/types/customer/signUp";
-import { StoreDetails } from "@/types/store";
+import { StoreDetails } from "@/types/store/store";
 import { atom } from "jotai";
 import { Types } from "mongoose";
 

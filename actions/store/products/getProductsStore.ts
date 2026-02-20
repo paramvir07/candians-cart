@@ -9,7 +9,7 @@ import {
   IProductDB,
 } from "@/types/store/products.types";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
-import StoreInfo from "@/db/models/store/storeInfo.model";
+import Store from "@/db/models/store/store.model";
 
 function serializeProduct(product: IProductDB): IProduct {
   return {
@@ -31,7 +31,7 @@ export default async function getProducts(): Promise<ProductActionResponse> {
     const session = await getUserSession();
     await dbConnect();
 
-    const store = await StoreInfo.findOne({ userId: session.user.id }).lean();
+    const store = await Store.findOne({ userId: session.user.id }).lean();
     if (!store)
       return {
         success: false,

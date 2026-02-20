@@ -1,8 +1,8 @@
 "use server";
 
 import { dbConnect } from "@/db/dbConnect";
-import StoreInfo from "@/db/models/store/storeInfo.model";
-import { StoreDocument } from "@/types/store";
+import Store from "@/db/models/store/store.model";
+import { StoreDocument } from "@/types/store/store";
 
 export type GetStoresResponse =
   | { success: true; data: StoreDocument[] }
@@ -12,7 +12,7 @@ export const getStores = async (): Promise<GetStoresResponse> => {
   try {
     await dbConnect();
 
-    const stores = await StoreInfo.find().lean();
+    const stores = await Store.find().lean();
 
     if (!stores)
       return {

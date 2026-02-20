@@ -1,16 +1,16 @@
-import mongoose from "mongoose";
+import { model, models, Schema } from "mongoose";
 
-const OrderSchema = new mongoose.Schema(
+const orderSchema = new Schema(
   {
-    shopId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "storeInfo",
+    storeId: {
+      type: Schema.Types.ObjectId,
+      ref: "Store",
       required: true,
       index: true,
     },
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "customerinfor",
+      type: Schema.Types.ObjectId,
+      ref: "Customer",
       required: true,
       index: true,
     },
@@ -18,7 +18,7 @@ const OrderSchema = new mongoose.Schema(
       {
         _id: false,
         productId: {
-          type: mongoose.Schema.Types.ObjectId,
+          type: Schema.Types.ObjectId,
           ref: "Product",
           required: true,
         },
@@ -76,7 +76,8 @@ const OrderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    handledBy: {   // the name of the person who handled the order payment
+    handledBy: {
+      // the name of the person who handled the order payment
       type: String,
       required: false,
     },
@@ -84,4 +85,4 @@ const OrderSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-export default mongoose.models.Order || mongoose.model("Order", OrderSchema);
+export default models.Order || model("Order", orderSchema);

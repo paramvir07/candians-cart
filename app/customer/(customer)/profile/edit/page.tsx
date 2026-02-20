@@ -1,8 +1,8 @@
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
-import CustomerInfo from "@/db/models/customer/customerInfo.model";
 import { dbConnect } from "@/db/dbConnect";
 import Navbar from "@/components/customer/landing/Navbar";
 import EditProfileForm from "@/components/customer/profile/EditProfileForm"; // We will create this next
+import Customer from "@/db/models/customer/customer.model";
 
 const EditProfilePage = async () => {
   // 1. Get auth user
@@ -10,7 +10,7 @@ const EditProfilePage = async () => {
 
   // 2. Get the extended Mongoose profile data
   await dbConnect();
-  const customerProfile = await CustomerInfo.findOne({
+  const customerProfile = await Customer.findOne({
     userId: session.user.id,
   }).lean();
 
@@ -22,9 +22,6 @@ const EditProfilePage = async () => {
     city: customerProfile?.city || "",
     province: customerProfile?.province || "",
     mobile: customerProfile?.mobile || "",
-    hasCar: customerProfile?.hasCar || false,
-    carModel: customerProfile?.carModel || undefined,
-    carYear: customerProfile?.carYear || undefined,
   };
 
   return (

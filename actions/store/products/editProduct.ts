@@ -8,7 +8,7 @@ import {
   ProductFormValues,
 } from "@/zod/schemas/store/addProductsValidation";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
-import StoreInfo from "@/db/models/store/storeInfo.model";
+import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
 
 interface ActionResponse {
@@ -29,9 +29,9 @@ export async function updateProduct(
       const errorMessage = zodErrorResponse(validationResult);
       return { success: false, message: errorMessage || "Validation error" };
     }
-    
+
     await dbConnect();
-    const store = await StoreInfo.findOne({ userId: session.user.id }).lean();
+    const store = await Store.findOne({ userId: session.user.id }).lean();
     if (!store)
       return {
         success: false,

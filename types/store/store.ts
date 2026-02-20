@@ -1,4 +1,4 @@
-import { IStoreInfo } from "@/db/models/store/storeInfo.model";
+import { IStore } from "@/db/models/store/store.model";
 import { Types } from "mongoose";
 
 export type StoreDetails = {
@@ -8,8 +8,7 @@ export type StoreDetails = {
   description: string;
 };
 
-export type StoreDocument = IStoreInfo & {
+export type StoreDocument = IStore & {
   _id: Types.ObjectId;
   __v: number;
 };
-

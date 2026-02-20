@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
-import StoreInfo from "@/db/models/store/storeInfo.model";
+import Store from "@/db/models/store/store.model";
 
 interface ActionResponse {
   success: boolean;
@@ -18,8 +18,8 @@ export async function deleteProduct(
     const session = await getUserSession();
 
     await dbConnect();
-    
-    const store = await StoreInfo.findOne({ userId: session.user.id }).lean();
+
+    const store = await Store.findOne({ userId: session.user.id }).lean();
     if (!store)
       return {
         success: false,

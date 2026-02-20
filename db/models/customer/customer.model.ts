@@ -1,6 +1,6 @@
 import { model, Model, models, Schema, Types } from "mongoose";
 
-export interface ICustomerInfo {
+export interface ICustomer {
   userId: Types.ObjectId;
   name: string;
   email: string;
@@ -8,16 +8,16 @@ export interface ICustomerInfo {
   mobile: string;
   city: string;
   province: string;
-  hasCar: boolean;
-  carModel?: string;
-  carYear?: number;
   monthlyBudget: number;
   associatedStoreId: Types.ObjectId;
   referralCode: string;
+  walletBalance: number;
+  giftWalletBalance: number;
 }
 
-const customerInfoSchema = new Schema<ICustomerInfo>({
-  userId: { // Used for auth
+const customerSchema = new Schema<ICustomer>({
+  userId: {
+    // Used for auth
     type: Schema.Types.ObjectId,
     required: true,
   },
@@ -45,34 +45,35 @@ const customerInfoSchema = new Schema<ICustomerInfo>({
     type: String,
     required: true,
   },
-  hasCar: {
-    type: Boolean,
-    required: true,
-  },
-  carModel: {
-    type: String,
-    required: false,
-  },
-  carYear: {
-    type: Number,
-    required: false,
-  },
   monthlyBudget: {
     type: Number,
     required: true,
   },
   associatedStoreId: {
     type: Schema.Types.ObjectId,
+    ref: "Store",
     required: true,
   },
   referralCode: {
     type: String,
     required: true,
   },
+  walletBalance: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0,
+  },
+  giftWalletBalance: {
+    type: Number,
+    required: true,
+    default: 0,
+    min: 0,
+  },
 });
 
-const CustomerInfo: Model<ICustomerInfo> =
-  models.customerInfo ||
-  model<ICustomerInfo>("customerInfo", customerInfoSchema);
+const Customer: Model<ICustomer> =
+  models.Customer ||
+  model<ICustomer>("Customer", customerSchema);
 
-export default CustomerInfo;
+export default Customer;

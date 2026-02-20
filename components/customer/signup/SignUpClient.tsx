@@ -5,7 +5,7 @@ import { Button } from "../../ui/button";
 import Link from "next/link";
 import { stepAtom } from "@/atoms/customer/signUp";
 import { useAtom } from "jotai";
-import { StoreDocument } from "@/types/store";
+import { StoreDocument } from "@/types/store/store";
 import Location from "./Location";
 import Terms from "./Terms";
 import StoreSelected from "./StoreSelected";
@@ -103,12 +103,18 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
               </div>
             </CardContent>
           </Card>
-          <div className="mt-8">
-            <Link
-              href="/store/login"
-              className="text-sm text-muted-foreground hover:text-primary"
-            >
-              Are you a store? Login here.
+          <div className="text-sm flex justify-center items-center gap-1 mt-5">
+            <div className="text-muted-foreground ">
+              Already have an account?
+            </div>
+            <Link href="/customer/login" className="text-primary font-bold">
+              Login here.
+            </Link>
+          </div>
+          <div className="text-sm flex justify-center items-center gap-1">
+            <div className="text-muted-foreground ">Are you a store?</div>
+            <Link href="/store/login" className="text-primary font-bold">
+              Login here.
             </Link>
           </div>
         </div>

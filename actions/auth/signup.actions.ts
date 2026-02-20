@@ -2,13 +2,13 @@
 
 import { dbConnect } from "@/db/dbConnect";
 import ReferralCode from "@/db/models/admin/referralCode.model";
-import CustomerInfo from "@/db/models/customer/customerInfo.model";
-import StoreInfo from "@/db/models/store/storeInfo.model";
+import Customer from "@/db/models/customer/customer.model";
+import Store from "@/db/models/store/store.model";
 import { auth } from "@/lib/auth/auth";
 import { UserRole } from "@/types/auth";
 import { IFormActionResponse } from "@/types/form";
 import { adminSignupSchema } from "@/zod/schemas/admin/adminSignup";
-import { customerSignupSchema } from "@/zod/schemas/customer/customerSignup";
+import { CustomerSchema } from "@/zod/schemas/customer/customerSignup";
 import { storeSignupSchema } from "@/zod/schemas/store/storeSignup";
 import { zodErrorResponse } from "@/zod/validation/error";
 import { formDataToObject } from "@/zod/validation/form";
@@ -22,27 +22,29 @@ export const signupAction = async (
     const rawData = formDataToObject(formData);
 
     if (userRole === "customer") {
-      const result = customerSignupSchema.safeParse(rawData);
+      const result = CustomerSchema.safeParse(rawData);
       if (!result.success) {
         const errorMessage = zodErrorResponse(result);
         return { success: false, message: errorMessage || "Validation error" };
       }
 
       const data = result.data;
-      
-      const referralCode = await ReferralCode.findOne({ code: data.referralCode });
+
+      const referralCode = await ReferralCode.findOne({
+        code: data.referralCode,
+      });
       if (!referralCode)
         return {
           success: false,
           message: "Referral Code not found",
         };
-      
+
       const newCustomer = await auth.api.signUpEmail({
         body: { name: data.name, email: data.email, password: data.password },
       });
 
       await dbConnect();
-      await CustomerInfo.create({
+      await Customer.create({
         userId: newCustomer.user.id,
         name: data.name,
         email: data.email,
@@ -50,9 +52,6 @@ export const signupAction = async (
         address: data.address,
         city: data.city,
         province: data.province,
-        hasCar: data.hasCar,
-        carModel: data.carModel,
-        carYear: data.carYear,
         monthlyBudget: data.monthlyBudget,
         associatedStoreId: data.associatedStoreId,
         referralCode: data.referralCode,
@@ -75,7 +74,7 @@ export const signupAction = async (
       });
 
       await dbConnect();
-      await StoreInfo.create({
+      await Store.create({
         userId: newStore.user.id,
         name: data.name,
         email: data.email,
