@@ -14,10 +14,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
-import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -196,55 +193,6 @@ export function SignupForm({ userRole, ...props }: SignupFormProps) {
                     title="Mobile number must be exactly 10 digits"
                   />
                 </Field>
-                <Field hidden={admin || store}>
-                  <FieldLabel>Do you have a car? *</FieldLabel>
-
-                  <RadioGroup
-                    name="hasCar"
-                    value={hasCar ? "true" : "false"}
-                    onValueChange={(value) => setHasCar(value === "true")}
-                    className="w-fit flex items-center"
-                  >
-                    <div className="flex items-center gap-3">
-                      <RadioGroupItem value="true" id="hasCar-yes" />
-                      <Label htmlFor="hasCar-yes">Yes</Label>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <RadioGroupItem value="false" id="hasCar-no" />
-                      <Label htmlFor="hasCar-no">No</Label>
-                    </div>
-                  </RadioGroup>
-
-                  {hasCar && (
-                    <div className="mt-4 flex gap-3">
-                      <div className="flex-1">
-                        <FieldLabel htmlFor="carModel">Car Model *</FieldLabel>
-                        <Input
-                          id="carModel"
-                          name="carModel"
-                          placeholder="e.g., Toyota Camry"
-                          required={customer && hasCar}
-                        />
-                      </div>
-
-                      <div className="flex-1">
-                        <FieldLabel htmlFor="carYear">Year *</FieldLabel>
-                        <Input
-                          id="carYear"
-                          name="carYear"
-                          type="number"
-                          placeholder="e.g., 2022"
-                          min={1980}
-                          max={new Date().getFullYear()}
-                          step={1}
-                          inputMode="numeric"
-                          required={customer && hasCar}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </Field>
 
                 {customer && (
                   <>
@@ -278,13 +226,6 @@ export function SignupForm({ userRole, ...props }: SignupFormProps) {
                   {/* <Button variant="outline" type="button">
                     Sign up with Google
                   </Button> */}
-                  <FieldDescription
-                    className="px-6 text-center"
-                    hidden={admin || store}
-                  >
-                    Already have an account?{" "}
-                    <Link href="/customer/login">Sign in</Link>
-                  </FieldDescription>
                 </Field>
               </FieldGroup>
             </form>

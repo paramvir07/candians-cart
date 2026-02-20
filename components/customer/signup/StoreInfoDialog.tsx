@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { MapPin, Users } from "lucide-react";
-import { StoreDetails } from "@/types/store";
+import { StoreDetails } from "@/types/store/store";
 
 type StoreInfoDialogProps = {
   store: StoreDetails | null;

@@ -1,6 +1,6 @@
 import { model, Model, models, Schema, Types } from "mongoose";
 
-export interface IStoreInfo {
+export interface IStore {
   userId: Types.ObjectId;
   name: string;
   email: string;
@@ -12,7 +12,7 @@ export interface IStoreInfo {
   bankDetails: string;
 }
 
-const storeInfoSchema = new Schema<IStoreInfo>({
+const storeSchema = new Schema<IStore>({
   // _id here is the actual storeId
   userId: {
     //This is the Auth
@@ -50,7 +50,7 @@ const storeInfoSchema = new Schema<IStoreInfo>({
   },
 });
 
-const StoreInfo: Model<IStoreInfo> =
-  models.storeInfo || model<IStoreInfo>("storeInfo", storeInfoSchema);
+const Store: Model<IStore> =
+  models.Store || model<IStore>("Store", storeSchema);
 
-export default StoreInfo;
+export default Store;

@@ -1,12 +1,12 @@
-import mongoose, { Schema } from "mongoose";
+import { model, models, Schema } from "mongoose";
 
-const ProductSchema = new mongoose.Schema(
+const productSchema = new Schema(
   {
 
     storeId: {
-      //Refer to the _id storeInfo model
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "storeInfo",
+      //Refer to the _id store model
+      type: Schema.Types.ObjectId,
+      ref: "Store",
       required: true,
       index: true,
     },
@@ -81,5 +81,5 @@ const ProductSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-export default mongoose.models.Product ||
-  mongoose.model("Product", ProductSchema);
+export default models.Product ||
+  model("Product", productSchema);

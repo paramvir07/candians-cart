@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,19 +7,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { CustomerInterface } from "@/types/Customer/User"
-import Link from "next/link"
+} from "@/components/ui/dropdown-menu";
+import { Customer } from "@/types/customer/customer";
+import Link from "next/link";
 
-export function ProfileDropDown({userData}: {userData: CustomerInterface | null | undefined}) {
+export function ProfileDropDown({
+  userData,
+}: {
+  userData: Customer | null | undefined;
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="h-8 w-8">
           <AvatarImage src="" />
-          <AvatarFallback>{userData?.name?.substring(0, 2).toUpperCase() || ""}</AvatarFallback>
-        </Avatar>      
-        </DropdownMenuTrigger>
+          <AvatarFallback>
+            {userData?.name?.substring(0, 2).toUpperCase() || ""}
+          </AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
       <DropdownMenuContent className="w-50" align="end" forceMount>
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
@@ -33,5 +39,5 @@ export function ProfileDropDown({userData}: {userData: CustomerInterface | null 
         <DropdownMenuItem>Logout</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

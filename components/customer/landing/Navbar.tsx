@@ -6,11 +6,9 @@ import Link from "next/link";
 import { ProfileDropDown } from "./ProfileDropDown";
 import { getUser } from "@/actions/customer/User.action";
 
-const Navbar = async() => {
+const Navbar = async () => {
+  const UserData = await getUser();
 
-    const UserData = await getUser();
-    // console.log("UserData : ", UserData);
-    
   return (
     <nav className="flex items-center justify-between px-4 py-4 shadow-sm bg-white">
       {/* Logo */}
@@ -35,10 +33,10 @@ const Navbar = async() => {
 
         {/* Wallet + Avatar always visible */}
         <Link href="/customer/wallet">
-        <Button variant="default" className="flex items-center gap-1 px-3">
-          <Wallet className="w-5 h-5" />
-          $200
-        </Button>
+          <Button variant="default" className="flex items-center gap-1 px-3">
+            <Wallet className="w-5 h-5" />
+            $200
+          </Button>
         </Link>
 
         <ProfileDropDown userData={UserData} />
@@ -48,4 +46,3 @@ const Navbar = async() => {
 };
 
 export default Navbar;
-    
