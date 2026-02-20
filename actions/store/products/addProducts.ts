@@ -8,6 +8,8 @@ import {
   ProductFormValues,
 } from "@/zod/schemas/store/addProductsValidation";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
+import StoreInfo from "@/db/models/store/storeInfo.model";
+import { zodErrorResponse } from "@/zod/validation/error";
 
 interface ActionResponse {
   success: boolean;
@@ -18,28 +20,28 @@ interface ActionResponse {
 export async function createProduct(
   data: ProductFormValues,
 ): Promise<ActionResponse> {
-  const session = await getUserSession();
-  const CurrentstoreId = session.user.id;
-
   try {
+    const session = await getUserSession();
+
     const validationResult = ProductFormSchema.safeParse(data);
     if (!validationResult.success) {
+      const errorMessage = zodErrorResponse(validationResult);
+      return { success: false, message: errorMessage || "Validation error" };
+    }
+
+    await dbConnect();
+    
+    const store = await StoreInfo.findOne({ userId: session.user.id }).lean();
+    if (!store)
       return {
         success: false,
-        message: "validation failed",
-        errors: validationResult.error.flatten().fieldErrors as Record<
-          string,
-          string[]
-        >,
+        message: "Store not found",
       };
-    }
-    await dbConnect();
-
     const { price, disposableFee, tax, ...otherData } = validationResult.data;
 
     const dbPayload = {
       ...otherData,
-      storeId: CurrentstoreId,
+      storeId: store._id,
       tax: tax > 0 ? tax / 100 : 0, // converting percentage to decimal for storage
       price: Math.round(price * 100), // converting to cents
       disposableFee: Math.round((disposableFee || 0) * 100), // converting to cents}

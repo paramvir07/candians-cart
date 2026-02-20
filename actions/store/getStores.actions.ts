@@ -14,7 +14,11 @@ export const getStores = async (): Promise<GetStoresResponse> => {
 
     const stores = await StoreInfo.find().lean();
 
-
+    if (!stores)
+      return {
+        success: false,
+        error: `No stores found`,
+      };
     return { success: true, data: stores };
   } catch (error) {
     return {

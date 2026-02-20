@@ -8,6 +8,8 @@ import {
   ProductFormValues,
 } from "@/zod/schemas/store/addProductsValidation";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
+import StoreInfo from "@/db/models/store/storeInfo.model";
+import { zodErrorResponse } from "@/zod/validation/error";
 
 interface ActionResponse {
   success: boolean;
@@ -19,23 +21,22 @@ export async function updateProduct(
   productId: string,
   data: ProductFormValues,
 ): Promise<ActionResponse> {
-  const session = await getUserSession();
-  const currentStoreId = session.user.id;
-
   try {
+    const session = await getUserSession();
+
     const validationResult = ProductFormSchema.safeParse(data);
     if (!validationResult.success) {
+      const errorMessage = zodErrorResponse(validationResult);
+      return { success: false, message: errorMessage || "Validation error" };
+    }
+    
+    await dbConnect();
+    const store = await StoreInfo.findOne({ userId: session.user.id }).lean();
+    if (!store)
       return {
         success: false,
-        message: "Validation Failed",
-        errors: validationResult.error.flatten().fieldErrors as Record<
-          string,
-          string[]
-        >,
+        message: "Store not found",
       };
-    }
-    await dbConnect();
-
     const { price, disposableFee, tax, ...otherData } = validationResult.data;
 
     const dbPayload = {
@@ -49,7 +50,7 @@ export async function updateProduct(
     };
 
     const updatedProduct = await Product.findOneAndUpdate(
-      { _id: productId, storeId: currentStoreId },
+      { _id: productId, storeId: store._id },
       { $set: dbPayload },
       { new: true }, // Returns the updated document
     );
