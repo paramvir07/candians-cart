@@ -1,15 +1,15 @@
 "use server";
 
-import getUserSession from "@/actions/auth/getUserSession";
 import CustomerInfo from "@/db/models/customer/customerInfo.model";
 import Product from "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
+import { getUserSession } from "@/actions/auth/getUserSession.actions";
 
 export default async function getStoreAndProduct() {
   try {
-    await dbConnect();
-
     const session = await getUserSession();
+    await dbConnect();
+    
     const userId = session.user.id;
 
     const customer = await CustomerInfo.findOne({ userId: userId });

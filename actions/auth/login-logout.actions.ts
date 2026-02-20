@@ -1,16 +1,17 @@
 "use server";
 
 import { auth } from "@/lib/auth/auth";
-import { FormActionResponse } from "@/types/form";
+import { IFormActionResponse } from "@/types/form";
 import { loginSchema } from "@/zod/schemas/login";
 import { zodErrorResponse } from "@/zod/validation/error";
 import { formDataToObject } from "@/zod/validation/form";
 import { headers } from "next/headers";
+import { getUserSession } from "./getUserSession.actions";
 
 export const loginAction = async (
-  prevState: FormActionResponse,
+  prevState: IFormActionResponse,
   formData: FormData,
-): Promise<FormActionResponse> => {
+): Promise<IFormActionResponse> => {
   try {
     const rawData = formDataToObject(formData);
     const result = loginSchema.safeParse(rawData);
@@ -32,6 +33,7 @@ export const loginAction = async (
       message: "Logged in successfully!!",
     };
   } catch (error) {
+    console.log("Error while logging in: ", error);
     return {
       success: false,
       message: "Something went wrong while signing in",
@@ -40,7 +42,9 @@ export const loginAction = async (
 };
 
 export const logoutAction = async () => {
+
   try {
+    await getUserSession();
     await auth.api.signOut({
       headers: await headers(),
     });
@@ -49,6 +53,7 @@ export const logoutAction = async () => {
       message: "Logged out successfully!!",
     };
   } catch (error) {
+    console.log("Error while logging out: ", error);
     return {
       success: false,
       message: "Something went wrong while logging out",

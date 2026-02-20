@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { loginAction } from "@/actions/auth/login-logout.actions";
 import { Spinner } from "../ui/spinner";
 import { UserRole } from "@/types/auth";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const initialState = {
@@ -47,7 +47,7 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
       if (state.success) {
         toast.success(state.message);
         customer
-          ? router.push("/customer")
+          ? router.push("/")
           : store
             ? router.push("/store")
             : admin
@@ -63,16 +63,26 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>
-            {store
-              ? "Login to your store account"
-              : admin
-                ? "Login to your admin account"
-                : "Login to your account"}
-          </CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
+          <div className="flex flex-col justify-center items-center gap-3">
+            <div className="mx-auto bg-primary text-primary-foreground p-3 rounded-full w-fit group">
+              <ShoppingCart
+                className="transition-transform group-hover:scale-110"
+                size={35}
+              />
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <CardTitle>
+                {store
+                  ? "Login to your store account"
+                  : admin
+                    ? "Login to your admin account"
+                    : "Login to your account"}
+              </CardTitle>
+              <CardDescription>
+                Enter your email below to login to your account
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <form action={formAction}>
@@ -94,6 +104,7 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
                     required
                   />
                   <button
@@ -109,9 +120,9 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
                 <Button type="submit">
                   {isPending ? <Spinner /> : "Login"}
                 </Button>
-                <Button variant="outline" type="button">
+                {/* <Button variant="outline" type="button">
                   Login with Google
-                </Button>
+                </Button> */}
                 {customer && (
                   <FieldDescription className="text-center">
                     Don&apos;t have an account?{" "}

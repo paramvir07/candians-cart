@@ -1,14 +1,14 @@
 "use server";
 
-import getUserSession from "@/actions/auth/getUserSession";
 import Product from "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
 import {
   ProductActionResponse,
   IProduct,
   ProductImage,
-  IProductDB
+  IProductDB,
 } from "@/types/store/products.types";
+import { getUserSession } from "@/actions/auth/getUserSession.actions";
 
 function serializeProduct(product: IProductDB): IProduct {
   return {

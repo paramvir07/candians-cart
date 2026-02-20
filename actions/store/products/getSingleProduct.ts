@@ -1,12 +1,9 @@
 "use server";
 
+import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
-import getUserSession from "@/actions/auth/getUserSession";
-import {
-  IProduct,
-  IProductDB,
-} from "@/types/store/products.types";
+import { IProduct, IProductDB } from "@/types/store/products.types";
 
 export async function getSingleProduct(
   productId: string,
@@ -16,10 +13,10 @@ export async function getSingleProduct(
     await dbConnect();
 
     // Find if the product exists in the first place or not
-    const product = await Product.findOne({
+    const product = (await Product.findOne({
       _id: productId,
       storeId: session.user.id,
-    }).lean() as unknown as IProductDB;
+    }).lean()) as unknown as IProductDB;
 
     if (!product) {
       return { success: false, error: "Product not found" };
@@ -33,14 +30,13 @@ export async function getSingleProduct(
       images: product.images.map((img) => ({
         url: img.url,
         fileId: img.fileId,
-        _id: img._id?.toString() 
+        _id: img._id?.toString(),
       })),
       createdAt: new Date(product.createdAt).toISOString(),
       updatedAt: new Date(product.updatedAt).toISOString(),
-    }
-    
-    return { success: true, data: serializedProduct };
+    };
 
+    return { success: true, data: serializedProduct };
   } catch (error) {
     console.log("Error while fetching product: ", error);
     return {

@@ -1,5 +1,5 @@
-import { auth } from "@/lib/auth/auth";
-import { headers } from "next/headers";
+
+import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { redirect } from "next/navigation";
 
 export default async function RootLayout({
@@ -7,19 +7,15 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) redirect("/customer/login");
-
+  const session = await getUserSession();
   const role = session.user.role;
+
   if (role !== "customer") {
     if (role === "store" || role === "admin") {
       redirect(`/${role}`);
-    }
-    else {
+    } else {
       redirect("/customer/login");
     }
-  };
-    return <>{children}</>;
+  }
+  return <>{children}</>;
 }

@@ -1,22 +1,23 @@
 "use server";
 
 import { dbConnect } from "@/db/dbConnect";
+import ReferralCode from "@/db/models/admin/referralCode.model";
 import CustomerInfo from "@/db/models/customer/customerInfo.model";
 import StoreInfo from "@/db/models/store/storeInfo.model";
 import { auth } from "@/lib/auth/auth";
 import { UserRole } from "@/types/auth";
-import { FormActionResponse } from "@/types/form";
-import { adminSignupSchema } from "@/zod/schemas/adminSignup";
-import { customerSignupSchema } from "@/zod/schemas/customerSignup";
+import { IFormActionResponse } from "@/types/form";
+import { adminSignupSchema } from "@/zod/schemas/admin/adminSignup";
+import { customerSignupSchema } from "@/zod/schemas/customer/customerSignup";
 import { storeSignupSchema } from "@/zod/schemas/storeSignup";
 import { zodErrorResponse } from "@/zod/validation/error";
 import { formDataToObject } from "@/zod/validation/form";
 
 export const signupAction = async (
   userRole: UserRole,
-  prevState: FormActionResponse,
+  prevState: IFormActionResponse,
   formData: FormData,
-): Promise<FormActionResponse> => {
+): Promise<IFormActionResponse> => {
   try {
     const rawData = formDataToObject(formData);
 
@@ -28,6 +29,14 @@ export const signupAction = async (
       }
 
       const data = result.data;
+      
+      const referralCode = await ReferralCode.findOne({ code: data.referralCode });
+      if (!referralCode)
+        return {
+          success: false,
+          message: "Referral Code not found",
+        };
+      
       const newCustomer = await auth.api.signUpEmail({
         body: { name: data.name, email: data.email, password: data.password },
       });
@@ -44,6 +53,9 @@ export const signupAction = async (
         hasCar: data.hasCar,
         carModel: data.carModel,
         carYear: data.carYear,
+        monthlyBudget: data.monthlyBudget,
+        associatedStoreId: data.associatedStoreId,
+        referralCode: data.referralCode,
       });
     } else if (userRole === "store") {
       const result = storeSignupSchema.safeParse(rawData);

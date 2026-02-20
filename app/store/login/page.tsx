@@ -3,10 +3,7 @@ import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-// login user name and pass -: paramvirsingh2540@gmail.com, param@123
-// actions/aut/auth.action.ts
-
-// For store signup, got to actions/auth/storeSignup.actiond.ts
+// server action in actions/auth/login-logout.action.ts
 
 export default async function Page() {
   const session = await auth.api.getSession({

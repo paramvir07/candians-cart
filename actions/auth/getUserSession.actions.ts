@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { cache } from "react";
 
 /**
  * Fetches the authenticated user's session on the server.
@@ -26,7 +27,7 @@ import { isRedirectError } from "next/dist/client/components/redirect-error";
  * @throws RedirectError (Next.js redirect)
  */
 
-export default async function getUserSession() {
+export const getUserSession= cache(async () => {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -44,4 +45,4 @@ export default async function getUserSession() {
     console.log("Error fetching user session:", error);
     redirect("/customer/login");
   }
-}
+})

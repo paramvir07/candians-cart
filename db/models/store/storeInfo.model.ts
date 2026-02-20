@@ -6,11 +6,16 @@ export interface IStoreInfo {
   email: string;
   address: string;
   mobile: string;
+  description: string;
+  members: number;
+  storeTimings: string;
+  bankDetails: string;
 }
 
 const storeInfoSchema = new Schema<IStoreInfo>({
   // _id here is the actual storeId
-  userId: {  //This is the Auth
+  userId: {
+    //This is the Auth
     type: Schema.Types.ObjectId,
     required: true,
   },
@@ -29,6 +34,19 @@ const storeInfoSchema = new Schema<IStoreInfo>({
   mobile: { // Contact mobile number for the store
     type: String,
     required: true,
+  },
+  description: {
+    type: String,
+  },
+  members: {
+    type: Number,
+    default: 0,
+  },
+  storeTimings: {
+    type: String,
+  },
+  bankDetails: {
+    type: String,
   },
 });
 

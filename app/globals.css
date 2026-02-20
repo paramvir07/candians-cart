@@ -6,6 +6,7 @@ html,
 body {
   background-color: #f3f1ed;
   overscroll-behavior: none;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 

@@ -1,7 +1,7 @@
+
+import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { auth } from "@/lib/auth/auth";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function RootLayout({
@@ -9,19 +9,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) redirect("/admin/login");
+  const session = await getUserSession();
+  const role = session.user.role;
 
-    const role = session.user.role;
-    if (role !== "admin") {
-      if (role === "customer" || role === "store") {
-        redirect(`/${role}`);
-      } else {
-        redirect("/admin/login");
-      }
+  if (role !== "admin") {
+    if (role === "customer" || role === "store") {
+      redirect(`/${role}`);
+    } else {
+      redirect("/admin/login");
     }
+  }
   return (
     <div className="bg-[#F3F1ED] scroll-smooth ">
       <TooltipProvider>

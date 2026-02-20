@@ -1,0 +1,1 @@
+export type Step = "location" | "terms" | "budget" | "selectStore" | "code" | "signUpForm";

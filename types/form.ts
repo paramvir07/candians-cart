@@ -1,4 +1,4 @@
-export type FormActionResponse = {
+export interface IFormActionResponse {
   success: boolean;
   message: string;
 };

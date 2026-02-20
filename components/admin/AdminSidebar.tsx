@@ -16,7 +16,6 @@ const AdminSidebar = () => {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex fixed top-4 bottom-4 left-3 w-16 flex-col items-center rounded-full bg-white py-4 z-40">
         <div className="flex flex-col gap-4">
-
           {/* Dashboard */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -130,7 +129,7 @@ const AdminSidebar = () => {
         </Button>
       </nav>
     </>
-  )
+  );
 }
 
 export default AdminSidebar
