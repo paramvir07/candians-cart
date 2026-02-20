@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 // Actions
 import { createProduct } from "@/actions/store/products/addProducts";
 import { updateProduct } from "@/actions/store/products/editProduct";
-import { ProductFormValues } from "@/zod/validation/products/addProductsValidation";
+import { ProductFormValues } from "@/zod/schemas/store/addProductsValidation";
 
 // Types
 import { IProduct } from "@/types/store/products.types";

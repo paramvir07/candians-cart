@@ -5,7 +5,7 @@ const currentYear = new Date().getFullYear();
 export const customerSignupSchema = z
   .object({
     name: z.string().min(1, "Name is Required"),
-    email: z.string().email("Invalid email address"),
+    email: z.email("Invalid email address"),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
@@ -21,7 +21,6 @@ export const customerSignupSchema = z
       .string()
       .regex(/^\d{10}$/, "Mobile number must be exactly 10 digits"),
 
-    // ✅ accepts "true"/"false" and returns boolean
     hasCar: z.preprocess((v) => v === "true", z.boolean()),
 
     carModel: z.string().trim().optional(),

@@ -6,7 +6,7 @@ import Product from "@/db/models/store/products.model";
 import {
   ProductFormSchema,
   ProductFormValues,
-} from "@/zod/validation/products/addProductsValidation";
+} from "@/zod/schemas/store/addProductsValidation";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 
 interface ActionResponse {

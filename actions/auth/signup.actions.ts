@@ -9,7 +9,7 @@ import { UserRole } from "@/types/auth";
 import { IFormActionResponse } from "@/types/form";
 import { adminSignupSchema } from "@/zod/schemas/admin/adminSignup";
 import { customerSignupSchema } from "@/zod/schemas/customer/customerSignup";
-import { storeSignupSchema } from "@/zod/schemas/storeSignup";
+import { storeSignupSchema } from "@/zod/schemas/store/storeSignup";
 import { zodErrorResponse } from "@/zod/validation/error";
 import { formDataToObject } from "@/zod/validation/form";
 

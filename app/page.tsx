@@ -1,10 +1,22 @@
-import getStoreAndProduct from '@/actions/customer/ProductAndStore/getAssociatedStore';
+import { getUserSession } from "@/actions/auth/getUserSession.actions";
+import getStoreAndProduct from "@/actions/customer/ProductAndStore/getAssociatedStore";
 import Banner from "@/components/customer/landing/Banner";
 import Navbar from "@/components/customer/landing/Navbar";
 import ProductGrid from "@/components/customer/products/ProductGrid";
+import { redirect } from "next/navigation";
 
-const page = async() => {
-  // Fetch data
+export default async function Page() {
+  const session = await getUserSession();
+  const role = session.user.role;
+
+  if (role !== "customer") {
+    if (role === "store" || role === "admin") {
+      redirect(`/${role}`);
+    } else {
+      redirect("/customer/login");
+    }
+  }
+  
   const response = await getStoreAndProduct();
 
   // Handle the error state from your Server Action
@@ -43,5 +55,4 @@ const page = async() => {
       </main>
     </div>
   );
-};
-
+}

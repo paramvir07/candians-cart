@@ -6,7 +6,6 @@ import { IFormActionResponse } from "@/types/form";
 import { validateReferralCodeSchema } from "@/zod/schemas/customer/validateReferralCode";
 import { zodErrorResponse } from "@/zod/validation/error";
 import { formDataToObject } from "@/zod/validation/form";
-import { getUserSession } from "../auth/getUserSession.actions";
 
 type ReferralCodeFormActionResponse = IFormActionResponse & {
   referralCode?: string
@@ -15,7 +14,6 @@ type ReferralCodeFormActionResponse = IFormActionResponse & {
 export const validateReferralCodeAction = async (prevState: ReferralCodeFormActionResponse,
   formData: FormData): Promise<ReferralCodeFormActionResponse> => {
   try {
-    await getUserSession();
     
       const rawData = formDataToObject(formData);
       const result = validateReferralCodeSchema.safeParse(rawData);

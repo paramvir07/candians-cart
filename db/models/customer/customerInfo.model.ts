@@ -11,9 +11,9 @@ export interface ICustomerInfo {
   hasCar: boolean;
   carModel?: string;
   carYear?: number;
-  referalCode?: string;
-  referredBy?: Types.ObjectId;
-  associatedStoreId?: Types.ObjectId;
+  monthlyBudget: number;
+  associatedStoreId: Types.ObjectId;
+  referralCode: string;
 }
 
 const customerInfoSchema = new Schema<ICustomerInfo>({
@@ -57,18 +57,17 @@ const customerInfoSchema = new Schema<ICustomerInfo>({
     type: Number,
     required: false,
   },
-  referalCode: {
-    type: String,
-    required: false,
-  },
-  referredBy: {
-    type: Schema.Types.ObjectId,
-    ref: "user",
-    required: false,
+  monthlyBudget: {
+    type: Number,
+    required: true,
   },
   associatedStoreId: {
     type: Schema.Types.ObjectId,
-    ref: "storeInfo",
+    required: true,
+  },
+  referralCode: {
+    type: String,
+    required: true,
   },
 });
 

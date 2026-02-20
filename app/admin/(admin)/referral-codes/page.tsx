@@ -1,5 +1,5 @@
 import { getReferalCodesAction } from "@/actions/admin/referalCode.actions";
-import { ReferalCodeDialogForm } from "@/components/admin/referral-codes/ReferralCodeDialogForm";
+import { ReferralCodeDialogForm } from "@/components/admin/referral-codes/ReferralCodeDialogForm";
 import { ReferralCodes } from "@/components/admin/referral-codes/ReferralCodes";
 
 const page = async () => {
@@ -13,7 +13,7 @@ const page = async () => {
             <span>Referal</span>
             <span>Codes</span>
           </div>
-          <ReferalCodeDialogForm usage="create" data={null} />
+          <ReferralCodeDialogForm usage="create" data={null} />
         </div>
         <ReferralCodes data={data} />
       </div>
