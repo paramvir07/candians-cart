@@ -8,10 +8,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Delete, Wallet } from "lucide-react"
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import StripePaymentForm from "@/components/customer/wallet/StripePaymentForm";
+
 
 const PRESETS = [5, 10, 20, 50, 100, 150, 200, 250]
 
 export function TopUpDialog() {
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [amount, setAmount] = useState<number | null>(200)
   const [inputVal, setInputVal] = useState("200")
 
@@ -31,23 +36,18 @@ export function TopUpDialog() {
     setInputVal("")
   }
 
-  const handleCheckout = async () => {
-  if (!amount) return
+const handleTopUp = async () => {
+  if (!amount) return;
 
-  const res = await fetch("/api/stripe/checkout", {
+  const res = await fetch("/api/stripe/create-payment-intent", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ amount }),
-  })
+    body: JSON.stringify({ amount: amount * 100, userId: "CURRENT_USER_ID" }),
+  });
 
-  const data = await res.json()
-
-  if (data.url) {
-    window.location.assign(data.url)
-  } else {
-    console.error(data.error)
-  }
-}
+  const data = await res.json();
+  if (data.clientSecret) setClientSecret(data.clientSecret);
+};
 
   return (
     <Dialog>
@@ -160,12 +160,20 @@ export function TopUpDialog() {
             </div>
           )}
         </div>
+        {clientSecret && (
+        <Elements
+          stripe={loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)}
+          options={{ clientSecret }}
+        >
+          <StripePaymentForm clientSecret={clientSecret} />
+        </Elements>
+      )}
 
         {/* CTA */}
         <div className="px-5 pb-5">
           <Button
-            onClick={handleCheckout}
             disabled={!amount}
+            onClick={handleTopUp}
             className="w-full py-5 rounded-2xl font-bold text-base transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
               background: "var(--color-primary)",
