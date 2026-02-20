@@ -3,19 +3,27 @@
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
+import StoreInfo from "@/db/models/store/storeInfo.model";
 import { IProduct, IProductDB } from "@/types/store/products.types";
 
 export async function getSingleProduct(
   productId: string,
 ): Promise<{ success: boolean; data?: IProduct; error?: string }> {
-  const session = await getUserSession();
   try {
+    const session = await getUserSession();
     await dbConnect();
 
+    const store = await StoreInfo.findOne({ userId: session.user.id }).lean();
+    if (!store)
+      return {
+        success: false,
+        error: "Store not found",
+      };
     // Find if the product exists in the first place or not
+    
     const product = (await Product.findOne({
       _id: productId,
-      storeId: session.user.id,
+      storeId: store._id,
     }).lean()) as unknown as IProductDB;
 
     if (!product) {
