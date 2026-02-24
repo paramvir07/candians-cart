@@ -12,6 +12,7 @@ import { CustomerSchema } from "@/zod/schemas/customer/customerSignup";
 import { storeSignupSchema } from "@/zod/schemas/store/storeSignup";
 import { zodErrorResponse } from "@/zod/validation/error";
 import { formDataToObject } from "@/zod/validation/form";
+import mongoose from "mongoose";
 
 export const signupAction = async (
   userRole: UserRole,
@@ -29,33 +30,96 @@ export const signupAction = async (
       }
 
       const data = result.data;
+      await dbConnect();
 
+      // Validate referral code before starting the transaction
       const referralCode = await ReferralCode.findOne({
         code: data.referralCode,
       });
+
       if (!referralCode)
+        return { success: false, message: "Referral Code not found" };
+
+      const inactive = !referralCode.isActive;
+      const usageFull =
+        referralCode.maxUses && referralCode.uses >= referralCode.maxUses;
+      const expired =
+        referralCode.expiresAt &&
+        referralCode.expiresAt.getTime() <= Date.now();
+
+      if (inactive || usageFull || expired)
         return {
           success: false,
-          message: "Referral Code not found",
+          message: "Sorry, the referral code is no longer valid.",
         };
 
-      const newCustomer = await auth.api.signUpEmail({
+      // Create auth user before transaction since it's an external system
+      const newCustomerUser = await auth.api.signUpEmail({
         body: { name: data.name, email: data.email, password: data.password },
       });
 
-      await dbConnect();
-      await Customer.create({
-        userId: newCustomer.user.id,
-        name: data.name,
-        email: data.email,
-        mobile: data.mobile,
-        address: data.address,
-        city: data.city,
-        province: data.province,
-        monthlyBudget: data.monthlyBudget,
-        associatedStoreId: data.associatedStoreId,
-        referralCode: data.referralCode,
-      });
+      if (!newCustomerUser)
+        return {
+          success: false,
+          message: "Something went wrong while creating account",
+        };
+
+      // Start transaction for all DB writes
+      const session = await mongoose.startSession();
+      session.startTransaction();
+
+      try {
+        const customer = await Customer.create(
+          [
+            {
+              userId: newCustomerUser.user.id,
+              name: data.name,
+              email: data.email,
+              mobile: data.mobile,
+              address: data.address,
+              city: data.city,
+              province: data.province,
+              monthlyBudget: data.monthlyBudget,
+              associatedStoreId: data.associatedStoreId,
+              referralCode: data.referralCode,
+            },
+          ],
+          { session },
+        );
+
+        if (!customer[0])
+          throw new Error("Something went wrong while creating account");
+
+        const newStoreMember = await Store.findByIdAndUpdate(
+          data.associatedStoreId,
+          { $addToSet: { members: customer[0]._id } },
+          { new: true, session },
+        );
+
+        if (!newStoreMember)
+          throw new Error("Something went wrong while creating account");
+
+        await ReferralCode.findByIdAndUpdate(
+          referralCode._id,
+          { $inc: { uses: 1 } },
+          { session },
+        );
+
+        await session.commitTransaction();
+      } catch (err) {
+        await session.abortTransaction();
+        // Auth user was created but DB failed — you may want to delete the auth user here
+        console.log("Transaction failed, rolling back: ", err);
+        return {
+          success: false,
+          message:
+            err instanceof Error
+              ? err.message
+              : "Something went wrong while creating account",
+        };
+      } finally {
+        session.endSession();
+      }
     } else if (userRole === "store") {
       const result = storeSignupSchema.safeParse(rawData);
       if (!result.success) {
@@ -64,7 +128,7 @@ export const signupAction = async (
       }
 
       const data = result.data;
-      const newStore = await auth.api.createUser({
+      const newStoreUser = await auth.api.createUser({
         body: {
           name: data.name,
           email: data.email,
@@ -73,9 +137,15 @@ export const signupAction = async (
         },
       });
 
+      if (!newStoreUser)
+        return {
+          success: false,
+          message: "Something went wrong while creating account",
+        };
+
       await dbConnect();
       await Store.create({
-        userId: newStore.user.id,
+        userId: newStoreUser.user.id,
         name: data.name,
         email: data.email,
         mobile: data.mobile,
@@ -103,9 +173,10 @@ export const signupAction = async (
         message: "Something went wrong while creating account",
       };
     }
+
     return { success: true, message: "Account created successfully!!" };
   } catch (error) {
-    console.log("Error while creating creating new account: ", error);
+    console.log("Error while creating new account: ", error);
     return {
       success: false,
       message: "Something went wrong while creating account",

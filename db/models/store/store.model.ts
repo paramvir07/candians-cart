@@ -7,7 +7,7 @@ export interface IStore {
   address: string;
   mobile: string;
   description: string;
-  members: number;
+  members: [Types.ObjectId];
   storeTimings: string;
   bankDetails: string;
 }
@@ -19,19 +19,23 @@ const storeSchema = new Schema<IStore>({
     type: Schema.Types.ObjectId,
     required: true,
   },
-  name: {   // Name of the store
+  name: {
+    // Name of the store
     type: String,
     required: true,
   },
-  email: {  // Contact email for the store
+  email: {
+    // Contact email for the store
     type: String,
     required: true,
   },
-  address: { // Physical address of the store
+  address: {
+    // Physical address of the store
     type: String,
     required: true,
   },
-  mobile: { // Contact mobile number for the store
+  mobile: {
+    // Contact mobile number for the store
     type: String,
     required: true,
   },
@@ -39,8 +43,9 @@ const storeSchema = new Schema<IStore>({
     type: String,
   },
   members: {
-    type: Number,
-    default: 0,
+    type: [Schema.Types.ObjectId],
+    ref: "Customer",
+    default: [],
   },
   storeTimings: {
     type: String,
