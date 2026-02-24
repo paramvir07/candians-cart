@@ -125,8 +125,45 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
                 </Button> */}
                 {customer && (
                   <FieldDescription className="text-center">
-                    Don&apos;t have an account?{" "}
-                    <Link href="/customer/signup">Sign up</Link>
+                    <div className="flex flex-col justify-center items-center gap-2">
+                      <div className="text-sm flex justify-center items-center gap-1">
+                        <div className="text-muted-foreground ">
+                          Don&apos;t have an account?
+                        </div>
+                        <Link
+                          href="/customer/signup"
+                          className="text-primary font-bold"
+                        >
+                          Sign up
+                        </Link>
+                      </div>
+                      <div className="text-sm flex justify-center items-center gap-1">
+                        <div className="text-muted-foreground ">
+                          Are you a store?
+                        </div>
+                        <Link
+                          href="/store/login"
+                          className="text-primary font-bold"
+                        >
+                          Login here.
+                        </Link>
+                      </div>
+                    </div>
+                  </FieldDescription>
+                )}
+                {store && (
+                  <FieldDescription className="text-center">
+                    <div className="text-sm flex justify-center items-center gap-1">
+                      <div className="text-muted-foreground ">
+                        Are you a customer?
+                      </div>
+                      <Link
+                        href="/customer/login"
+                        className="text-primary font-bold"
+                      >
+                        Login here.
+                      </Link>
+                    </div>
                   </FieldDescription>
                 )}
               </Field>

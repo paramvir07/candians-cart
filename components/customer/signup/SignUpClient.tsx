@@ -103,19 +103,21 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
               </div>
             </CardContent>
           </Card>
-          <div className="text-sm flex justify-center items-center gap-1 mt-5">
-            <div className="text-muted-foreground ">
-              Already have an account?
+          <div className="flex flex-col justify-center items-center gap-2">
+            <div className="text-sm flex justify-center items-center gap-1 mt-5">
+              <div className="text-muted-foreground ">
+                Already have an account?
+              </div>
+              <Link href="/customer/login" className="text-primary font-bold">
+                Login here.
+              </Link>
             </div>
-            <Link href="/customer/login" className="text-primary font-bold">
-              Login here.
-            </Link>
-          </div>
-          <div className="text-sm flex justify-center items-center gap-1">
-            <div className="text-muted-foreground ">Are you a store?</div>
-            <Link href="/store/login" className="text-primary font-bold">
-              Login here.
-            </Link>
+            <div className="text-sm flex justify-center items-center gap-1">
+              <div className="text-muted-foreground ">Are you a store?</div>
+              <Link href="/store/login" className="text-primary font-bold">
+                Login here.
+              </Link>
+            </div>
           </div>
         </div>
       </main>
