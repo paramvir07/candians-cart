@@ -65,6 +65,7 @@ const productSchema = new Schema(
       default: true,
       required: true,
     },
+    
     subsidised:{
       // Is the item subsizied, by default no
       type: Boolean,
