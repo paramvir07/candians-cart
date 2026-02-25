@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Image as ImageIcon, Save } from "lucide-react";
+import { useState, useRef } from "react";
+import { Image as ImageIcon, Save, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,29 +34,25 @@ const ProductForm = ({ initialData }: ProductFormProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | string[]>([]);
 
+  // Image Upload State
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    initialData?.images?.[0]?.url || null,
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // 1. DYNAMIC INITIALIZATION
-  // If initialData exists, we convert DB format (cents/decimals) -> Form format (strings)
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
     description: initialData?.description || "",
     category: initialData?.category || "",
     markup: initialData?.markup?.toString() || "",
-
-    // DB stores 0.05, Form expects "5"
     tax: initialData ? Math.round(initialData.tax * 100).toString() : "",
-
-    // DB stores 1000 (cents), Form expects "10.00"
     price: initialData ? (initialData.price / 100).toFixed(2) : "",
-
-    // DB stores 10 (cents), Form expects "0.10"
     disposableFee: initialData?.disposableFee
       ? (initialData.disposableFee / 100).toFixed(2)
       : "",
-
-    // DB stores boolean, Form Select expects "true"/"false" string
     stock: initialData ? String(initialData.stock) : "true",
-
-    images: initialData?.images || [],
   });
 
   const handleChange = (field: string, value: string) => {
@@ -66,13 +62,64 @@ const ProductForm = ({ initialData }: ProductFormProps) => {
     }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Client-side validation: Max 4MB
+      if (file.size > 4 * 1024 * 1024) {
+        toast.error("File size must be less than 4MB");
+        return;
+      }
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     setError([]);
 
     try {
-      // Prepare Payload (Matches Zod Schema)
-      const payload = {
+      // 1. Determine final images array
+      let finalImages = initialData?.images || [];
+
+      // If user cleared the preview and didn't upload a new file, it means they deleted the image
+      if (!imagePreview && !imageFile) {
+        finalImages = [];
+      }
+
+      // If there's a new image selected, upload it to ImageKit
+      if (imageFile) {
+        const imageFormData = new FormData();
+        imageFormData.append("file", imageFile);
+
+        const uploadRes = await fetch("/imagekit", {
+          method: "POST",
+          body: imageFormData,
+        });
+
+        const uploadData = await uploadRes.json();
+
+        if (!uploadData.success) {
+          toast.error(uploadData.error || "Failed to upload image");
+          setLoading(false);
+          return; // Stop form submission if image upload fails
+        }
+
+        // Replace the images array with the newly uploaded image
+        finalImages = uploadData.images;
+      }
+
+      // 2. Prepare JSON payload matching ProductFormValues Zod schema
+      const payload: ProductFormValues = {
         name: formData.name,
         description: formData.description,
         category: formData.category as ProductFormValues["category"],
@@ -80,27 +127,25 @@ const ProductForm = ({ initialData }: ProductFormProps) => {
         tax: parseFloat(formData.tax) || 0,
         disposableFee: parseFloat(formData.disposableFee) || 0,
         price: parseFloat(formData.price) || 0,
-        stock: formData.stock === "true", // Convert string back to boolean
-        images: formData.images,
+        stock: formData.stock === "true",
+        images: finalImages,
       };
 
+      // 3. Conditional Submission (Create vs Update)
       let result;
-
-      // 2. CONDITIONAL SUBMISSION
       if (initialData) {
-        // --- EDIT MODE ---
         result = await updateProduct(initialData._id, payload);
       } else {
-        // --- CREATE MODE ---
         result = await createProduct(payload);
       }
 
+      // 4. Handle Result
       if (result.success) {
         toast.success(initialData ? "Product Updated" : "Product Created", {
           description: `${formData.name} has been saved successfully.`,
         });
         router.push("/store/products");
-        router.refresh(); // Ensure the list page shows new data
+        router.refresh();
       } else {
         if (result.errors) {
           toast.error("Validation Failed");
@@ -110,7 +155,7 @@ const ProductForm = ({ initialData }: ProductFormProps) => {
         }
       }
     } catch (err) {
-      setError("An unexpected error occurred.");
+      setError("An unexpected error occurred." + err);
       toast.error("Something went wrong!");
     } finally {
       setLoading(false);
@@ -121,7 +166,6 @@ const ProductForm = ({ initialData }: ProductFormProps) => {
     router.push("/store/products");
   };
 
-  // 3. UI TEXT CHANGES based on mode
   const title = initialData ? "Edit Product" : "Add Product";
   const buttonText = loading
     ? "Saving..."
@@ -268,30 +312,54 @@ const ProductForm = ({ initialData }: ProductFormProps) => {
         <div className="space-y-6">
           <Card className="border-none shadow-sm ring-1 ring-slate-200">
             <CardContent className="p-6 space-y-4">
-              <h2 className="text-lg font-semibold">Images</h2>
-              <div className="border-2 border-dashed border-slate-100 rounded-xl p-6 flex flex-col items-center text-center bg-white">
-                <ImageIcon className="h-8 w-8 text-slate-300 mb-2" />
-                <p className="text-[10px] text-slate-400 mb-4">
-                  PNG, JPG up to 10MB
-                </p>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="w-full bg-indigo-50 text-indigo-600"
-                >
-                  Upload Image
-                </Button>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                {/* Image mapping logic would go here */}
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="aspect-square rounded border border-slate-100 bg-white flex items-center justify-center"
-                  >
-                    <Plus className="h-4 w-4 text-indigo-500 opacity-50" />
+              <h2 className="text-lg font-semibold">Product Image</h2>
+
+              {/* Hidden File Input */}
+              <input
+                type="file"
+                accept="image/png, image/jpeg, image/webp"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+              />
+
+              <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-center bg-white min-h-50 relative">
+                {imagePreview ? (
+                  <div className="relative w-full flex justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="max-h-50 w-auto object-contain rounded-md"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveImage();
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                   </div>
-                ))}
+                ) : (
+                  <>
+                    <ImageIcon className="h-8 w-8 text-slate-300 mb-2" />
+                    <p className="text-[12px] text-slate-400 mb-4">
+                      PNG, JPG up to 4MB
+                    </p>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Upload Image
+                    </Button>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>

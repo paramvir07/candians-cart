@@ -23,7 +23,9 @@ export async function createProduct(
   try {
     const session = await getUserSession();
 
+    // Validate the incoming JSON data using Zod
     const validationResult = ProductFormSchema.safeParse(data);
+    
     if (!validationResult.success) {
       const errorMessage = zodErrorResponse(validationResult);
       return { success: false, message: errorMessage || "Validation error" };
@@ -32,24 +34,29 @@ export async function createProduct(
     await dbConnect();
 
     const store = await Store.findOne({ userId: session.user.id }).lean();
-    if (!store)
+    if (!store) {
       return {
         success: false,
         message: "Store not found",
       };
-    const { price, disposableFee, tax, ...otherData } = validationResult.data;
+    }
+      
+    // Extract images along with other data
+    const { price, disposableFee, tax, images, ...otherData } = validationResult.data;
 
     const dbPayload = {
       ...otherData,
       storeId: store._id,
-      tax: tax > 0 ? tax / 100 : 0, // converting percentage to decimal for storage
-      price: Math.round(price * 100), // converting to cents
-      disposableFee: Math.round((disposableFee || 0) * 100), // converting to cents}
+      images: images || [], // Save the ImageKit array to the database
+      tax: tax > 0 ? tax / 100 : 0, // Converting percentage to decimal for storage
+      price: Math.round(price * 100), // Converting to cents
+      disposableFee: Math.round((disposableFee || 0) * 100), // Converting to cents
     };
 
     await Product.create(dbPayload);
 
     revalidatePath("/store/products");
+    
     return {
       success: true,
       message: "Product created successfully",

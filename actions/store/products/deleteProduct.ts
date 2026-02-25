@@ -5,6 +5,13 @@ import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
+import ImageKit from "imagekit";
+
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
+});
 
 interface ActionResponse {
   success: boolean;
@@ -25,6 +32,7 @@ export async function deleteProduct(
         success: false,
         message: "Store not found",
       };
+
     const deletedProduct = await Product.findOneAndDelete({
       _id: productId,
       storeId: store._id,
@@ -36,6 +44,28 @@ export async function deleteProduct(
         message:
           "Product not found or you do not have permission to delete this product",
       };
+    }
+
+    // Handle delete for image kit
+
+    if (deletedProduct.images && Array.isArray(deletedProduct.images)) {
+      for (const image of deletedProduct.images) {
+        if (image.fileId) {
+          try {
+            await imagekit.deleteFile(image.fileId);
+            console.log(
+              `Successfully deleted image ${image.fileId} from ImageKit`,
+            );
+          } catch (imageKitError) {
+            // We catch this error so that if ImageKit fails (e.g. file already deleted),
+            // it doesn't crash the rest of the application or throw an unhandled promise.
+            console.error(
+              `Failed to delete image ${image.fileId} from ImageKit:`,
+              imageKitError,
+            );
+          }
+        }
+      }
     }
 
     revalidatePath("/store/products");

@@ -65,6 +65,12 @@ const productSchema = new Schema(
       default: true,
       required: true,
     },
+    
+    subsidised:{
+      // Is the item subsizied, by default no
+      type: Boolean,
+      default: false
+    },
 
     // weight or quantity of products like onions which are sold by weight will also be stored by weight in KGs. It is not required now since we are storing the boolean
 

@@ -5,13 +5,13 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "images.unsplash.com",
+        hostname: "picsum.photos",
         port: "",
         pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "static.vecteezy.com",
+        hostname: "ik.imagekit.io",
         port: "",
         pathname: "/**",
       },
