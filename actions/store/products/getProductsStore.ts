@@ -26,6 +26,26 @@ function serializeProduct(product: IProductDB): IProduct {
   };
 }
 
+/**
+ * Retrieves all products belonging to the authenticated user's store.
+ *
+ * Validates the current session, finds the store associated with the
+ * logged-in user, and fetches its products sorted by newest first.
+ * Products are serialized into JSON-safe objects (ObjectIds and Dates
+ * converted to strings) before being returned.
+ *
+ * @returns {Promise<ProductActionResponse>}
+ * Success with an array of serialized products, or an error message.
+ *
+ * @example
+ * const result = await getProducts();
+ * if (result.success) {
+ *   console.log(result.data); // IProduct[]
+ * } else {
+ *   console.error(result.error);
+ * }
+ */
+
 export default async function getProducts(): Promise<ProductActionResponse> {
   try {
     const session = await getUserSession();

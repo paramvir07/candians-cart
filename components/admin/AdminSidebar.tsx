@@ -62,13 +62,13 @@ const AdminSidebar = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button asChild size="icon" variant="ghost">
-                <Link href="/admin/shops">
+                <Link href="/admin/store">
                   <Store />
                 </Link>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
-              <p>Shops</p>
+              <p>Store</p>
             </TooltipContent>
           </Tooltip>
         </div>

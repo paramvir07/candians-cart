@@ -8,6 +8,23 @@ export type GetStoresResponse =
   | { success: true; data: StoreDocument[] }
   | { success: false; error: string };
 
+/**
+ * Fetches all stores from the database.
+ *
+ * Establishes a DB connection, retrieves all Store documents,
+ * serializes them into plain JSON objects, and returns a typed result.
+ *
+ * @returns {Promise<GetStoresResponse>} Success with store data or an error message.
+ *
+ * @example
+ * const result = await getStores();
+ * if (result.success) {
+ *   console.log(result.data);
+ * } else {
+ *   console.error(result.error);
+ * }
+ */
+
 export const getStores = async (): Promise<GetStoresResponse> => {
   try {
     await dbConnect();
@@ -19,7 +36,10 @@ export const getStores = async (): Promise<GetStoresResponse> => {
         success: false,
         error: `No stores found`,
       };
-    return { success: true, data: stores };
+
+    // Serialising the stores
+    const serializedStores = JSON.parse(JSON.stringify(stores));
+    return { success: true, data: serializedStores };
   } catch (error) {
     return {
       success: false,

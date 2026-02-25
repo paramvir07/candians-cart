@@ -5,7 +5,28 @@ import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import { revalidatePath } from "next/cache";
 
-export async function subsidisedProduct(productId: string) {
+/**
+ * Marks a product as subsidised (admin-only action).
+ *
+ * Verifies that the current user has an "admin" role,
+ * updates the specified product by setting `subsidised` to true,
+ * and revalidates the relevant Next.js cache path.
+ *
+ * @param {string} productId - The MongoDB ObjectId of the product to update.
+ * @returns {Promise<{ success: boolean; message?: string; error?: string }>}
+ * Returns success with a confirmation message or an error response.
+ *
+ * @example
+ * const result = await subsidisedProduct("65f2c9e8a3d4b123456789ab");
+ * if (result.success) {
+ *   console.log(result.message);
+ * } else {
+ *   console.error(result.error);
+ * }
+ */
+
+
+export async function subsidisedProduct(productId: string, isSubsidised: boolean) {
   try {
     const session = await getUserSession();
     if (session.user.role !== "admin") {
@@ -18,7 +39,7 @@ export async function subsidisedProduct(productId: string) {
 
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
-      { subsidised: true },
+      { subsidised: isSubsidised },
       { new: true },
     );
 
@@ -29,7 +50,7 @@ export async function subsidisedProduct(productId: string) {
       };
     }
 
-    revalidatePath(""); // have to set the path
+    revalidatePath(`/admin/store/${productId}`); // have to set the path
 
     return {
       success: true,
