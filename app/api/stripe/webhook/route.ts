@@ -62,7 +62,6 @@ if(!User){
   
   // console.log("Payment record created and wallet updated for user: " + User?.email)
  }
-
 }
 
   return new NextResponse("OK", { status: 200 })

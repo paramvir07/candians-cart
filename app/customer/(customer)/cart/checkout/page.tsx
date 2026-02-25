@@ -6,12 +6,16 @@ import { ChevronLeft, Wallet, Shield, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { getUser } from "@/actions/customer/User.action"
+import { TopUpDialog } from "@/components/customer/wallet/TopupDialog"
 
 // PKR to CAD (approx rate)
 const toCad = (pkr: number) => (pkr * 0.0051).toFixed(2)
 
 const page = async () => {
-  const CartItems = await getCart() as ICartItem[] | null
+  const CartItems = await getCart() as ICartItem[] | null;
+  const UserData = await getUser();
+//   console.log(UserData)
 
   if (!CartItems || CartItems.length === 0) {
     return <EmptyCart />
@@ -81,12 +85,12 @@ const page = async () => {
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-900">Pay with Wallet</p>
-                <p className="text-xs text-gray-400">Balance: CA$0.00</p>
+                <p className="text-xs text-gray-400">Current balance: CA${UserData?.walletBalance}</p>
               </div>
             </div>
-            <button className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition-colors">
-              Top Up
-            </button>
+                <div >
+                <TopUpDialog component={"checkout"}/>
+              </div>
           </div>
 
           {/* Bill */}
@@ -191,12 +195,12 @@ const page = async () => {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-900">Pay with Wallet</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Current balance: CA$0.00</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Current balance: CA${UserData?.walletBalance}</p>
                 </div>
               </div>
-              <button className="text-sm font-semibold text-emerald-600 bg-emerald-50 px-4 py-2 rounded-full hover:bg-emerald-100 transition-colors">
-                Top Up Wallet
-              </button>
+              <div >
+                <TopUpDialog component={"checkout"}/>
+              </div>
             </div>
 
           </div>

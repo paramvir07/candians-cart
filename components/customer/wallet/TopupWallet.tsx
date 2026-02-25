@@ -75,7 +75,7 @@ const TopupWallet = () => {
         </div>
       </div>
         <div className="w-full px-4 relative z-50">
-          <TopUpDialog />
+          <TopUpDialog component={"wallet"} />
         </div>
     </div>
   )

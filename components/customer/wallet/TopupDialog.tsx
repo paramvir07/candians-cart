@@ -13,7 +13,10 @@ import { Delete, Wallet } from "lucide-react"
 
 const PRESETS = [5, 10, 20, 50, 100, 150, 200, 250]
 
-export function TopUpDialog() {
+
+
+
+export function TopUpDialog({ component }: { component: "checkout" | "wallet" }) {
   const [amount, setAmount] = useState<number | null>(200)
   const [inputVal, setInputVal] = useState("200")
 
@@ -40,7 +43,7 @@ export function TopUpDialog() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      amount: amount * 100, 
+      amount: amount * 100,
     }),
   });
 
@@ -54,8 +57,15 @@ export function TopUpDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default" className="w-full rounded-full p-5">Top Up</Button>
-      </DialogTrigger>
+      <Button
+        variant="default"
+        className={`rounded-full p-5 ${
+          component !== "checkout" ? "w-full" : ""
+        }`}
+      >
+        Top Up
+      </Button>      
+</DialogTrigger>
       <DialogTitle>
         
       </DialogTitle>
