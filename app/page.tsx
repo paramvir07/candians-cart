@@ -41,7 +41,6 @@ export default async function Page() {
   const products = response.products
     ? JSON.parse(JSON.stringify(response.products))
     : [];
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />

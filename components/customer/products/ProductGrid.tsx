@@ -1,5 +1,6 @@
 "use client";
 
+import { AddtoCart } from "@/actions/customer/ProductAndStore/Cart.Action";
 import ProductCard from "./ProductCard";
 import { IProduct } from "@/types/store/products.types"; // Adjust import path
 
@@ -8,9 +9,9 @@ interface ProductGridProps {
 }
 
 export default function ProductGrid({ products }: ProductGridProps) {
-  const handleAddToCart = (product: IProduct) => {
-    console.log("Added to cart:", product.name);
-    // Add toast notification logic here
+  const handleAddToCart = async(product: IProduct) => {
+    console.log("Added to cart:", product._id);
+    await AddtoCart(product._id);
   };
 
   if (!products || products.length === 0) {

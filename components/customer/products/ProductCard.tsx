@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { IProduct } from "@/types/store/products.types";
+import { DecrementItem, IncrementItem } from "@/actions/customer/ProductAndStore/Cart.Action";
 
 // ── Type matching your Mongoose ProductSchema ──────────────────────────────
 
@@ -68,6 +69,20 @@ export default function ProductCard({
     if (!product.stock) return;
     setCount(1);
     onAddToCart?.(product);
+  };
+
+
+  const handleIncrement = () => {
+    if (count >= 99) return;
+    setCount((c) => c + 1);
+  };
+
+  const handleDecrement = () => {
+    if (count <= 1) {
+      setCount(0);
+    } else {
+      setCount((c) => c - 1);
+    }
   };
 
   return (
@@ -150,37 +165,52 @@ export default function ProductCard({
             )}
           </div>
 
-          {count > 0 ? (
-            <div className="flex items-center gap-1 border border-green-600 rounded-lg overflow-hidden">
-              <button
-                onClick={() => setCount((c) => Math.max(0, c - 1))}
-                className="px-2 py-1 text-green-700 font-bold text-base hover:bg-green-50 transition-colors"
-              >
-                −
-              </button>
-              <span className="px-2 text-sm font-bold text-green-700 min-w-4 text-center">
-                {count}
-              </span>
-              <button
-                onClick={() => setCount((c) => c + 1)}
-                className="px-2 py-1 text-green-700 font-bold text-base hover:bg-green-50 transition-colors"
-              >
-                +
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleAdd}
-              disabled={!product.stock}
-              className={`px-5 py-1.5 rounded-lg text-sm font-bold border transition-all active:scale-95 ${
-                product.stock
-                  ? "border-green-600 text-green-700 bg-white hover:bg-green-50"
-                  : "border-gray-200 text-gray-300 cursor-not-allowed"
-              }`}
-            >
-              ADD
-            </button>
-          )}
+         {count > 0 ? (
+  <div className="flex items-center gap-1 border border-green-600 rounded-lg overflow-hidden">
+    
+    {/* Decrement Form */}
+    <form action={DecrementItem}>
+      <input type="hidden" name="productId" value={product._id.toString()} />
+      <button
+      onClick={handleDecrement}
+        type="submit"
+        className="px-2 py-1 text-green-700 font-bold text-base hover:bg-green-50 transition-colors"
+      >
+        −
+      </button>
+    </form>
+
+    {/* Count Display */}
+    <span className="px-2 text-sm font-bold text-green-700 min-w-4 text-center">
+      {count}
+    </span>
+
+    {/* Increment Form */}
+    <form action={IncrementItem}>
+      <input type="hidden" name="productId" value={product._id.toString()} />
+      <button
+      onClick={handleIncrement}
+        type="submit"
+        className="px-2 py-1 text-green-700 font-bold text-base hover:bg-green-50 transition-colors"
+      >
+        +
+      </button>
+    </form>
+
+  </div>
+) : (
+  <button
+    onClick={handleAdd}
+    disabled={!product.stock}
+    className={`px-5 py-1.5 rounded-lg text-sm font-bold border transition-all active:scale-95 ${
+      product.stock
+        ? "border-green-600 text-green-700 bg-white hover:bg-green-50"
+        : "border-gray-200 text-gray-300 cursor-not-allowed"
+    }`}
+  >
+    ADD
+  </button>
+)}
         </div>
       </div>
     </div>
