@@ -5,35 +5,8 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, Minus, Plus, Trash2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { IProductImage,ICartItem,IProduct } from "@/types/Customer/CustomerCart"
 
-interface IProductImage {
-  url?: string
-  fileId: string
-  _id: string
-}
-
-interface IProduct {
-  _id: string
-  storeId: string
-  name: string
-  description: string
-  category: string
-  markup: number
-  tax: number
-  price: number
-  stock: boolean
-  images?: IProductImage[]
-  createdAt: string
-  updatedAt: string
-}
-
-interface ICartItem {
-  productId: IProduct
-  storeId: string
-  quantity: number
-  createdAt: string
-  updatedAt: string
-}
 
 const page = async () => {
   const CartItems = await getCart() as ICartItem[] | null
@@ -135,9 +108,11 @@ const page = async () => {
       {/* Fixed Checkout Button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-100">
         <div className="max-w-md mx-auto">
+          <Link href={"/customer/cart/checkout"}>
           <Button className="w-full p-5">
             Checkout
           </Button>
+          </Link>
         </div>
       </div>
     </div>

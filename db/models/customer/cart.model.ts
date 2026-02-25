@@ -17,6 +17,7 @@ export interface ICart extends Document {
   updatedAt: Date;
 }
 
+
 const cartItemSchema = new Schema<ICartItem>(
   {
     productId: {
