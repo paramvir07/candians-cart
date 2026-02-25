@@ -11,11 +11,12 @@ export default async function Page() {
   if (session) redirect("/");
 
   const result = await getStores();
-  const data = JSON.parse(JSON.stringify(result)).data;
+      // Updated getStores function to return JSON Stringfied data
+  // const data = JSON.parse(JSON.stringify(result)).data;
 
   if (!result.success) {
     return <div>{result.error}</div>;
   }
 
-  return <SignupClient stores={data} />;
+  return <SignupClient stores={result.data} />;
 }
