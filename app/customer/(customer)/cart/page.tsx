@@ -2,10 +2,10 @@ import { DecrementItem, getCart, IncrementItem, RemoveItem } from "@/actions/cus
 import Navbar from "@/components/customer/landing/Navbar"
 import { EmptyCart } from "@/components/customer/products/EmptyCart"
 import { Button } from "@/components/ui/button"
+import { ICartItem } from "@/types/customer/CustomerCart"
 import { ChevronLeft, Minus, Plus, Trash2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { IProductImage,ICartItem,IProduct } from "@/types/Customer/CustomerCart"
 
 
 const page = async () => {

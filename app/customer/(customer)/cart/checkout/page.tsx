@@ -1,20 +1,21 @@
 import { getCart } from "@/actions/customer/ProductAndStore/Cart.Action"
 import Navbar from "@/components/customer/landing/Navbar"
 import { EmptyCart } from "@/components/customer/products/EmptyCart"
-import { ICartItem } from "@/types/Customer/CustomerCart"
 import { ChevronLeft, Wallet, Shield, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { getUser } from "@/actions/customer/User.action"
+import { getCustomerDataAction} from "@/actions/customer/User.action"
 import { TopUpDialog } from "@/components/customer/wallet/TopupDialog"
+import { ICartItem } from "@/types/customer/CustomerCart"
 
 // PKR to CAD (approx rate)
 const toCad = (pkr: number) => (pkr * 0.0051).toFixed(2)
 
 const page = async () => {
   const CartItems = await getCart() as ICartItem[] | null;
-  const UserData = await getUser();
+  const userDataResponse = await getCustomerDataAction();
+  const UserData = await userDataResponse.customerData;
 //   console.log(UserData)
 
   if (!CartItems || CartItems.length === 0) {
