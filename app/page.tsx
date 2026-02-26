@@ -16,7 +16,7 @@ export default async function Page() {
       redirect("/customer/login");
     }
   }
-  
+
   const response = await getStoreAndProduct();
 
   // Handle the error state from your Server Action

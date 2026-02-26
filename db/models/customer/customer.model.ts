@@ -15,65 +15,67 @@ export interface ICustomer {
   giftWalletBalance: number;
 }
 
-const customerSchema = new Schema<ICustomer>({
-  userId: {
-    // Used for auth
-    type: Schema.Types.ObjectId,
-    required: true,
+const customerSchema = new Schema<ICustomer>(
+  {
+    userId: {
+      // Used for auth
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    address: {
+      type: String,
+      required: true,
+    },
+    mobile: {
+      type: String,
+      required: true,
+    },
+    city: {
+      type: String,
+      required: true,
+    },
+    province: {
+      type: String,
+      required: true,
+    },
+    monthlyBudget: {
+      type: Number,
+      required: true,
+    },
+    associatedStoreId: {
+      type: Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+    },
+    referralCode: {
+      type: String,
+      required: true,
+    },
+    walletBalance: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    giftWalletBalance: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
   },
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-  },
-  address: {
-    type: String,
-    required: true,
-  },
-  mobile: {
-    type: String,
-    required: true,
-  },
-  city: {
-    type: String,
-    required: true,
-  },
-  province: {
-    type: String,
-    required: true,
-  },
-  monthlyBudget: {
-    type: Number,
-    required: true,
-  },
-  associatedStoreId: {
-    type: Schema.Types.ObjectId,
-    ref: "Store",
-    required: true,
-  },
-  referralCode: {
-    type: String,
-    required: true,
-  },
-  walletBalance: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
-  },
-  giftWalletBalance: {
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
-  },
-});
+  { timestamps: true },
+);
 
 const Customer: Model<ICustomer> =
-  models.Customer ||
-  model<ICustomer>("Customer", customerSchema);
+  models.Customer || model<ICustomer>("Customer", customerSchema);
 
 export default Customer;

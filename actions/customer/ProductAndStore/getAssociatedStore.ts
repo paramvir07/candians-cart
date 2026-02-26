@@ -14,6 +14,7 @@ export default async function getStoreAndProduct() {
 
     const customer = await Customer.findOne({ userId: userId });
 
+
     if (!customer) {
       throw new Error("Customer not found");
     }

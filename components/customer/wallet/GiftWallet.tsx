@@ -1,16 +1,21 @@
-import { WalletInfo } from './WalletInfo'
-
-const GiftWallet = () => {
+import { WalletInfo } from "./WalletInfo";
+type GiftWalletProps = {
+  giftWalletData: {
+    balance: number;
+    memberSince: string;
+  };
+};
+const GiftWallet = ({ giftWalletData }: GiftWalletProps) => {
   return (
-        <div>
+    <div>
       <div className="p-4">
         <div
           className="relative rounded-2xl p-6 space-y-12 lg:space-y-17 overflow-hidden text-white bg-black"
           style={{
-            boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
+            boxShadow:
+              "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
           }}
         >
-
           {/* ── GREEN BLOB SPLASH — top left like the reference ── */}
           <div
             className="absolute pointer-events-none bg-primary"
@@ -38,13 +43,8 @@ const GiftWallet = () => {
             }}
           />
 
-
-
           {/* Subtle dark-to-blue gradient on right half */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-          />
-
+          <div className="absolute inset-0 pointer-events-none" />
 
           {/* ── Content ── */}
           <div className="relative z-10 flex flex-col gap-2 justify-center">
@@ -52,10 +52,20 @@ const GiftWallet = () => {
               Candian's Gift Card
             </p>
             <div className="flex items-center justify-between">
-              <h1 className="flex items-baseline gap-1 text-4xl font-bold font-sans"
-                style={{ fontVariantNumeric: "tabular-nums" }}>
-                <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "1.75rem", fontWeight: 300 }}>$</span>
-                200.00
+              <h1
+                className="flex items-baseline gap-1 text-4xl font-bold font-sans"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                <span
+                  style={{
+                    color: "rgba(255,255,255,0.3)",
+                    fontSize: "1.75rem",
+                    fontWeight: 300,
+                  }}
+                >
+                  $
+                </span>
+                {giftWalletData.balance}
               </h1>
               <WalletInfo />
             </div>
@@ -63,24 +73,30 @@ const GiftWallet = () => {
 
           {/* Dashed divider */}
           <div className="relative z-10 flex items-center gap-2">
-            <div className="flex-1 border-t border-dashed" style={{ borderColor: "rgba(255,255,255,0.1)" }} />
-            <div className="flex-1 border-t border-dashed" style={{ borderColor: "rgba(255,255,255,0.1)" }} />
+            <div
+              className="flex-1 border-t border-dashed"
+              style={{ borderColor: "rgba(255,255,255,0.1)" }}
+            />
+            <div
+              className="flex-1 border-t border-dashed"
+              style={{ borderColor: "rgba(255,255,255,0.1)" }}
+            />
           </div>
 
           <div className="relative z-10 flex w-full justify-between gap-20 -mt-3">
             <div className="flex flex-col flex-1">
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>User Id</p>
-              <p className="font-semibold text-sm">2354 7890</p>
-            </div>
-            <div className="flex flex-col flex-1">
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Member Since</p>
-              <p className="font-semibold text-sm">January 2026</p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Member Since
+              </p>
+              <p className="font-semibold text-sm">
+                {giftWalletData.memberSince}
+              </p>
             </div>
           </div>
-
         </div>
       </div>
-        </div>  )
-}
+    </div>
+  );
+};
 
-export default GiftWallet
+export default GiftWallet;

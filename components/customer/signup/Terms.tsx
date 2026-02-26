@@ -1,21 +1,39 @@
 import Link from "next/link";
-import { Card, CardContent, CardFooter } from "../../ui/card";
 import { Button } from "../../ui/button";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ExternalLink, ScrollText } from "lucide-react";
 import { useSetAtom } from "jotai";
 import { stepAtom } from "@/atoms/customer/signUp";
 
+const POLICY_LINKS = [
+  { href: "/terms-and-conditions", label: "Terms & Conditions" },
+  { href: "/advertising-policy", label: "Advertising & Usage Policy" },
+  {
+    href: "/community-support-policy",
+    label: "Community Support & Product Launch Policy",
+  },
+];
+
 const Terms = () => {
   const setStep = useSetAtom(stepAtom);
+
   return (
-    <>
-      <p className="text-muted-foreground">
-        Please review and accept our terms to continue.
-      </p>
-      <Card className="w-full max-w-sm text-left">
-        <CardContent className="max-h-32 overflow-y-auto text-xs space-y-2 text-muted-foreground">
+    <div className="w-full space-y-5">
+      {/* Header */}
+      <div className="text-center space-y-1">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 text-primary mb-2">
+          <ScrollText className="h-5 w-5" />
+        </div>
+        <h2 className="text-lg font-semibold">Review & Accept Terms</h2>
+        <p className="text-muted-foreground text-sm">
+          Please read before continuing.
+        </p>
+      </div>
+
+      {/* Terms box */}
+      <div className="w-full rounded-xl border border-border/60 overflow-hidden bg-muted/30">
+        <div className="max-h-36 overflow-y-auto px-4 py-3 text-xs text-muted-foreground leading-relaxed space-y-2">
           <p>
-            Welcome to Candian's Cart. By using our service, you agree to these
+            Welcome to Canadian's Cart. By using our service, you agree to these
             terms. You must provide a valid referral code to register.
           </p>
           <p>
@@ -26,38 +44,37 @@ const Terms = () => {
           <p>
             Payments are processed securely. All personal information is handled
             as per our Privacy Policy. You can find the full details by clicking
-            the link below.
+            the links below.
           </p>
-        </CardContent>
-        <CardFooter className="border-t flex-col items-start gap-2">
-          <Link
-            href="/terms-and-conditions"
-            target="_blank"
-            className="text-xs text-primary hover:underline"
-          >
-            Read full terms and conditions
-          </Link>
-          <Link
-            href="/advertising-policy"
-            target="_blank"
-            className="text-xs text-primary hover:underline"
-          >
-            Advertising & Usage Policy for Partners
-          </Link>
-          <Link
-            href="/community-support-policy"
-            target="_blank"
-            className="text-xs text-primary hover:underline"
-          >
-            Community Support & Product Launch Policy
-          </Link>
-        </CardFooter>
-      </Card>
-      <Button size="lg" onClick={() => setStep("budget")} className="w-full">
-        <CheckCircle className="mr-2" />
+        </div>
+
+        {/* Policy links */}
+        <div className="border-t border-border/60 px-4 py-3 space-y-2 bg-card/50">
+          {POLICY_LINKS.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              target="_blank"
+              className="flex items-center justify-between group text-xs text-muted-foreground hover:text-primary transition-colors py-0.5"
+            >
+              <span className="group-hover:underline underline-offset-4">
+                {label}
+              </span>
+              <ExternalLink className="h-3 w-3 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <Button
+        size="lg"
+        onClick={() => setStep("budget")}
+        className="w-full h-11 font-semibold shadow-md shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] transition-all duration-150"
+      >
+        <CheckCircle className="mr-2 h-4 w-4" />
         Accept & Continue
       </Button>
-    </>
+    </div>
   );
 };
 
