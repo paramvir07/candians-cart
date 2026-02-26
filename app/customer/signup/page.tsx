@@ -11,8 +11,6 @@ export default async function Page() {
   if (session) redirect("/");
 
   const result = await getStores();
-      // Updated getStores function to return JSON Stringfied data
-  // const data = JSON.parse(JSON.stringify(result)).data;
 
   if (!result.success) {
     return <div>{result.error}</div>;
@@ -36,7 +34,7 @@ export default async function Page() {
         }}
       />
       {/* Your Content/Components */}
-      <SignupClient stores={data} />
+      <SignupClient stores={result.data} />
     </div>
   );
 }
