@@ -5,6 +5,20 @@ import { NextResponse } from "next/server";
 import { getUserSession } from "../auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 
+
+export const getUser = async () => {
+  try {
+    const session = await getUserSession();
+    const UserId = session.user.id;
+
+    await dbConnect();
+    const UserData = await Customer.findOne({ userId: UserId }).lean();
+    return UserData;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const GetUserfromSession = async (sessionId: string | null) => {
   if (!sessionId) return null;
   try {

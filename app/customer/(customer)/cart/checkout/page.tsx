@@ -5,7 +5,7 @@ import { ChevronLeft, Wallet, Shield, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { getCustomerDataAction} from "@/actions/customer/User.action"
+import { getUser } from "@/actions/customer/User.action"
 import { TopUpDialog } from "@/components/customer/wallet/TopupDialog"
 import { ICartItem } from "@/types/customer/CustomerCart"
 
@@ -14,8 +14,7 @@ const toCad = (pkr: number) => (pkr * 0.0051).toFixed(2)
 
 const page = async () => {
   const CartItems = await getCart() as ICartItem[] | null;
-  const userDataResponse = await getCustomerDataAction();
-  const UserData = await userDataResponse.customerData;
+  const UserData = await getUser();
 //   console.log(UserData)
 
   if (!CartItems || CartItems.length === 0) {
