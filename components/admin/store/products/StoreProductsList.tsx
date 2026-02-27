@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 // Skeleton perfectly mirrors the real card
 const ProductCardSkeleton = () => (
   <div className="bg-card rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">
-    <Skeleton className="w-full aspect-[4/3] rounded-none" />
+    <Skeleton className="w-full aspect-4/3 rounded-none" />
     <div className="p-4 flex flex-col gap-3">
       <Skeleton className="h-5 w-3/4" />
       <Skeleton className="h-4 w-full" />

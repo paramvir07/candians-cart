@@ -10,12 +10,10 @@ import {
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
-import ImageKit from "imagekit";
+import ImageKit from '@imagekit/nodejs'
 
 const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
 });
 
 interface ActionResponse {
@@ -83,7 +81,7 @@ export async function updateProduct(
 
     for (const img of imagesToDelete) {
       try {
-        await imagekit.deleteFile(img.fileId);
+        await imagekit.files.delete(img.fileId);
         console.log(
           `Successfully deleted old image ${img.fileId} from ImageKit`,
         );
