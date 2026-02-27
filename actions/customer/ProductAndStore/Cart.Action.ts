@@ -11,6 +11,7 @@ import { ca } from "zod/locales";
 import Customer from "@/db/models/customer/customer.model";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { getCustomerDataAction, getUser } from "../User.action";
 
 export const AddtoCart = async (ItemId: string) => {
   const customerDataresponse = await getCustomerDataAction();
