@@ -6,6 +6,9 @@ import { ArrowLeft } from "lucide-react";
 
 const products = async () => {
   const storeDataResponse = await getMyStoreData();
+  if(!storeDataResponse.success || !storeDataResponse.data){
+    return <div>Error: {storeDataResponse.error || "Could not load store data"}</div>;
+  }
   const storeData: StoreDocument = storeDataResponse.data;
   const storeId = storeData._id;
   return (

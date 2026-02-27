@@ -10,7 +10,7 @@ import {
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
-import ImageKit from '@imagekit/nodejs'
+import ImageKit from "@imagekit/nodejs";
 
 const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
@@ -42,10 +42,8 @@ export async function updateProduct(
     let store;
 
     if (adminRole) {
-
       existingProduct = await Product.findById(productId);
     } else if (storeRole) {
-
       store = await Store.findOne({ userId: session.user.id }).lean();
       if (!store)
         return {
@@ -104,11 +102,10 @@ export async function updateProduct(
       disposableFee: Math.round((disposableFee || 0) * 100),
     };
 
-
     let updatedProduct;
     if (adminRole) {
       updatedProduct = await Product.findByIdAndUpdate(
-      productId, // Add the store using _id
+        productId, // Add the store using _id
         { $set: dbPayload },
         { new: true }, // Returns the updated document
       );
@@ -119,7 +116,6 @@ export async function updateProduct(
         { new: true }, // Returns the updated document
       );
     }
-    
 
     if (!updatedProduct) {
       return {
@@ -128,7 +124,12 @@ export async function updateProduct(
           "Product not found or You dont have permission to update the product",
       };
     }
-    revalidatePath("/store/products");
+
+    if (adminRole) {
+      revalidatePath(`/admin/store/${store?._id}/products`);
+    } else if (storeRole) {
+      revalidatePath(`/store/products`);
+    }
     return {
       success: true,
       message: "Product updation successfull",
