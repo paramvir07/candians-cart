@@ -1,6 +1,6 @@
 'use client'
 
-import { BarChart, HomeIcon, Store, Users2 } from "lucide-react"
+import { BarChart, HomeIcon, LinkIcon, Store, Users2 } from "lucide-react"
 import { Button } from "../ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import {
@@ -71,6 +71,20 @@ const AdminSidebar = () => {
               <p>Store</p>
             </TooltipContent>
           </Tooltip>
+
+          {/* Referral Codes */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button asChild size="icon" variant="ghost">
+                <Link href="/admin/referral-codes">
+                  <LinkIcon />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Referral Codes</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         {/* Profile */}
@@ -114,8 +128,14 @@ const AdminSidebar = () => {
         </Button>
 
         <Button asChild size="icon" variant="ghost">
-          <Link href="/admin/shops">
+          <Link href="/admin/store">
             <Store />
+          </Link>
+        </Button>
+
+        <Button asChild size="icon" variant="ghost">
+          <Link href="/admin/referral-codes">
+            <LinkIcon />
           </Link>
         </Button>
 

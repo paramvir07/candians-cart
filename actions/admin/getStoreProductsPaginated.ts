@@ -26,7 +26,7 @@ import mongoose from "mongoose";
  * }>}
  *
  * @example
- * const result = await getStoreProductsPaginated(storeId, 2, 25);
+ * const result = await getStoreProductsPaginated(storeId, 1, 25);
  * if (result.success) {
  *   console.log(result.data);
  *   console.log(result.totalPages);
@@ -46,7 +46,7 @@ export const getStoreProductsPaginated = async (
     // search for products and count the number of returned items
     const [products, totalCount] = await Promise.all([
       Product.find({ storeId: new mongoose.Types.ObjectId(storeId) })
-        .select("_id name category price subsidised stock")
+        .select("_id name description category markup tax price stock subsidised images") // Added all the fields
         .skip(skip)
         .limit(limit)
         .lean(),

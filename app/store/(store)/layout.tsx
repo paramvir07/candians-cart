@@ -1,9 +1,9 @@
+import StoreSidebar from "@/components/store/StoreSidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Toaster } from "@/components/ui/sonner";
-import StoreSidebar from "@/components/store/StoreSidebar";
+import { Toaster } from "sonner";
 
 export default async function RootLayout({
   children,
@@ -17,8 +17,10 @@ export default async function RootLayout({
 
   const role = session.user.role;
   if (role !== "store") {
-    if (role === "customer" || role === "admin") {
-      redirect(`/${role}`);
+    if (role === "admin") {
+      redirect(`/admin`);
+    } else if (role === "customer") {
+      redirect(`/`);
     } else {
       redirect("/store/login");
     }

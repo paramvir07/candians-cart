@@ -5,12 +5,10 @@ import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
-import ImageKit from "imagekit";
+import ImageKit from "@imagekit/nodejs";
 
 const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
 });
 
 interface ActionResponse {
@@ -23,20 +21,25 @@ export async function deleteProduct(
 ): Promise<ActionResponse> {
   try {
     const session = await getUserSession();
-
     await dbConnect();
+    let deletedProduct;
+    if (session.user.role === "admin") {
+      deletedProduct = await Product.findByIdAndDelete(productId);
+    }
+    else {
+      const store = await Store.findOne({ userId: session.user.id }).lean();
+      if (!store)
+        return {
+          success: false,
+          message: "Store not found",
+        };
 
-    const store = await Store.findOne({ userId: session.user.id }).lean();
-    if (!store)
-      return {
-        success: false,
-        message: "Store not found",
-      };
-
-    const deletedProduct = await Product.findOneAndDelete({
-      _id: productId,
-      storeId: store._id,
-    });
+      deletedProduct = await Product.findOneAndDelete({
+        _id: productId,
+        storeId: store._id,
+      });
+    }
+    
 
     if (!deletedProduct) {
       return {
@@ -52,7 +55,7 @@ export async function deleteProduct(
       for (const image of deletedProduct.images) {
         if (image.fileId) {
           try {
-            await imagekit.deleteFile(image.fileId);
+            await imagekit.files.delete(image.fileId);
             console.log(
               `Successfully deleted image ${image.fileId} from ImageKit`,
             );

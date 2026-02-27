@@ -1,15 +1,22 @@
-import { TopUpDialog } from './TopupDialog'
-import { WalletInfo } from './WalletInfo'
-
-const TopupWallet = () => {
+import { TopUpDialog } from "./TopupDialog";
+import { WalletInfo } from "./WalletInfo";
+type TopupWalletProps = {
+  topupWalletData: {
+    balance: number;
+    memberSince: string;
+  };
+};
+const TopupWallet = ({ topupWalletData }: TopupWalletProps) => {
   return (
     <div>
-         <div className="p-4 text-white">
+      <div className="p-4 text-white">
         <div
           className="relative rounded-2xl p-6 space-y-21 lg:space-y-32 overflow-hidden"
-          style={{ 
+          style={{
             backgroundColor: "#2d6a35",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",}}
+            boxShadow:
+              "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
+          }}
         >
           {/* Blob — top right */}
           <div
@@ -54,8 +61,16 @@ const TopupWallet = () => {
             </p>
             <div className="flex items-center justify-between">
               <h1 className="flex items-center gap-2 text-4xl font-bold font-sans">
-                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "1.75rem", fontWeight: 300 }}>$</span>
-                1,459.60
+                <span
+                  style={{
+                    color: "rgba(255,255,255,0.4)",
+                    fontSize: "1.75rem",
+                    fontWeight: 300,
+                  }}
+                >
+                  $
+                </span>
+                {topupWalletData.balance}
               </h1>
               <WalletInfo />
             </div>
@@ -63,22 +78,19 @@ const TopupWallet = () => {
 
           <div className="relative z-10 flex w-full justify-between gap-20">
             <div className="flex flex-col flex-1">
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>User Id</p>
-              <p className="font-semibold text-sm">2354 7890</p>
-            </div>
-            <div className="flex flex-col flex-1">
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Member Since</p>
-              <p className="font-semibold text-sm">January 2026</p>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Member Since
+              </p>
+              <p className="font-semibold text-sm">{topupWalletData.memberSince}</p>
             </div>
           </div>
-
         </div>
       </div>
         <div className="w-full px-4 relative z-50">
           <TopUpDialog component={"wallet"} />
         </div>
     </div>
-  )
-}
+  );
+};
 
-export default TopupWallet
+export default TopupWallet;

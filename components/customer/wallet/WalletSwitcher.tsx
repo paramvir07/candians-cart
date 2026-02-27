@@ -1,11 +1,8 @@
 "use client"
 import { WalletSwitcherAtom, WalletViewEnum } from '@/atoms/customer/Wallet';
 import { useAtom } from 'jotai'
-
-const WalletSwitcher = () => {
+const WalletSwitcher = ()  => {
      const [active, setActive] = useAtom(WalletSwitcherAtom);
-
-    //  console.log(active);
     
      return (
     <div className="flex items-center justify-center mt-5 md:hidden">

@@ -20,7 +20,7 @@ export const CustomerSchema = z.object({
 
   monthlyBudget: z.coerce
     .number()
-    .min(50, "Monthly Budget should be more than or equal to 50"),
+    .min(300, "Monthly Budget should be more than or equal to 300"),
   associatedStoreId: z.string().min(1, "Store is Required"),
   referralCode: z
     .string()

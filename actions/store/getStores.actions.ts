@@ -3,6 +3,7 @@
 import { dbConnect } from "@/db/dbConnect";
 import Store from "@/db/models/store/store.model";
 import { StoreDocument } from "@/types/store/store";
+import { getUserSession } from "../auth/getUserSession.actions";
 
 export type GetStoresResponse =
   | { success: true; data: StoreDocument[] }
@@ -44,6 +45,35 @@ export const getStores = async (): Promise<GetStoresResponse> => {
     return {
       success: false,
       error: `Failed to fetch stores. Please try again later ${error}`,
+    };
+  }
+};
+
+export const getMyStoreData = async () => {
+  try {
+    const session = await getUserSession();
+    if (session.user.role !== "store")
+      return {
+        success: false,
+        message: "Error!! Not authenticated as a store",
+      };
+    await dbConnect();
+
+    const storeData = await Store.findOne({ userId: session.user.id }).lean();
+
+    if (!storeData)
+      return {
+        success: false,
+        error: `Store data not found`,
+      };
+
+    // Serialising the store data
+    const serializedStoreData = JSON.parse(JSON.stringify(storeData));
+    return { success: true, data: serializedStoreData };
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to fetch my store data. Please try again later ${error}`,
     };
   }
 };

@@ -108,8 +108,8 @@ const StoreInfo = () => {
               className="group bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden"
             >
               {/* Wrapped the main card content in a Link */}
-              <Link 
-                href={`/admin/store/${store._id}`}
+              <Link
+                href={`/admin/store/${store._id}/products`}
                 className="p-5 flex-1 flex flex-col cursor-pointer"
               >
                 <div className="flex justify-between items-start mb-2">
@@ -147,7 +147,7 @@ const StoreInfo = () => {
               </Link>
 
               {/* Action Buttons are kept outside the Link to prevent navigation when clicking Edit/Delete */}
-              <div className="p-3 bg-slate-50 border-t border-slate-200 grid grid-cols-2 gap-3 relative z-10">
+              {/* <div className="p-3 bg-slate-50 border-t border-slate-200 grid grid-cols-2 gap-3 relative z-10">
                 <Link
                   href={`/admin/store/${store._id}/edit`}
                   className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 hover:text-slate-900 transition-colors"
@@ -166,7 +166,7 @@ const StoreInfo = () => {
                   <Trash2 className="w-4 h-4" />
                   Delete
                 </button>
-              </div>
+              </div> */}
             </div>
           ))
         ) : (

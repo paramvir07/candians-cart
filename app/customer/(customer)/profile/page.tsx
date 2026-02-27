@@ -1,84 +1,118 @@
-import Navbar from "@/components/customer/landing/Navbar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { auth } from "@/lib/auth/auth"
-import { ChevronLeft, Edit, QrCode, Settings, Store } from "lucide-react"
-import { headers } from "next/headers"
-import Link from "next/link"
-import { redirect } from "next/navigation"
+import { getCustomerAndStoreDataAction } from "@/actions/customer/User.action";
+import Navbar from "@/components/customer/landing/Navbar";
+import ProfileHero from "@/components/customer/profile/ProfileHero";
+import ProfileStats from "@/components/customer/profile/ProfileStats";
+import ProfileStore from "@/components/customer/profile/ProfileStore";
+import ProfileContact from "@/components/customer/profile/ProfileContact";
+import { MoveLeft, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import LogoutButton from "@/components/customer/profile/LogoutButton";
 
-const page = async() => {
-  const session = await auth.api.getSession({
-    headers: await headers()
-  })
+export default async function ProfilePage() {
+  const { customerData, storeData } = await getCustomerAndStoreDataAction();
 
-  if (!session) redirect('/customer/login');
-
-  const role = session.user.role === "customer";
   return (
-    <div>
-      <Navbar/>
-      <div className="p-3">
-        {/* Action Btn */}
-        <div className="flex items-center justify-between pb-5">
-          <Button variant="outline" className="w-12 h-12 rounded-full">
-          <ChevronLeft />
-          </Button>
+    <div className="min-h-screen bg-background">
+      <Navbar />
 
-          <Button variant="outline" className="w-12 h-12 rounded-full">
-            <Settings/>
-          </Button>
-        </div>
-
-          <div className="flex items-center gap-8">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
+      {/* ── Desktop top bar ── */}
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-4 lg:py-6">
+          <div className="flex items-center gap-3">
+            <Link href="/">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
+              >
+                <MoveLeft/>
+              </Button>
+            </Link>
             <div>
-                <h1 className="text-xl font-semibold">
-                  {session.user.name
-                    ?.toLowerCase()
-                    .split(" ")
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(" ")}
-                </h1>              
-                <p className="text-xs text-gray-700">2750 Fuller Street Abbotsford, CA</p>
+              <h1 className="text-base lg:text-lg font-bold tracking-tight leading-none">
+                My Profile
+              </h1>
+              <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+                Manage your account and preferences
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Main layout ── */}
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        {/*
+          Mobile / Tablet  → single column, max-w-lg centered
+          Desktop (lg+)    → two columns: left = hero + stats, right = contact + store
+        */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-5 lg:gap-8 lg:items-start max-w-lg mx-auto lg:max-w-none">
+          {/* ── LEFT COLUMN ── */}
+          <div className="space-y-5">
+            <ProfileHero customer={customerData} />
+            <ProfileStats customer={customerData} />
+
+            {/* Desktop-only quick links card */}
+            <div className="hidden lg:block rounded-2xl border border-border/50 bg-card overflow-hidden">
+              <div className="px-5 py-4 border-b border-border/40">
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">
+                  Quick Actions
+                </p>
+              </div>
+              <div className="divide-y divide-border/40">
+                {[
+                  {
+                    label: "Edit Profile",
+                    href: "/customer/profile/edit",
+                    emoji: "✏️",
+                    desc: "Update your personal info",
+                  },
+                  {
+                    label: "Order History",
+                    href: "/customer/orders",
+                    emoji: "📦",
+                    desc: "View your past orders",
+                  },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex items-center gap-3.5 px-5 py-3.5 hover:bg-muted/40 transition-colors group"
+                  >
+                    <span className="text-xl shrink-0">{item.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium group-hover:text-primary transition-colors">
+                        {item.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.desc}
+                      </p>
+                    </div>
+                    <span className="text-muted-foreground/30 group-hover:text-primary/60 transition-colors text-lg">
+                      ›
+                    </span>
+                  </Link>
+                ))}
+                {/* Logout — desktop row */}
+                <div className="border-t border-rose-200/40 dark:border-rose-900/30">
+                  <LogoutButton variant="row" />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex mt-5 gap-5">
-            <Button className="flex-1 rounded-full p-5">
-              QR Code <QrCode className="ml-2" />
-            </Button>
-
-            <Button asChild className="flex-1 rounded-full p-5">
-              <Link href="/customer/profile/edit">
-                Edit Profile <Edit className="ml-2" />
-              </Link>
-            </Button>
-          </div>
-          <div className="flex items-center justify-between px-4 py-3 mt-5">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-2.5 rounded-xl">
-                <Store className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900 leading-tight">Sabzi Mandi</p>
-                <p className="text-xs text-gray-400 mt-0.5">3473 Fuller Street, Abbotsford, CA</p>
-              </div>
+          {/* ── RIGHT COLUMN ── */}
+          <div className="space-y-5">
+            <ProfileContact customer={customerData} />
+            <ProfileStore store={storeData} />
+            {/* Logout — mobile/tablet (hidden on lg where it lives in Quick Actions) */}
+            <div className="lg:hidden">
+              <LogoutButton variant="card" />
             </div>
-            <span className="text-xs font-medium text-white bg-primary px-2.5 py-1 rounded-full">
-              Opened
-            </span>
           </div>
-
-          <div>
-            
-          </div>
+        </div>
       </div>
     </div>
-  )
+  );
 }
-
-export default page

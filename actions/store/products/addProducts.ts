@@ -19,48 +19,53 @@ interface ActionResponse {
 
 export async function createProduct(
   data: ProductFormValues,
+  recievedStoreId?: string,
 ): Promise<ActionResponse> {
   try {
-    const session = await getUserSession();
-
-    // Validate the incoming JSON data using Zod
     const validationResult = ProductFormSchema.safeParse(data);
-    
     if (!validationResult.success) {
       const errorMessage = zodErrorResponse(validationResult);
       return { success: false, message: errorMessage || "Validation error" };
     }
 
+    const session = await getUserSession();
+    if (!session?.user?.id) {
+      return { success: false, message: "Unauthorized" };
+    }
+
     await dbConnect();
 
-    const store = await Store.findOne({ userId: session.user.id }).lean();
-    if (!store) {
-      return {
-        success: false,
-        message: "Store not found",
-      };
+    let storeId = recievedStoreId;
+
+    if (!storeId) {
+      const store = await Store.findOne({ userId: session.user.id })
+        .select("_id")
+        .lean();
+
+      if (!store?._id) {
+        return { success: false, message: "Store not found" };
+      }
+
+      storeId = String(store._id); // ensure it's not undefined
     }
-      
-    // Extract images along with other data
-    const { price, disposableFee, tax, images, ...otherData } = validationResult.data;
+
+    const { price, disposableFee, tax, images, ...otherData } =
+      validationResult.data;
 
     const dbPayload = {
       ...otherData,
-      storeId: store._id,
-      images: images || [], // Save the ImageKit array to the database
-      tax: tax > 0 ? tax / 100 : 0, // Converting percentage to decimal for storage
-      price: Math.round(price * 100), // Converting to cents
-      disposableFee: Math.round((disposableFee || 0) * 100), // Converting to cents
+      storeId, // guaranteed defined now
+      images: images ?? [],
+      tax: tax > 0 ? tax / 100 : 0,
+      price: Math.round(price * 100),
+      disposableFee: Math.round((disposableFee ?? 0) * 100),
     };
 
     await Product.create(dbPayload);
 
     revalidatePath("/store/products");
-    
-    return {
-      success: true,
-      message: "Product created successfully",
-    };
+
+    return { success: true, message: "Product created successfully" };
   } catch (error) {
     console.error("Error creating product:", error);
     return {

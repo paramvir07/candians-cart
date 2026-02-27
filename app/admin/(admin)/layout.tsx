@@ -1,4 +1,3 @@
-
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,8 +12,10 @@ export default async function RootLayout({
   const role = session.user.role;
 
   if (role !== "admin") {
-    if (role === "customer" || role === "store") {
-      redirect(`/${role}`);
+    if (role === "store") {
+      redirect(`/store`);
+    } else if (role === "customer") {
+      redirect(`/`);
     } else {
       redirect("/admin/login");
     }

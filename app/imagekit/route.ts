@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
-import ImageKit from "imagekit";
+import ImageKit from "@imagekit/nodejs";
 
 const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
 });
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -43,11 +41,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    // Upload the image to ImageKit in buffer
-    const upload = await imagekit.upload({
-      file: buffer,
+    // Upload the image to ImageKit directly no need to create buffer
+    const upload = await imagekit.files.upload({
+      file: file,
       fileName: file.name,
     });
 
