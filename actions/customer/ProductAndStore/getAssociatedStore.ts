@@ -22,10 +22,11 @@ export default async function getStoreAndProduct() {
     const products = await Product.find({
       storeId: customer.associatedStoreId,
     }).lean();
+    const serializedProducts = JSON.parse(JSON.stringify(products));
 
     return {
       success: true,
-      products,
+      products: serializedProducts,
       customer,
     };
   } catch (error) {

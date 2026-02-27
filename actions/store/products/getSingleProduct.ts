@@ -13,18 +13,24 @@ export async function getSingleProduct(
     const session = await getUserSession();
     await dbConnect();
 
-    const store = await Store.findOne({ userId: session.user.id }).lean();
-    if (!store)
-      return {
-        success: false,
-        error: "Store not found",
-      };
-    // Find if the product exists in the first place or not
+    let product: IProductDB;
 
-    const product = (await Product.findOne({
-      _id: productId,
-      storeId: store._id,
-    }).lean()) as unknown as IProductDB;
+    if (session.user.role === "admin") {
+      product = await Product.findById(productId).lean();
+    } else {
+      const store = await Store.findOne({ userId: session.user.id }).lean();
+      if (!store)
+        return {
+          success: false,
+          error: "Store not found",
+        };
+      // Find if the product exists in the first place or not
+
+      product = await Product.findOne({
+        _id: productId,
+        storeId: store._id,
+      }).lean();
+    }
 
     if (!product) {
       return { success: false, error: "Product not found" };

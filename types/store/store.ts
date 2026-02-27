@@ -9,7 +9,7 @@ export type StoreDetails = {
 };
 
 export type StoreDocument = IStore & {
-  _id: Types.ObjectId;
+  _id: string;
   createdAt: Date;
   updatedAt: Date;
   __v: number;

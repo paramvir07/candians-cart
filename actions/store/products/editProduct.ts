@@ -29,27 +29,39 @@ export async function updateProduct(
   data: ProductFormValues,
 ): Promise<ActionResponse> {
   try {
-    const session = await getUserSession();
-
     const validationResult = ProductFormSchema.safeParse(data);
     if (!validationResult.success) {
       const errorMessage = zodErrorResponse(validationResult);
       return { success: false, message: errorMessage || "Validation error" };
     }
 
+    const session = await getUserSession();
+    const storeRole = session.user.role === "store";
+    const adminRole = session.user.role === "admin";
     await dbConnect();
-    const store = await Store.findOne({ userId: session.user.id }).lean();
-    if (!store)
-      return {
-        success: false,
-        message: "Store not found",
-      };
 
-    // Fetching existing products
-    const existingProduct = await Product.findOne({
-      _id: productId,
-      storeId: store._id,
-    });
+    let existingProduct;
+    let store;
+
+    if (adminRole) {
+
+      existingProduct = await Product.findById(productId);
+    } else if (storeRole) {
+
+      store = await Store.findOne({ userId: session.user.id }).lean();
+      if (!store)
+        return {
+          success: false,
+          message: "Store not found",
+        };
+
+      // Fetching existing products
+      existingProduct = await Product.findOne({
+        _id: productId,
+        storeId: store?._id,
+      });
+    }
+
     if (!existingProduct) {
       return {
         success: false,
@@ -58,20 +70,28 @@ export async function updateProduct(
       };
     }
 
-    const { price, disposableFee, tax, images, ...otherData } = validationResult.data;
+    const { price, disposableFee, tax, images, ...otherData } =
+      validationResult.data;
 
     // Comparing the old and the new images
     const newImageIds = images?.map((img) => img.fileId) || [];
-    const imagesToDelete = existingProduct.images?.filter(
-      (oldImg: { fileId: string; url: string }) => oldImg.fileId && !newImageIds.includes(oldImg.fileId)
-    ) || [];
+    const imagesToDelete =
+      existingProduct.images?.filter(
+        (oldImg: { fileId: string; url: string }) =>
+          oldImg.fileId && !newImageIds.includes(oldImg.fileId),
+      ) || [];
 
     for (const img of imagesToDelete) {
       try {
         await imagekit.deleteFile(img.fileId);
-        console.log(`Successfully deleted old image ${img.fileId} from ImageKit`);
+        console.log(
+          `Successfully deleted old image ${img.fileId} from ImageKit`,
+        );
       } catch (err) {
-        console.error(`Failed to delete old image ${img.fileId} from ImageKit:`, err);
+        console.error(
+          `Failed to delete old image ${img.fileId} from ImageKit:`,
+          err,
+        );
       }
     }
 
@@ -86,11 +106,22 @@ export async function updateProduct(
       disposableFee: Math.round((disposableFee || 0) * 100),
     };
 
-    const updatedProduct = await Product.findOneAndUpdate(
-      { _id: productId, storeId: store._id }, // Add the store using _id
-      { $set: dbPayload },
-      { new: true }, // Returns the updated document
-    );
+
+    let updatedProduct;
+    if (adminRole) {
+      updatedProduct = await Product.findByIdAndUpdate(
+      productId, // Add the store using _id
+        { $set: dbPayload },
+        { new: true }, // Returns the updated document
+      );
+    } else if (storeRole) {
+      updatedProduct = await Product.findOneAndUpdate(
+        { _id: productId, storeId: store?._id }, // Add the store using _id
+        { $set: dbPayload },
+        { new: true }, // Returns the updated document
+      );
+    }
+    
 
     if (!updatedProduct) {
       return {

@@ -27,9 +27,10 @@ import { IProduct } from "@/types/store/products.types";
 
 interface ProductFormProps {
   initialData?: IProduct | null; // If null, we are in "Add Mode"
+  storeId?: string;
 }
 
-const ProductForm = ({ initialData }: ProductFormProps) => {
+const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | string[]>([]);
@@ -136,7 +137,11 @@ const ProductForm = ({ initialData }: ProductFormProps) => {
       if (initialData) {
         result = await updateProduct(initialData._id, payload);
       } else {
-        result = await createProduct(payload);
+        if (storeId) {
+          result = await createProduct(payload, storeId);
+        } else {
+          result = await createProduct(payload);
+        }
       }
 
       // 4. Handle Result
@@ -144,7 +149,12 @@ const ProductForm = ({ initialData }: ProductFormProps) => {
         toast.success(initialData ? "Product Updated" : "Product Created", {
           description: `${formData.name} has been saved successfully.`,
         });
-        router.push("/store/products");
+        if (storeId) {
+          router.push(`/admin/store/${storeId}/products`);
+        } else {
+          router.push("/store/products");
+        }
+
         router.refresh();
       } else {
         if (result.errors) {

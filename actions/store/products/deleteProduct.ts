@@ -23,20 +23,25 @@ export async function deleteProduct(
 ): Promise<ActionResponse> {
   try {
     const session = await getUserSession();
-
     await dbConnect();
+    let deletedProduct;
+    if (session.user.role === "admin") {
+      deletedProduct = await Product.findByIdAndDelete(productId);
+    }
+    else {
+      const store = await Store.findOne({ userId: session.user.id }).lean();
+      if (!store)
+        return {
+          success: false,
+          message: "Store not found",
+        };
 
-    const store = await Store.findOne({ userId: session.user.id }).lean();
-    if (!store)
-      return {
-        success: false,
-        message: "Store not found",
-      };
-
-    const deletedProduct = await Product.findOneAndDelete({
-      _id: productId,
-      storeId: store._id,
-    });
+      deletedProduct = await Product.findOneAndDelete({
+        _id: productId,
+        storeId: store._id,
+      });
+    }
+    
 
     if (!deletedProduct) {
       return {

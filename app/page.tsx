@@ -1,33 +1,30 @@
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import getStoreAndProduct from "@/actions/customer/ProductAndStore/getAssociatedStore";
-import Banner from "@/components/customer/landing/Banner";
 import Navbar from "@/components/customer/landing/Navbar";
-import ProductGrid from "@/components/customer/products/ProductGrid";
+import { HeroBanner } from "@/components/customer/landing/HeroBanner";
+import { ProductsSection } from "@/components/customer/products/ProductsSection";
 import { redirect } from "next/navigation";
+import { IProduct } from "@/types/store/products.types";
 
-export default async function Page() {
+export default async function CustomerPage() {
   const session = await getUserSession();
   const role = session.user.role;
 
   if (role !== "customer") {
-    if (role === "store" || role === "admin") {
-      redirect(`/${role}`);
-    } else {
-      redirect("/customer/login");
-    }
+    if (role === "store" || role === "admin") redirect(`/${role}`);
+    else redirect("/customer/login");
   }
 
   const response = await getStoreAndProduct();
 
-  // Handle the error state from your Server Action
   if (!response.success) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50">
         <Navbar />
         <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
-          <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-100 max-w-md">
-            <h3 className="font-bold text-lg mb-1">Unable to Load Store</h3>
-            <p>
+          <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 max-w-md shadow-sm">
+            <h3 className="font-bold text-lg mb-2">Unable to Load Store</h3>
+            <p className="text-sm text-red-500">
               {response.message ||
                 "Please verify your account matches a registered store."}
             </p>
@@ -37,21 +34,17 @@ export default async function Page() {
     );
   }
 
-  // If success, we have products
-  const products = response.products
+  const products: IProduct[] = response.products
     ? JSON.parse(JSON.stringify(response.products))
     : [];
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f7f8fa]">
       <Navbar />
-
-      <div className="p-4 hidden md:block">
-        <Banner />
-      </div>
-
-      <main className="container mx-auto px-4 pb-20">
-        <ProductGrid products={products} />
-      </main>
+      {/* Server component — static, no JS needed */}
+      <HeroBanner />
+      {/* Client component — receives all products, handles filters/pagination */}
+      <ProductsSection products={products} />
     </div>
   );
 }

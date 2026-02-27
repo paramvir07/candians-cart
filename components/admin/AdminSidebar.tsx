@@ -128,7 +128,7 @@ const AdminSidebar = () => {
         </Button>
 
         <Button asChild size="icon" variant="ghost">
-          <Link href="/admin/shops">
+          <Link href="/admin/store">
             <Store />
           </Link>
         </Button>

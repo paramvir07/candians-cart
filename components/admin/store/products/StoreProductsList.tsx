@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { PackageOpen } from "lucide-react";
+import { Search, PackageOpen, ArrowLeft, CirclePlus } from "lucide-react";
 
-// Shadcn Pagination Imports
 import {
   Pagination,
   PaginationContent,
@@ -16,171 +16,234 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-// Imports
 import { getStoreProductsPaginated } from "@/actions/admin/getStoreProductsPaginated";
 import { searchProducts } from "@/actions/common/searchProducts.action";
-import { ProductSubsidisedRow } from "./ProductSubsidisedRow";
-import { SearchBar } from "@/components/shared/SearchBar";
+import { ProductCard, ProductCardRole } from "./ProductCard";
+import { IProduct } from "@/types/store/products.types";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
-export interface SubsidisedProduct {
-  _id: string;
-  name: string;
-  category: string;
-  price: number;
-  subsidised: boolean;
+// Skeleton perfectly mirrors the real card
+const ProductCardSkeleton = () => (
+  <div className="bg-card rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">
+    <Skeleton className="w-full aspect-[4/3] rounded-none" />
+    <div className="p-4 flex flex-col gap-3">
+      <Skeleton className="h-5 w-3/4" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-5/6" />
+      <div className="pt-3 border-t border-border flex justify-between items-end">
+        <div className="space-y-1.5">
+          <Skeleton className="h-3 w-8" />
+          <Skeleton className="h-7 w-24" />
+        </div>
+        <Skeleton className="h-5 w-14 rounded-md" />
+      </div>
+    </div>
+    <div className="px-4 pb-4 grid grid-cols-2 gap-2">
+      <Skeleton className="h-9 rounded-xl" />
+      <Skeleton className="h-9 rounded-xl" />
+    </div>
+  </div>
+);
+
+interface StoreProductsListProps {
+  storeId: string;
+  role: ProductCardRole;
 }
 
-export const StoreProductsList = ({ storeId }: { storeId: string }) => {
-  const [products, setProducts] = useState<SubsidisedProduct[]>([]);
+export const StoreProductsList = ({
+  storeId,
+  role,
+}: StoreProductsListProps) => {
+  const [products, setProducts] = useState<IProduct[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSearchMode, setIsSearchMode] = useState(false);
 
+  // Load paginated products
   useEffect(() => {
     let isMounted = true;
+    if (isSearchMode) return;
 
-    const loadProducts = async () => {
-      const result = await getStoreProductsPaginated(storeId, currentPage, 26);
-
+    const load = async () => {
+      setIsLoading(true);
+      const result = await getStoreProductsPaginated(storeId, currentPage, 12);
       if (!isMounted) return;
-
       if (result.success) {
-        setProducts(result.data as SubsidisedProduct[]);
+        setProducts(result.data as IProduct[]);
         setTotalPages(result.totalPages ?? 1);
       } else {
         toast.error(result.error || "Failed to fetch products");
       }
-
       setIsLoading(false);
     };
 
-    loadProducts();
-
+    load();
     return () => {
       isMounted = false;
     };
-  }, [storeId, currentPage]);
+  }, [storeId, currentPage, isSearchMode]);
 
-  const handleSearchAction = async (query: string) => {
-    if (!query.trim()) {
+  // Debounced search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
       setIsSearchMode(false);
-      const res = await getStoreProductsPaginated(storeId, currentPage, 25);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchMode(true);
+      setIsLoading(true);
+      const res = await searchProducts(searchQuery, storeId);
       if (res.success) {
-        setTotalPages(res.totalPages ?? 1);
-        return {
-          success: true as const,
-          data: res.data as SubsidisedProduct[],
-        };
-      }
-      return {
-        success: false as const,
-        error: "Failed to fetch original products",
-      };
-    }
-
-    setIsSearchMode(true);
-    const res = await searchProducts(query, storeId);
-
-    if (res.success) {
-      return {
-        success: true as const,
-        data: res.data as unknown as SubsidisedProduct[],
-      };
-    } else {
-      return { success: false as const, error: res.error || "Search failed" };
-    }
-  };
-
-  // Helper to calculate which page numbers to show (handles ellipses for many pages)
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, "ellipsis", totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(
-          1,
-          "ellipsis",
-          totalPages - 3,
-          totalPages - 2,
-          totalPages - 1,
-          totalPages,
-        );
+        setProducts(res.data as unknown as IProduct[]);
       } else {
-        pages.push(
-          1,
-          "ellipsis",
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          "ellipsis",
-          totalPages,
-        );
+        toast.error(res.error || "Search failed");
       }
+      setIsLoading(false);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, storeId]);
+
+  const getPageNumbers = () => {
+    const pages: (number | "ellipsis")[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 3) {
+      pages.push(1, 2, 3, 4, "ellipsis", totalPages);
+    } else if (currentPage >= totalPages - 2) {
+      pages.push(
+        1,
+        "ellipsis",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
+    } else {
+      pages.push(
+        1,
+        "ellipsis",
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        "ellipsis",
+        totalPages,
+      );
     }
     return pages;
   };
 
+  // Page titles per role
+  const titles: Record<ProductCardRole, { heading: string; sub: string }> = {
+    admin: {
+      heading: "Inventory",
+      sub: "Manage products, pricing, subsidies and stock.",
+    },
+    store: {
+      heading: "My Products",
+      sub: "View and manage your store's product listings.",
+    },
+    customer: {
+      heading: "Products",
+      sub: "Browse available products.",
+    },
+  };
+
+  const { heading, sub } = titles[role];
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">
-          {isSearchMode ? "Search Results" : "All Products"}
-        </h2>
+    <>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            {heading}
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {isSearchMode ? `Showing results for "${searchQuery}"` : sub}
+          </p>
+        </div>
 
-        <SearchBar<SubsidisedProduct>
-          placeholder="Search product name or category..."
-          searchAction={handleSearchAction}
-          onSearchStart={() => setIsLoading(true)}
-          onResults={(data) => {
-            setProducts(data);
-            setIsLoading(false);
-          }}
-        />
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search products..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </div>
-
-      {/* Product List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg border">
+        <p className="text-sm font-medium text-slate-600">
+          Want to add a new product?
+        </p>
+        <Button asChild>
+          <Link
+            href={
+              role === "store"
+                ? "/store/products/add"
+                : `/admin/store/${storeId}/products/add`
+            }
+            className="flex items-center gap-2"
+          >
+            <CirclePlus className="h-4 w-4" />
+            Add product
+          </Link>
+        </Button>
+      </div>
+      {/* Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {isLoading ? (
           Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-lg" />
+            <ProductCardSkeleton key={i} />
           ))
         ) : products.length > 0 ? (
           products.map((product) => (
-            <ProductSubsidisedRow key={product._id} product={product} />
+            <ProductCard
+              key={product._id}
+              product={product}
+              role={role}
+              onDelete={(id) =>
+                setProducts((prev) => prev.filter((p) => p._id !== id))
+              }
+            />
           ))
         ) : (
-          <div className="col-span-full py-8 flex flex-col items-center justify-center text-slate-500 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-            <PackageOpen className="h-10 w-10 mb-2 opacity-40 text-slate-400" />
-            <p>
+          <div className="col-span-full py-16 flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border rounded-2xl bg-muted/20">
+            <PackageOpen className="h-12 w-12 mb-3 opacity-25" />
+            <p className="font-medium">
               {isSearchMode
                 ? "No products matched your search."
-                : "No products found for this store."}
+                : "No products yet."}
             </p>
+            {isSearchMode && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="mt-2 text-sm text-primary underline underline-offset-2"
+              >
+                Clear search
+              </button>
+            )}
           </div>
         )}
       </div>
-
-      {/* Shadcn Pagination Controls */}
+      {/* Pagination */}
       {!isSearchMode && totalPages > 1 && (
-        <div className="pt-4 border-t border-slate-200">
+        <div className="pt-4 border-t border-border">
           <Pagination>
             <PaginationContent>
-              {/* Previous Button */}
               <PaginationItem>
                 <PaginationPrevious
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (currentPage > 1 && !isLoading) {
-                      setIsLoading(true);
+                    if (currentPage > 1 && !isLoading)
                       setCurrentPage((p) => p - 1);
-                    }
                   }}
                   className={
                     currentPage === 1 || isLoading
@@ -190,9 +253,8 @@ export const StoreProductsList = ({ storeId }: { storeId: string }) => {
                 />
               </PaginationItem>
 
-              {/* Page Numbers */}
-              {getPageNumbers().map((page, index) => (
-                <PaginationItem key={index}>
+              {getPageNumbers().map((page, i) => (
+                <PaginationItem key={i}>
                   {page === "ellipsis" ? (
                     <PaginationEllipsis />
                   ) : (
@@ -201,10 +263,8 @@ export const StoreProductsList = ({ storeId }: { storeId: string }) => {
                       isActive={currentPage === page}
                       onClick={(e) => {
                         e.preventDefault();
-                        if (currentPage !== page && !isLoading) {
-                          setIsLoading(true);
+                        if (currentPage !== page && !isLoading)
                           setCurrentPage(page as number);
-                        }
                       }}
                       className={
                         isLoading
@@ -218,16 +278,13 @@ export const StoreProductsList = ({ storeId }: { storeId: string }) => {
                 </PaginationItem>
               ))}
 
-              {/* Next Button */}
               <PaginationItem>
                 <PaginationNext
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (currentPage < totalPages && !isLoading) {
-                      setIsLoading(true);
+                    if (currentPage < totalPages && !isLoading)
                       setCurrentPage((p) => p + 1);
-                    }
                   }}
                   className={
                     currentPage === totalPages || isLoading
@@ -240,6 +297,6 @@ export const StoreProductsList = ({ storeId }: { storeId: string }) => {
           </Pagination>
         </div>
       )}
-    </div>
+    </>
   );
 };

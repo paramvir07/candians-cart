@@ -26,7 +26,7 @@ import mongoose from "mongoose";
  * }>}
  *
  * @example
- * const result = await getStoreProductsPaginated(storeId, 2, 25);
+ * const result = await getStoreProductsPaginated(storeId, 1, 25);
  * if (result.success) {
  *   console.log(result.data);
  *   console.log(result.totalPages);

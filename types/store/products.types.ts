@@ -13,6 +13,7 @@ export interface IProductDB {
   price: number;
   stock: boolean; // Changed to boolean
   images: (ProductImage & { _id?: Types.ObjectId })[];
+  subsidised: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,6 +51,7 @@ export interface IProduct {
   price: number; // In cents
   stock: boolean;  // Changed it to boolean from number
   images: ProductImage[]; 
+  subsidised: boolean;
   createdAt: string; // ISO Date string
   updatedAt: string; // ISO Date string
 }
