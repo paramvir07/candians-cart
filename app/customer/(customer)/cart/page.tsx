@@ -1,122 +1,336 @@
-import { DecrementItem, getCart, IncrementItem, RemoveItem } from "@/actions/customer/ProductAndStore/Cart.Action"
+import {
+  DecrementItem,
+  getCart,
+  IncrementItem,
+  RemoveItem,
+} from "@/actions/customer/ProductAndStore/Cart.Action"
 import Navbar from "@/components/customer/landing/Navbar"
 import { EmptyCart } from "@/components/customer/products/EmptyCart"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Minus, Plus, Trash2 } from "lucide-react"
+import {
+  Minus, Plus, Trash2,
+  ShoppingBag, Shield, Wallet, ArrowRight, ChevronLeft,
+} from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { IProductImage,ICartItem,IProduct } from "@/types/Customer/CustomerCart"
+import { ICartItem } from "@/types/Customer/CustomerCart"
+import { getUser } from "@/actions/customer/User.action"
+import { TopUpDialog } from "@/components/customer/wallet/TopupDialog"
+import ProgressBarCart from "@/components/customer/products/ProgressBarCart"
+import PlaceOrderBtn from "@/components/customer/products/PlaceOrderBtn"
+
+const fmt = (cents: number) => (cents / 100).toFixed(2)
 
 
-const page = async () => {
-  const CartItems = await getCart() as ICartItem[] | null
+const calcLine = (item: ICartItem) => {
+  const base        = item.productId.price * item.quantity
+  const markup      = Math.round(base * (item.productId.markup / 100))
+  const afterMarkup = base + markup
+  const tax         = Math.round(afterMarkup * item.productId.tax)
+  const disposable  = (item.productId.disposableFee ?? 0) * item.quantity
+  const lineTotal   = afterMarkup + tax + disposable
+  return { base, markup, afterMarkup, tax, disposable, lineTotal }
+}
 
-  if (!CartItems || CartItems.length === 0) {
-    return (
-      <div>
-        <EmptyCart/>
-      </div>
-    )
-  }
+export default async function CartPage() {
+  const [CartItems, UserData] = await Promise.all([getCart(), getUser()])
+  const items = CartItems as ICartItem[] | null
+
+  if (!items || items.length === 0) return <EmptyCart />
+
+  // ── Totals
+  const totals = items.reduce(
+    (acc, item) => {
+      const { afterMarkup, tax, disposable, lineTotal } = calcLine(item)
+      acc.subtotal   += afterMarkup  // markup silently baked in
+      acc.tax        += tax
+      acc.disposable += disposable
+      acc.total      += lineTotal
+      return acc
+    },
+    { subtotal: 0, tax: 0, disposable: 0, total: 0 },
+  )
+
+  const showDisposable = totals.disposable > 0
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#F7F6F3]">
       <Navbar />
 
-      <div className="px-5 pt-6 max-w-md mx-auto w-full">
+      {/* ════════════════════════════════════════
+          MOBILE
+      ════════════════════════════════════════ */}
+      <div className="md:hidden px-4 pt-6 pb-52">
+
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href={'/'}>
-          <Button className="w-9 h-9 flex items-center justify-center rounded-full shadow-sm">
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          </Link>
-          <h1 className="text-2xl font-bold">
-            My Cart{" "}
-            <span className="text-gray-400 font-normal">({CartItems.length})</span>
-          </h1>
+        <div className="flex items-center gap-2 mb-3">
+          <ShoppingBag className="w-5 h-5 text-gray-800" />
+          <h1 className="text-xl font-bold tracking-tight text-gray-900">My Cart</h1>
+          <span className="text-sm text-gray-400 font-normal">({items.length})</span>
+        </div>
+
+        {/* Progress */}
+        <div className="mb-4">
+          <ProgressBarCart total={totals.total} />
         </div>
 
         {/* Items */}
-        <div className="flex flex-col gap-6 pb-24">
-          {CartItems.map((item: ICartItem) => (
-            <div key={item.productId._id}>
-              <div className="flex items-center gap-4">
-                {/* Image */}
-                <div className="w-28 h-28 rounded-2xl bg-white flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+        <div className="flex flex-col gap-3 mb-4">
+          {items.map((item: ICartItem) => {
+            const { lineTotal } = calcLine(item)
+            return (
+              <div
+                key={item.productId._id}
+                className="bg-white rounded-2xl p-4 flex gap-3 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-gray-100"
+              >
+                <div className="w-[72px] h-[72px] rounded-xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100">
                   <Image
-                    src={item.productId.images?.[0]?.url ?? "https://i.pinimg.com/736x/0d/aa/29/0daa294d95b91e53007b5e472ad6a492.jpg"}
+                    src={item.productId.images?.[0]?.url ?? "/placeholder.jpg"}
                     alt={item.productId.name}
-                    width={110}
-                    height={110}
-                    className="object-contain"
+                    width={72} height={72}
+                    className="w-full h-full object-cover"
                   />
                 </div>
 
-                {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-base font-semibold leading-tight">{item.productId.name}</h2>
+                  <p className="text-sm font-semibold text-gray-900 truncate">{item.productId.name}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{item.productId.category}</p>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <span className="text-base font-bold">$ {((item.productId.price/100)*item.quantity).toFixed(2)}</span>
+                  <p className="text-sm font-bold text-gray-900 mt-1.5 tabular-nums">
+                    CA${fmt(lineTotal)}
+                  </p>
+
+                  <div className="flex items-center justify-between mt-2.5">
+                    <form action={RemoveItem}>
+                      <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                      <button type="submit" className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-400 transition-colors">
+                        <Trash2 size={12} /><span>Remove</span>
+                      </button>
+                    </form>
+
+                    <div className="flex items-center gap-2">
+                      <form action={DecrementItem}>
+                        <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                        <button type="submit" className="w-7 h-7 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors">
+                          <Minus size={12} strokeWidth={2} />
+                        </button>
+                      </form>
+                      <span className="text-sm font-semibold text-gray-900 w-5 text-center tabular-nums">{item.quantity}</span>
+                      <form action={IncrementItem}>
+                        <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                        <button type="submit" className="w-7 h-7 rounded-full bg-primary flex items-center justify-center hover:opacity-80 transition-opacity">
+                          <Plus size={12} strokeWidth={2} className="text-white" />
+                        </button>
+                      </form>
+                    </div>
                   </div>
                 </div>
-
-                {/* Counter */}
-                <div className="flex flex-col items-center w-10 border border-gray-200 rounded-full overflow-hidden shrink-0 bg-white">
-                  <form action={DecrementItem} className="w-full py-1.5 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors cursor-pointer">
-                    <input type="hidden" name="productId" value={item.productId._id.toString()}/>
-                  <button type="submit" >
-                    <Minus size={14} strokeWidth={1.5} />
-                  </button>
-                  </form>
-
-                  <div className="w-full py-1.5 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-gray-900 leading-none">
-                      {String(item.quantity).padStart(2, "0")}
-                    </span>
-                  </div>
-                    <form action={IncrementItem} className="w-full py-1.5 flex items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors cursor-pointer">
-                    <input type="hidden" name="productId" value={item.productId._id.toString()}/>
-                  <button type="submit" >
-                    <Plus size={14} strokeWidth={1.5} />
-                  </button>
-                  </form>
-                </div>
               </div>
+            )
+          })}
+        </div>
 
-              {/* Bottom Actions */}
-              <div className="flex items-center gap-3 mt-3 ml-1">
-
-                <form action={RemoveItem} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors">
-                <input type="hidden" name="productId" value={item.productId._id.toString()}/>
-                 <Button variant="outline">
-                  <Trash2 size={15} />
-                  <span>Remove</span>
-                </Button>
-                  </form>
-                
-              </div>
-
-              {/* Divider */}
-              <div className="mt-4 border-b border-gray-200" />
+        {/* Wallet */}
+        <div className="bg-white rounded-2xl border border-gray-100 px-4 py-3.5 flex items-center justify-between shadow-[0_1px_4px_rgba(0,0,0,0.05)] mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <Wallet className="w-4 h-4 text-emerald-500" />
             </div>
-          ))}
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Pay with Wallet</p>
+              <p className="text-xs text-gray-400">Balance: CA${UserData?.walletBalance}</p>
+            </div>
+          </div>
+              <div>
+              <TopUpDialog component="checkout" />
+              </div>
+        </div>
+
+        {/* Bill */}
+        <div className="bg-white rounded-2xl border border-gray-100 px-4 py-4 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-3">Bill Details</p>
+          <div className="space-y-2.5">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Subtotal</span>
+              <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.subtotal)}</span>
+            </div>
+
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Tax</span>
+              <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.tax)}</span>
+            </div>
+            {showDisposable && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Disposable fee</span>
+                <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.disposable)}</span>
+              </div>
+            )}
+            <div className="h-px bg-gray-100" />
+            <div className="flex justify-between">
+              <span className="font-bold text-gray-900">Total</span>
+              <span className="font-bold text-gray-900 tabular-nums">CA${fmt(totals.total)}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Fixed Checkout Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-100">
-        <div className="max-w-md mx-auto">
-          <Link href={"/customer/cart/checkout"}>
-          <Button className="w-full p-5">
-            Checkout
+      {/* Mobile Fixed CTA */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-100 px-4 pt-4 pb-8">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-xs text-gray-400 font-medium">Total</p>
+            <p className="text-xl font-bold text-gray-900 tabular-nums">CA${fmt(totals.total)}</p>
+          </div>
+          <Button className="flex items-center gap-2 px-6 py-5 rounded-xl text-sm font-semibold">
+            Place Order <ArrowRight className="w-4 h-4" />
           </Button>
+        </div>
+        <div className="flex items-center justify-center gap-1.5">
+          <Shield className="w-3 h-3 text-gray-300" />
+          <p className="text-[11px] text-gray-400">Secured checkout</p>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════
+          DESKTOP
+      ════════════════════════════════════════ */}
+      <div className="hidden md:block max-w-5xl mx-auto px-8 py-10">
+
+        <div className="flex items-center gap-3 mb-2">
+          <Link href="/">
+            <Button className="rounded-full" variant="outline" size="icon">
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
           </Link>
+          <ShoppingBag className="w-6 h-6 text-gray-800" />
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">My Cart</h1>
+          <span className="text-gray-400 font-normal text-lg">({items.length})</span>
+        </div>
+
+        <div className="mb-6">
+          <ProgressBarCart total={totals.total} />
+        </div>
+
+        <div className="flex gap-6 items-start">
+
+          {/* Left */}
+          <div className="flex-1 flex flex-col gap-4">
+
+            {/* Items */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]">
+              <div className="px-6 pt-5 pb-2">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                  {items.length} {items.length === 1 ? "item" : "items"}
+                </p>
+              </div>
+
+              {items.map((item: ICartItem, i) => {
+                const { lineTotal } = calcLine(item)
+                return (
+                  <div
+                    key={item.productId._id}
+                    className={`flex items-center gap-5 px-6 py-4 ${i !== items.length - 1 ? "border-b border-gray-50" : ""}`}
+                  >
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 shrink-0 border border-gray-100">
+                      <Image
+                        src={item.productId.images?.[0]?.url ?? "/placeholder.jpg"}
+                        alt={item.productId.name}
+                        width={64} height={64}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{item.productId.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.productId.category}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <form action={DecrementItem}>
+                        <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                        <button type="submit" className="w-8 h-8 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors">
+                          <Minus size={13} strokeWidth={2} />
+                        </button>
+                      </form>
+                      <span className="text-sm font-semibold text-gray-900 w-6 text-center tabular-nums">{item.quantity}</span>
+                      <form action={IncrementItem}>
+                        <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                        <button type="submit" className="w-8 h-8 rounded-full bg-primary flex items-center justify-center hover:opacity-80 transition-opacity">
+                          <Plus size={13} strokeWidth={2} className="text-white" />
+                        </button>
+                      </form>
+                    </div>
+
+                    <p className="text-sm font-bold text-gray-900 w-24 text-right tabular-nums">
+                      CA${fmt(lineTotal)}
+                    </p>
+
+                    <form action={RemoveItem}>
+                      <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                      <button type="submit" className="text-gray-300 hover:text-red-400 transition-colors ml-1" aria-label="Remove item">
+                        <Trash2 size={15} />
+                      </button>
+                    </form>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Wallet */}
+            <div className="bg-white rounded-2xl border border-gray-100 px-6 py-5 flex items-center justify-between shadow-[0_1px_6px_rgba(0,0,0,0.05)]">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                  <Wallet className="w-4 h-4 text-emerald-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Pay with Wallet</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Current balance: CA${UserData?.walletBalance.toFixed(2)}</p>
+                </div>
+              </div>
+              <div>
+              <TopUpDialog component="checkout" />
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Order Summary */}
+          <div className="w-72 shrink-0 sticky top-6">
+            <div className="bg-white rounded-2xl border border-gray-100 px-6 py-5 shadow-[0_1px_6px_rgba(0,0,0,0.06)]">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-4">Order Summary</p>
+
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Subtotal</span>
+                  <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.subtotal)}</span>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Tax</span>
+                  <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.tax)}</span>
+                </div>
+                {showDisposable && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Disposable fee</span>
+                    <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.disposable)}</span>
+                  </div>
+                )}
+                <div className="h-px bg-gray-100" />
+                <div className="flex justify-between">
+                  <span className="font-bold text-gray-900">Total</span>
+                  <span className="font-bold text-gray-900 tabular-nums">CA${fmt(totals.total)}</span>
+                </div>
+              </div>
+
+              <PlaceOrderBtn />
+
+              <div className="flex items-center justify-center gap-1.5 mt-3">
+                <Shield className="w-3 h-3 text-gray-300" />
+                <p className="text-xs text-gray-400">Secured checkout</p>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
   )
 }
-
-export default page

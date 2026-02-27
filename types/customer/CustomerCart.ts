@@ -11,6 +11,7 @@ export interface IProduct {
   description: string
   category: string
   markup: number
+  disposableFee?: number
   tax: number
   price: number
   stock: boolean
