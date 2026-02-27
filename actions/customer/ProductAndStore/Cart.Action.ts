@@ -3,11 +3,10 @@
 import CartModel from "@/db/models/customer/cart.model";
 import "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
 import { ICartItem } from "@/types/Customer/CustomerCart";
-import OrderModel from "@/db/models/customer/Orders.Model";
-import { ca } from "zod/locales";
+import OrderModel, { PlaceOrderI, PlaceOrderProduct } from "@/db/models/customer/Orders.Model";
 import Customer from "@/db/models/customer/customer.model";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
@@ -176,23 +175,6 @@ export const getCart = async () => {
   }
 };
 
-interface PlaceOrderProduct {
-  productId: string
-  quantity: number
-  total: number
-  markup: number
-  tax: number
-  disposableFee:number
-}
-
-interface PlaceOrderI {
-  products: PlaceOrderProduct[]
-  cartTotal: number
-  userWalletBalance: number
-  giftWalletBalance: number
-  userId: string
-  storeId: string
-}
 
 
 export const PlaceOrder = async () => {
@@ -218,7 +200,7 @@ export const PlaceOrder = async () => {
       const total = Math.round((subtotalWithMarkup + taxAmount + disposableFee) * 100) / 100
 
       return {
-        productId: item.productId._id.toString(),
+        productId: new Types.ObjectId(item.productId._id),
         quantity: item.quantity,
         markup: item.productId.markup,
         tax: item.productId.tax,
@@ -238,8 +220,8 @@ export const PlaceOrder = async () => {
       cartTotal,
       userWalletBalance: walletBalance,
       giftWalletBalance,
-      userId,
-      storeId,
+      userId: user._id,
+      storeId:user.associatedStoreId,
     }
 
     await OrderModel.create(orderData)

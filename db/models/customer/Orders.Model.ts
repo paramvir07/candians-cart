@@ -1,6 +1,6 @@
-import mongoose, { Schema, model, models, Types, Document } from "mongoose";
+import mongoose, { Schema, model, models, Types } from "mongoose";
 
-interface PlaceOrderProduct {
+export interface PlaceOrderProduct {
   productId: Types.ObjectId;
   quantity: number;
   total: number;
@@ -9,17 +9,35 @@ interface PlaceOrderProduct {
   disposableFee: number;
 }
 
-export interface PlaceOrderI extends Document {
+export interface PlaceOrderI {
   products: PlaceOrderProduct[];
   cartTotal: number;
   userWalletBalance: number;
   giftWalletBalance: number;
   userId: Types.ObjectId;
   storeId: Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
+
+// interface PlaceOrderProduct {
+//   productId: string
+//   quantity: number
+//   total: number
+//   markup: number
+//   tax: number
+//   disposableFee:number
+// }
+
+// interface PlaceOrderI {
+//   products: PlaceOrderProduct[]
+//   cartTotal: number
+//   userWalletBalance: number
+//   giftWalletBalance: number
+//   userId: string
+//   storeId: string
+// }
 const placeOrderProductSchema = new Schema<PlaceOrderProduct>(
   {
     productId: {
