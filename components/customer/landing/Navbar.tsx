@@ -5,7 +5,7 @@ import { ShoppingCartIcon, Wallet } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getCustomerDataAction } from "@/actions/customer/User.action";
-import { Customer } from "@/types/Customer/customer";
+import { Customer } from "@/types/customer/customer";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
 
 const Navbar = async () => {
