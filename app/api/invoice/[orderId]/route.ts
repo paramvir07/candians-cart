@@ -3,12 +3,11 @@ import { NextResponse } from "next/server"
 import { dbConnect } from "@/db/dbConnect"
 import OrderModel from "@/db/models/customer/Orders.Model"
 
-// Brand colors from your theme (converted from oklch to rgb approx)
-const GREEN_PRIMARY = rgb(0.38, 0.67, 0.35)   // --primary ~oklch(0.627 0.17 149)
-const GREEN_LIGHT   = rgb(0.91, 0.97, 0.91)   // --secondary ~oklch(0.967 0.029 158)
-const GREEN_DARK    = rgb(0.18, 0.35, 0.22)   // --foreground ~oklch(0.266 0.063 153)
-const GRAY_LINE     = rgb(0.88, 0.93, 0.88)   // --border
-const MUTED         = rgb(0.52, 0.60, 0.54)   // --muted-foreground
+const GREEN_PRIMARY = rgb(0.38, 0.67, 0.35)
+const GREEN_LIGHT   = rgb(0.91, 0.97, 0.91)
+const GREEN_DARK    = rgb(0.18, 0.35, 0.22)
+const GRAY_LINE     = rgb(0.88, 0.93, 0.88)
+const MUTED         = rgb(0.52, 0.60, 0.54)
 const WHITE         = rgb(1, 1, 1)
 
 export async function GET(
@@ -28,7 +27,7 @@ export async function GET(
   }
 
   const pdfDoc = await PDFDocument.create()
-  const page   = pdfDoc.addPage([595, 842]) // A4
+  const page   = pdfDoc.addPage([595, 842])
   const font     = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
   const { width, height } = page.getSize()
@@ -36,38 +35,18 @@ export async function GET(
   const margin = 48
   const contentWidth = width - margin * 2
 
-  // ─── HEADER BANNER ────────────────────────────────────────────────
-  page.drawRectangle({
-    x: 0, y: height - 100,
-    width, height: 100,
-    color: GREEN_PRIMARY,
-  })
+  page.drawRectangle({ x: 0, y: height - 100, width, height: 100, color: GREEN_PRIMARY })
 
-  // Company name
-  page.drawText("CanadianCart", {
-    x: margin, y: height - 44,
-    font: boldFont, size: 22, color: WHITE,
-  })
+  page.drawText("CanadianCart", { x: margin, y: height - 44, font: boldFont, size: 22, color: WHITE })
 
-  // "INVOICE" label on the right
   const invoiceLabel = "INVOICE"
   const invoiceLabelW = boldFont.widthOfTextAtSize(invoiceLabel, 26)
-  page.drawText(invoiceLabel, {
-    x: width - margin - invoiceLabelW,
-    y: height - 48,
-    font: boldFont, size: 26, color: WHITE,
-  })
+  page.drawText(invoiceLabel, { x: width - margin - invoiceLabelW, y: height - 48, font: boldFont, size: 26, color: WHITE })
 
-  // Subtle tagline under company name
-  page.drawText("Your trusted Canadian marketplace", {
-    x: margin, y: height - 62,
-    font, size: 9, color: rgb(0.8, 0.95, 0.8),
-  })
+  page.drawText("Your trusted Canadian marketplace", { x: margin, y: height - 62, font, size: 9, color: rgb(0.8, 0.95, 0.8) })
 
-  // ─── META BLOCK (two columns) ────────────────────────────────────
   let y = height - 130
 
-  // Left col — order info
   const drawLabel = (label: string, value: string, yPos: number) => {
     page.drawText(label, { x: margin, y: yPos, font, size: 9, color: MUTED })
     page.drawText(value, { x: margin, y: yPos - 14, font: boldFont, size: 11, color: GREEN_DARK })
@@ -89,17 +68,11 @@ export async function GET(
   drawLabel("FULL ORDER ID", order._id.toString(), y)
   drawLabelRight("STATUS", "Paid", y)
 
-  // ─── DIVIDER ─────────────────────────────────────────────────────
   y -= 32
   page.drawRectangle({ x: margin, y, width: contentWidth, height: 1, color: GRAY_LINE })
   y -= 20
 
-  // ─── ITEMS TABLE HEADER ──────────────────────────────────────────
-  page.drawRectangle({
-    x: margin, y: y - 4,
-    width: contentWidth, height: 22,
-    color: GREEN_LIGHT,
-  })
+  page.drawRectangle({ x: margin, y: y - 4, width: contentWidth, height: 22, color: GREEN_LIGHT })
 
   const col = {
     item:  margin + 8,
@@ -115,7 +88,6 @@ export async function GET(
 
   y -= 20
 
-  // ─── ITEMS ROWS ──────────────────────────────────────────────────
   let rowIndex = 0
   for (const item of order.products as any[]) {
     const name      = item.productId?.name || "Unknown Product"
@@ -123,12 +95,10 @@ export async function GET(
     const unitPrice = `CA$${((item.productId?.price ?? 0) / 100).toFixed(2)}`
     const lineTotal = `CA$${((item.total ?? 0) / 100).toFixed(2)}`
 
-    // Alternating row background
     if (rowIndex % 2 === 0) {
       page.drawRectangle({ x: margin, y: y - 6, width: contentWidth, height: 22, color: rgb(0.98, 1, 0.98) })
     }
 
-    // Truncate long names
     const maxNameW = contentWidth * 0.50
     let displayName = name
     while (displayName.length > 4 && font.widthOfTextAtSize(displayName, 10) > maxNameW) {
@@ -136,16 +106,15 @@ export async function GET(
     }
     if (displayName !== name) displayName += "…"
 
-    page.drawText(displayName, { x: col.item,  y, font,     size: 10, color: GREEN_DARK })
-    page.drawText(qty,         { x: col.qty,   y, font,     size: 10, color: GREEN_DARK })
-    page.drawText(unitPrice,   { x: col.price, y, font,     size: 10, color: GREEN_DARK })
+    page.drawText(displayName, { x: col.item,  y, font,           size: 10, color: GREEN_DARK })
+    page.drawText(qty,         { x: col.qty,   y, font,           size: 10, color: GREEN_DARK })
+    page.drawText(unitPrice,   { x: col.price, y, font,           size: 10, color: GREEN_DARK })
     page.drawText(lineTotal,   { x: col.total, y, font: boldFont, size: 10, color: GREEN_DARK })
 
     y -= 24
     rowIndex++
   }
 
-  // ─── TOTALS BLOCK ─────────────────────────────────────────────────
   y -= 8
   page.drawRectangle({ x: margin, y, width: contentWidth, height: 1, color: GRAY_LINE })
   y -= 24
@@ -153,62 +122,43 @@ export async function GET(
   const totalLabelX = width - margin - 180
   const totalValueX = width - margin - 80
 
-  // Subtotal row
   page.drawText("Subtotal", { x: totalLabelX, y, font, size: 10, color: MUTED })
   const subtotalStr = `CA$${(order.cartTotal / 100).toFixed(2)}`
   page.drawText(subtotalStr, { x: totalValueX, y, font, size: 10, color: GREEN_DARK })
   y -= 18
 
-  // Shipping
   page.drawText("Shipping", { x: totalLabelX, y, font, size: 10, color: MUTED })
-  page.drawText("Free", { x: totalValueX, y, font, size: 10, color: GREEN_PRIMARY })
+  page.drawText("Free",     { x: totalValueX, y, font, size: 10, color: GREEN_PRIMARY })
   y -= 18
 
-  // Divider
   page.drawRectangle({ x: totalLabelX - 8, y, width: 180 + 8 + margin - 16, height: 1, color: GRAY_LINE })
   y -= 20
 
-  // Grand total
   page.drawRectangle({
     x: totalLabelX - 12, y: y - 8,
     width: width - margin - totalLabelX + 12,
     height: 30,
     color: GREEN_PRIMARY,
   })
-  page.drawText("TOTAL", {
-    x: totalLabelX, y: y + 2,
-    font: boldFont, size: 11, color: WHITE,
-  })
+  page.drawText("TOTAL", { x: totalLabelX, y: y + 2, font: boldFont, size: 11, color: WHITE })
   const totalStr = `CA$${(order.cartTotal / 100).toFixed(2)}`
   const totalStrW = boldFont.widthOfTextAtSize(totalStr, 13)
-  page.drawText(totalStr, {
-    x: width - margin - totalStrW, y: y + 2,
-    font: boldFont, size: 13, color: WHITE,
-  })
+  page.drawText(totalStr, { x: width - margin - totalStrW, y: y + 2, font: boldFont, size: 13, color: WHITE })
 
-  // ─── FOOTER ───────────────────────────────────────────────────────
   const footerY = 52
   page.drawRectangle({ x: 0, y: 0, width, height: footerY, color: GREEN_LIGHT })
   page.drawRectangle({ x: 0, y: footerY, width, height: 1, color: GRAY_LINE })
 
-  page.drawText("Thank you for shopping with CanadianCart!", {
-    x: margin, y: footerY - 18,
-    font, size: 9, color: MUTED,
-  })
+  page.drawText("Thank you for shopping with CanadianCart!", { x: margin, y: footerY - 18, font, size: 9, color: MUTED })
 
   const supportText = "support@canadiancart.ca"
   const supportW = font.widthOfTextAtSize(supportText, 9)
-  page.drawText(supportText, {
-    x: width - margin - supportW, y: footerY - 18,
-    font, size: 9, color: GREEN_PRIMARY,
-  })
+  page.drawText(supportText, { x: width - margin - supportW, y: footerY - 18, font, size: 9, color: GREEN_PRIMARY })
 
   page.drawText(`Invoice generated on ${new Date().toLocaleDateString("en-CA")}`, {
-    x: margin, y: footerY - 32,
-    font, size: 8, color: rgb(0.72, 0.78, 0.72),
+    x: margin, y: footerY - 32, font, size: 8, color: rgb(0.72, 0.78, 0.72),
   })
 
-  // ─── OUTPUT ───────────────────────────────────────────────────────
   const pdfBytes = await pdfDoc.save()
   const buffer = Buffer.from(pdfBytes)
 
