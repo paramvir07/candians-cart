@@ -24,12 +24,12 @@ export function HeroBanner() {
         <div className="grid md:grid-cols-2 gap-10 items-center">
           {/* Left: copy */}
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-4 py-1.5 rounded-full border border-white/30">
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-muted- text-xs font-bold px-4 py-1.5 rounded-full border border-white/30">
               <Leaf className="h-3.5 w-3.5" />
               Fresh · Local · Delivered
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-black text-white leading-[1.05] tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-black text-primary leading-[1.05] tracking-tight">
               Fresh groceries
               <br />
               <span className="text-green-200">at your door.</span>

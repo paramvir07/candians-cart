@@ -44,7 +44,8 @@ export const getReferalCodesAction = async () => {
     await getUserSession();
     await dbConnect();
     const referralCodes = await ReferralCode.find().lean();
-    return { success: true, message: "Fetched referal codes Successfully!!", referralCodes };
+    const serializedReferralCodes = JSON.parse(JSON.stringify(referralCodes));
+    return { success: true, message: "Fetched referal codes Successfully!!", referralCodes: serializedReferralCodes };
   } catch (error) {
     console.log("Error while fetching referal codes: ", error);
     return {

@@ -4,13 +4,13 @@ import ProfileHero from "@/components/customer/profile/ProfileHero";
 import ProfileStats from "@/components/customer/profile/ProfileStats";
 import ProfileStore from "@/components/customer/profile/ProfileStore";
 import ProfileContact from "@/components/customer/profile/ProfileContact";
-import { MoveLeft, Settings } from "lucide-react";
+import { MoveLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import LogoutButton from "@/components/customer/profile/LogoutButton";
 
 export default async function ProfilePage() {
-  const { customerData, storeData } = await getCustomerAndStoreDataAction();
+  const { customerData } = await getCustomerAndStoreDataAction();
 
   return (
     <div className="min-h-screen bg-background">
@@ -26,7 +26,7 @@ export default async function ProfilePage() {
                 size="icon"
                 className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
               >
-                <MoveLeft/>
+                <MoveLeft />
               </Button>
             </Link>
             <div>
@@ -105,7 +105,7 @@ export default async function ProfilePage() {
           {/* ── RIGHT COLUMN ── */}
           <div className="space-y-5">
             <ProfileContact customer={customerData} />
-            <ProfileStore store={storeData} />
+            <ProfileStore store={customerData.associatedStoreId} />
             {/* Logout — mobile/tablet (hidden on lg where it lives in Quick Actions) */}
             <div className="lg:hidden">
               <LogoutButton variant="card" />

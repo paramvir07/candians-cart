@@ -1,14 +1,11 @@
-'use client'
+"use client";
 
-import { BarChart, HomeIcon, LinkIcon, Store, Users2 } from "lucide-react"
-import { Button } from "../ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "../ui/tooltip"
-import Link from "next/link"
+import { BarChart, HomeIcon, LinkIcon, Store, Users2 } from "lucide-react";
+import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import Link from "next/link";
+import LogoutButton from "../shared/LogoutButton";
 
 const AdminSidebar = () => {
   return (
@@ -105,6 +102,7 @@ const AdminSidebar = () => {
             </TooltipContent>
           </Tooltip>
         </div>
+        <LogoutButton />
       </aside>
 
       {/* Mobile Bottom Navbar */}
@@ -147,9 +145,10 @@ const AdminSidebar = () => {
             </Avatar>
           </Link>
         </Button>
+        <LogoutButton />
       </nav>
     </>
   );
-}
+};
 
-export default AdminSidebar
+export default AdminSidebar;

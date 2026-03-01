@@ -2,7 +2,6 @@ import { model, Model, models, Schema, Types } from "mongoose";
 
 export interface ICustomer {
   userId: Types.ObjectId;
-  // qrToken: string;
   name: string;
   email: string;
   address: string;
@@ -19,14 +18,9 @@ export interface ICustomer {
 const customerSchema = new Schema<ICustomer>(
   {
     userId: {
-      // Used for auth
       type: Schema.Types.ObjectId,
       required: true,
     },
-    // qrToken: {
-    //   type: String,
-    //   required: true
-    // },
     name: {
       type: String,
       required: true,

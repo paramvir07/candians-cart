@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 import { getUserSession } from "../auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 
-
 export const getUser = async () => {
   try {
     const session = await getUserSession();
@@ -37,31 +36,22 @@ export const getCustomerAndStoreDataAction = async () => {
     await dbConnect();
     const customerData = await Customer.findOne({
       userId: session.user.id,
-    }).lean();
+    })
+      .populate("associatedStoreId")
+      .lean();
 
+    console.log({ customerData });
     if (!customerData)
       return {
         success: false,
         message: "Unable to find customer data",
       };
 
-    const storeData = await Store.findById(
-      customerData.associatedStoreId,
-    ).lean();
-
-    if (!storeData)
-      return {
-        success: false,
-        message: "Unable to find customer's store data",
-      };
-
     const serializedCustomerData = JSON.parse(JSON.stringify(customerData));
-    const serializedStoreData = JSON.parse(JSON.stringify(storeData));
 
     return {
       success: true,
       customerData: serializedCustomerData,
-      storeData: serializedStoreData,
     };
   } catch (error) {
     console.log(`Unable to find customer and store data: ${error}`);
@@ -97,6 +87,40 @@ export const getCustomerDataAction = async () => {
     return {
       success: false,
       message: "Unable to find customer data",
+    };
+  }
+};
+
+export const getMyStoreCustomers = async () => {
+  const session = await getUserSession();
+  try {
+    await dbConnect();
+    const myStore = await Store.findOne({ userId: session.user.id })
+      .select("_id")
+      .lean();
+    const myStoreCustomersData = await Customer.find({
+      associatedStoreId: myStore?._id,
+    }).lean();
+
+    if (!myStoreCustomersData)
+      return {
+        success: false,
+        message: "Unable to find my store customers",
+      };
+
+    const serializedMyStoreCustomersData = JSON.parse(
+      JSON.stringify(myStoreCustomersData),
+    );
+
+    return {
+      success: true,
+      myStoreCustomersData: serializedMyStoreCustomersData,
+    };
+  } catch (error) {
+    console.log(`Unable to find my store customers: ${error}`);
+    return {
+      success: false,
+      message: "Unable to find my store customers",
     };
   }
 };

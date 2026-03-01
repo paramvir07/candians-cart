@@ -1,11 +1,21 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Customer } from "@/types/customer/customer";
-import { Edit, QrCode, ShieldCheck } from "lucide-react";
+import { Edit, QrCode, ShieldCheck, X } from "lucide-react";
 import Link from "next/link";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import QrCodeClient from "./QrCodeClient";
 
 type Props = {
-  customer: Pick<Customer, "name" | "email" | "address" | "city" | "province">;
+  customer: Pick<Customer, "_id" |  "name" | "email" | "address" | "city" | "province">;
 };
 
 export default function ProfileHero({ customer }: Props) {
@@ -61,13 +71,43 @@ export default function ProfileHero({ customer }: Props) {
 
         {/* CTA buttons */}
         <div className="flex gap-2.5 mt-5">
-          <Button
-            variant="outline"
-            className="flex-1 h-9 sm:h-10 rounded-xl text-xs sm:text-sm font-semibold border-border/60 hover:border-primary/50 hover:text-primary transition-all"
-          >
-            <QrCode className="h-3.5 w-3.5 mr-1.5" />
-            QR Code
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="flex-1 h-9 sm:h-10 rounded-xl text-xs sm:text-sm font-semibold border-border/60 hover:border-primary/50 hover:text-primary transition-all"
+              >
+                <QrCode className="h-3.5 w-3.5 mr-1.5" />
+                QR Code
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent className="sm:max-w-sm rounded-2xl p-6">
+              {/* Close Button */}
+              <DialogClose asChild>
+                <button className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition">
+                  <X className="h-4 w-4" />
+                </button>
+              </DialogClose>
+
+              <DialogHeader className="text-center space-y-2">
+                <DialogTitle className="text-lg font-semibold">
+                  Your QR Code
+                </DialogTitle>
+                <DialogDescription className="text-sm text-muted-foreground">
+                  Let others scan this code to instantly connect with your
+                  profile.
+                </DialogDescription>
+              </DialogHeader>
+
+              {/* QR Section */}
+              <div className="flex justify-center py-2">
+                <div className="p-4 bg-white rounded-xl shadow-sm border">
+                  <QrCodeClient customerId={customer._id.toString()} />
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Button
             asChild
             className="flex-1 h-9 sm:h-10 rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] transition-all"
