@@ -5,7 +5,7 @@ import { ShoppingCartIcon, Wallet } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getCustomerDataAction } from "@/actions/customer/User.action";
-import { Customer } from "@/types/customer/customer";
+import { Customer } from "@/types/Customer/customer";
 
 const Navbar = async () => {
   const customerDataResponse = await getCustomerDataAction();
@@ -41,7 +41,7 @@ const Navbar = async () => {
         {/* Wallet + Avatar always visible */}
         <Link href="/customer/wallet">
           <Button variant="default" className="flex items-center gap-1 px-3">
-            <Wallet className="w-5 h-5" />${customerData.walletBalance}
+            <Wallet className="w-5 h-5" />${customerData.walletBalance.toFixed(2)}
           </Button>
         </Link>
 

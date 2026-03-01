@@ -20,24 +20,6 @@ export interface PlaceOrderI {
   updatedAt?: Date;
 }
 
-
-// interface PlaceOrderProduct {
-//   productId: string
-//   quantity: number
-//   total: number
-//   markup: number
-//   tax: number
-//   disposableFee:number
-// }
-
-// interface PlaceOrderI {
-//   products: PlaceOrderProduct[]
-//   cartTotal: number
-//   userWalletBalance: number
-//   giftWalletBalance: number
-//   userId: string
-//   storeId: string
-// }
 const placeOrderProductSchema = new Schema<PlaceOrderProduct>(
   {
     productId: {
