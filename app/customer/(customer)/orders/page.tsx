@@ -181,16 +181,8 @@ const page = async () => {
                         {/* Footer */}
                         <div className="flex items-center justify-between pt-3 mt-1 border-t border-border">
 
-                        <div className="flex items-center gap-2">
-
-                          <Button variant="outline" size="icon" className="sm:w-auto sm:px-3 sm:gap-1.5 shrink-0">
-                            <Download size={14} />
-                            <span className="hidden sm:inline text-sm">Invoice</span>
-                          </Button>
-
                           <ReorderBtn OrderId={order._id} />
-
-                        </div>
+                      
 
                           <div className="text-right">
                             <p className="text-xs text-muted-foreground">
