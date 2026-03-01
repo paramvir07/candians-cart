@@ -11,6 +11,7 @@ import Customer from "@/db/models/customer/customer.model";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { getCustomerDataAction, getUser } from "../User.action";
+import productsModel from "@/db/models/store/products.model";
 
 export const AddtoCart = async (ItemId: string) => {
   const customerDataresponse = await getCustomerDataAction();
@@ -175,8 +176,6 @@ export const getCart = async () => {
   }
 };
 
-
-
 export const PlaceOrder = async () => {
   await dbConnect()
 
@@ -238,5 +237,39 @@ export const PlaceOrder = async () => {
 
     console.error("PlaceOrder error:", error)
     return { success: false, error: "Something went wrong" }
+  }
+}
+
+export const getCartItemsCount = async () =>{
+  try{
+    await dbConnect();
+    const user = await getUser()
+    if(!user) return 0
+
+    const Cart = await CartModel.findOne({ customerId: user._id })
+    if(!Cart) return 0
+
+    const count = Cart.items.length;
+    return count
+
+
+  }catch(err){
+    console.log(err)
+  }
+}
+
+export const getSubsidizedProducts = async () =>{
+    try{
+    await dbConnect();
+    const user = await getUser()
+    if(!user) return null
+
+    const getProducts = await productsModel.find({storeId: user.associatedStoreId,subsidised: true}).lean();
+
+    const products = JSON.parse(JSON.stringify(getProducts));
+    return products
+
+  }catch(err){
+    console.log(err)
   }
 }

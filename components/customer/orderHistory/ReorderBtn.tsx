@@ -2,10 +2,15 @@
 import { ReOrder } from "@/actions/customer/ProductAndStore/Order.Action"
 import { Button } from "@/components/ui/button"
 import { Download, RotateCw } from "lucide-react"
+import { toast } from "sonner"
 
 const ReorderBtn = ({ OrderId }: { OrderId: string }) => {
   const handleReOrder = async () => {
-    await ReOrder(OrderId)
+   const res =  await ReOrder(OrderId);
+
+   if(res?.success){
+    toast.success("Item(s) added to cart")
+   }
   }
 
   const handleDownloadInvoice = async () => {

@@ -6,9 +6,14 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { Customer } from "@/types/Customer/customer";
+import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
 
 const Navbar = async () => {
-  const customerDataResponse = await getCustomerDataAction();
+  const [customerDataResponse, cartCount] = await Promise.all([
+    getCustomerDataAction(),
+    getCartItemsCount(),
+  ]);
+
   const customerData: Customer = customerDataResponse.customerData;
 
   const initials = customerData.name
@@ -17,6 +22,7 @@ const Navbar = async () => {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
   return (
     <nav className="flex items-center justify-between px-4 py-4 shadow-sm bg-white">
       {/* Logo */}
@@ -29,11 +35,16 @@ const Navbar = async () => {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
-        {/* Cart + Bell only on medium+ screens */}
+        {/* Cart only on medium+ screens */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href={"/customer/cart"}>
-            <Button variant="outline" className="p-2">
+          <Link href="/customer/cart">
+            <Button variant="outline" className="relative p-2">
               <ShoppingCartIcon className="w-5 h-5" />
+              {(cartCount ?? 0) > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  {(cartCount ?? 0) > 99 ? "99+" : cartCount}
+                </span>
+              )}
             </Button>
           </Link>
         </div>

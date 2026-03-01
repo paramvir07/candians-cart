@@ -5,6 +5,7 @@ import { getUser } from "../User.action";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import "@/db/models/store/products.model"
 import CartModel from "@/db/models/customer/cart.model";
+import { revalidatePath } from "next/cache";
 
 export const getOrders = async () => {
   await dbConnect();
@@ -49,8 +50,8 @@ export const ReOrder = async (orderId: string) => {
       { $push: { items: { $each: itemsToInsert } } },
       { upsert: true, new: true }
     );
-
-    console.log("Items added to cart successfully");
+    revalidatePath('/');
+    return { success: true, message: "Items added to cart successfully"};
   } catch (error) {
     console.log("Error Reordering Items:", error);
   }
