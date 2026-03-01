@@ -34,8 +34,6 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
 
   const currentStepIndex = STEPS.indexOf(step);
 
-  // if (step === "signUpForm") return <SignupForm userRole="customer" />;
-
   return (
     <main className="min-h-screen w-full font-headline overflow-hidden relative flex flex-col items-center justify-center px-4 py-10">
       {/* Animated background */}

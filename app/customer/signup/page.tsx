@@ -1,6 +1,7 @@
 import { getStores } from "@/actions/store/getStores.actions";
 import SignupClient from "@/components/customer/signup/SignUpClient";
 import { auth } from "@/lib/auth/auth";
+import { StoreDocument } from "@/types/store/store";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -12,9 +13,12 @@ export default async function Page() {
 
   const result = await getStores();
 
+
   if (!result.success) {
     return <div>{result.error}</div>;
   }
+
+  const data: StoreDocument[] = result.data;
 
   return (
     <div className="min-h-screen w-full bg-[#f9fafb] relative">
@@ -34,7 +38,7 @@ export default async function Page() {
         }}
       />
       {/* Your Content/Components */}
-      <SignupClient stores={result.data} />
+      <SignupClient stores={data} />
     </div>
   );
 }

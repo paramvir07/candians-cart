@@ -11,7 +11,6 @@ import {
 import { StoreDocument } from "@/types/store/store";
 import { StoreInfoDialog } from "./StoreInfoDialog";
 import { useState } from "react";
-import { Types } from "mongoose";
 
 const SelectStore = ({ stores }: { stores: StoreDocument[] }) => {
   const [selectedStoreInfo, setSelectedStoreInfo] =
@@ -24,7 +23,7 @@ const SelectStore = ({ stores }: { stores: StoreDocument[] }) => {
     isStoreSelectedDialogOpenAtom,
   );
 
-  const handleStoreSelect = (storeName: string, storeId: Types.ObjectId) => {
+  const handleStoreSelect = (storeName: string, storeId: string) => {
     setStore(storeName);
     setStoreId(storeId);
     setIsStoreSelectedDialogOpen(true);
