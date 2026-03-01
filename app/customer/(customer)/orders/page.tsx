@@ -16,9 +16,8 @@ import {
 } from "@/components/ui/card"
 import Image from "next/image"
 import { getOrders } from "@/actions/customer/ProductAndStore/Order.Action"
-import { OrderWithProductsClient } from "@/types/Customer/OrdersClient"
-import { Button } from "@/components/ui/button"
 import ReorderBtn from "@/components/customer/orderHistory/ReorderBtn"
+import { OrderWithProductsClient } from "@/types/customer/OrdersClient"
 
 
 /** cents → "3.99" */
