@@ -1,11 +1,12 @@
 import { getMyStoreCustomers } from "@/actions/customer/User.action";
 import MainOverviewUser from "@/components/shared/users/MainOverviewUser";
 import UserList from "@/components/shared/users/UserList";
+import { Customer } from "@/types/customer/customer";
 
 const page = async () => {
   const { myStoreCustomersData } = await getMyStoreCustomers();
 
-  const customers = myStoreCustomersData ?? [];
+  const customers: Customer[] = myStoreCustomersData ?? [];
 
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -15,9 +16,8 @@ const page = async () => {
   // Total Users
   const totalUsers = customers.length;
 
-  // Total Users last month (cumulative up to end of last month)
   const totalUsersLastMonth = customers.filter(
-    (c) => new Date(c.createdAt) <= endOfLastMonth,
+    (c: Customer) => new Date(c.createdAt) <= endOfLastMonth,
   ).length;
 
   const totalUsersChange =
@@ -31,11 +31,10 @@ const page = async () => {
 
   // New Users this month
   const newUsersThisMonth = customers.filter(
-    (c) => new Date(c.createdAt) >= startOfMonth,
+    (c: Customer) => new Date(c.createdAt) >= startOfMonth,
   ).length;
 
-  // New Users last month
-  const newUsersLastMonth = customers.filter((c) => {
+  const newUsersLastMonth = customers.filter((c: Customer) => {
     const d = new Date(c.createdAt);
     return d >= startOfLastMonth && d <= endOfLastMonth;
   }).length;
@@ -51,12 +50,12 @@ const page = async () => {
 
   // Active Users = walletBalance > 0
   const activeUsersThisMonth = customers.filter(
-    (c) => c.walletBalance > 0,
+    (c: Customer) => c.walletBalance > 0,
   ).length;
 
-  // For change: active users among those who joined before this month
   const activeUsersLastMonth = customers.filter(
-    (c) => new Date(c.createdAt) <= endOfLastMonth && c.walletBalance > 0,
+    (c: Customer) =>
+      new Date(c.createdAt) <= endOfLastMonth && c.walletBalance > 0,
   ).length;
 
   const activeUsersChange =
@@ -72,18 +71,22 @@ const page = async () => {
   // Avg Monthly Budget
   const avgMonthlyBudget =
     customers.length > 0
-      ? customers.reduce((sum, c) => sum + (c.monthlyBudget ?? 0), 0) /
-        customers.length
+      ? customers.reduce(
+          (sum: number, c: Customer) => sum + (c.monthlyBudget ?? 0),
+          0,
+        ) / customers.length
       : 0;
 
-  // Avg Monthly Budget last month (customers who existed by end of last month)
-  const lastMonthCustomers = customers.filter(
-    (c) => new Date(c.createdAt) <= endOfLastMonth,
+  const lastMonthCustomers: Customer[] = customers.filter(
+    (c: Customer) => new Date(c.createdAt) <= endOfLastMonth,
   );
+
   const avgMonthlyBudgetLastMonth =
     lastMonthCustomers.length > 0
-      ? lastMonthCustomers.reduce((sum, c) => sum + (c.monthlyBudget ?? 0), 0) /
-        lastMonthCustomers.length
+      ? lastMonthCustomers.reduce(
+          (sum: number, c: Customer) => sum + (c.monthlyBudget ?? 0),
+          0,
+        ) / lastMonthCustomers.length
       : 0;
 
   const avgBudgetChange =

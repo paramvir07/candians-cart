@@ -5,13 +5,13 @@ import "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
 import mongoose, { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
-import { ICartItem } from "@/types/Customer/CustomerCart";
 import OrderModel, { PlaceOrderI, PlaceOrderProduct } from "@/db/models/customer/Orders.Model";
 import Customer from "@/db/models/customer/customer.model";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { getCustomerDataAction, getUser } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
+import { ICartItem } from "@/types/customer/CustomerCart";
 
 export const AddtoCart = async (ItemId: string) => {
   const customerDataresponse = await getCustomerDataAction();
