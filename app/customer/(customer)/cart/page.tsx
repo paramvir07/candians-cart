@@ -13,11 +13,11 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { ICartItem } from "@/types/Customer/CustomerCart"
 import { getUser } from "@/actions/customer/User.action"
 import { TopUpDialog } from "@/components/customer/wallet/TopupDialog"
 import ProgressBarCart from "@/components/customer/products/ProgressBarCart"
 import PlaceOrderBtn from "@/components/customer/products/PlaceOrderBtn"
+import { ICartItem } from "@/types/customer/CustomerCart"
 
 const fmt = (cents: number) => (cents / 100).toFixed(2)
 
