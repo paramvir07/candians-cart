@@ -1,10 +1,13 @@
+import { getMyStoreCustomers } from "@/actions/customer/User.action";
+import UserList from "@/components/shared/users/UserList";
 
-const page = () => {
+const page = async () => {
+  const { myStoreCustomersData } = await getMyStoreCustomers();
   return (
-    <div>
-      Cashier page
-    </div>
-  )
-}
+    <>
+      <UserList myStoreCustomersData={myStoreCustomersData} userRole="cashier"/>
+    </>
+  );
+};
 
-export default page
+export default page;

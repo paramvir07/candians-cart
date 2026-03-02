@@ -4,6 +4,7 @@ import Customer from "@/db/models/customer/customer.model";
 import { NextResponse } from "next/server";
 import { getUserSession } from "../auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
+import { Cashier } from "@/db/models/cashier/cashier.model";
 
 export const getUser = async () => {
   try {
@@ -91,13 +92,30 @@ export const getCustomerDataAction = async () => {
 
 export const getMyStoreCustomers = async () => {
   const session = await getUserSession();
+  const cashierRole = session.user.role === "cashier";
+  const adminRole = session.user.role === "admin";
   try {
     await dbConnect();
-    const myStore = await Store.findOne({ userId: session.user.id })
-      .select("_id")
-      .lean();
+    
+    let myStoreId;
+    if (cashierRole) {
+      const cashier = await Cashier.findOne({ userId: session.user.id }).lean();
+      myStoreId = cashier?.storeId;
+    } else if (adminRole) {
+      const myStore = await Store.findOne({ userId: session.user.id })
+        .select("_id")
+        .lean();
+      myStoreId = myStore?._id;
+    }
+
+    if (!myStoreId)
+      return {
+        success: false,
+        message: "Unable to find my store",
+      };
+
     const myStoreCustomersData = await Customer.find({
-      associatedStoreId: myStore?._id,
+      associatedStoreId: myStoreId,
     }).lean();
 
     if (!myStoreCustomersData)

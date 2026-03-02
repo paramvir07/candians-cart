@@ -8,14 +8,17 @@ import { Customer } from "@/types/customer/customer";
 import { CalendarDays, Search, Users, X } from "lucide-react";
 import CustomerCard from "./CustomerCard";
 import QrScannerButton from "./QrScannerButton";
+import { useRouter } from "next/navigation";
 
 type StoreUserListProps = {
   myStoreCustomersData: Customer[];
+  userRole?: string;
 };
 
 type SortOrder = "newest" | "oldest";
 
-const UserList = ({ myStoreCustomersData }: StoreUserListProps) => {
+const UserList = ({ myStoreCustomersData, userRole }: StoreUserListProps) => {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 
@@ -51,7 +54,9 @@ const UserList = ({ myStoreCustomersData }: StoreUserListProps) => {
         <div className="flex items-center justify-between px-3 pt-3 pb-2 sm:px-4">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-muted-foreground shrink-0" />
-            <h1 className="text-base sm:text-lg font-semibold">User List</h1>
+            <h1 className="text-base sm:text-lg font-semibold">
+              Customer List
+            </h1>
             <Badge variant="secondary" className="text-xs tabular-nums">
               {filtered.length}
               {filtered.length !== myStoreCustomersData.length && (
@@ -130,7 +135,16 @@ const UserList = ({ myStoreCustomersData }: StoreUserListProps) => {
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {filtered.map((customer) => (
-            <CustomerCard key={customer._id.toString()} customer={customer} />
+            <div
+              key={customer._id.toString()}
+              onClick={() => {
+                if (userRole === "cashier") {
+                  router.push(`cashier/customer/${customer._id}`);
+                }
+              }}
+            >
+              <CustomerCard customer={customer} />
+            </div>
           ))}
         </div>
       )}
