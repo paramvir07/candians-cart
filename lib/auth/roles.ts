@@ -18,6 +18,10 @@ export const roles = {
     user: [],
     session: [],
   }),
+  cashier: ac.newRole({
+    user: [],
+    session: [],
+  }),
   admin: ac.newRole({
     ...adminAc.statements, // admin gets admin permissions
   }),

@@ -35,6 +35,7 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
   const customer = userRole === "customer";
   const admin = userRole === "admin";
   const store = userRole === "store";
+  const cashier = userRole === "cashier";
 
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
@@ -52,7 +53,9 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
             ? router.push("/store")
             : admin
               ? router.push("/admin")
-              : router.push("/customer/login");
+              : cashier
+                ? router.push("/cashier")
+                : router.push("/customer/login");
       } else {
         toast.error(state.message);
       }
@@ -76,7 +79,9 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
                   ? "Login to your store account"
                   : admin
                     ? "Login to your admin account"
-                    : "Login to your account"}
+                    : cashier
+                      ? "Login to your cashier account"
+                      : "Login to your account"}
               </CardTitle>
               <CardDescription>
                 Enter your email below to login to your account

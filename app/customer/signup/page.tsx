@@ -11,14 +11,13 @@ export default async function Page() {
   });
   if (session) redirect("/");
 
-  const result = await getStores();
+  const storesResponse = await getStores();
 
-
-  if (!result.success) {
-    return <div>{result.error}</div>;
+  if (!storesResponse.success) {
+    return <div>{storesResponse.error}</div>;
   }
 
-  const data: StoreDocument[] = result.data;
+  const stores: StoreDocument[] = storesResponse.data;
 
   return (
     <div className="min-h-screen w-full bg-[#f9fafb] relative">
@@ -38,7 +37,7 @@ export default async function Page() {
         }}
       />
       {/* Your Content/Components */}
-      <SignupClient stores={data} />
+      <SignupClient stores={stores} />
     </div>
   );
 }

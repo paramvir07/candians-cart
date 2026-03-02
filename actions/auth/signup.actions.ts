@@ -2,17 +2,20 @@
 
 import { dbConnect } from "@/db/dbConnect";
 import ReferralCode from "@/db/models/admin/referralCode.model";
+import { Cashier } from "@/db/models/cashier/cashier.model";
 import Customer from "@/db/models/customer/customer.model";
 import Store from "@/db/models/store/store.model";
 import { auth } from "@/lib/auth/auth";
 import { UserRole } from "@/types/auth";
 import { IFormActionResponse } from "@/types/form";
 import { adminSignupSchema } from "@/zod/schemas/admin/adminSignup";
+import { cashierSchema } from "@/zod/schemas/cashier/cashierSchema";
 import { CustomerSchema } from "@/zod/schemas/customer/customerSignup";
 import { storeSignupSchema } from "@/zod/schemas/store/storeSignup";
 import { zodErrorResponse } from "@/zod/validation/error";
 import { formDataToObject } from "@/zod/validation/form";
 import mongoose from "mongoose";
+import { getUserSession } from "./getUserSession.actions";
 
 export const signupAction = async (
   userRole: UserRole,
@@ -53,6 +56,11 @@ export const signupAction = async (
           message: "Sorry, the referral code is no longer valid.",
         };
 
+      // Check if store exists before starting the transaction
+      const store = await Store.findById(data.associatedStore);
+
+      if (!store) return { success: false, message: "Store not found" };
+
       // Create auth user before transaction since it's an external system
       const newCustomerUser = await auth.api.signUpEmail({
         body: { name: data.name, email: data.email, password: data.password },
@@ -80,7 +88,7 @@ export const signupAction = async (
               city: data.city,
               province: data.province,
               monthlyBudget: data.monthlyBudget,
-              associatedStoreId: data.associatedStoreId,
+              associatedStoreId: data.associatedStore,
               referralCode: data.referralCode,
             },
           ],
@@ -91,7 +99,7 @@ export const signupAction = async (
           throw new Error("Something went wrong while creating account");
 
         const newStoreMember = await Store.findByIdAndUpdate(
-          data.associatedStoreId,
+          data.associatedStore,
           { $addToSet: { members: customer[0]._id } },
           { new: true, session },
         );
@@ -121,6 +129,10 @@ export const signupAction = async (
         session.endSession();
       }
     } else if (userRole === "store") {
+      const session = await getUserSession();
+      const adminRole = session.user.role === "admin";
+      if (!adminRole) return { success: false, message: "Unauthorized" };
+
       const result = storeSignupSchema.safeParse(rawData);
       if (!result.success) {
         const errorMessage = zodErrorResponse(result);
@@ -151,7 +163,50 @@ export const signupAction = async (
         mobile: data.mobile,
         address: data.address,
       });
+    } else if (userRole === "cashier") {
+      const session = await getUserSession();
+      const adminRole = session.user.role === "admin";
+      if (!adminRole) return { success: false, message: "Unauthorized" };
+
+      const result = cashierSchema.safeParse(rawData);
+      if (!result.success) {
+        const errorMessage = zodErrorResponse(result);
+        return { success: false, message: errorMessage || "Validation error" };
+      }
+      const data = result.data;
+
+      const store = await Store.findById(data.associatedStore);
+      if (!store) return { success: false, message: "Store not found" };
+
+      const newCashierUser = await auth.api.createUser({
+        body: {
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          role: "cashier",
+        },
+      });
+
+      if (!newCashierUser)
+        return {
+          success: false,
+          message: "Something went wrong while creating cashier account",
+        };
+
+      await dbConnect();
+      await Cashier.create({
+        userId: newCashierUser.user.id,
+        name: data.name,
+        email: data.email,
+        mobile: data.mobile,
+        address: data.address,
+        storeId: data.associatedStore,
+      });
     } else if (userRole === "admin") {
+      const session = await getUserSession();
+      const adminRole = session.user.role === "admin";
+      if (!adminRole) return { success: false, message: "Unauthorized" };
+
       const result = adminSignupSchema.safeParse(rawData);
       if (!result.success) {
         const errorMessage = zodErrorResponse(result);

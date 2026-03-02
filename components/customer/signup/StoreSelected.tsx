@@ -1,3 +1,4 @@
+"use client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,8 +15,10 @@ import {
   storeNameAtom,
 } from "@/atoms/customer/signUp";
 import { CheckCircle2 } from "lucide-react";
+import { UserRole } from "@/types/auth";
 
-const StoreSelected = () => {
+const StoreSelected = ({ userRole }: { userRole?: UserRole }) => {
+  const cashierRole = userRole === "cashier";
   const [store] = useAtom(storeNameAtom);
   const setStep = useSetAtom(stepAtom);
   const [isStoreSelectedDialogOpen, setIsStoreSelectedDialogOpen] = useAtom(
@@ -38,9 +41,19 @@ const StoreSelected = () => {
               Store Selected!
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-muted-foreground leading-relaxed">
-              <span className="font-semibold text-foreground">"{store}"</span>{" "}
-              is now set as your permanent store. You're one step away from
-              completing your registration.
+              {cashierRole ? (
+                <>
+                  You are about to assign this cashier to{" "}
+                  <span className="font-semibold text-foreground">{store}</span>
+                  . This will grant them access to operate within this store.
+                </>
+              ) : (
+                <>
+                  <span className="font-semibold text-foreground">{store}</span>{" "}
+                  is now set as your permanent store. You're one step away from
+                  completing your registration.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
         </div>
@@ -50,7 +63,7 @@ const StoreSelected = () => {
             className="w-full h-10 font-semibold shadow-md shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] transition-all duration-150"
             onClick={() => {
               setIsStoreSelectedDialogOpen(false);
-              setStep("code");
+              !cashierRole && setStep("code");
             }}
           >
             Continue →

@@ -21,6 +21,8 @@ export default async function RootLayout({
       redirect(`/admin`);
     } else if (role === "customer") {
       redirect(`/`);
+    } else if (role === "cashier") {
+      redirect(`/cashier`);
     } else {
       redirect("/store/login");
     }

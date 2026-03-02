@@ -11,7 +11,7 @@ export default async function CustomerPage() {
   const role = session.user.role;
 
   if (role !== "customer") {
-    if (role === "store" || role === "admin") redirect(`/${role}`);
+    if (role === "store" || role === "admin" || role === "cashier") redirect(`/${role}`);
     else redirect("/customer/login");
   }
 

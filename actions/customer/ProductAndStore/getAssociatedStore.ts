@@ -8,12 +8,10 @@ import Customer from "@/db/models/customer/customer.model";
 export default async function getStoreAndProduct() {
   try {
     const session = await getUserSession();
+    const userId = session.user.id;
     await dbConnect();
 
-    const userId = session.user.id;
-
     const customer = await Customer.findOne({ userId: userId });
-
 
     if (!customer) {
       throw new Error("Customer not found");

@@ -12,15 +12,15 @@ export default async function RootLayout({
   const session = await getUserSession();
   const role = session.user.role;
 
-  if (role !== "admin") {
+  if (role !== "cashier") {
     if (role === "store") {
       redirect(`/store`);
     } else if (role === "customer") {
       redirect(`/`);
-    } else if (role === "cashier") {
-      redirect(`/cashier`);
+    } else if (role === "admin") {
+      redirect(`/admin`);
     } else {
-      redirect("/admin/login");
+      redirect("/cashier/login");
     }
   }
   return (
