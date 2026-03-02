@@ -1,9 +1,10 @@
 "use client";
 // components/customer/products/ProductsSection.tsx
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { IProduct } from "@/types/store/products.types";
 import { CustomerProductCard } from "@/components/customer/products/CustomerProductCard";
+import { getCartQuantities } from "@/actions/customer/ProductAndStore/Cart.Action";
 import {
   FilterPanel,
   FilterTriggerButton,
@@ -41,6 +42,24 @@ export function ProductsSection({ products }: ProductsSectionProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
+  
+  // State to hold a map of Product ID -> Quantity in Cart
+  const [cartMap, setCartMap] = useState<Record<string, number>>({});
+
+  // Fetch the cart on load to populate initial quantities
+  useEffect(() => {
+    const fetchInitialCart = async () => {
+      try {
+        const map = await getCartQuantities();
+        if (map) {
+          setCartMap(map);
+        }
+      } catch (error) {
+        console.error("Failed to fetch cart quantities:", error);
+      }
+    };
+    fetchInitialCart();
+  }, []);
 
   const updateFilters = (partial: Partial<FilterState>) => {
     setFilters((prev) => ({ ...prev, ...partial }));
@@ -131,7 +150,7 @@ export function ProductsSection({ products }: ProductsSectionProps) {
         <div className="flex gap-8">
           {/* Desktop sidebar */}
           <aside className="hidden lg:block w-60 shrink-0">
-            <div className="sticky top-[57px] bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div className="sticky top-14.25 bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
               <div className="flex items-center gap-2 pb-4">
                 <span className="font-bold text-slate-900 text-sm">
                   Filters
@@ -172,7 +191,11 @@ export function ProductsSection({ products }: ProductsSectionProps) {
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {subsidisedProducts.map((p) => (
-                        <CustomerProductCard key={p._id} product={p} />
+                        <CustomerProductCard 
+                          key={p._id} 
+                          product={p} 
+                          cartQuantity={cartMap[p._id as string] || 0}
+                        />
                       ))}
                     </div>
                   </div>
@@ -188,7 +211,11 @@ export function ProductsSection({ products }: ProductsSectionProps) {
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {popularProducts.map((p) => (
-                        <CustomerProductCard key={p._id} product={p} />
+                        <CustomerProductCard 
+                          key={p._id} 
+                          product={p} 
+                          cartQuantity={cartMap[p._id as string] || 0}
+                        />
                       ))}
                     </div>
                   </div>
@@ -237,7 +264,11 @@ export function ProductsSection({ products }: ProductsSectionProps) {
               {paginated.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                   {paginated.map((product) => (
-                    <CustomerProductCard key={product._id} product={product} />
+                    <CustomerProductCard 
+                      key={product._id} 
+                      product={product} 
+                      cartQuantity={cartMap[product._id as string] || 0}
+                    />
                   ))}
                 </div>
               ) : (

@@ -33,62 +33,58 @@ export function SearchNav({
   };
 
   return (
-    <div className="w-full bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm sticky top-0 z-30">
-      <div className="flex items-center gap-3 p-3 w-full max-w-7xl mx-auto">
-        {/* Back — mobile */}
-        <Link href="/customer">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0 sm:hidden rounded-xl hover:bg-slate-100"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        </Link>
+    <nav className="flex items-center justify-between px-4 py-4 shadow-sm bg-white sticky top-0 z-30">
+      {/* Back Button — Mobile - Redirtects to home page*/}
+      <Link href="/" className="md:hidden mr-3">
+        <Button variant="ghost" size="icon" className="shrink-0 rounded-full">
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+      </Link>
 
-        {/* Logo — desktop */}
-        <div className="shrink-0 hidden sm:flex">
-          <Logo />
-        </div>
+      {/* Logo — Desktop matches Navbar */}
+      <div className="hidden md:flex shrink-0">
+        <Logo />
+      </div>
 
-        {/* Search form */}
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-1 items-center gap-2"
-        >
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-            <Input
-              type="text"
-              placeholder="Search products…"
-              value={query}
-              onChange={(e) => handleChange(e.target.value)}
-              autoFocus
-              className="pl-10 pr-10 rounded-xl border-slate-200 bg-slate-50 focus-visible:bg-white focus-visible:ring-green-500 h-11"
-            />
-            {query && (
-              <button
-                type="button"
-                onClick={() => handleChange("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors"
-              >
-                <X className="h-3 w-3 text-slate-600" />
-              </button>
-            )}
-          </div>
+      {/* Search Form (Matches the flex-1 mx-6 layout from Navbar) */}
+      <form
+        onSubmit={handleSubmit}
+        className="flex-1 md:mx-6 flex items-center justify-center w-full"
+      >
+        <div className="relative w-full flex">
+          <Input
+            type="text"
+            placeholder="Search products..."
+            value={query}
+            onChange={(e) => handleChange(e.target.value)}
+            autoFocus
+            className="rounded-r-none w-full"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => handleChange("")}
+              className="absolute right-14 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition-colors z-10"
+            >
+              <X className="h-3 w-3 text-slate-600" />
+            </button>
+          )}
           <Button
             type="submit"
-            className="rounded-xl bg-green-600 hover:bg-green-700 text-white px-5 h-11 font-semibold shrink-0 hidden sm:flex gap-2"
+            variant="outline"
+            className="rounded-l-none px-4 shrink-0 bg-slate-50 hover:bg-slate-100"
           >
             {isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <Search className="h-4 w-4" />
+              <Search className="w-5 h-5" />
             )}
-            Search
           </Button>
-        </form>
-      </div>
-    </div>
+        </div>
+      </form>
+
+      {/* Invisible spacer to perfectly balance the right side of the layout on Desktop so the search bar stays centered like in the Navbar */}
+      <div className="hidden md:block w-45 shrink-0 pointer-events-none"></div>
+    </nav>
   );
 }

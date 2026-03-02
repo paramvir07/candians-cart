@@ -273,3 +273,28 @@ export const getSubsidizedProducts = async () =>{
     console.log(err)
   }
 }
+
+export const getCartQuantities = async()=>{
+  const customerDataResponse = await getCustomerDataAction();
+  const user = customerDataResponse.customerData;
+  if(!user) return{};
+
+  await dbConnect();
+  try{
+    const foundCart = await CartModel.findOne({
+      customerId: user._id,
+    }).lean();
+
+    if(!foundCart || !foundCart.items) return {};
+
+    const map: Record<string, number> = {};
+    foundCart.items.forEach((item: { productId: mongoose.Types.ObjectId; quantity: number }) => {
+      map[item.productId.toString()] = item.quantity;
+    });
+    return map;
+
+  } catch(e){
+    console.error("Error fetching the cart quantity: ", e);
+    return{};
+  }
+}

@@ -1,16 +1,22 @@
 "use client";
 // components/customer/products/CustomerProductCard.tsx
 
-import { useState } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Sparkles, PackageX, PackageCheck, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { 
+  Sparkles, PackageX, PackageCheck, X, 
+  ShoppingCart, Loader2, Plus, Minus 
+} from "lucide-react";
+import { toast } from "sonner";
 import { IProduct } from "@/types/store/products.types";
 import {
   CategoryIllustration,
   getCategoryConfig,
 } from "@/components/customer/shared/CategoryIllustration";
 import { formatPrice } from "@/lib/fomatPrice";
+import { AddtoCart, IncrementItem, DecrementItem } from "@/actions/customer/ProductAndStore/Cart.Action";
 
 // ─── Detail Dialog ────────────────────────────────────────────────────────────
 
@@ -30,7 +36,7 @@ function ProductDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 overflow-hidden rounded-3xl gap-0 border-0 shadow-2xl">
         {/* Image hero */}
-        <div className="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden">
+        <div className="relative w-full aspect-4/3 bg-slate-100 overflow-hidden">
           {!product.stock && (
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex items-center justify-center">
               <span className="flex items-center gap-2 bg-white text-slate-900 text-sm font-bold px-4 py-2 rounded-full shadow-lg">
@@ -41,7 +47,7 @@ function ProductDetailDialog({
           )}
           {product.subsidised && (
             <div className="absolute top-0 left-0 z-20">
-              <div className="flex items-center gap-1.5 bg-gradient-to-r from-violet-600 to-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-br-2xl">
+              <div className="flex items-center gap-1.5 bg-linear-to-r from-violet-600 to-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-br-2xl">
                 <Sparkles className="h-3.5 w-3.5" />
                 SUBSIDISED
               </div>
@@ -119,7 +125,7 @@ function ProductDetailDialog({
                   <Sparkles className="h-3.5 w-3.5" />
                   Subsidised
                 </div>
-                <p className="text-[10px] text-slate-400 text-right max-w-[130px]">
+                <p className="text-[10px] text-slate-400 text-right max-w-32.5">
                   You may qualify for a reduced price
                 </p>
               </div>
@@ -133,12 +139,72 @@ function ProductDetailDialog({
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
-export function CustomerProductCard({ product }: { product: IProduct }) {
+export function CustomerProductCard({ 
+  product, 
+  cartQuantity = 0 
+}: { 
+  product: IProduct;
+  cartQuantity?: number; 
+}) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [quantity, setQuantity] = useState(cartQuantity);
+
+  // Update local state when the async cart fetch finishes
+  useEffect(() => {
+    setQuantity(cartQuantity);
+  }, [cartQuantity]);
 
   const hasImage = product.images?.length > 0 && !imgError;
   const catConfig = getCategoryConfig(product.category);
+
+  // Handlers
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setQuantity(1); // Optimistic UI update
+    startTransition(async () => {
+      try {
+        const res = await AddtoCart(product._id as string);
+        if (res?.success) {
+          toast.success(`${product.name} added to cart!`);
+        } else {
+          setQuantity(0); // Revert on failure
+        }
+      } catch (error) {
+        setQuantity(0);
+        toast.error("Failed to add to cart");
+      }
+    });
+  };
+
+  const handleIncrement = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setQuantity((q) => q + 1); // Optimistic update
+    startTransition(async () => {
+      try {
+        const formData = new FormData();
+        formData.append("productId", product._id as string);
+        await IncrementItem(formData);
+      } catch (error) {
+        setQuantity((q) => Math.max(0, q - 1)); // Revert on failure
+      }
+    });
+  };
+
+  const handleDecrement = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setQuantity((q) => Math.max(0, q - 1)); // Optimistic update
+    startTransition(async () => {
+      try {
+        const formData = new FormData();
+        formData.append("productId", product._id as string);
+        await DecrementItem(formData);
+      } catch (error) {
+        setQuantity((q) => q + 1); // Revert on failure
+      }
+    });
+  };
 
   return (
     <>
@@ -148,13 +214,12 @@ export function CustomerProductCard({ product }: { product: IProduct }) {
         onOpenChange={setDialogOpen}
       />
 
-      <button
-        type="button"
+      <div
         onClick={() => setDialogOpen(true)}
-        className="group w-full text-left bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
+        className="group w-full cursor-pointer text-left bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
       >
         {/* Image */}
-        <div className="relative aspect-[4/3] w-full overflow-hidden">
+        <div className="relative aspect-4/3 w-full overflow-hidden">
           {!product.stock && (
             <div className="absolute inset-0 bg-white/75 backdrop-blur-[2px] z-10 flex items-center justify-center">
               <span className="text-xs font-bold text-slate-600 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
@@ -164,7 +229,7 @@ export function CustomerProductCard({ product }: { product: IProduct }) {
           )}
           {product.subsidised && (
             <div className="absolute top-0 left-0 z-20">
-              <div className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-violet-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-br-xl">
+              <div className="flex items-center gap-1 bg-linear-to-r from-violet-600 to-violet-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-br-xl">
                 <Sparkles className="h-3 w-3" />
                 SUBSIDISED
               </div>
@@ -213,8 +278,55 @@ export function CustomerProductCard({ product }: { product: IProduct }) {
               <span className="w-2 h-2 rounded-full bg-red-400" />
             )}
           </div>
+          
+          {/* Action Buttons */}
+          <div className="mt-2 h-9 flex items-center justify-center">
+            {quantity > 0 ? (
+              <div 
+                className="flex items-center justify-between w-full px-1" 
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={handleDecrement}
+                  disabled={isPending}
+                  className="w-8 h-8 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-50"
+                >
+                  <Minus size={13} strokeWidth={2} className="text-slate-600" />
+                </button>
+                <span className="text-sm font-semibold text-gray-900 w-6 text-center tabular-nums">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleIncrement}
+                  disabled={isPending || quantity >= 99}
+                  className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center hover:opacity-80 transition-opacity disabled:opacity-50"
+                >
+                  <Plus size={13} strokeWidth={2} className="text-white" />
+                </button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant={product.stock ? "default" : "secondary"}
+                disabled={!product.stock || isPending}
+                onClick={handleAddToCart}
+                className={`w-full rounded-xl h-full text-xs font-bold transition-all ${
+                  product.stock ? "bg-green-600 hover:bg-green-700 text-white" : ""
+                }`}
+              >
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ShoppingCart className="h-4 w-4 mr-1.5" />
+                )}
+                {product.stock ? "Add to Cart" : "Out of Stock"}
+              </Button>
+            )}
+          </div>
         </div>
-      </button>
+      </div>
     </>
   );
 }
