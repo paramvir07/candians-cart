@@ -39,8 +39,6 @@ export const getCustomerAndStoreDataAction = async () => {
     })
       .populate("associatedStoreId")
       .lean();
-
-    console.log({ customerData });
     if (!customerData)
       return {
         success: false,

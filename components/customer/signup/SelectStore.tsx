@@ -11,18 +11,24 @@ import {
 import { StoreDocument } from "@/types/store/store";
 import { StoreInfoDialog } from "./StoreInfoDialog";
 import { useState } from "react";
+import { UserRole } from "@/types/auth";
 
-const SelectStore = ({ stores }: { stores: StoreDocument[] }) => {
+const SelectStore = ({
+  stores,
+  userRole,
+}: {
+  stores: StoreDocument[];
+  userRole?: UserRole;
+}) => {
   const [selectedStoreInfo, setSelectedStoreInfo] =
     useState<StoreDocument | null>(null);
   const [hoveredStore, setHoveredStore] = useState<string | null>(null);
-
   const setStore = useSetAtom(storeNameAtom);
   const setStoreId = useSetAtom(storeIdAtom);
   const setIsStoreSelectedDialogOpen = useSetAtom(
     isStoreSelectedDialogOpenAtom,
   );
-
+  const cashierRole = userRole === "cashier";
   const handleStoreSelect = (storeName: string, storeId: string) => {
     setStore(storeName);
     setStoreId(storeId);
@@ -36,10 +42,14 @@ const SelectStore = ({ stores }: { stores: StoreDocument[] }) => {
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 text-primary mb-2">
           <Store className="h-5 w-5" />
         </div>
-        <h2 className="text-lg font-semibold">Choose Your Store</h2>
-        <p className="text-muted-foreground text-sm">
-          Select the nearest grocery store to get started.
-        </p>
+        <h2 className="text-lg font-semibold">
+          {cashierRole ? "Select Cashier's Store" : "Choose Your Store"}
+        </h2>
+        {!cashierRole && (
+          <p className="text-muted-foreground text-sm">
+            Select the nearest grocery store to get started.
+          </p>
+        )}
       </div>
 
       {/* Store list */}
@@ -84,6 +94,7 @@ const SelectStore = ({ stores }: { stores: StoreDocument[] }) => {
                 {/* Actions — stacked vertically like the original */}
                 <div className="flex flex-col items-stretch gap-1.5 w-24 shrink-0">
                   <Button
+                    type="button"
                     size="sm"
                     className="h-7 text-xs font-semibold shadow-sm shadow-primary/20 hover:shadow-primary/30 transition-shadow"
                     onClick={() => handleStoreSelect(s.name, s._id)}
@@ -91,6 +102,7 @@ const SelectStore = ({ stores }: { stores: StoreDocument[] }) => {
                     Select
                   </Button>
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
                     className="h-7 text-xs text-muted-foreground hover:text-foreground"

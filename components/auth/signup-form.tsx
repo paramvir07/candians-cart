@@ -22,7 +22,14 @@ import { signupAction } from "@/actions/auth/signup.actions";
 import { Eye, EyeOff, ShoppingCart } from "lucide-react";
 import { UserRole } from "@/types/auth";
 import { useAtom } from "jotai";
-import { budgetAtom, referralCodeAtom, storeIdAtom } from "@/atoms/customer/signUp";
+import {
+  budgetAtom,
+  referralCodeAtom,
+  storeIdAtom,
+} from "@/atoms/customer/signUp";
+import SelectStore from "../customer/signup/SelectStore";
+import { StoreDocument } from "@/types/store/store";
+import StoreSelected from "../customer/signup/StoreSelected";
 const initialState = {
   success: false,
   message: "",
@@ -30,10 +37,10 @@ const initialState = {
 
 type SignupFormProps = React.ComponentProps<typeof Card> & {
   userRole: UserRole;
+  stores?: StoreDocument[];
 };
 
-export function SignupForm({ userRole, ...props }: SignupFormProps) {
-
+export function SignupForm({ userRole, stores, ...props }: SignupFormProps) {
   //customer data
   const [budget] = useAtom(budgetAtom);
   const [storeId] = useAtom(storeIdAtom);
@@ -42,9 +49,9 @@ export function SignupForm({ userRole, ...props }: SignupFormProps) {
   const customer = userRole === "customer";
   const admin = userRole === "admin";
   const store = userRole === "store";
+  const cashier = userRole === "cashier";
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [hasCar, setHasCar] = useState(false);
 
   const [state, formAction, isPending] = useActionState(
     signupAction.bind(null, userRole),
@@ -56,11 +63,9 @@ export function SignupForm({ userRole, ...props }: SignupFormProps) {
         toast.success(state.message);
         customer
           ? router.push("/")
-          : store
-            ? router.push("/store")
-            : admin
-              ? router.push("/admin")
-              : router.push("/customer/login");
+          : store || cashier || admin
+            ? router.push("/admin")
+            : router.push("/customer/login");
       } else {
         toast.error(state.message);
       }
@@ -85,14 +90,18 @@ export function SignupForm({ userRole, ...props }: SignupFormProps) {
                     ? "Register a new store"
                     : admin
                       ? "Register a new admin"
-                      : "Create an account"}
+                      : cashier
+                        ? "Register a new cashier"
+                        : "Create an account"}
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-center">
                   {store
                     ? "Enter new store information below to register a new store"
                     : admin
                       ? "Enter new admin information below to register a new admin"
-                      : "Join the Candian's Cart family today!"}
+                      : cashier
+                        ? "Enter new cashier information below to register a new cashier"
+                        : "Join the Candian's Cart family today!"}
                 </CardDescription>
               </div>
             </div>
@@ -112,6 +121,7 @@ export function SignupForm({ userRole, ...props }: SignupFormProps) {
                     required
                   />
                 </Field>
+
                 <Field>
                   <FieldLabel htmlFor="email">Email *</FieldLabel>
                   <Input
@@ -147,16 +157,20 @@ export function SignupForm({ userRole, ...props }: SignupFormProps) {
                   </FieldDescription>
                 </Field>
                 <Field hidden={admin}>
-                  <FieldLabel htmlFor="address">Adrress *</FieldLabel>
+                  <FieldLabel htmlFor="address">Address *</FieldLabel>
                   <Input
                     id="address"
                     type="text"
                     name="address"
-                    placeholder="123 Main St"
-                    required={customer || store}
+                    placeholder={
+                      customer
+                        ? "308-123 Main St"
+                        : "308-123 Main St, Langley, BC V6Z 3E1"
+                    }
+                    required={customer || store || cashier}
                   />
                 </Field>
-                <Field hidden={admin || store}>
+                <Field hidden={admin || store || cashier}>
                   <div className="flex justify-center items-center gap-3">
                     <div>
                       <FieldLabel htmlFor="city">City *</FieldLabel>
@@ -187,12 +201,18 @@ export function SignupForm({ userRole, ...props }: SignupFormProps) {
                     name="mobile"
                     type="tel"
                     placeholder="5551234567"
-                    required={customer || store}
+                    required={customer || store || cashier}
                     pattern="[0-9]{10}"
                     maxLength={10}
                     title="Mobile number must be exactly 10 digits"
                   />
                 </Field>
+                {cashier && (
+                  <>
+                    <SelectStore stores={stores || []} userRole="cashier" />
+                    <StoreSelected userRole="cashier" />
+                  </>
+                )}
 
                 {customer && (
                   <>
@@ -201,23 +221,28 @@ export function SignupForm({ userRole, ...props }: SignupFormProps) {
                       type="hidden"
                       name="monthlyBudget"
                       value={budget ?? ""}
+                      required={customer}
                     />
-
-                    <Input
-                      id="associatedStoreId"
-                      type="hidden"
-                      name="associatedStoreId"
-                      value={storeId?.toString() ?? ""}
-                    />
-
                     <Input
                       id="referralCode"
                       type="hidden"
                       name="referralCode"
                       value={referralCode ?? ""}
+                      required={customer}
                     />
                   </>
                 )}
+
+                {customer ||
+                  (cashier && (
+                    <Input
+                      id="associatedStore"
+                      type="hidden"
+                      name="associatedStore"
+                      value={storeId.toString() || ""}
+                      required={customer || cashier}
+                    />
+                  ))}
 
                 <Field>
                   <Button type="submit">
