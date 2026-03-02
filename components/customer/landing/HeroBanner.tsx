@@ -6,7 +6,7 @@ import { Leaf, Zap, ShieldCheck } from "lucide-react";
 
 export function HeroBanner() {
   return (
-    <section className="relative bg-gradient-to-br from-green-700 via-green-600 to-emerald-500 overflow-hidden">
+    <section className="relative bg-linear-to-br from-green-700 via-green-600 to-emerald-500 overflow-hidden">
       {/* Dot grid texture */}
       <div
         className="absolute inset-0 opacity-[0.07]"
@@ -17,7 +17,7 @@ export function HeroBanner() {
         }}
       />
       {/* Decorative blobs */}
-      <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-white/10 blur-3xl" />
+      <div className="absolute -top-32 -right-32 w-125 h-125 rounded-full bg-white/10 blur-3xl" />
       <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-emerald-400/30 blur-2xl" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20">
@@ -26,18 +26,18 @@ export function HeroBanner() {
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-muted- text-xs font-bold px-4 py-1.5 rounded-full border border-white/30">
               <Leaf className="h-3.5 w-3.5" />
-              Fresh · Local · Delivered
+              Fresh · Local · Rewards
             </div>
 
             <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-black text-primary leading-[1.05] tracking-tight">
               Fresh groceries
               <br />
-              <span className="text-green-200">at your door.</span>
+              <span className="text-green-200">with real rewards!</span>
             </h1>
 
             <p className="text-green-100 text-lg leading-relaxed max-w-md">
-              From farm-fresh produce to pantry essentials — everything you
-              need, delivered fast.
+              From farm-fresh produce to pantry essentials — 
+              everything you need, all in one place.
             </p>
 
             {/* Search bar — links to /customer/search */}
@@ -71,7 +71,7 @@ export function HeroBanner() {
               {[
                 {
                   icon: <Zap className="h-3.5 w-3.5" />,
-                  label: "Quick delivery",
+                  label: "Great value",
                 },
                 {
                   icon: <ShieldCheck className="h-3.5 w-3.5" />,
