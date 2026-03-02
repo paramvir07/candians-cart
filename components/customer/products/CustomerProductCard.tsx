@@ -228,7 +228,7 @@ export function CustomerProductCard({
             </div>
           )}
           {product.subsidised && (
-            <div className="absolute top-0 left-0 z-20">
+            <div className="absolute top-0 left-0 z-10">
               <div className="flex items-center gap-1 bg-linear-to-r from-violet-600 to-violet-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-br-xl">
                 <Sparkles className="h-3 w-3" />
                 SUBSIDISED

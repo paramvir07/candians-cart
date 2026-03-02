@@ -38,7 +38,6 @@ interface ProductsSectionProps {
 
 export function ProductsSection({ products }: ProductsSectionProps) {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -61,32 +60,46 @@ export function ProductsSection({ products }: ProductsSectionProps) {
     fetchInitialCart();
   }, []);
 
+  // DELAY THE SCROLL SO REACT HAS TIME TO RENDER THE NEW HEIGHT
+  const scrollToGrid = () => {
+    setTimeout(() => {
+      gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
+
   const updateFilters = (partial: Partial<FilterState>) => {
     setFilters((prev) => ({ ...prev, ...partial }));
     setCurrentPage(1);
+    scrollToGrid();
   };
+  
   const resetFilters = () => {
     setFilters(DEFAULT_FILTERS);
-    setCurrentPage(1);
-  };
-  const handleCategorySelect = (cat: string | null) => {
-    setActiveCategory(cat);
     setCurrentPage(1);
     scrollToGrid();
   };
 
-  const activeFilterCount =
-    getActiveFilterCount(filters) + (activeCategory ? 1 : 0);
+  const handleCategorySelect = (cat: string | null) => {
+    if (cat === null) {
+      updateFilters({ categories: [] });
+    } else {
+      const next = filters.categories.includes(cat)
+        ? filters.categories.filter((c) => c !== cat)
+        : [...filters.categories, cat];
+      updateFilters({ categories: next });
+    }
+  };
+
+  const activeFilterCount = getActiveFilterCount(filters);
 
   // Apply all filters + sort
   const filtered = useMemo(() => {
     let result = [...products];
-    if (activeCategory)
-      result = result.filter((p) => p.category === activeCategory);
     if (filters.categories.length > 0)
       result = result.filter((p) => filters.categories.includes(p.category));
     if (filters.inStockOnly) result = result.filter((p) => p.stock);
     if (filters.subsidisedOnly) result = result.filter((p) => p.subsidised);
+    
     switch (filters.sortBy) {
       case "price_asc":
         result.sort((a, b) => a.price - b.price);
@@ -99,7 +112,7 @@ export function ProductsSection({ products }: ProductsSectionProps) {
         break;
     }
     return result;
-  }, [products, activeCategory, filters]);
+  }, [products, filters]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice(
@@ -109,7 +122,7 @@ export function ProductsSection({ products }: ProductsSectionProps) {
 
   const subsidisedProducts = products.filter((p) => p.subsidised).slice(0, 8);
   const popularProducts = products.filter((p) => p.stock).slice(0, 8);
-  const isShowingAll = !activeCategory && getActiveFilterCount(filters) === 0;
+  const isShowingAll = getActiveFilterCount(filters) === 0;
 
   const getPageNumbers = (): (number | "ellipsis")[] => {
     if (totalPages <= 5)
@@ -135,14 +148,11 @@ export function ProductsSection({ products }: ProductsSectionProps) {
     ];
   };
 
-  const scrollToGrid = () =>
-    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-
   return (
     <>
       {/* Sticky category pills */}
       <CategoryPillsBar
-        activeCategory={activeCategory}
+        activeCategories={filters.categories}
         onSelect={handleCategorySelect}
       />
 
@@ -223,16 +233,18 @@ export function ProductsSection({ products }: ProductsSectionProps) {
               </>
             )}
 
-            {/* All products grid */}
-            <div ref={gridRef}>
+            {/* All products grid - SCROLL OFFSET KEEPS HEADER VISIBLE */}
+            <div ref={gridRef} className="scroll-mt-24">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="font-bold text-slate-900 text-lg">
-                    {activeCategory
-                      ? activeCategory
-                      : isShowingAll
-                        ? "All Products"
-                        : "Results"}
+                    {filters.categories.length === 1
+                      ? filters.categories[0]
+                      : filters.categories.length > 1
+                        ? "Multiple Categories"
+                        : isShowingAll
+                          ? "All Products"
+                          : "Results"}
                   </h2>
                   <p className="text-sm text-slate-500 mt-0.5">
                     {filtered.length} item{filtered.length !== 1 ? "s" : ""}
@@ -240,10 +252,7 @@ export function ProductsSection({ products }: ProductsSectionProps) {
                       <>
                         {" · "}
                         <button
-                          onClick={() => {
-                            resetFilters();
-                            setActiveCategory(null);
-                          }}
+                          onClick={resetFilters}
                           className="text-green-600 hover:text-green-700 font-medium"
                         >
                           Clear filters
@@ -281,10 +290,7 @@ export function ProductsSection({ products }: ProductsSectionProps) {
                     Try adjusting your filters or browse all categories.
                   </p>
                   <button
-                    onClick={() => {
-                      resetFilters();
-                      setActiveCategory(null);
-                    }}
+                    onClick={resetFilters}
                     className="text-sm text-green-600 font-semibold hover:text-green-700 underline underline-offset-2"
                   >
                     Start fresh

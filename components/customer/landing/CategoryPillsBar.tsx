@@ -7,12 +7,12 @@ import {
 } from "@/components/customer/shared/CategoryIllustration";
 
 interface CategoryPillsBarProps {
-  activeCategory: string | null;
+  activeCategories: string[];
   onSelect: (cat: string | null) => void;
 }
 
 export function CategoryPillsBar({
-  activeCategory,
+  activeCategories,
   onSelect,
 }: CategoryPillsBarProps) {
   return (
@@ -22,7 +22,7 @@ export function CategoryPillsBar({
           <button
             onClick={() => onSelect(null)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border transition-all duration-200 shrink-0 ${
-              activeCategory === null
+              activeCategories.length === 0
                 ? "bg-green-600 text-white border-green-600 shadow-md shadow-green-100"
                 : "bg-white text-slate-600 border-slate-200 hover:border-green-300 hover:text-green-700"
             }`}
@@ -31,11 +31,11 @@ export function CategoryPillsBar({
           </button>
           {ALL_CATEGORIES.map((cat) => {
             const cfg = getCategoryConfig(cat);
-            const active = activeCategory === cat;
+            const active = activeCategories.includes(cat);
             return (
               <button
                 key={cat}
-                onClick={() => onSelect(active ? null : cat)}
+                onClick={() => onSelect(cat)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border transition-all duration-200 shrink-0 ${
                   active
                     ? `${cfg.bg} ${cfg.text} ${cfg.border} shadow-md`

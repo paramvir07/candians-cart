@@ -240,6 +240,24 @@ export const PlaceOrder = async () => {
   }
 }
 
+/**
+ * Retrieves the total count of unique products currently in the user's cart.
+ * * @description
+ * This function fetches the current authenticated user and queries the database for their cart. 
+ * It returns the total number of distinct products (the length of the cart's `items` array). 
+ * Note: It counts unique item entries, not the sum of individual item quantities.
+ * * **Use Case:**
+ * Perfect for updating the cart icon badge in the navigation header. For example, if a user 
+ * has 3 Apples and 2 Bananas, the badge should display "2" to indicate two types of items.
+ * * @returns {Promise<number>} The number of unique products in the cart. Returns `0` if the user is unauthenticated or the cart is empty/non-existent.
+ * * @example
+ * // Cart contains: [{ productId: '123', quantity: 3 }, { productId: '456', quantity: 2 }]
+ * const itemCount = await getCartItemsCount();
+ * console.log(itemCount); 
+ * // Output: 2
+ */
+
+
 export const getCartItemsCount = async () =>{
   try{
     await dbConnect();
@@ -273,6 +291,29 @@ export const getSubsidizedProducts = async () =>{
     console.log(err)
   }
 }
+
+/**
+ * Retrieves a dictionary mapping product IDs to their exact quantities in the user's cart.
+ * * @description
+* This function looks at the user's cart and creates a simple lookup dictionary. 
+ * Instead of returning a complex list of items, it gives you a straightforward object 
+ * where each Product ID is paired with how many of that product are in the cart.
+ * * For example, if a user has 3 Apples (Product ID: "123") and 1 Banana (Product ID: "456") 
+ * in their cart, this function transforms that into a simple format: 
+ * { "123": 3, "456": 1 }
+ * * **Use Case:**
+ * Best used on Product Listing Pages (PLPs) or Product Detail Pages (PDPs). It allows the UI 
+ * to do a fast `O(1)` lookup to see if a specific product is already in the cart and display 
+ * its current quantity in an "Add to Cart" counter (e.g., [ - ] 1 [ + ]).
+ * * @returns {Promise<Record<string, number>>} A map of Product IDs (strings) to quantities (numbers). Returns an empty object `{}` if the cart or user is not found.
+ * * @example
+ * // Cart contains: [{ productId: '60d5ec49', quantity: 3 }, { productId: '60d5ec50', quantity: 1 }]
+ * const quantities = await getCartQuantities();
+ * console.log(quantities);
+ * // Output: { "60d5ec49": 3, "60d5ec50": 1 }
+ * * // Usage in UI component:
+ * // const currentQty = quantities[product._id] || 0;
+ */
 
 export const getCartQuantities = async()=>{
   const customerDataResponse = await getCustomerDataAction();
