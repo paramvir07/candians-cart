@@ -48,7 +48,7 @@ export const ReOrder = async (orderId: string) => {
     await CartModel.findOneAndUpdate(
       { customerId: userOrder.userId },
       { $push: { items: { $each: itemsToInsert } } },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" },
     );
     revalidatePath('/');
     return { success: true, message: "Items added to cart successfully"};

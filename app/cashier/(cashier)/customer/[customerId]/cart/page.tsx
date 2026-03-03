@@ -1,9 +1,10 @@
-import React from 'react'
+import CustomerCart from "@/components/shared/users/CustomerCart";
+import { CustomerIdParams } from "@/types/cashier/customer";
 
-const page = () => {
-  return (
-    <div>customer cart</div>
-  )
-}
+const page = async ({ params }: CustomerIdParams) => {
+  const recievedParams = await params;
+  const customerId = recievedParams.customerId;
+  return <CustomerCart customerId={customerId} />;
+};
 
-export default page
+export default page;

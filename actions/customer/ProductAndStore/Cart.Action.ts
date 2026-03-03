@@ -5,16 +5,19 @@ import "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
 import mongoose, { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
-import OrderModel, { PlaceOrderI, PlaceOrderProduct } from "@/db/models/customer/Orders.Model";
+import OrderModel, {
+  PlaceOrderI,
+  PlaceOrderProduct,
+} from "@/db/models/customer/Orders.Model";
 import Customer from "@/db/models/customer/customer.model";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { getCustomerDataAction, getUser } from "../User.action";
+import { getCustomerDataAction } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
 import { ICartItem } from "@/types/customer/CustomerCart";
 
-export const AddtoCart = async (ItemId: string) => {
-  const customerDataresponse = await getCustomerDataAction();
+export const AddtoCart = async (ItemId: string, customerId?: string) => {
+  const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
   if (!user) return null;
 
@@ -67,8 +70,11 @@ export const AddtoCart = async (ItemId: string) => {
   }
 };
 
-export const IncrementItem = async (formData: FormData) => {
-  const customerDataresponse = await getCustomerDataAction();
+export const IncrementItem = async (
+  customerId: string | undefined,
+  formData: FormData,
+) => {
+  const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
   if (!user) return;
 
@@ -100,8 +106,11 @@ export const IncrementItem = async (formData: FormData) => {
   revalidatePath("/customer/cart");
 };
 
-export const DecrementItem = async (formData: FormData) => {
-  const customerDataresponse = await getCustomerDataAction();
+export const DecrementItem = async (
+  customerId: string | undefined,
+  formData: FormData,
+) => {
+  const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
   if (!user) return;
 
@@ -130,8 +139,11 @@ export const DecrementItem = async (formData: FormData) => {
   revalidatePath("/customer/cart");
 };
 
-export const RemoveItem = async (formData: FormData) => {
-  const customerDataresponse = await getCustomerDataAction();
+export const RemoveItem = async (
+  customerId: string | undefined,
+  formData: FormData,
+) => {
+  const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
   if (!user) return;
 
@@ -157,11 +169,11 @@ export const RemoveItem = async (formData: FormData) => {
   revalidatePath("/customer/cart");
 };
 
-export const getCart = async () => {
-  const customerDataresponse = await getCustomerDataAction();
+export const getCart = async (customerId?: string) => {
+  const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
   if (!user) return;
-  
+
   await dbConnect();
   try {
     const foundCart = await CartModel.findOne({
@@ -176,27 +188,28 @@ export const getCart = async () => {
   }
 };
 
-export const PlaceOrder = async () => {
-  await dbConnect()
+export const PlaceOrder = async (customerId?: string) => {
+  await dbConnect();
 
-  const user = await getUser()
-  const cartItems = (await getCart()) as ICartItem[] | null
+  const customerDataresponse = await getCustomerDataAction(customerId);
+  const user = customerDataresponse.customerData;
+  const cartItems = (await getCart()) as ICartItem[] | null;
 
-  if (!user || !cartItems || cartItems.length === 0) return null
+  if (!user || !cartItems || cartItems.length === 0) return null;
 
   try {
-    const userId = user._id.toString()
-    const storeId = user.associatedStoreId.toString()
-    const walletBalance = user.walletBalance ?? 0
-    const giftWalletBalance = user.giftWalletBalance ?? 0
+    const walletBalance = user.walletBalance ?? 0;
+    const giftWalletBalance = user.giftWalletBalance ?? 0;
 
     const products: PlaceOrderProduct[] = cartItems.map((item) => {
-      const base = item.productId.price * item.quantity
-      const markupAmount = base * (item.productId.markup / 100)
-      const subtotalWithMarkup = base + markupAmount
-      const taxAmount = subtotalWithMarkup * item.productId.tax
-      const disposableFee = item.productId.disposableFee ?? 0
-      const total = Math.round((subtotalWithMarkup + taxAmount + disposableFee) * 100) / 100
+      const base = item.productId.price * item.quantity;
+      const markupAmount = base * (item.productId.markup / 100);
+      const subtotalWithMarkup = base + markupAmount;
+      const taxAmount = subtotalWithMarkup * item.productId.tax;
+      const disposableFee = item.productId.disposableFee ?? 0;
+      const total =
+        Math.round((subtotalWithMarkup + taxAmount + disposableFee) * 100) /
+        100;
 
       return {
         productId: new Types.ObjectId(item.productId._id),
@@ -205,13 +218,15 @@ export const PlaceOrder = async () => {
         tax: item.productId.tax,
         disposableFee,
         total,
-      }
-    })
+      };
+    });
 
-    const cartTotal = Math.round(products.reduce((sum, item) => sum + item.total, 0) * 100) / 100
+    const cartTotal =
+      Math.round(products.reduce((sum, item) => sum + item.total, 0) * 100) /
+      100;
 
     if (user.walletBalance < cartTotal / 100) {
-      return { success: false, error: "Insufficient Funds" }
+      return { success: false, error: "Insufficient Funds" };
     }
 
     const orderData: PlaceOrderI = {
@@ -220,90 +235,91 @@ export const PlaceOrder = async () => {
       userWalletBalance: walletBalance,
       giftWalletBalance,
       userId: user._id,
-      storeId:user.associatedStoreId,
-    }
+      storeId: user.associatedStoreId,
+    };
 
-    await OrderModel.create(orderData)
+    await OrderModel.create(orderData);
     await Customer.findOneAndUpdate(
       { _id: user._id },
       { $inc: { walletBalance: -(cartTotal / 100) } },
-      { new: true }
-    )
-    await CartModel.deleteOne({ customerId: user._id })
+      { returnDocument: "after" },
+    );
+    await CartModel.deleteOne({ customerId: user._id });
 
-    redirect("/")
-  } catch (error) {CartModel
-    if (isRedirectError(error)) throw error
+    redirect("/");
+  } catch (error) {
+    CartModel;
+    if (isRedirectError(error)) throw error;
 
-    console.error("PlaceOrder error:", error)
-    return { success: false, error: "Something went wrong" }
+    console.error("PlaceOrder error:", error);
+    return { success: false, error: "Something went wrong" };
   }
-}
+};
 
 /**
  * Retrieves the total count of unique products currently in the user's cart.
  * * @description
- * This function fetches the current authenticated user and queries the database for their cart. 
- * It returns the total number of distinct products (the length of the cart's `items` array). 
+ * This function fetches the current authenticated user and queries the database for their cart.
+ * It returns the total number of distinct products (the length of the cart's `items` array).
  * Note: It counts unique item entries, not the sum of individual item quantities.
  * * **Use Case:**
- * Perfect for updating the cart icon badge in the navigation header. For example, if a user 
+ * Perfect for updating the cart icon badge in the navigation header. For example, if a user
  * has 3 Apples and 2 Bananas, the badge should display "2" to indicate two types of items.
  * * @returns {Promise<number>} The number of unique products in the cart. Returns `0` if the user is unauthenticated or the cart is empty/non-existent.
  * * @example
  * // Cart contains: [{ productId: '123', quantity: 3 }, { productId: '456', quantity: 2 }]
  * const itemCount = await getCartItemsCount();
- * console.log(itemCount); 
+ * console.log(itemCount);
  * // Output: 2
  */
 
-
-export const getCartItemsCount = async () =>{
-  try{
+export const getCartItemsCount = async (customerId?: string) => {
+  try {
     await dbConnect();
-    const user = await getUser()
-    if(!user) return 0
+    const customerDataresponse = await getCustomerDataAction(customerId);
+    const user = customerDataresponse.customerData;
+    if (!user) return 0;
 
-    const Cart = await CartModel.findOne({ customerId: user._id })
-    if(!Cart) return 0
+    const Cart = await CartModel.findOne({ customerId: user._id });
+    if (!Cart) return 0;
 
     const count = Cart.items.length;
-    return count
-
-
-  }catch(err){
-    console.log(err)
+    return count;
+  } catch (err) {
+    console.log(err);
   }
-}
+};
 
-export const getSubsidizedProducts = async () =>{
-    try{
+export const getSubsidizedProducts = async (customerId?: string) => {
+  try {
     await dbConnect();
-    const user = await getUser()
-    if(!user) return null
+    const customerDataresponse = await getCustomerDataAction(customerId);
+    const user = customerDataresponse.customerData;
+    if (!user) return null;
 
-    const getProducts = await productsModel.find({storeId: user.associatedStoreId,subsidised: true}).lean();
+    const getProducts = await productsModel
+      .find({ storeId: user.associatedStoreId, subsidised: true })
+      .lean();
 
     const products = JSON.parse(JSON.stringify(getProducts));
-    return products
-
-  }catch(err){
-    console.log(err)
+    return products;
+  } catch (err) {
+    console.log(err);
   }
-}
+};
 
 /**
  * Retrieves a dictionary mapping product IDs to their exact quantities in the user's cart.
  * * @description
-* This function looks at the user's cart and creates a simple lookup dictionary. 
- * Instead of returning a complex list of items, it gives you a straightforward object 
+ * This function looks at the user's cart and creates a simple lookup dictionary.
+ * Instead of returning a complex list of items, it gives you a straightforward object
  * where each Product ID is paired with how many of that product are in the cart.
- * * For example, if a user has 3 Apples (Product ID: "123") and 1 Banana (Product ID: "456") 
- * in their cart, this function transforms that into a simple format: 
+ * * For example, if a user has 3 Apples (Product ID: "123") and 1 Banana (Product ID: "456")
+ * in their cart, this function transforms that into a simple format:
  * { "123": 3, "456": 1 }
  * * **Use Case:**
- * Best used on Product Listing Pages (PLPs) or Product Detail Pages (PDPs). It allows the UI 
- * to do a fast `O(1)` lookup to see if a specific product is already in the cart and display 
+ * Best used on Product Listing Pages (PLPs) or Product Detail Pages (PDPs). It allows the UI
+ * to do a fast `O(1)` lookup to see if a specific product is already in the cart and display
  * its current quantity in an "Add to Cart" counter (e.g., [ - ] 1 [ + ]).
  * * @returns {Promise<Record<string, number>>} A map of Product IDs (strings) to quantities (numbers). Returns an empty object `{}` if the cart or user is not found.
  * * @example
@@ -315,27 +331,28 @@ export const getSubsidizedProducts = async () =>{
  * // const currentQty = quantities[product._id] || 0;
  */
 
-export const getCartQuantities = async()=>{
-  const customerDataResponse = await getCustomerDataAction();
+export const getCartQuantities = async (customerId?: string) => {
+  const customerDataResponse = await getCustomerDataAction(customerId);
   const user = customerDataResponse.customerData;
-  if(!user) return{};
+  if (!user) return {};
 
   await dbConnect();
-  try{
+  try {
     const foundCart = await CartModel.findOne({
       customerId: user._id,
     }).lean();
 
-    if(!foundCart || !foundCart.items) return {};
+    if (!foundCart || !foundCart.items) return {};
 
     const map: Record<string, number> = {};
-    foundCart.items.forEach((item: { productId: mongoose.Types.ObjectId; quantity: number }) => {
-      map[item.productId.toString()] = item.quantity;
-    });
+    foundCart.items.forEach(
+      (item: { productId: mongoose.Types.ObjectId; quantity: number }) => {
+        map[item.productId.toString()] = item.quantity;
+      },
+    );
     return map;
-
-  } catch(e){
+  } catch (e) {
     console.error("Error fetching the cart quantity: ", e);
-    return{};
+    return {};
   }
-}
+};

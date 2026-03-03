@@ -113,7 +113,7 @@ export async function updateProduct(
       updatedProduct = await Product.findOneAndUpdate(
         { _id: productId, storeId: store?._id }, // Add the store using _id
         { $set: dbPayload },
-        { new: true }, // Returns the updated document
+        { returnDocument: "after" }, // Returns the updated document
       );
     }
 

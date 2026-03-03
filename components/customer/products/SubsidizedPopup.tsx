@@ -24,9 +24,11 @@ const SUBSIDY_PER_PACK = 6.8;
 // ─── component ──────────────────────────────────────────────────────────────
 
 export function SubsidizedPopup({
+  customerId,
   isOpen,
   onOpenChange,
 }: {
+  customerId?: string;
   isOpen: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
@@ -35,7 +37,7 @@ export function SubsidizedPopup({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getSubsidizedProducts()
+    getSubsidizedProducts(customerId)
       .then((data) => {
         setProducts(data);
         // default: select all
@@ -59,7 +61,10 @@ export function SubsidizedPopup({
   };
 
   const selectedProducts = products.filter((p) => selected.has(p._id));
-  const totalActual = selectedProducts.reduce((sum, p) => sum + p.price / 100, 0);
+  const totalActual = selectedProducts.reduce(
+    (sum, p) => sum + p.price / 100,
+    0,
+  );
   const subsidy = selected.size > 0 ? SUBSIDY_PER_PACK : 0;
   const youPay = Math.max(0, totalActual - subsidy);
   const allSelected = selected.size === products.length && products.length > 0;
@@ -80,7 +85,10 @@ export function SubsidizedPopup({
             <div className="flex items-center gap-3">
               <div
                 className="flex items-center justify-center w-9 h-9 rounded-xl"
-                style={{ background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)" }}
+                style={{
+                  background:
+                    "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+                }}
               >
                 <ShoppingBag className="w-5 h-5 text-white" />
               </div>
@@ -104,12 +112,20 @@ export function SubsidizedPopup({
           {/* Stats pills */}
           <div className="flex gap-2 mt-4">
             <div className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-green-50 border border-green-100">
-              <span className="text-[12px] font-semibold text-green-700">Subsidy</span>
-              <span className="text-[13px] font-bold text-green-600">${SUBSIDY_PER_PACK.toFixed(2)}</span>
+              <span className="text-[12px] font-semibold text-green-700">
+                Subsidy
+              </span>
+              <span className="text-[13px] font-bold text-green-600">
+                ${SUBSIDY_PER_PACK.toFixed(2)}
+              </span>
             </div>
             <div className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gray-50 border border-gray-100">
-              <span className="text-[12px] font-semibold text-gray-500">Items in Pack</span>
-              <span className="text-[13px] font-bold text-gray-700">{products.length}</span>
+              <span className="text-[12px] font-semibold text-gray-500">
+                Items in Pack
+              </span>
+              <span className="text-[13px] font-bold text-gray-700">
+                {products.length}
+              </span>
             </div>
           </div>
         </DialogHeader>
@@ -118,9 +134,7 @@ export function SubsidizedPopup({
         <div className="overflow-y-auto" style={{ maxHeight: 320 }}>
           {loading ? (
             <div className="flex items-center justify-center py-12 gap-2 text-gray-400">
-              <div
-                className="w-5 h-5 rounded-full border-2 border-green-400 border-t-transparent animate-spin"
-              />
+              <div className="w-5 h-5 rounded-full border-2 border-green-400 border-t-transparent animate-spin" />
               <span className="text-sm">Loading products…</span>
             </div>
           ) : (
@@ -128,7 +142,10 @@ export function SubsidizedPopup({
               <thead>
                 <tr className="border-b border-gray-100">
                   <th className="py-2.5 pl-5 pr-2 text-left">
-                    <button onClick={toggleAll} className="flex items-center gap-2 group">
+                    <button
+                      onClick={toggleAll}
+                      className="flex items-center gap-2 group"
+                    >
                       {allSelected ? (
                         <CheckSquare className="w-4.5 h-4.5 text-green-600" />
                       ) : (
@@ -157,7 +174,9 @@ export function SubsidizedPopup({
                       ) : (
                         <Square className="w-5 h-5 text-gray-300 flex-shrink-0" />
                       )}
-                      <span className="text-[14px] font-bold text-gray-800">Full Pack (All Items)</span>
+                      <span className="text-[14px] font-bold text-gray-800">
+                        Full Pack (All Items)
+                      </span>
                     </div>
                   </td>
                   <td className="py-3 pr-5 text-right text-[14px] font-bold text-gray-900">
@@ -181,7 +200,9 @@ export function SubsidizedPopup({
                           ) : (
                             <Square className="w-5 h-5 text-gray-300 flex-shrink-0" />
                           )}
-                          <span className="text-[14px] text-gray-700">{product.name}</span>
+                          <span className="text-[14px] text-gray-700">
+                            {product.name}
+                          </span>
                         </div>
                       </td>
                       <td className="py-3 pr-5 text-right text-[14px] text-gray-600">
@@ -199,16 +220,28 @@ export function SubsidizedPopup({
         {!loading && (
           <div className="px-5 pt-4 pb-2 border-t border-gray-100 bg-gray-50/50">
             <div className="flex justify-between items-center mb-1.5">
-              <span className="text-[13px] text-gray-500">Total Actual Price:</span>
-              <span className="text-[13px] font-semibold text-gray-700">${totalActual.toFixed(2)}</span>
+              <span className="text-[13px] text-gray-500">
+                Total Actual Price:
+              </span>
+              <span className="text-[13px] font-semibold text-gray-700">
+                ${totalActual.toFixed(2)}
+              </span>
             </div>
             <div className="flex justify-between items-center mb-3">
-              <span className="text-[13px] font-semibold text-green-600">Subsidy Applied:</span>
-              <span className="text-[13px] font-semibold text-green-600">−${subsidy.toFixed(2)}</span>
+              <span className="text-[13px] font-semibold text-green-600">
+                Subsidy Applied:
+              </span>
+              <span className="text-[13px] font-semibold text-green-600">
+                −${subsidy.toFixed(2)}
+              </span>
             </div>
             <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-              <span className="text-[15px] font-bold text-gray-900">You Pay:</span>
-              <span className="text-[18px] font-extrabold text-green-600">${youPay.toFixed(2)}</span>
+              <span className="text-[15px] font-bold text-gray-900">
+                You Pay:
+              </span>
+              <span className="text-[18px] font-extrabold text-green-600">
+                ${youPay.toFixed(2)}
+              </span>
             </div>
           </div>
         )}
@@ -231,7 +264,9 @@ export function SubsidizedPopup({
           </Button>
           <Button
             className="flex-1 h-10 rounded-xl font-semibold text-[13px] gap-1.5 text-white"
-            style={{ background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)" }}
+            style={{
+              background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
+            }}
             disabled={selected.size === 0}
           >
             <CheckSquare className="w-4 h-4" />

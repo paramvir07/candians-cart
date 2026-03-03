@@ -13,9 +13,9 @@ const Navbar = async () => {
     getCustomerDataAction(),
     getCartItemsCount(),
   ]);
+  
 
   const customerData: Customer = customerDataResponse.customerData;
-
   const initials = customerData.name
     .split(" ")
     .map((w) => w[0])
@@ -52,7 +52,8 @@ const Navbar = async () => {
         {/* Wallet + Avatar always visible */}
         <Link href="/customer/wallet">
           <Button variant="default" className="flex items-center gap-1 px-3">
-            <Wallet className="w-5 h-5" />${customerData.walletBalance.toFixed(2)}
+            <Wallet className="w-5 h-5" />$
+            {customerData.walletBalance.toFixed(2)}
           </Button>
         </Link>
 

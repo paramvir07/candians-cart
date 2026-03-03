@@ -11,7 +11,7 @@ import { PartyPopper, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SubsidizedPopup } from "./SubsidizedPopup"
 
-const ProgressBarCart = ({ total }: { total: number }) => {
+const ProgressBarCart = ({ total, customerId }: { total: number, customerId? :string }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
   const clearedMilestonesRef = useRef<Set<number>>(new Set())
 
@@ -52,11 +52,12 @@ const ProgressBarCart = ({ total }: { total: number }) => {
           ${current}
         </p>
       </div>
-
-    <SubsidizedPopup
-      isOpen={dialogOpen}
-      onOpenChange={setDialogOpen}
-    />      {/* <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <SubsidizedPopup
+        customerId={customerId}
+        isOpen={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />{" "}
+      {/* <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-sm rounded-2xl p-0 overflow-hidden">
           <div className="h-1.5 w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400" />
 
@@ -106,7 +107,7 @@ const ProgressBarCart = ({ total }: { total: number }) => {
         </DialogContent>
       </Dialog> */}
     </>
-  )
+  );
 }
 
 export default ProgressBarCart

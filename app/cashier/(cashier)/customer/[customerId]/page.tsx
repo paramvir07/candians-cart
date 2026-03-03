@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 
 import { ShoppingCart, Package, ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { CustomerIdParams } from "@/types/cashier/customer";
 
 const customerCardInfo = [
   {
@@ -45,15 +46,11 @@ const customerCardInfo = [
     ],
   },
 ];
-type Params = {
-  params: {
-    customerId: string;
-  };
-};
 
-const Page = async({ params }: Params) => {
-    const recievedParams = await params;
-    const customerId = recievedParams.customerId;
+
+const Page = async ({ params }: CustomerIdParams) => {
+  const recievedParams = await params;
+  const customerId = recievedParams.customerId;
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-background to-muted/40">
       <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
@@ -123,7 +120,9 @@ const Page = async({ params }: Params) => {
 
                     {/* Actions pinned toward bottom */}
                     <div className="mt-auto flex flex-col gap-2">
-                      <Link href={`/cashier/customer/${customerId}/${card.actions[0].href}`}>
+                      <Link
+                        href={`/cashier/customer/${customerId}/${card.actions[0].href}`}
+                      >
                         <Button
                           className="w-full h-10 sm:h-11"
                           variant={card.actions[0].variant}

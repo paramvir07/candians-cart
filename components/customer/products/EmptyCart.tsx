@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 
-export const EmptyCart = () => {
+export const EmptyCart = ({ customerId }: { customerId?: string }) => {
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar />
+      {!customerId && <Navbar />}
 
       <div className="px-5 pt-6 max-w-md mx-auto">
         {/* Header */}
@@ -17,7 +17,8 @@ export const EmptyCart = () => {
             </Button>
           </Link>
           <h1 className="text-2xl font-bold">
-            My Cart <span className="text-gray-400 font-normal">(0)</span>
+            {customerId ? "Customer's cart" : "My Cart"}
+            <span className="text-gray-400 font-normal">(0)</span>
           </h1>
         </div>
 
@@ -26,7 +27,10 @@ export const EmptyCart = () => {
           {/* Icon */}
           <div className="relative mb-6">
             <div className="w-28 h-28 rounded-full bg-white shadow-sm flex items-center justify-center">
-              <ShoppingCart className="w-12 h-12 text-gray-300" strokeWidth={1.5} />
+              <ShoppingCart
+                className="w-12 h-12 text-gray-300"
+                strokeWidth={1.5}
+              />
             </div>
             {/* Small sad badge */}
             <div className="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-base">
@@ -34,18 +38,26 @@ export const EmptyCart = () => {
             </div>
           </div>
 
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Your cart is empty</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            {customerId ? "Customer's cart" : "Your Cart"} is empty
+          </h2>
           <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
-            Looks like you haven't added anything yet. Browse our products and find something you love!
+            Looks like you haven't added anything yet. Browse products and find
+            something you love!
           </p>
 
-          <Link href="/" className="mt-8 w-full">
-            <Button className="w-full p-5">
-              Browse Products
-            </Button>
+          <Link
+            href={
+              customerId
+                ? `/cashier/customer/${customerId}/products`
+                : "/"
+            }
+            className="mt-8 w-full"
+          >
+            <Button className="w-full p-5">Browse Products</Button>
           </Link>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

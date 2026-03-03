@@ -6,13 +6,20 @@ import { getUserSession } from "../auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { Cashier } from "@/db/models/cashier/cashier.model";
 
-export const getUser = async () => {
+export const getUser = async (customerId?: string) => {
   try {
     const session = await getUserSession();
+    const cashierRole = session.user.role === "cashier";
     const UserId = session.user.id;
 
     await dbConnect();
-    const UserData = await Customer.findOne({ userId: UserId }).lean();
+    let UserData;
+    if (cashierRole) {
+      UserData = await Customer.findById(customerId).lean();
+    } else {
+      UserData = await Customer.findOne({ userId: UserId }).lean();
+    }
+
     return UserData;
   } catch (error) {
     console.log(error);
@@ -61,13 +68,19 @@ export const getCustomerAndStoreDataAction = async () => {
   }
 };
 
-export const getCustomerDataAction = async () => {
+export const getCustomerDataAction = async (customerId?: string) => {
   const session = await getUserSession();
+  const cashierRole = session.user.role === "cashier";
   try {
     await dbConnect();
-    const customerData = await Customer.findOne({
-      userId: session.user.id,
-    }).lean();
+    let customerData;
+    if (cashierRole) {
+      customerData = await Customer.findById(customerId).lean();
+    } else {
+      customerData = await Customer.findOne({
+        userId: session.user.id,
+      }).lean();
+    }
 
     if (!customerData)
       return {
@@ -96,7 +109,7 @@ export const getMyStoreCustomers = async () => {
   const adminRole = session.user.role === "admin";
   try {
     await dbConnect();
-    
+
     let myStoreId;
     if (cashierRole) {
       const cashier = await Cashier.findOne({ userId: session.user.id }).lean();
