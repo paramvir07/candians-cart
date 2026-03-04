@@ -19,6 +19,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Loader2, PackageOpen, Search } from "lucide-react";
+import { Customer } from "@/types/customer/customer";
 
 interface SearchResultsClientProps {
   storeId: string;
@@ -30,11 +31,15 @@ interface SearchResultsClientProps {
     data?: IProduct[];
     error?: string;
   }>;
+  customerData: Customer;
+  cartCount: number;
 }
 
 export function SearchResultsClient({
   storeId,
   searchAction,
+  customerData,
+  cartCount
 }: SearchResultsClientProps) {
   const [query, setQuery] = useState("");
   const [allResults, setAllResults] = useState<IProduct[]>([]);
@@ -103,14 +108,19 @@ export function SearchResultsClient({
 
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
-      <SearchNav initialQuery={query} onQueryChange={setQuery} />
+      <SearchNav 
+      initialQuery={query}
+       onQueryChange={setQuery}
+       customerData={customerData}
+       cartCount={cartCount}
+       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-8">
           {/* Desktop sidebar — only shows when there are results */}
           {hasSearched && allResults.length > 0 && (
             <aside className="hidden lg:block w-60 shrink-0">
-              <div className="sticky top-[73px] bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+              <div className="sticky top-18.25 bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                 <div className="flex items-center gap-2 pb-4">
                   <span className="font-bold text-slate-900 text-sm">
                     Refine

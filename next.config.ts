@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
       // Images for categories -- CategoryIllustration.tsx
       {
         protocol: "https",
-        hostname: "static.toiimg.com",
+        hostname: "m.media-amazon.com",
         port: "",
         pathname: "/**",
       },
@@ -74,6 +74,12 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "www.theorderexpert.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "blog.swiggy.com",
         port: "",
         pathname: "/**",
       },

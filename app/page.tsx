@@ -25,7 +25,7 @@ export default async function CustomerPage() {
           <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 max-w-md shadow-sm">
             <h3 className="font-bold text-lg mb-2">Unable to Load Store</h3>
             <p className="text-sm text-red-500">
-              {response.message ||
+              {response.error ||
                 "Please verify your account matches a registered store."}
             </p>
           </div>

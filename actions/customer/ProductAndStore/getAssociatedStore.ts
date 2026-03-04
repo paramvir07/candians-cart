@@ -4,14 +4,24 @@ import Product from "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Customer from "@/db/models/customer/customer.model";
+import { IProduct } from "@/types/customer/CustomerCart";
+import { Customer as CustomerType } from "@/types/customer/customer";
 
-export default async function getStoreAndProduct() {
+export interface AssociatedStoreResponse{
+  success: boolean;
+  storeId?: string;
+  products?: IProduct[];
+  customer?: CustomerType;
+  error?: string;
+}
+
+export default async function getStoreAndProduct() : Promise<AssociatedStoreResponse> {
   try {
     const session = await getUserSession();
     const userId = session.user.id;
     await dbConnect();
 
-    const customer = await Customer.findOne({ userId: userId });
+    const customer = await Customer.findOne({ userId: userId }).lean();
 
     if (!customer) {
       throw new Error("Customer not found");
@@ -21,17 +31,18 @@ export default async function getStoreAndProduct() {
       storeId: customer.associatedStoreId,
     }).lean();
     const serializedProducts = JSON.parse(JSON.stringify(products));
+    const serializedCustomer = JSON.parse(JSON.stringify(customer));
 
     return {
       success: true,
       products: serializedProducts,
-      customer,
+      customer: serializedCustomer,
     };
   } catch (error) {
     console.log("Error fetching store and products: " + error);
     return {
       success: false,
-      message: "Error fetching the products: " + error,
+      error: "Error fetching the products: " + error,
     };
   }
 }

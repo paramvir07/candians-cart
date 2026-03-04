@@ -29,7 +29,7 @@ export function HeroBanner() {
               Fresh · Local · Rewards
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-black text-primary leading-[1.05] tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-black text-white leading-[1.05] tracking-tight drop-shadow-[0_6px_20px_rgba(0,0,0,0.6)]">
               Fresh groceries
               <br />
               <span className="text-green-200">with real rewards!</span>

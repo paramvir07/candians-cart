@@ -13,7 +13,6 @@ const Navbar = async () => {
     getCustomerDataAction(),
     getCartItemsCount(),
   ]);
-  
 
   const customerData: Customer = customerDataResponse.customerData;
   const initials = customerData.name
@@ -24,19 +23,19 @@ const Navbar = async () => {
     .slice(0, 2);
 
   return (
-    <nav className="flex items-center justify-between px-4 py-4 shadow-sm bg-white">
+    <nav className="flex items-center justify-between px-4 py-4 shadow-sm bg-white sticky top-0 z-50">
       {/* Logo */}
       <Logo />
 
-      {/* Search */}
-      <Link href="/customer/search" className="flex-1 mx-6">
+      {/* Search — Hidden on mobile, visible on md (tablet) and up */}
+      <Link href="/customer/search" className="hidden md:block flex-1 mx-6">
         <SearchBar />
       </Link>
 
-      {/* Actions */}
-      <div className="flex items-center gap-3">
+      {/* Actions (Wallet & Profile pushed to the right on mobile) */}
+      <div className="flex items-center gap-3 ml-auto md:ml-0">
         {/* Cart only on medium+ screens */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="items-center gap-3">
           <Link href="/customer/cart">
             <Button variant="outline" className="relative p-2">
               <ShoppingCartIcon className="w-5 h-5" />
@@ -49,11 +48,12 @@ const Navbar = async () => {
           </Link>
         </div>
 
-        {/* Wallet + Avatar always visible */}
+        {/* Wallet + Avatar ALWAYS visible */}
         <Link href="/customer/wallet">
           <Button variant="default" className="flex items-center gap-1 px-3">
-            <Wallet className="w-5 h-5" />$
-            {customerData.walletBalance.toFixed(2)}
+            <Wallet className="w-5 h-5" />
+            {/* Optional: hide the text balance on super small screens if it gets tight, otherwise leave as is */}
+            <span>${customerData.walletBalance.toFixed(2)}</span>
           </Button>
         </Link>
 
