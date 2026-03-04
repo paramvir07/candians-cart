@@ -165,52 +165,58 @@ export default function ProductCard({
             )}
           </div>
 
-         {count > 0 ? (
-  <div className="flex items-center gap-1 border border-green-600 rounded-lg overflow-hidden">
-    
-    {/* Decrement Form */}
-    <form action={DecrementItem}>
-      <input type="hidden" name="productId" value={product._id.toString()} />
-      <button
-      onClick={handleDecrement}
-        type="submit"
-        className="px-2 py-1 text-green-700 font-bold text-base hover:bg-green-50 transition-colors"
-      >
-        −
-      </button>
-    </form>
+          {count > 0 ? (
+            <div className="flex items-center gap-1 border border-green-600 rounded-lg overflow-hidden">
+              {/* Decrement Form */}
+              <form action={DecrementItem.bind(null, undefined)}>
+                <input
+                  type="hidden"
+                  name="productId"
+                  value={product._id.toString()}
+                />
+                <button
+                  onClick={handleDecrement}
+                  type="submit"
+                  className="px-2 py-1 text-green-700 font-bold text-base hover:bg-green-50 transition-colors"
+                >
+                  −
+                </button>
+              </form>
 
-    {/* Count Display */}
-    <span className="px-2 text-sm font-bold text-green-700 min-w-4 text-center">
-      {count}
-    </span>
+              {/* Count Display */}
+              <span className="px-2 text-sm font-bold text-green-700 min-w-4 text-center">
+                {count}
+              </span>
 
-    {/* Increment Form */}
-    <form action={IncrementItem}>
-      <input type="hidden" name="productId" value={product._id.toString()} />
-      <button
-      onClick={handleIncrement}
-        type="submit"
-        className="px-2 py-1 text-green-700 font-bold text-base hover:bg-green-50 transition-colors"
-      >
-        +
-      </button>
-    </form>
-
-  </div>
-) : (
-  <button
-    onClick={handleAdd}
-    disabled={!product.stock}
-    className={`px-5 py-1.5 rounded-lg text-sm font-bold border transition-all active:scale-95 ${
-      product.stock
-        ? "border-green-600 text-green-700 bg-white hover:bg-green-50"
-        : "border-gray-200 text-gray-300 cursor-not-allowed"
-    }`}
-  >
-    ADD
-  </button>
-)}
+              {/* Increment Form */}
+              <form action={IncrementItem.bind(null, undefined)}>
+                <input
+                  type="hidden"
+                  name="productId"
+                  value={product._id.toString()}
+                />
+                <button
+                  onClick={handleIncrement}
+                  type="submit"
+                  className="px-2 py-1 text-green-700 font-bold text-base hover:bg-green-50 transition-colors"
+                >
+                  +
+                </button>
+              </form>
+            </div>
+          ) : (
+            <button
+              onClick={handleAdd}
+              disabled={!product.stock}
+              className={`px-5 py-1.5 rounded-lg text-sm font-bold border transition-all active:scale-95 ${
+                product.stock
+                  ? "border-green-600 text-green-700 bg-white hover:bg-green-50"
+                  : "border-gray-200 text-gray-300 cursor-not-allowed"
+              }`}
+            >
+              ADD
+            </button>
+          )}
         </div>
       </div>
     </div>

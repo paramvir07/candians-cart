@@ -185,7 +185,7 @@ export function CustomerProductCard({
       try {
         const formData = new FormData();
         formData.append("productId", product._id as string);
-        await IncrementItem(formData);
+        await IncrementItem(undefined, formData);
       } catch (error) {
         setQuantity((q) => Math.max(0, q - 1)); // Revert on failure
       }
@@ -199,7 +199,7 @@ export function CustomerProductCard({
       try {
         const formData = new FormData();
         formData.append("productId", product._id as string);
-        await DecrementItem(formData);
+        await DecrementItem(undefined, formData);
       } catch (error) {
         setQuantity((q) => q + 1); // Revert on failure
       }
