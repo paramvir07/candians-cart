@@ -58,7 +58,7 @@ const customerSchema = new Schema<ICustomer>(
       type: String,
       required: true,
     },
-    walletBalance: {
+    walletBalance: { // Stored in cents
       type: Number,
       required: true,
       default: 0,

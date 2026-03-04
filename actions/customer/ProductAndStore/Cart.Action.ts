@@ -206,15 +206,19 @@ export const PlaceOrder = async ({
     const walletBalance = user.walletBalance ?? 0;
     const giftWalletBalance = user.giftWalletBalance ?? 0;
 
+    // All the products in the cart being mapped
+
     const products: PlaceOrderProduct[] = cartItems.map((item) => {
+      // we round the values to the nearest whole cent
+
       const base = item.productId.price * item.quantity;
-      const markupAmount = base * (item.productId.markup / 100);
+      const markupAmount = Math.round(base * (item.productId.markup / 100));
       const subtotalWithMarkup = base + markupAmount;
-      const taxAmount = subtotalWithMarkup * item.productId.tax;
+      const taxAmount = Math.round(subtotalWithMarkup * item.productId.tax);
       const disposableFee = item.productId.disposableFee ?? 0;
-      const total =
-        Math.round((subtotalWithMarkup + taxAmount + disposableFee) * 100) /
-        100;
+
+      //Adding the numbers up, this WILL BE an INTEGER
+      const total = subtotalWithMarkup + taxAmount + disposableFee;
 
       return {
         productId: new Types.ObjectId(item.productId._id),
@@ -226,44 +230,68 @@ export const PlaceOrder = async ({
       };
     });
 
-    const cartTotal =
-      Math.round(products.reduce((sum, item) => sum + item.total, 0) * 100) /
-      100;
+    const cartTotal = products.reduce((sum, item) => sum + item.total, 0); // This cartTotal is in cents
 
-    if (user.walletBalance < cartTotal / 100) {
+    if (paymentMode === "wallet" && walletBalance < cartTotal) {
       return { success: false, error: "Insufficient Funds" };
     }
 
     const orderData: PlaceOrderI = {
       products,
-      cartTotal,
+      cartTotal, // Saved in cents
       userWalletBalance: walletBalance,
       giftWalletBalance,
       userId: user._id,
       storeId: user.associatedStoreId,
       paymentMode,
-      status
+      status,
     };
 
-    await OrderModel.create(orderData);
-    if (paymentMode === "wallet") {
-      await Customer.findOneAndUpdate(
-        { _id: user._id },
-        { $inc: { walletBalance: -(cartTotal / 100) } },
-        { returnDocument: "after" },
-      );
+    // Starting transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      if (paymentMode === "wallet") {
+        const updatedCustomer = await Customer.findOneAndUpdate(
+          {
+            _id: user._id,
+            walletBalance: { $gte: cartTotal }, // Checks for balance drop between reading before cart total and now
+          },
+          { $inc: { walletBalance: -cartTotal } },
+          { returnDocument: "after", session },
+        );
+
+        // If another request was already mane and they spent their money, updatedCustomer will be null and end the session
+        if (!updatedCustomer) {
+          await session.abortTransaction();
+          session.endSession();
+          return {
+            success: false,
+            error: "Insufficient Funds (Transaction Aborted)",
+          };
+        }
+        // update orderData to reflect the balance after cut
+        orderData.userWalletBalance = updatedCustomer.walletBalance;
+      }
+      // creating order
+      await OrderModel.create([orderData], { session });
+      await CartModel.deleteOne({ customerId: user._id }, { session });
+
+      // Commiting
+      await session.commitTransaction();
+      session.endSession();
+    } catch (transactionError) {
+      await session.abortTransaction();
+      session.endSession();
+      throw transactionError;
     }
-    
-    await CartModel.deleteOne({ customerId: user._id });
 
     if (customerId) {
       redirect(`/cashier/customer/${customerId}`);
-    } 
+    }
     redirect("/");
   } catch (error) {
-    CartModel;
     if (isRedirectError(error)) throw error;
-
     console.error("Error while placing order:", error);
     return { success: false, error: "Something went wrong" };
   }
