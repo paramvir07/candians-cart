@@ -50,7 +50,7 @@ const CashierSidebar = () => {
       </aside>
 
       {/* Mobile Bottom Navbar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden justify-around bg-[#e8f6ed] py-2 m-3 rounded-full shadow-xl">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden justify-around bg-[#e8f6ed] py-2 m-3 mt-5 rounded-full shadow-xl">
         <Button asChild size="icon" variant="ghost">
           <Link href="/cashier">
             <HomeIcon />

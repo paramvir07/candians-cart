@@ -1,11 +1,11 @@
 "use client"
 import { QRCodeSVG } from "qrcode.react";
 type QrCodeClientProps = {
-  customerId: string
+  id: string
 }
-const QrCodeClient = ({customerId}: QrCodeClientProps) => {
+const QrCodeClient = ({id}: QrCodeClientProps) => {
   return (
-      <QRCodeSVG value={customerId} size={220} />
+      <QRCodeSVG value={id} size={220} />
   
   );
 }
