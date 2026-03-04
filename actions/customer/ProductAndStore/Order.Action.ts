@@ -7,9 +7,9 @@ import "@/db/models/store/products.model"
 import CartModel from "@/db/models/customer/cart.model";
 import { revalidatePath } from "next/cache";
 
-export const getOrders = async () => {
+export const getOrders = async (customerId?: string) => {
   await dbConnect();
-  const user = await getUser();
+  const user = await getUser(customerId);
   if (!user) return null;
 
   try {

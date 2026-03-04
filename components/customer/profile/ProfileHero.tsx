@@ -103,7 +103,7 @@ export default function ProfileHero({ customer }: Props) {
               {/* QR Section */}
               <div className="flex justify-center py-2">
                 <div className="p-4 bg-white rounded-xl shadow-sm border">
-                  <QrCodeClient customerId={customer._id.toString()} />
+                  <QrCodeClient id={customer._id.toString()} />
                 </div>
               </div>
             </DialogContent>
