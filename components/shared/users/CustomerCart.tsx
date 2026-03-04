@@ -50,7 +50,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const totals = items.reduce(
     (acc, item) => {
       const { afterMarkup, tax, disposable, lineTotal } = calcLine(item);
-      acc.subtotal += afterMarkup; // markup silently baked in
+      acc.subtotal += afterMarkup;
       acc.tax += tax;
       acc.disposable += disposable;
       acc.total += lineTotal;

@@ -13,15 +13,9 @@ import {
 import { IProduct } from "@/types/store/products.types";
 import { CheckSquare, Square, Wallet, ShoppingBag, X } from "lucide-react";
 
-// ─── helpers ────────────────────────────────────────────────────────────────
-
-/** Converts stored price (cents / paise) to a display dollar string */
 const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
-/** Total subsidy — hardcoded to match your mock; swap with real value if needed */
 const SUBSIDY_PER_PACK = 6.8;
-
-// ─── component ──────────────────────────────────────────────────────────────
 
 export function SubsidizedPopup({
   customerId,
@@ -40,7 +34,6 @@ export function SubsidizedPopup({
     getSubsidizedProducts(customerId)
       .then((data) => {
         setProducts(data);
-        // default: select all
         setSelected(new Set(data.map((p: IProduct) => p._id)));
       })
       .finally(() => setLoading(false));
