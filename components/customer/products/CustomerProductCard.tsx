@@ -178,30 +178,36 @@ export function CustomerProductCard({
     });
   };
 
-  const handleIncrement = (e: React.MouseEvent) => {
+const handleIncrement = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    setQuantity((q) => q + 1); // Optimistic update
+    setQuantity((q: number) => q + 1); // Optimistic update
+    
     startTransition(async () => {
       try {
         const formData = new FormData();
         formData.append("productId", product._id as string);
-        await IncrementItem(formData);
+        
+        // Pass undefined for customerId so the backend fetches the session
+        await IncrementItem(undefined, formData);
       } catch (error) {
-        setQuantity((q) => Math.max(0, q - 1)); // Revert on failure
+        setQuantity((q: number) => Math.max(0, q - 1)); // Revert on failure
       }
     });
   };
 
-  const handleDecrement = (e: React.MouseEvent) => {
+const handleDecrement = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    setQuantity((q) => Math.max(0, q - 1)); // Optimistic update
+    setQuantity((q: number) => Math.max(0, q - 1)); // Optimistic update
+    
     startTransition(async () => {
       try {
         const formData = new FormData();
         formData.append("productId", product._id as string);
-        await DecrementItem(formData);
+        
+        // Pass undefined for customerId so the backend fetches the session
+        await DecrementItem(undefined, formData); 
       } catch (error) {
-        setQuantity((q) => q + 1); // Revert on failure
+        setQuantity((q: number) => q + 1); // Revert on failure
       }
     });
   };

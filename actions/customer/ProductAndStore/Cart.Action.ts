@@ -75,7 +75,8 @@ export const IncrementItem = async (
   formData: FormData,
 ) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
-  const user = customerDataresponse.customerData;
+  const user = customerDataresponse?.customerData;
+
   if (!user) return;
 
   const ItemId = formData.get("productId");
@@ -83,16 +84,18 @@ export const IncrementItem = async (
   if (!ItemId || typeof ItemId !== "string") {
     throw new Error("Invalid productId");
   }
+
   await dbConnect();
+
   const cart = await CartModel.findOne({
     customerId: user._id,
   });
 
   if (!cart) return;
-  getCart;
 
   const index = cart.items.findIndex(
-    (item) => item.productId.toString() === ItemId,
+    (item: { productId: mongoose.Types.ObjectId; quantity: number }) =>
+      item.productId.toString() === ItemId,
   );
 
   if (index === -1) return;
@@ -102,7 +105,6 @@ export const IncrementItem = async (
   }
 
   await cart.save();
-
   revalidatePath("/customer/cart");
 };
 
@@ -111,7 +113,8 @@ export const DecrementItem = async (
   formData: FormData,
 ) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
-  const user = customerDataresponse.customerData;
+  const user = customerDataresponse?.customerData;
+
   if (!user) return;
 
   const ItemId = formData.get("productId");
@@ -119,12 +122,16 @@ export const DecrementItem = async (
   if (!ItemId || typeof ItemId !== "string") {
     throw new Error("Invalid productId");
   }
+
   await dbConnect();
+
   const cart = await CartModel.findOne({ customerId: user._id });
+
   if (!cart) return;
 
   const index = cart.items.findIndex(
-    (item) => item.productId.toString() === ItemId,
+    (item: { productId: mongoose.Types.ObjectId; quantity: number }) =>
+      item.productId.toString() === ItemId,
   );
 
   if (index === -1) return;
