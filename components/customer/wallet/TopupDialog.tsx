@@ -43,6 +43,7 @@ export function TopUpDialog({ component }: { component: "checkout" | "wallet" })
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+      // Sent in cents
       amount: amount * 100,
     }),
   });

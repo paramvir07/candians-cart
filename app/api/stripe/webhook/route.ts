@@ -1,68 +1,126 @@
-import Stripe from "stripe"
-import { NextResponse } from "next/server"
-import { dbConnect } from "@/db/dbConnect"
-import { getUser, GetUserfromSession } from "@/actions/customer/User.action"
-import WalletPayment from "@/db/models/customer/WalletPayment.model"
-import Customer from "@/db/models/customer/customer.model"
+import Stripe from "stripe";
+import { NextResponse } from "next/server";
+import { dbConnect } from "@/db/dbConnect";
+import WalletPayment from "@/db/models/customer/WalletPayment.model";
+import Customer from "@/db/models/customer/customer.model";
+import mongoose from "mongoose";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-02-25.clover",
 });
 
 export async function POST(req: Request) {
-  const body = await req.text()
-  const sig = req.headers.get("stripe-signature")!
+  const body = await req.text();
+  const sig = req.headers.get("stripe-signature");
 
-  let event: Stripe.Event
+  if (!sig) {
+    return new NextResponse("Missing signature", { status: 400 });
+  }
 
+  let event: Stripe.Event;
+
+  // Verify webhook signature
   try {
     event = stripe.webhooks.constructEvent(
       body,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    )
+      process.env.STRIPE_WEBHOOK_SECRET!,
+    );
   } catch (err) {
-    console.error("Webhook signature failed")
-    return new NextResponse("Invalid signature", { status: 400 })
+    console.error("Webhook signature failed", err);
+    return new NextResponse("Invalid signature", { status: 400 });
   }
 
-  console.log("EVENT TYPE:", event.type)
+  console.log("EVENT TYPE:", event.type);
+
+  const successfulEvents = [
+    "checkout.session.completed",
+    "checkout.session.async_payment_succeeded",
+  ];
 
   if (event.type === "payment_intent.succeeded") {
-    console.log("PAYMENT SUCCESS")
+    console.log("PAYMENT INTENT IS SUCCESSFULL");
   }
-  if(event.type === "checkout.session.completed"){
-const session = event.data.object as Stripe.Checkout.Session;
+  if (successfulEvents.includes(event.type)) {
+    // Starting stripe session
+    const session = event.data.object as Stripe.Checkout.Session;
 
-// create payment record
-await dbConnect();
-const User = await GetUserfromSession(session.metadata?.userId || null)
+    // Checking if payment happned or not (Ignoring bank transfers delays until paid)
+    if (session.payment_status !== "paid") {
+      // Telling stripe that message is recieved and we wait for the new webhook to arive (Bank to bank transfer takes 3-5 days)
+      console.log(
+        `Payment status is ${session.payment_status}, ignoring for now`,
+      );
+      return new NextResponse("OK", { status: 200 });
+    }
 
-if(!User){
-  console.log("No user found for session ID: " + session.metadata?.userId)
-} 
+    const userId = session.metadata?.userId;
+    if (!userId) {
+      console.log("No user found for session ID: " + session.metadata?.userId);
+      throw new Error(`No user found with the session Metadata: ${userId}`);
+    }
 
- const paymentRecord = await WalletPayment.create({
-  userId: User?._id,
-  stripeEventId: event.id,
-  checkoutSessionId: session.id,
-  paymentIntentId: session.payment_intent as string,
-  amount: session.amount_total || 0,
-  currency: session.currency || "cad",
-  status: session.payment_status || "pending"
- })
+    await dbConnect();
 
- // Reflect amount in user's wallet balance
- if(paymentRecord){
-  await Customer.findByIdAndUpdate(User?._id,{
-    $inc: { walletBalance: session.amount_total ? session.amount_total / 100 : 0 }
-  })
-  
-  // console.log("Payment record created and wallet updated for user: " + User?.email)
- }
-}
+    // Starting mongo session
+    const dbSession = await mongoose.startSession();
 
-  return new NextResponse("OK", { status: 200 })
+    try {
+      await dbSession.withTransaction(async () => {
+        // Check if same payment didnt happned
+        const existingPayment = await WalletPayment.findOne({
+          stripeEventId: event.id,
+        }).session(dbSession);
+
+        if (existingPayment) {
+          console.log(`Webhook already processed for event: ${event.id}`);
+          return; // Exit without doing anything
+        }
+
+        // Check if user exists in DB
+        const userExists = await Customer.findById(userId).session(dbSession); // checking this within the session to prevent any lekage
+        if (!userExists) {
+          throw new Error(`No user found in DB with the session ID: ${userId}`);
+        }
+
+        // creating payment record
+        await WalletPayment.create(
+          [
+            {
+              userId: userId,
+              stripeEventId: event.id,
+              checkoutSessionId: session.id,
+              paymentIntentId: session.payment_intent as string,
+              amount: session.amount_total || 0,
+              currency: session.currency || "cad",
+              status: session.payment_status || "pending",
+            },
+          ],
+          { session: dbSession },
+        );
+
+        // amount in user wallet
+        const amountToAdd = session.amount_total ? session.amount_total : 0; // Storing in cents (wallet is in cents too)
+
+        await Customer.findByIdAndUpdate(
+          userId,
+          { $inc: { walletBalance: amountToAdd } },
+          { session: dbSession },
+        );
+
+        console.log(
+          `Successfully added ${amountToAdd} to user ${userId} wallet`,
+        );
+      });
+    } catch (e) {
+      console.error("Transaction error: ", e);
+      return new NextResponse("Internal Server Error", { status: 500 });
+    } finally {
+      await dbSession.endSession();
+    }
+  }
+
+  return new NextResponse("OK", { status: 200 });
 }
