@@ -19,8 +19,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { getUser } from "@/actions/customer/User.action";
 import { TopUpDialog } from "@/components/customer/wallet/TopupDialog";
-import ProgressBarCart from "@/components/customer/products/ProgressBarCart";
-import { ICartItem } from "@/types/customer/CustomerCart";
+import ProgressBarCart, { SubsidyCart } from "@/components/customer/products/ProgressBarCart";
+import { ICartItem } from "@/types/Customer/CustomerCart";
 import Navbar from "@/components/customer/landing/Navbar";
 import CheckoutActions from "./CheckOutActions";
 
@@ -43,8 +43,21 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   ]);
   const items = CartItems as ICartItem[] | null;
 
+  // console.log(items)
+
   if (!items || items.length === 0)
     return <EmptyCart customerId={customerId} />;
+
+    const getFibBracketFrom21 = (value: number) => {
+    let a = 13
+    let b = 21
+    while (b < value) {
+      const next = a + b
+      a = b
+      b = next
+    }
+    return { prev: a, current: b }
+  }
 
   // ── Totals
   const totals = items.reduce(
@@ -63,10 +76,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   return (
     <div className="min-h-screen bg-[#F7F6F3]">
       {!customerId && <Navbar />}
-
-      {/* ════════════════════════════════════════
-          MOBILE
-      ════════════════════════════════════════ */}
       <div className="md:hidden px-4 pt-6 pb-52">
         {/* Header */}
         <div className="flex items-center gap-2 mb-3">
@@ -188,7 +197,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 Pay with Wallet
               </p>
               <p className="text-xs text-gray-400">
-                Balance: CA${UserData?.walletBalance}
+                Balance: CA${UserData?.walletBalance.toFixed(2)}
               </p>
             </div>
           </div>
@@ -216,6 +225,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 CA${fmt(totals.tax)}
               </span>
             </div>
+            <SubsidyCart/>
             {showDisposable && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Disposable fee</span>
@@ -417,6 +427,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                     CA${fmt(totals.tax)}
                   </span>
                 </div>
+                <SubsidyCart/>
                 {showDisposable && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Disposable fee</span>

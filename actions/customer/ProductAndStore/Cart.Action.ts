@@ -14,8 +14,9 @@ import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { getCustomerDataAction } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
-import { ICartItem } from "@/types/customer/CustomerCart";
-import { PlaceOrderParams } from "@/types/customer/OrdersClient";
+import { PlaceOrderParams } from "@/types/Customer/OrdersClient";
+import { ICartItem } from "@/types/Customer/CustomerCart";
+
 
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
   const customerDataresponse = await getCustomerDataAction(customerId);

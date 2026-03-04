@@ -15,13 +15,14 @@ import { CheckSquare, Square, Wallet, ShoppingBag, X } from "lucide-react";
 
 const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
-const SUBSIDY_PER_PACK = 6.8;
 
 export function SubsidizedPopup({
+  subsidyGot,
   customerId,
   isOpen,
   onOpenChange,
 }: {
+  subsidyGot: number;
   customerId?: string;
   isOpen: boolean;
   onOpenChange: (v: boolean) => void;
@@ -58,7 +59,8 @@ export function SubsidizedPopup({
     (sum, p) => sum + p.price / 100,
     0,
   );
-  const subsidy = selected.size > 0 ? SUBSIDY_PER_PACK : 0;
+  console.log(subsidyGot)
+  const subsidy = subsidyGot;
   const youPay = Math.max(0, totalActual - subsidy);
   const allSelected = selected.size === products.length && products.length > 0;
 
@@ -109,7 +111,7 @@ export function SubsidizedPopup({
                 Subsidy
               </span>
               <span className="text-[13px] font-bold text-green-600">
-                ${SUBSIDY_PER_PACK.toFixed(2)}
+                ${subsidy.toFixed(2)}
               </span>
             </div>
             <div className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gray-50 border border-gray-100">
