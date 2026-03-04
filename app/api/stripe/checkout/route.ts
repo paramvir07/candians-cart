@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   if (!userId) {
     return NextResponse.json({ error: "Missing userId" }, { status: 400 });
   }
-  console.log("Amount is : $"+amount/100)
+  console.log("Amount in cents : $"+amount)
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: [
