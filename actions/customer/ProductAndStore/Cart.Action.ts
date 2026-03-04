@@ -15,6 +15,7 @@ import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { getCustomerDataAction } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
 import { ICartItem } from "@/types/customer/CustomerCart";
+import { PlaceOrderParams } from "@/types/customer/OrdersClient";
 
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
@@ -188,12 +189,16 @@ export const getCart = async (customerId?: string) => {
   }
 };
 
-export const PlaceOrder = async (customerId?: string) => {
+export const PlaceOrder = async ({
+  customerId,
+  status = "completed",
+  paymentMode = "wallet",
+}: PlaceOrderParams) => {
   await dbConnect();
 
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
-  const cartItems = (await getCart()) as ICartItem[] | null;
+  const cartItems = (await getCart(customerId)) as ICartItem[] | null;
 
   if (!user || !cartItems || cartItems.length === 0) return null;
 
@@ -236,22 +241,30 @@ export const PlaceOrder = async (customerId?: string) => {
       giftWalletBalance,
       userId: user._id,
       storeId: user.associatedStoreId,
+      paymentMode,
+      status
     };
 
     await OrderModel.create(orderData);
-    await Customer.findOneAndUpdate(
-      { _id: user._id },
-      { $inc: { walletBalance: -(cartTotal / 100) } },
-      { returnDocument: "after" },
-    );
+    if (paymentMode === "wallet") {
+      await Customer.findOneAndUpdate(
+        { _id: user._id },
+        { $inc: { walletBalance: -(cartTotal / 100) } },
+        { returnDocument: "after" },
+      );
+    }
+    
     await CartModel.deleteOne({ customerId: user._id });
 
+    if (customerId) {
+      redirect(`/cashier/customer/${customerId}`);
+    } 
     redirect("/");
   } catch (error) {
     CartModel;
     if (isRedirectError(error)) throw error;
 
-    console.error("PlaceOrder error:", error);
+    console.error("Error while placing order:", error);
     return { success: false, error: "Something went wrong" };
   }
 };

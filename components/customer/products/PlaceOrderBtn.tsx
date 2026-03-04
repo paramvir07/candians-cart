@@ -1,15 +1,74 @@
-"use client"
-import { PlaceOrder } from '@/actions/customer/ProductAndStore/Cart.Action'
-import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
+"use client";
 
-const PlaceOrderBtn = () => {
+import { PlaceOrder } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { Button } from "@/components/ui/button";
+import { PaymentMode } from "@/types/customer/OrdersClient";
+import { ArrowRight, Store } from "lucide-react";
+
+const PlaceOrderBtn = ({
+  customerId,
+  compact = false,
+  paymentMode,
+}: {
+  customerId?: string;
+  compact?: boolean;
+  paymentMode: PaymentMode;
+}) => {
+  const handlePlaceOrder = () => {
+    if (customerId) {
+      PlaceOrder({ customerId, paymentMode });
+    }
+    PlaceOrder({ customerId })
+  };
+  const handlePayAtStore = () => PlaceOrder({ customerId, status: "pending", paymentMode: "pending" });
+
+  if (compact) {
+    return (
+      <div className="flex flex-col gap-2 w-40">
+        <Button
+          onClick={handlePlaceOrder}
+          className="w-full py-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2"
+        >
+          Place Order
+          <ArrowRight className="w-4 h-4" />
+        </Button>
+
+        {!customerId && (
+          <Button
+            onClick={handlePayAtStore}
+            variant="outline"
+            className="w-full py-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 border-2"
+          >
+            Pay at Store
+            <Store className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  // default (non-compact) layout for normal pages if you use it elsewhere
   return (
-                      <Button onClick={()=>{PlaceOrder()}} className="w-full mt-5 py-5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
-                        Place Order
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-  )
-}
+    <div className="w-full mt-5 flex flex-col gap-2">
+      <Button
+        onClick={handlePlaceOrder}
+        className="w-full py-5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+      >
+        Place Order
+        <ArrowRight className="w-4 h-4" />
+      </Button>
+      {!customerId && (
+        <Button
+          onClick={handlePayAtStore}
+          variant="outline"
+          className="w-full py-5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 border-2"
+        >
+          Pay at Store
+          <Store className="w-4 h-4" />
+        </Button>
+      )}
+    </div>
+  );
+};
 
-export default PlaceOrderBtn
+export default PlaceOrderBtn;

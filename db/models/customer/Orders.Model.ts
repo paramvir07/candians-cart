@@ -7,6 +7,8 @@ export interface PlaceOrderProduct {
   markup: number;
   tax: number;
   disposableFee: number;
+  status?: "completed" | "refund requested" | "refunded" | "refund rejected";
+  subsidy?: number;
 }
 
 export interface PlaceOrderI {
@@ -18,6 +20,16 @@ export interface PlaceOrderI {
   storeId: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
+  status?:
+    | "pending"
+    | "completed"
+    | "canceled"
+    | "refund requested"
+    | "refunded"
+    | "refund rejected"
+    | "failed";
+  subsidy?: number;
+  paymentMode?: "wallet" | "cash" | "card" | "pending";
 }
 
 const placeOrderProductSchema = new Schema<PlaceOrderProduct>(
@@ -52,8 +64,21 @@ const placeOrderProductSchema = new Schema<PlaceOrderProduct>(
       required: true,
       min: 0,
     },
+    subsidy: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    status: {
+      type: String,
+      enum: ["completed", "refund requested", "refunded", "refund rejected"],
+      default: "completed",
+      required: true,
+      index: true,
+    },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const placeOrderSchema = new Schema<PlaceOrderI>(
@@ -65,6 +90,12 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
     cartTotal: {
       type: Number,
       required: true,
+      min: 0,
+    },
+    subsidy: {
+      type: Number,
+      required: true,
+      default: 0,
       min: 0,
     },
     userWalletBalance: {
@@ -87,8 +118,30 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       ref: "Store",
       required: true,
     },
+    status: {
+      type: String,
+      enum: [
+        "pending",
+        "completed",
+        "canceled",
+        "refund requested",
+        "refunded",
+        "refund rejected",
+        "failed",
+      ],
+      default: "completed",
+      required: true,
+      index: true,
+    },
+    paymentMode: {
+      type: String,
+      enum: ["wallet", "cash", "card", "pending"],
+      default: "wallet",
+      required: true,
+      index: true,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const OrderModel =

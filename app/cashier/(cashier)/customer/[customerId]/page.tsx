@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-import { ShoppingCart, Package, ShoppingBag } from "lucide-react";
+import { ShoppingCart, Package, ShoppingBag, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { CustomerIdParams } from "@/types/cashier/customer";
 
@@ -47,7 +47,6 @@ const customerCardInfo = [
   },
 ];
 
-
 const Page = async ({ params }: CustomerIdParams) => {
   const recievedParams = await params;
   const customerId = recievedParams.customerId;
@@ -56,9 +55,16 @@ const Page = async ({ params }: CustomerIdParams) => {
       <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
         {/* Header */}
         <div className="mb-6 sm:mb-8 flex flex-col gap-2">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">
-            Customer Quick Access
-          </h1>
+          <div className="flex items-center gap-3">
+            <Link href="/cashier">
+              <Button className="rounded-full" variant="outline" size="icon">
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+            </Link>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">
+              Customer Quick Access
+            </h1>
+          </div>
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
             Select what you need to prepare the customer’s order: cart, order
             history, or products.

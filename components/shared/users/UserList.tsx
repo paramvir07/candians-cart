@@ -18,28 +18,47 @@ type StoreUserListProps = {
 type SortOrder = "newest" | "oldest";
 
 const UserList = ({ myStoreCustomersData, userRole }: StoreUserListProps) => {
+  const cashierRole = userRole === "cashier";
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return myStoreCustomersData
-      .filter((c) => {
-        if (!q) return true;
-        return (
-          c.name.toLowerCase().includes(q) ||
-          c.email.toLowerCase().includes(q) ||
-          c.mobile.includes(q) ||
-          c._id.toString().includes(q) // ← QR scan value lands here
-        );
-      })
-      .sort((a, b) => {
-        const diff =
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        return sortOrder === "newest" ? -diff : diff;
-      });
-  }, [myStoreCustomersData, search, sortOrder]);
+const filtered = useMemo(() => {
+  const q = search.trim().toLowerCase();
+
+  const list = myStoreCustomersData.filter((c) => {
+    if (!q) return true;
+    return (
+      c.name.toLowerCase().includes(q) ||
+      c.email.toLowerCase().includes(q) ||
+      c.mobile.includes(q) ||
+      c._id.toString().includes(q)
+    );
+  });
+
+  // createdAt if valid; otherwise use Mongo ObjectId timestamp as fallback
+  const getSortableTime = (c: Customer) => {
+    const createdAtTime = new Date(c.createdAt as any).getTime();
+    if (Number.isFinite(createdAtTime) && createdAtTime > 0)
+      return createdAtTime;
+
+    // MongoDB ObjectId: first 4 bytes = timestamp (seconds since epoch)
+    const idStr = c._id?.toString?.() ?? "";
+    if (/^[a-fA-F0-9]{24}$/.test(idStr)) {
+      return parseInt(idStr.slice(0, 8), 16) * 1000;
+    }
+
+    return 0;
+  };
+
+  return list.sort((a, b) => {
+    const aTime = getSortableTime(a);
+    const bTime = getSortableTime(b);
+
+    // newest => higher time first
+    return sortOrder === "newest" ? bTime - aTime : aTime - bTime;
+  });
+}, [myStoreCustomersData, search, sortOrder]);
 
   // Called by QrScannerButton after a successful scan
   const handleScanResult = (scannedId: string) => {
@@ -136,9 +155,10 @@ const UserList = ({ myStoreCustomersData, userRole }: StoreUserListProps) => {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {filtered.map((customer) => (
             <div
+              className={cashierRole ? "hover:cursor-pointer" : ""}
               key={customer._id.toString()}
               onClick={() => {
-                if (userRole === "cashier") {
+                if (cashierRole) {
                   router.push(`cashier/customer/${customer._id}`);
                 }
               }}

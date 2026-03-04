@@ -13,7 +13,6 @@ import {
   ShoppingBag,
   Shield,
   Wallet,
-  ArrowRight,
   ChevronLeft,
 } from "lucide-react";
 import Image from "next/image";
@@ -21,9 +20,9 @@ import Link from "next/link";
 import { getUser } from "@/actions/customer/User.action";
 import { TopUpDialog } from "@/components/customer/wallet/TopupDialog";
 import ProgressBarCart from "@/components/customer/products/ProgressBarCart";
-import PlaceOrderBtn from "@/components/customer/products/PlaceOrderBtn";
 import { ICartItem } from "@/types/customer/CustomerCart";
 import Navbar from "@/components/customer/landing/Navbar";
+import CheckoutActions from "./CheckOutActions";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -44,7 +43,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   ]);
   const items = CartItems as ICartItem[] | null;
 
-  if (!items || items.length === 0) return <EmptyCart customerId={customerId} />;
+  if (!items || items.length === 0)
+    return <EmptyCart customerId={customerId} />;
 
   // ── Totals
   const totals = items.reduce(
@@ -70,6 +70,11 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       <div className="md:hidden px-4 pt-6 pb-52">
         {/* Header */}
         <div className="flex items-center gap-2 mb-3">
+          <Link href={customerId ? `/cashier/customer/${customerId}` : "/"}>
+            <Button className="rounded-full" variant="outline" size="icon">
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+          </Link>
           <ShoppingBag className="w-5 h-5 text-gray-800" />
           <h1 className="text-xl font-bold tracking-tight text-gray-900">
             {customerId ? "Customer's cart" : "My Cart"}
@@ -93,7 +98,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 key={item.productId._id}
                 className="bg-white rounded-2xl p-4 flex gap-3 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-gray-100"
               >
-                <div className="w-[72px] h-[72px] rounded-xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100">
+                <div className="w-18 h-18 rounded-xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100">
                   <Image
                     src={item.productId.images?.[0]?.url ?? "/placeholder.jpg"}
                     alt={item.productId.name}
@@ -239,10 +244,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               CA${fmt(totals.total)}
             </p>
           </div>
-          <Button className="flex items-center gap-2 px-6 py-5 rounded-xl text-sm font-semibold">
-            Place Order <ArrowRight className="w-4 h-4" />
-          </Button>
+
+          <CheckoutActions customerId={customerId} compact />
         </div>
+
         <div className="flex items-center justify-center gap-1.5">
           <Shield className="w-3 h-3 text-gray-300" />
           <p className="text-[11px] text-gray-400">Secured checkout</p>
@@ -254,7 +259,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       ════════════════════════════════════════ */}
       <div className="hidden md:block max-w-5xl mx-auto px-8 py-10">
         <div className="flex items-center gap-3 mb-2">
-          <Link href="/">
+          <Link href={customerId ? `/cashier/customer/${customerId}` : "/"}>
             <Button className="rounded-full" variant="outline" size="icon">
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -429,7 +434,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 </div>
               </div>
 
-              <PlaceOrderBtn />
+              <CheckoutActions customerId={customerId} />
 
               <div className="flex items-center justify-center gap-1.5 mt-3">
                 <Shield className="w-3 h-3 text-gray-300" />
