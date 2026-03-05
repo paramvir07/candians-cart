@@ -1,5 +1,5 @@
 import { fmt, fmtShort } from "@/lib/fomatPrice";
-import { getMemberSince, getMemberYear } from "@/lib/momberSince";
+import { getMemberSince, getMemberYear } from "@/lib/memberSince";
 import { Customer } from "@/types/customer/customer";
 import { DollarSign, ShoppingBag, CalendarDays } from "lucide-react";
 
@@ -8,7 +8,6 @@ type Props = {
 };
 
 export default function ProfileStats({ customer }: Props) {
-
   const stats = [
     {
       icon: DollarSign,

@@ -25,7 +25,7 @@ import {
 import { ProductCardRole } from "./ProductCard";
 import { IProduct } from "@/types/store/products.types";
 import Image from "next/image";
-import { formatPrice } from "@/lib/fomatPrice";
+import { fmt } from "@/lib/fomatPrice";
 
 export const ProductDetailDialog = ({
   product,
@@ -116,7 +116,7 @@ export const ProductDetailDialog = ({
                 Price
               </p>
               <p className="text-xl font-bold text-foreground tracking-tight">
-                {formatPrice(product.price)}
+                {fmt(product.price)}
               </p>
             </div>
 
@@ -160,7 +160,7 @@ export const ProductDetailDialog = ({
                   </p>
                 </div>
                 <p className="text-lg font-bold text-orange-700">
-                  {formatPrice(product.disposableFee)}
+                  {fmt(product.disposableFee)}
                 </p>
               </div>
             ) : null}

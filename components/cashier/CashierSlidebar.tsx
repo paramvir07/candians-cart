@@ -17,7 +17,7 @@ import { Separator } from "../ui/separator";
 import LogoutButton from "../shared/LogoutButton";
 
 type CustomerData = {
-  customerData: {
+  customerData?: {
     id?: string;
     name?: string;
     cartCount?: number;

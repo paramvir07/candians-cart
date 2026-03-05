@@ -5,9 +5,15 @@ import { useState, useTransition, useEffect } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { 
-  Sparkles, PackageX, PackageCheck, X, 
-  ShoppingCart, Loader2, Plus, Minus 
+import {
+  Sparkles,
+  PackageX,
+  PackageCheck,
+  X,
+  ShoppingCart,
+  Loader2,
+  Plus,
+  Minus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { IProduct } from "@/types/store/products.types";
@@ -15,8 +21,12 @@ import {
   CategoryIllustration,
   getCategoryConfig,
 } from "@/components/customer/shared/CategoryIllustration";
-import { formatPrice } from "@/lib/fomatPrice";
-import { AddtoCart, IncrementItem, DecrementItem } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { fmt } from "@/lib/fomatPrice";
+import {
+  AddtoCart,
+  IncrementItem,
+  DecrementItem,
+} from "@/actions/customer/ProductAndStore/Cart.Action";
 
 // ─── Detail Dialog ────────────────────────────────────────────────────────────
 
@@ -111,7 +121,7 @@ function ProductDetailDialog({
                 Price
               </p>
               <p className="text-3xl font-black text-slate-900 tracking-tight">
-                {formatPrice(product.price)}
+                {fmt(product.price)}
               </p>
               {product.tax > 0 && (
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -139,12 +149,12 @@ function ProductDetailDialog({
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
-export function CustomerProductCard({ 
-  product, 
-  cartQuantity = 0 
-}: { 
+export function CustomerProductCard({
+  product,
+  cartQuantity = 0,
+}: {
   product: IProduct;
-  cartQuantity?: number; 
+  cartQuantity?: number;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -270,7 +280,7 @@ export function CustomerProductCard({
           </h3>
           <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-50">
             <span className="text-base font-black text-slate-900">
-              {formatPrice(product.price)}
+              {fmt(product.price)}
             </span>
             {product.stock ? (
               <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-200" />
@@ -278,12 +288,12 @@ export function CustomerProductCard({
               <span className="w-2 h-2 rounded-full bg-red-400" />
             )}
           </div>
-          
+
           {/* Action Buttons */}
           <div className="mt-2 h-9 flex items-center justify-center">
             {quantity > 0 ? (
-              <div 
-                className="flex items-center justify-between w-full px-1" 
+              <div
+                className="flex items-center justify-between w-full px-1"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
@@ -313,7 +323,9 @@ export function CustomerProductCard({
                 disabled={!product.stock || isPending}
                 onClick={handleAddToCart}
                 className={`w-full rounded-xl h-full text-xs font-bold transition-all ${
-                  product.stock ? "bg-green-600 hover:bg-green-700 text-white" : ""
+                  product.stock
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : ""
                 }`}
               >
                 {isPending ? (

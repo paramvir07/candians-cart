@@ -5,7 +5,7 @@ import TopupWallet from "./TopupWallet";
 import { WalletSwitcherAtom, WalletViewEnum } from "@/atoms/customer/Wallet";
 import { Separator } from "@/components/ui/separator";
 import { Customer } from "@/types/customer/customer";
-import { getMemberSince } from "@/lib/momberSince";
+import { getMemberSince } from "@/lib/memberSince";
 
 type WalletViewProps = {
   customerData: Customer;

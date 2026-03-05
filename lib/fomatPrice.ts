@@ -1,7 +1,4 @@
-export const formatPrice = (cents: number) =>
-  new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(
-    cents / 100,
-  );
+
 
   /** Cents → full CAD currency string: 47348000 → CA$473,480.00 */
 export function fmt(cents?: number) {

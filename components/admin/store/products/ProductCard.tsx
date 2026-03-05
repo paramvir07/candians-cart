@@ -1,8 +1,4 @@
 "use client";
-// components/shared/ProductCard.tsx
-// Drop-in replacement for your existing ProductCard
-// Only change: ImageIcon placeholder → CategoryIllustration SVG
-//              category badge → color-coded with emoji
 
 import { useState } from "react";
 import Image from "next/image";
@@ -24,8 +20,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Edit, Trash2, Sparkles, PackageX } from "lucide-react";
 import { IProduct } from "@/types/store/products.types";
-import { formatPrice } from "@/lib/fomatPrice";
-import { ProductDetailDialog } from "./ProdcutDetailDialog";
+import { fmt } from "@/lib/fomatPrice";
+import { ProductDetailDialog } from "./ProductDetailDialog";
 import {
   CategoryIllustration,
   getCategoryConfig,
@@ -181,7 +177,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
                 Price
               </p>
               <p className="text-xl font-bold text-foreground tracking-tight">
-                {formatPrice(product.price)}
+              {fmt(product.price)}
               </p>
             </div>
             <div className="flex flex-col items-end gap-1">
