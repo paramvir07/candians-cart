@@ -13,6 +13,8 @@ export interface PlaceOrderProduct {
 
 export interface PlaceOrderI {
   products: PlaceOrderProduct[];
+  TotalGST: number;
+  TotalPST:number;
   cartTotal: number;
   userWalletBalance: number;
   giftWalletBalance: number;
@@ -86,6 +88,16 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
     products: {
       type: [placeOrderProductSchema],
       required: true,
+    },
+    TotalGST:{
+      type: Number,
+      required: true,
+      min: 0, 
+    },
+    TotalPST:{
+      type: Number,
+      required: true,
+      min: 0,
     },
     cartTotal: {
       type: Number,

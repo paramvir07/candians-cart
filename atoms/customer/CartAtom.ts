@@ -1,5 +1,6 @@
+import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
 
 export const showSubsidyDialog = atomWithStorage<boolean>("showSubsidyDialog", false);
-export const SubsidyValue = atomWithStorage<number>("SubsidyValue", 0);
+export const SubsidyValue = atom<number>(0);

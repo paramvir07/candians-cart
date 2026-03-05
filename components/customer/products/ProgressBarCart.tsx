@@ -6,11 +6,9 @@ import { useAtom } from "jotai"
 import { SubsidyValue } from "@/atoms/customer/CartAtom"
 import { Wallet } from "lucide-react"
 
-const ProgressBarCart = ({ total, customerId }: { total: number, customerId? :string }) => {
+const ProgressBarCart = ({ total, customerId }: { total: number, customerId?: string }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const clearedMilestonesRef = useRef<Set<number>>(new Set())
-  const [SubsidyVal, setSubsidyVal] = useAtom(SubsidyValue)
-  let Subsidy = 0;
+  const [, setSubsidyVal] = useAtom(SubsidyValue)
 
   const getFibBracketFrom21 = (value: number) => {
     let a = 13
@@ -31,17 +29,23 @@ const ProgressBarCart = ({ total, customerId }: { total: number, customerId? :st
       ? 100
       : Math.min(((amount - prev) / (current - prev)) * 100, 100)
 
-  useEffect(() => {
-    if (amount > prev && prev >= 21 && !clearedMilestonesRef.current.has(prev)) {
-      clearedMilestonesRef.current.add(prev)
-      setDialogOpen(true)
-    }
-  }, [amount, prev])
+  const subsidy = amount >= 21 ? prev * 0.15 : 0
 
-  clearedMilestonesRef.current.forEach((milestone)=>{
-    Subsidy = (milestone*0.15)
-  })
-  setSubsidyVal(Subsidy)
+  useEffect(() => {
+    setSubsidyVal(subsidy)
+  }, [subsidy, setSubsidyVal])
+
+const lastMilestoneRef = useRef<number | null>(null)
+
+useEffect(() => {
+  if (amount < 21) return
+
+  if (lastMilestoneRef.current !== prev) {
+    lastMilestoneRef.current = prev
+    setDialogOpen(true)
+  }
+}, [prev, amount])
+
   return (
     <>
       <div className="flex items-center w-full gap-4">
@@ -50,14 +54,15 @@ const ProgressBarCart = ({ total, customerId }: { total: number, customerId? :st
           ${current}
         </p>
       </div>
+
       <SubsidizedPopup
-        subsidyGot={Subsidy}
+        subsidyGot={subsidy}
         customerId={customerId}
         isOpen={dialogOpen}
         onOpenChange={setDialogOpen}
       />
     </>
-  );
+  )
 }
 
 export default ProgressBarCart

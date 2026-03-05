@@ -3,7 +3,7 @@
 import { PlaceOrder } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { SubsidyValue } from "@/atoms/customer/CartAtom";
 import { Button } from "@/components/ui/button";
-import { PaymentMode } from "@/types/Customer/OrdersClient";
+import { PaymentMode } from "@/types/customer/OrdersClient";
 import { useAtom } from "jotai";
 import { ArrowRight, Store } from "lucide-react";
 
@@ -18,7 +18,6 @@ const PlaceOrderBtn = ({
 }) => {
 
   const [SubsidyVal] = useAtom(SubsidyValue);
-
   const handlePlaceOrder = () => {
     if (customerId) {
       PlaceOrder({ customerId, paymentMode,subsidyVal: SubsidyVal });

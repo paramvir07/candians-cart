@@ -20,7 +20,7 @@ import Link from "next/link";
 import { getUser } from "@/actions/customer/User.action";
 import { TopUpDialog } from "@/components/customer/wallet/TopupDialog";
 import ProgressBarCart, { SubsidyCart } from "@/components/customer/products/ProgressBarCart";
-import { ICartItem } from "@/types/Customer/CustomerCart";
+import { ICartItem } from "@/types/customer/CustomerCart";
 import Navbar from "@/components/customer/landing/Navbar";
 import CheckoutActions from "./CheckOutActions";
 

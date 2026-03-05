@@ -59,7 +59,6 @@ export function SubsidizedPopup({
     (sum, p) => sum + p.price / 100,
     0,
   );
-  console.log(subsidyGot)
   const subsidy = subsidyGot;
   const youPay = Math.max(0, totalActual - subsidy);
   const allSelected = selected.size === products.length && products.length > 0;

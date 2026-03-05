@@ -4,7 +4,7 @@
 import { useState } from "react";
 import PlaceOrderBtn from "@/components/customer/products/PlaceOrderBtn";
 import PaymentMethodSelector from "./PaymentMethodSelector";
-import { PaymentMode } from "@/types/Customer/OrdersClient";
+import { PaymentMode } from "@/types/customer/OrdersClient";
 
 export default function CheckoutActions({
   customerId,
