@@ -23,6 +23,7 @@ import ProgressBarCart, { SubsidyCart } from "@/components/customer/products/Pro
 import { ICartItem } from "@/types/customer/CustomerCart";
 import Navbar from "@/components/customer/landing/Navbar";
 import CheckoutActions from "./CheckOutActions";
+import { SubsidyItemsSection } from "@/components/customer/products/SubsidyItemsSection";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -56,7 +57,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     getCart(customerId),
     getUser(customerId),
   ]);
-  const items = CartItems as ICartItem[] | null;
+  const items = CartItems?.items as ICartItem[] | null;
+  const subItems = CartItems?.subItems ?? [];
+
 
   if (!items || items.length === 0)
     return <EmptyCart customerId={customerId} />;
@@ -139,7 +142,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
         <div className="flex flex-col gap-3 mb-4">
           {items.map((item: ICartItem) => {
-            const { lineTotal } = calcLine(item);
+            const { lineTotal,afterMarkup } = calcLine(item);
             return (
               <div
                 key={item.productId._id}
@@ -163,7 +166,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                     {item.productId.category}
                   </p>
                   <p className="text-sm font-bold text-gray-900 mt-1.5 tabular-nums">
-                    CA${fmt(lineTotal)}
+                    CA${fmt(afterMarkup)}
                   </p>
 
                   <div className="flex items-center justify-between mt-2.5">
@@ -199,6 +202,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           })}
         </div>
 
+          <SubsidyItemsSection subItems={subItems} /> 
         {/* Wallet */}
         <div className="bg-white rounded-2xl border border-gray-100 px-4 py-3.5 flex items-center justify-between shadow-[0_1px_4px_rgba(0,0,0,0.05)] mb-3">
           <div className="flex items-center gap-3">
@@ -290,7 +294,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               </div>
 
               {items.map((item: ICartItem, i) => {
-                const { lineTotal } = calcLine(item);
+                const { lineTotal,afterMarkup } = calcLine(item);
                 return (
                   <div
                     key={item.productId._id}
@@ -330,7 +334,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                     </div>
 
                     <p className="text-sm font-bold text-gray-900 w-24 text-right tabular-nums">
-                      CA${fmt(lineTotal)}
+                      CA${fmt(afterMarkup)}
                     </p>
 
                     <form action={RemoveItem.bind(null, customerId)}>
@@ -343,6 +347,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 );
               })}
             </div>
+
+              <SubsidyItemsSection subItems={subItems} /> 
 
             {/* Wallet */}
             <div className="bg-white rounded-2xl border border-gray-100 px-6 py-5 flex items-center justify-between shadow-[0_1px_6px_rgba(0,0,0,0.05)]">

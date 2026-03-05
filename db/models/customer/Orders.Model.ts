@@ -15,6 +15,8 @@ export interface PlaceOrderI {
   products: PlaceOrderProduct[];
   TotalGST: number;
   TotalPST:number;
+  TotalDisposableFee:number;
+  BaseTotal: number;
   cartTotal: number;
   userWalletBalance: number;
   giftWalletBalance: number;
@@ -95,6 +97,16 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       min: 0, 
     },
     TotalPST:{
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    TotalDisposableFee:{
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    BaseTotal:{
       type: Number,
       required: true,
       min: 0,

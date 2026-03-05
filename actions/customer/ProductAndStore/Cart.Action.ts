@@ -1,6 +1,6 @@
 "use server";
 
-import CartModel from "@/db/models/customer/cart.model";
+import CartModel, { ISubsidyItems } from "@/db/models/customer/cart.model";
 import "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
 import mongoose, { Types } from "mongoose";
@@ -171,19 +171,28 @@ export const RemoveItem = async (
   revalidatePath("/customer/cart");
 };
 
-export const getCart = async (customerId?: string) => {
+export const getCart = async (customerId?: string): Promise<{
+  success: boolean
+  items: ICartItem[]
+  subItems: ISubsidyItems[]
+} | null> => {
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
-  if (!user) return;
+  if (!user) return {success:false, items:[], subItems:[]};
 
   await dbConnect();
   try {
     const foundCart = await CartModel.findOne({
       customerId: user._id,
-    }).populate("items.productId");
+    }).populate("items.productId").populate("subsidyItems.productId");
 
     if (!foundCart) return null;
-    return foundCart.items;
+    return {
+    success: true,
+    items: foundCart.items as unknown as ICartItem[],
+    subItems: foundCart.subsidyItems
+  }
+    // return foundCart.items;
   } catch (error) {
     console.log(error);
     return null;
@@ -209,16 +218,21 @@ export const PlaceOrder = async ({
 
     let totalGST = 0;
     let totalPST = 0;
+    let totalDisposableFee = 0;
+    let totalBase = 0;
 
     const products: PlaceOrderProduct[] = cartItems.map((item) => {
       const base = item.productId.price * item.quantity;
       const markupAmount = Math.round(base * (item.productId.markup / 100));
       const subtotalWithMarkup = base + markupAmount;
       const tax = item.productId.tax;
+      const dispFee = (item.productId.disposableFee ?? 0)* item.quantity;
 
       // 0.05 = GST only | 0.07 = PST only | 0.12 = GST + PST
       const gst = tax === 0.05 || tax === 0.12 ? Math.round(subtotalWithMarkup * 0.05) : 0;
       const pst = tax === 0.07 || tax === 0.12 ? Math.round(subtotalWithMarkup * 0.07) : 0;
+      totalDisposableFee += dispFee;
+      totalBase +=base; 
       totalGST += gst;
       totalPST += pst;
 
@@ -247,6 +261,8 @@ export const PlaceOrder = async ({
       userWalletBalance: walletBalance,
       giftWalletBalance,
       TotalGST: totalGST,
+      TotalDisposableFee: totalDisposableFee,
+      BaseTotal: totalBase,
       TotalPST: totalPST,
       userId: user._id,
       subsidy: subsidyVal,

@@ -4,10 +4,12 @@ import { useState, useEffect, useRef } from "react"
 import { SubsidizedPopup } from "./SubsidizedPopup"
 import { useAtom } from "jotai"
 import { SubsidyValue } from "@/atoms/customer/CartAtom"
-import { Wallet } from "lucide-react"
+import { Wallet, Tag, ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 const ProgressBarCart = ({ total, customerId }: { total: number, customerId?: string }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [showBtn, setShowBtn] = useState(false)
   const [, setSubsidyVal] = useAtom(SubsidyValue)
 
   const getFibBracketFrom21 = (value: number) => {
@@ -35,16 +37,23 @@ const ProgressBarCart = ({ total, customerId }: { total: number, customerId?: st
     setSubsidyVal(subsidy)
   }, [subsidy, setSubsidyVal])
 
-const lastMilestoneRef = useRef<number | null>(null)
+  const lastMilestoneRef = useRef<number | null>(null)
 
-useEffect(() => {
-  if (amount < 21) return
+  useEffect(() => {
+    if (amount < 21) return
+    if (lastMilestoneRef.current !== prev) {
+      lastMilestoneRef.current = prev
+      setShowBtn(true)
+    }
+  }, [prev, amount])
 
-  if (lastMilestoneRef.current !== prev) {
-    lastMilestoneRef.current = prev
-    setDialogOpen(true)
-  }
-}, [prev, amount])
+  useEffect(() => {
+    if (amount < 21) {
+      setShowBtn(false)
+      setDialogOpen(false)
+      lastMilestoneRef.current = null
+    }
+  }, [amount])
 
   return (
     <>
@@ -54,6 +63,26 @@ useEffect(() => {
           ${current}
         </p>
       </div>
+      {showBtn && (
+        <Button
+          onClick={() => setDialogOpen(true)}
+          className="mt-3 w-full h-11 rounded-2xl bg-primary border-0"
+        >
+          <div className="flex items-center justify-between w-full px-1">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-white/20 backdrop-blur-sm">
+                <Tag className="w-4 h-4" />
+              </div>
+              <p className="text-[13px] font-semibold">
+                Check Subsidy Products
+              </p>
+            </div>
+            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white/20">
+              <ChevronRight className="w-4 h-4"/>
+            </div>
+          </div>
+        </Button>
+      )}
 
       <SubsidizedPopup
         subsidyGot={subsidy}
@@ -73,7 +102,7 @@ export const SubsidyCart = ()=>{
           return(
           <div className="relative flex justify-between items-center px-4 py-3 rounded-2xl overflow-hidden">
             {/* Background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-400 opacity-10 rounded-2xl" />
+            <div className="absolute inset-0 bg-linear-to-r from-green-500 to-emerald-400 opacity-10 rounded-2xl" />
             <div className="absolute inset-0 border border-green-300/40 rounded-2xl" />
 
             {/* Decorative blobs */}
