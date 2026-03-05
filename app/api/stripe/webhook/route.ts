@@ -4,6 +4,7 @@ import { dbConnect } from "@/db/dbConnect";
 import WalletPayment from "@/db/models/customer/WalletPayment.model";
 import Customer from "@/db/models/customer/customer.model";
 import mongoose from "mongoose";
+import { GetUserfromSession } from "@/actions/customer/User.action";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,6 @@ export async function POST(req: Request) {
   if (successfulEvents.includes(event.type)) {
     // Starting stripe session
     const session = event.data.object as Stripe.Checkout.Session;
-
     // Checking if payment happned or not (Ignoring bank transfers delays until paid)
     if (session.payment_status !== "paid") {
       // Telling stripe that message is recieved and we wait for the new webhook to arive (Bank to bank transfer takes 3-5 days)
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
     }
 
     const userId = session.metadata?.userId;
+    console.log("UserId from Webhook : ",userId)
     if (!userId) {
       console.log("No user found for session ID: " + session.metadata?.userId);
       throw new Error(`No user found with the session Metadata: ${userId}`);
@@ -64,6 +65,11 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
+    const UserData = await GetUserfromSession(userId)
+    if (!UserData){
+      return new NextResponse("User not Found ", { status: 400 });
+    }
+    
     // Starting mongo session
     const dbSession = await mongoose.startSession();
 
@@ -80,7 +86,7 @@ export async function POST(req: Request) {
         }
 
         // Check if user exists in DB
-        const userExists = await Customer.findById(userId).session(dbSession); // checking this within the session to prevent any lekage
+        const userExists = await Customer.findById(UserData._id).session(dbSession); // checking this within the session to prevent any lekage
         if (!userExists) {
           throw new Error(`No user found in DB with the session ID: ${userId}`);
         }

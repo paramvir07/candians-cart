@@ -40,6 +40,7 @@ export type PlaceOrderParams = {
     | "refund rejected"
     | "failed";
   paymentMode?: "wallet" | "cash" | "card" | "pending";
+  subsidyVal?: number
 };
 
 export enum PaymentMode {

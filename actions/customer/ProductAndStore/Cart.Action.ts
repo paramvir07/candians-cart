@@ -196,12 +196,11 @@ export const PlaceOrder = async ({
   paymentMode = "wallet",
 }: PlaceOrderParams) => {
   await dbConnect();
-
+  
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
   const cartItems = (await getCart(customerId)) as ICartItem[] | null;
-
-  if (!user || !cartItems || cartItems.length === 0) return null;
+  if (!user || !cartItems || cartItems.length === 0) return {success:false, message:" Something went wrong !"};
 
   try {
     const walletBalance = user.walletBalance ?? 0;

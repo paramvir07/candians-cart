@@ -70,7 +70,7 @@ const TopupWallet = ({ topupWalletData }: TopupWalletProps) => {
                 >
                   $
                 </span>
-                {topupWalletData.balance}
+                {topupWalletData.balance/100}
               </h1>
               <WalletInfo />
             </div>

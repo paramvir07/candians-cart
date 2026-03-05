@@ -1,8 +1,10 @@
 "use client";
 
 import { PlaceOrder } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { SubsidyValue } from "@/atoms/customer/CartAtom";
 import { Button } from "@/components/ui/button";
-import { PaymentMode } from "@/types/customer/OrdersClient";
+import { PaymentMode } from "@/types/Customer/OrdersClient";
+import { useAtom } from "jotai";
 import { ArrowRight, Store } from "lucide-react";
 
 const PlaceOrderBtn = ({
@@ -14,11 +16,14 @@ const PlaceOrderBtn = ({
   compact?: boolean;
   paymentMode: PaymentMode;
 }) => {
+
+  const [SubsidyVal] = useAtom(SubsidyValue);
+
   const handlePlaceOrder = () => {
     if (customerId) {
-      PlaceOrder({ customerId, paymentMode });
+      PlaceOrder({ customerId, paymentMode,subsidyVal: SubsidyVal });
     }
-    PlaceOrder({ customerId })
+    PlaceOrder({ customerId,subsidyVal: SubsidyVal})
   };
   const handlePayAtStore = () => PlaceOrder({ customerId, status: "pending", paymentMode: "pending" });
 

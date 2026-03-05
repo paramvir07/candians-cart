@@ -7,13 +7,13 @@ import {
 import { EmptyCart } from "@/components/customer/products/EmptyCart";
 import { Button } from "@/components/ui/button";
 import {
-  Minus,
-  Plus,
-  Trash2,
   ShoppingBag,
   Shield,
   Wallet,
   ChevronLeft,
+  Minus,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,10 +30,25 @@ const calcLine = (item: ICartItem) => {
   const base = item.productId.price * item.quantity;
   const markup = Math.round(base * (item.productId.markup / 100));
   const afterMarkup = base + markup;
-  const tax = Math.round(afterMarkup * item.productId.tax);
+  const tax = item.productId.tax;
+
+  // Split tax into GST (5%) and PST (7%) components
+  let gst = 0;
+  let pst = 0;
+  if (tax === 0.05) {
+    gst = Math.round(afterMarkup * 0.05);
+  } else if (tax === 0.07) {
+    pst = Math.round(afterMarkup * 0.07);
+  } else if (tax === 0.12) {
+    gst = Math.round(afterMarkup * 0.05);
+    pst = Math.round(afterMarkup * 0.07);
+  }
+
+  const totalTax = gst + pst;
   const disposable = (item.productId.disposableFee ?? 0) * item.quantity;
-  const lineTotal = afterMarkup + tax + disposable;
-  return { base, markup, afterMarkup, tax, disposable, lineTotal };
+  const lineTotal = afterMarkup + totalTax + disposable;
+
+  return { base, markup, afterMarkup, gst, pst, totalTax, disposable, lineTotal };
 };
 
 const CustomerCart = async ({ customerId }: { customerId?: string }) => {
@@ -43,41 +58,66 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   ]);
   const items = CartItems as ICartItem[] | null;
 
-  // console.log(items)
-
   if (!items || items.length === 0)
     return <EmptyCart customerId={customerId} />;
-
-    const getFibBracketFrom21 = (value: number) => {
-    let a = 13
-    let b = 21
-    while (b < value) {
-      const next = a + b
-      a = b
-      b = next
-    }
-    return { prev: a, current: b }
-  }
 
   // ── Totals
   const totals = items.reduce(
     (acc, item) => {
-      const { afterMarkup, tax, disposable, lineTotal } = calcLine(item);
+      const { afterMarkup, gst, pst, totalTax, disposable, lineTotal } = calcLine(item);
       acc.subtotal += afterMarkup;
-      acc.tax += tax;
+      acc.gst += gst;
+      acc.pst += pst;
+      acc.totalTax += totalTax;
       acc.disposable += disposable;
       acc.total += lineTotal;
       return acc;
     },
-    { subtotal: 0, tax: 0, disposable: 0, total: 0 },
+    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
   );
 
   const showDisposable = totals.disposable > 0;
+  const showGST = totals.gst > 0;
+  const showPST = totals.pst > 0;
+
+  // ── Tax rows shared between mobile + desktop
+  const TaxRows = () => (
+    <>
+      {showGST && (
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-500">GST (5%)</span>
+          <span className="font-medium text-gray-900 tabular-nums">
+            CA${fmt(totals.gst)}
+          </span>
+        </div>
+      )}
+      {showPST && (
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-500">PST (7%)</span>
+          <span className="font-medium text-gray-900 tabular-nums">
+            CA${fmt(totals.pst)}
+          </span>
+        </div>
+      )}
+      {showGST && showPST && (
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-500">Total Tax</span>
+          <span className="font-medium text-gray-900 tabular-nums">
+            CA${fmt(totals.totalTax)}
+          </span>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-[#F7F6F3]">
       {!customerId && <Navbar />}
+
+      {/* ════════════════════════════════════════
+          MOBILE
+      ════════════════════════════════════════ */}
       <div className="md:hidden px-4 pt-6 pb-52">
-        {/* Header */}
         <div className="flex items-center gap-2 mb-3">
           <Link href={customerId ? `/cashier/customer/${customerId}` : "/"}>
             <Button className="rounded-full" variant="outline" size="icon">
@@ -93,12 +133,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           </span>
         </div>
 
-        {/* Progress */}
         <div className="mb-4">
           <ProgressBarCart total={totals.total} customerId={customerId} />
         </div>
 
-        {/* Items */}
         <div className="flex flex-col gap-3 mb-4">
           {items.map((item: ICartItem) => {
             const { lineTotal } = calcLine(item);
@@ -130,15 +168,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
                   <div className="flex items-center justify-between mt-2.5">
                     <form action={RemoveItem.bind(null, customerId)}>
-                      <input
-                        type="hidden"
-                        name="productId"
-                        value={item.productId._id.toString()}
-                      />
-                      <button
-                        type="submit"
-                        className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-400 transition-colors"
-                      >
+                      <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                      <button type="submit" className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-400 transition-colors">
                         <Trash2 size={12} />
                         <span>Remove</span>
                       </button>
@@ -146,15 +177,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
                     <div className="flex items-center gap-2">
                       <form action={DecrementItem.bind(null, customerId)}>
-                        <input
-                          type="hidden"
-                          name="productId"
-                          value={item.productId._id.toString()}
-                        />
-                        <button
-                          type="submit"
-                          className="w-7 h-7 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                        >
+                        <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                        <button type="submit" className="w-7 h-7 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors">
                           <Minus size={12} strokeWidth={2} />
                         </button>
                       </form>
@@ -162,20 +186,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                         {item.quantity}
                       </span>
                       <form action={IncrementItem.bind(null, customerId)}>
-                        <input
-                          type="hidden"
-                          name="productId"
-                          value={item.productId._id.toString()}
-                        />
-                        <button
-                          type="submit"
-                          className="w-7 h-7 rounded-full bg-primary flex items-center justify-center hover:opacity-80 transition-opacity"
-                        >
-                          <Plus
-                            size={12}
-                            strokeWidth={2}
-                            className="text-white"
-                          />
+                        <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                        <button type="submit" className="w-7 h-7 rounded-full bg-primary flex items-center justify-center hover:opacity-80 transition-opacity">
+                          <Plus size={12} strokeWidth={2} className="text-white" />
                         </button>
                       </form>
                     </div>
@@ -193,17 +206,13 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               <Wallet className="w-4 h-4 text-emerald-500" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">
-                Pay with Wallet
-              </p>
-              <p className="text-xs text-gray-400">
-                Balance: CA${UserData?.walletBalance.toFixed(2)}
-              </p>
+              <p className="text-sm font-semibold text-gray-900">Pay with Wallet</p>
+              <p className="text-xs text-gray-400">Balance: CA${UserData?.walletBalance.toFixed(2)}</p>
             </div>
           </div>
-          <div>
-            <TopUpDialog component="checkout" />
-          </div>
+            <div>
+              <TopUpDialog component="checkout" />
+            </div>
         </div>
 
         {/* Bill */}
@@ -214,32 +223,21 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           <div className="space-y-2.5">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Subtotal</span>
-              <span className="font-medium text-gray-900 tabular-nums">
-                CA${fmt(totals.subtotal)}
-              </span>
+              <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.subtotal)}</span>
             </div>
-
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Tax</span>
-              <span className="font-medium text-gray-900 tabular-nums">
-                CA${fmt(totals.tax)}
-              </span>
-            </div>
-            <SubsidyCart/>
+            <TaxRows />
+            
             {showDisposable && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Disposable fee</span>
-                <span className="font-medium text-gray-900 tabular-nums">
-                  CA${fmt(totals.disposable)}
-                </span>
+                <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.disposable)}</span>
               </div>
             )}
+            <SubsidyCart />
             <div className="h-px bg-gray-100" />
             <div className="flex justify-between">
               <span className="font-bold text-gray-900">Total</span>
-              <span className="font-bold text-gray-900 tabular-nums">
-                CA${fmt(totals.total)}
-              </span>
+              <span className="font-bold text-gray-900 tabular-nums">CA${fmt(totals.total)}</span>
             </div>
           </div>
         </div>
@@ -250,14 +248,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
         <div className="flex items-center justify-between mb-3">
           <div>
             <p className="text-xs text-gray-400 font-medium">Total</p>
-            <p className="text-xl font-bold text-gray-900 tabular-nums">
-              CA${fmt(totals.total)}
-            </p>
+            <p className="text-xl font-bold text-gray-900 tabular-nums">CA${fmt(totals.total)}</p>
           </div>
-
           <CheckoutActions customerId={customerId} compact />
         </div>
-
         <div className="flex items-center justify-center gap-1.5">
           <Shield className="w-3 h-3 text-gray-300" />
           <p className="text-[11px] text-gray-400">Secured checkout</p>
@@ -278,9 +272,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">
             {customerId ? "Customer's cart" : "My Cart"}
           </h1>
-          <span className="text-gray-400 font-normal text-lg">
-            ({items.length})
-          </span>
+          <span className="text-gray-400 font-normal text-lg">({items.length})</span>
         </div>
 
         <div className="mb-6">
@@ -288,7 +280,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
         </div>
 
         <div className="flex gap-6 items-start">
-          {/* Left */}
           <div className="flex-1 flex flex-col gap-4">
             {/* Items */}
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]">
@@ -307,9 +298,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                   >
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 shrink-0 border border-gray-100">
                       <Image
-                        src={
-                          item.productId.images?.[0]?.url ?? "/placeholder.jpg"
-                        }
+                        src={item.productId.images?.[0]?.url ?? "/placeholder.jpg"}
                         alt={item.productId.name}
                         width={64}
                         height={64}
@@ -318,25 +307,14 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900">
-                        {item.productId.name}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {item.productId.category}
-                      </p>
+                      <p className="text-sm font-semibold text-gray-900">{item.productId.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.productId.category}</p>
                     </div>
 
                     <div className="flex items-center gap-2.5">
                       <form action={DecrementItem.bind(null, customerId)}>
-                        <input
-                          type="hidden"
-                          name="productId"
-                          value={item.productId._id.toString()}
-                        />
-                        <button
-                          type="submit"
-                          className="w-8 h-8 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                        >
+                        <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                        <button type="submit" className="w-8 h-8 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors">
                           <Minus size={13} strokeWidth={2} />
                         </button>
                       </form>
@@ -344,20 +322,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                         {item.quantity}
                       </span>
                       <form action={IncrementItem.bind(null, customerId)}>
-                        <input
-                          type="hidden"
-                          name="productId"
-                          value={item.productId._id.toString()}
-                        />
-                        <button
-                          type="submit"
-                          className="w-8 h-8 rounded-full bg-primary flex items-center justify-center hover:opacity-80 transition-opacity"
-                        >
-                          <Plus
-                            size={13}
-                            strokeWidth={2}
-                            className="text-white"
-                          />
+                        <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                        <button type="submit" className="w-8 h-8 rounded-full bg-primary flex items-center justify-center hover:opacity-80 transition-opacity">
+                          <Plus size={13} strokeWidth={2} className="text-white" />
                         </button>
                       </form>
                     </div>
@@ -367,16 +334,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                     </p>
 
                     <form action={RemoveItem.bind(null, customerId)}>
-                      <input
-                        type="hidden"
-                        name="productId"
-                        value={item.productId._id.toString()}
-                      />
-                      <button
-                        type="submit"
-                        className="text-gray-300 hover:text-red-400 transition-colors ml-1"
-                        aria-label="Remove item"
-                      >
+                      <input type="hidden" name="productId" value={item.productId._id.toString()} />
+                      <button type="submit" className="text-gray-300 hover:text-red-400 transition-colors ml-1" aria-label="Remove item">
                         <Trash2 size={15} />
                       </button>
                     </form>
@@ -392,16 +351,12 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                   <Wallet className="w-4 h-4 text-emerald-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">
-                    Pay with Wallet
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Current balance: CA${UserData?.walletBalance.toFixed(2)}
-                  </p>
+                  <p className="text-sm font-semibold text-gray-900">Pay with Wallet</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Current balance: CA${UserData?.walletBalance.toFixed(2)}</p>
                 </div>
               </div>
               <div>
-                <TopUpDialog component="checkout" />
+              <TopUpDialog component="checkout" />
               </div>
             </div>
           </div>
@@ -416,32 +371,21 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Subtotal</span>
-                  <span className="font-medium text-gray-900 tabular-nums">
-                    CA${fmt(totals.subtotal)}
-                  </span>
+                  <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.subtotal)}</span>
                 </div>
-
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Tax</span>
-                  <span className="font-medium text-gray-900 tabular-nums">
-                    CA${fmt(totals.tax)}
-                  </span>
-                </div>
-                <SubsidyCart/>
+                <TaxRows />
+                
                 {showDisposable && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Disposable fee</span>
-                    <span className="font-medium text-gray-900 tabular-nums">
-                      CA${fmt(totals.disposable)}
-                    </span>
+                    <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.disposable)}</span>
                   </div>
                 )}
+                <SubsidyCart />
                 <div className="h-px bg-gray-100" />
                 <div className="flex justify-between">
                   <span className="font-bold text-gray-900">Total</span>
-                  <span className="font-bold text-gray-900 tabular-nums">
-                    CA${fmt(totals.total)}
-                  </span>
+                  <span className="font-bold text-gray-900 tabular-nums">CA${fmt(totals.total)}</span>
                 </div>
               </div>
 

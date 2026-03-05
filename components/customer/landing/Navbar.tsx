@@ -53,7 +53,7 @@ const Navbar = async () => {
           <Button variant="default" className="flex items-center gap-1 px-3">
             <Wallet className="w-5 h-5" />
             {/* Optional: hide the text balance on super small screens if it gets tight, otherwise leave as is */}
-            <span>${customerData.walletBalance.toFixed(2)}</span>
+            <span>${(customerData.walletBalance/100).toFixed(2)}</span>
           </Button>
         </Link>
 

@@ -65,7 +65,7 @@ const GiftWallet = ({ giftWalletData }: GiftWalletProps) => {
                 >
                   $
                 </span>
-                {giftWalletData.balance}
+                {giftWalletData.balance/100}
               </h1>
               <WalletInfo />
             </div>
