@@ -1,5 +1,4 @@
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
-import CashierSidebar from "@/components/cashier/CashierSlidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { redirect } from "next/navigation";
 
@@ -25,7 +24,6 @@ export default async function RootLayout({
   return (
     <div className=" scroll-smooth">
       <TooltipProvider>
-        <CashierSidebar />
         <div className="flex-1 p-6 md:ml-18">{children}</div>
       </TooltipProvider>
     </div>

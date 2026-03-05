@@ -87,7 +87,7 @@ export const signupAction = async (
               address: data.address,
               city: data.city,
               province: data.province,
-              monthlyBudget: data.monthlyBudget,
+              monthlyBudget: data.monthlyBudget*100,
               associatedStoreId: data.associatedStore,
               referralCode: data.referralCode,
             },

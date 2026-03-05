@@ -49,6 +49,7 @@ const page = async () => {
   const newUsersUp = newUsersThisMonth >= newUsersLastMonth;
 
   // Active Users = walletBalance > 0
+  // walletBalance is stored in cents — any value > 0 cents means active, comparison is still valid
   const activeUsersThisMonth = customers.filter(
     (c: Customer) => c.walletBalance > 0,
   ).length;
@@ -68,8 +69,8 @@ const page = async () => {
       : "0";
   const activeUsersUp = activeUsersThisMonth >= activeUsersLastMonth;
 
-  // Avg Monthly Budget
-  const avgMonthlyBudget =
+  // Avg Monthly Budget — stored in cents, divide by 100 to get dollars before display
+  const avgMonthlyBudgetCents =
     customers.length > 0
       ? customers.reduce(
           (sum: number, c: Customer) => sum + (c.monthlyBudget ?? 0),
@@ -81,7 +82,7 @@ const page = async () => {
     (c: Customer) => new Date(c.createdAt) <= endOfLastMonth,
   );
 
-  const avgMonthlyBudgetLastMonth =
+  const avgMonthlyBudgetLastMonthCents =
     lastMonthCustomers.length > 0
       ? lastMonthCustomers.reduce(
           (sum: number, c: Customer) => sum + (c.monthlyBudget ?? 0),
@@ -89,15 +90,19 @@ const page = async () => {
         ) / lastMonthCustomers.length
       : 0;
 
+  // % change: dividing both by 100 cancels out — ratio is identical, no change needed here
   const avgBudgetChange =
-    avgMonthlyBudgetLastMonth > 0
+    avgMonthlyBudgetLastMonthCents > 0
       ? (
-          ((avgMonthlyBudget - avgMonthlyBudgetLastMonth) /
-            avgMonthlyBudgetLastMonth) *
+          ((avgMonthlyBudgetCents - avgMonthlyBudgetLastMonthCents) /
+            avgMonthlyBudgetLastMonthCents) *
           100
         ).toFixed(1)
       : "0";
-  const avgBudgetUp = avgMonthlyBudget >= avgMonthlyBudgetLastMonth;
+  const avgBudgetUp = avgMonthlyBudgetCents >= avgMonthlyBudgetLastMonthCents;
+
+  // Convert cents → dollars for display
+  const avgMonthlyBudget = avgMonthlyBudgetCents / 100;
 
   return (
     <div className="flex flex-col gap-5 px-8">

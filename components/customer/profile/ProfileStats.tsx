@@ -1,3 +1,4 @@
+import { fmt, fmtShort } from "@/lib/fomatPrice";
 import { getMemberSince, getMemberYear } from "@/lib/momberSince";
 import { Customer } from "@/types/customer/customer";
 import { DollarSign, ShoppingBag, CalendarDays } from "lucide-react";
@@ -12,7 +13,7 @@ export default function ProfileStats({ customer }: Props) {
     {
       icon: DollarSign,
       label: "Monthly Budget",
-      value: `$${customer.monthlyBudget}`,
+      value: `${fmtShort(customer.monthlyBudget)}`,
       sub: "per month",
       color: "text-emerald-600",
       bg: "bg-emerald-500/10",

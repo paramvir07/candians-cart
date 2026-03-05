@@ -9,9 +9,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-import { ShoppingCart, Package, ShoppingBag, ChevronLeft } from "lucide-react";
+import {
+  ShoppingCart,
+  Package,
+  ShoppingBag,
+  ChevronLeft,
+  Wallet,
+} from "lucide-react";
 import Link from "next/link";
 import { CustomerIdParams } from "@/types/cashier/customer";
+import { getCustomerDataAction } from "@/actions/customer/User.action";
+import { Customer } from "@/types/customer/customer";
 
 const customerCardInfo = [
   {
@@ -45,14 +53,28 @@ const customerCardInfo = [
       },
     ],
   },
+  {
+    title: "Wallet",
+    description: "Check balance, recharge funds, and review wallet activity.",
+    icon: Wallet,
+    highlights: [
+      { label: "Tip", value: "Recharge to speed up checkout" },
+    ],
+    actions: [
+      { label: "Open Wallet", variant: "default" as const, href: "/wallet" },
+    ],
+  },
 ];
 
 const Page = async ({ params }: CustomerIdParams) => {
   const recievedParams = await params;
   const customerId = recievedParams.customerId;
+  const customerDataResponse = await getCustomerDataAction(customerId);
+  const customerData: Customer = customerDataResponse.customerData;
+
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-background to-muted/40">
-      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
+    <div className="max-h-screen w-full bg-linear-to-b from-background to-muted/40">
+      <div className="mx-auto w-full max-w-6xl pb-20">
         {/* Header */}
         <div className="mb-6 sm:mb-8 flex flex-col gap-2">
           <div className="flex items-center gap-3">

@@ -15,7 +15,6 @@ type CustomerCardProps = {
   customer: Customer;
 };
 
-// Server component — no "use client"
 const CustomerCard = ({ customer }: CustomerCardProps) => {
   const initials = customer.name
     .split(" ")
@@ -73,7 +72,7 @@ const CustomerCard = ({ customer }: CustomerCardProps) => {
               <Wallet className="w-3 h-3 text-muted-foreground" />
             </div>
             <p className="text-xs font-semibold tabular-nums">
-              ${customer.walletBalance.toFixed(0)}
+              ${(customer.walletBalance/100).toFixed(2)}
             </p>
             <p className="text-[10px] text-muted-foreground">Wallet</p>
           </div>
@@ -82,7 +81,7 @@ const CustomerCard = ({ customer }: CustomerCardProps) => {
               <Gift className="w-3 h-3 text-muted-foreground" />
             </div>
             <p className="text-xs font-semibold tabular-nums">
-              ${customer.giftWalletBalance.toFixed(0)}
+              ${(customer.giftWalletBalance/100).toFixed(2)}
             </p>
             <p className="text-[10px] text-muted-foreground">Gift</p>
           </div>
@@ -91,7 +90,7 @@ const CustomerCard = ({ customer }: CustomerCardProps) => {
               <Building2 className="w-3 h-3 text-muted-foreground" />
             </div>
             <p className="text-xs font-semibold tabular-nums">
-              ${customer.monthlyBudget.toFixed(0)}
+              ${(customer.monthlyBudget/100).toFixed(0)}
             </p>
             <p className="text-[10px] text-muted-foreground">Budget</p>
           </div>
