@@ -45,7 +45,7 @@ const AdminSidebar = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button asChild size="icon" variant="ghost">
-                <Link href="/admin/users">
+                <Link href="/admin/customers">
                   <Users2 />
                 </Link>
               </Button>
