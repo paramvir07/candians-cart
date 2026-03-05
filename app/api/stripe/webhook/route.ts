@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     }
 
     const userId = session.metadata?.userId;
-    console.log("UserId from Webhook : ",userId)
+
     if (!userId) {
       console.log("No user found for session ID: " + session.metadata?.userId);
       throw new Error(`No user found with the session Metadata: ${userId}`);
@@ -65,11 +65,11 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
-    const UserData = await GetUserfromSession(userId)
-    if (!UserData){
+    const UserData = await GetUserfromSession(userId); // Getting mongo _id from auth id
+    if (!UserData) {
       return new NextResponse("User not Found ", { status: 400 });
     }
-    
+
     // Starting mongo session
     const dbSession = await mongoose.startSession();
 
@@ -86,16 +86,18 @@ export async function POST(req: Request) {
         }
 
         // Check if user exists in DB
-        const userExists = await Customer.findById(UserData._id).session(dbSession); // checking this within the session to prevent any lekage
+        const userExists = await Customer.findById(UserData._id).session(
+          dbSession,
+        ); // checking this within the session to prevent any lekage
         if (!userExists) {
-          throw new Error(`No user found in DB with the session ID: ${userId}`);
+          throw new Error(`No user found in DB with the auth ID: ${userId}`);
         }
 
         // creating payment record
         await WalletPayment.create(
           [
             {
-              userId: userId,
+              userId: UserData._id, // This here is the Mongo ID NOT AuthID
               stripeEventId: event.id,
               checkoutSessionId: session.id,
               paymentIntentId: session.payment_intent as string,
@@ -111,7 +113,7 @@ export async function POST(req: Request) {
         const amountToAdd = session.amount_total ? session.amount_total : 0; // Storing in cents (wallet is in cents too)
 
         await Customer.findByIdAndUpdate(
-          userId,
+          UserData._id,
           { $inc: { walletBalance: amountToAdd } },
           { session: dbSession },
         );
