@@ -1,11 +1,36 @@
 import { CustomerIdParams } from "@/types/cashier/customer";
+import getStoreAndProduct from "@/actions/customer/ProductAndStore/getAssociatedStore";
+import { searchProducts } from "@/actions/common/searchProducts.action"; // adjust path if needed
+import { SearchResultsClient } from "@/components/customer/search/SearchResultsClient";
+import { redirect } from "next/navigation";
+import { getCustomerDataAction } from "@/actions/customer/User.action";
+import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
 
-const CustomerProducts = async({ params }: CustomerIdParams) => {
+const CustomerProducts = async ({ params }: CustomerIdParams) => {
   const recievedParams = await params;
   const customerId = recievedParams.customerId;
-  return (
-    <div>CustomerProducts</div>
-  )
-}
 
-export default CustomerProducts
+  const [response, customerDataResponse, cartCount] = await Promise.all([
+    getStoreAndProduct(customerId),
+    getCustomerDataAction(customerId),
+    getCartItemsCount(customerId),
+  ]);
+
+  if (!response.success) {
+    redirect("/");
+  }
+
+  // Pull storeId — adjust the field name if your response shape differs
+  const storeId = response.storeId ?? response.products?.[0]?.storeId ?? "";
+  return (
+    <SearchResultsClient
+      customerId={customerId}
+      storeId={storeId}
+      searchAction={searchProducts}
+      customerData={customerDataResponse.customerData}
+      cartCount={cartCount ?? 0}
+    />
+  );
+};
+
+export default CustomerProducts;

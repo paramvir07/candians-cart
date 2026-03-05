@@ -1,75 +1,86 @@
-"use client"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+"use client";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Delete, Wallet } from "lucide-react"
+} from "@/components/ui/dialog";
+import { Delete, Wallet } from "lucide-react";
+import { PaymentModeToggle } from "@/components/cashier/wallet/PaymentModeToggle";
+import { cashierTopUpAction } from "@/actions/cashier/cashierTopUp.actions";
+import { toast } from "sonner";
 
+const PRESETS = [5, 10, 20, 50, 100, 150, 200, 250];
 
-
-const PRESETS = [5, 10, 20, 50, 100, 150, 200, 250]
-
-
-
-
-export function TopUpDialog({ component }: { component: "checkout" | "wallet" }) {
-  const [amount, setAmount] = useState<number | null>(200)
-  const [inputVal, setInputVal] = useState("200")
+export function TopUpDialog({
+  component,
+  customerId,
+}: {
+  component: "checkout" | "wallet";
+  customerId?: string;
+}) {
+  const [amount, setAmount] = useState<number | null>(200);
+  const [inputVal, setInputVal] = useState("200");
+  const [paymentMode, setPaymentMode] = useState<"cash" | "card">("card");
 
   const handlePreset = (preset: number) => {
-    setAmount(preset)
-    setInputVal(String(preset))
-  }
+    setAmount(preset);
+    setInputVal(String(preset));
+  };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    setInputVal(val)
-    setAmount(val === "" ? null : Number(val))
-  }
+    const val = e.target.value;
+    setInputVal(val);
+    setAmount(val === "" ? null : Number(val));
+  };
 
   const handleClear = () => {
-    setAmount(null)
-    setInputVal("")
-  }
+    setAmount(null);
+    setInputVal("");
+  };
+  const handleCheckout = async () => {
+    if (!amount) return;
 
- const handleCheckout = async () => {
-  if (!amount) return;
+    if (customerId) {
+      const response = await cashierTopUpAction(
+        customerId,
+        paymentMode,
+        amount * 100, // ✅ send cents
+      );
 
-  const res = await fetch("/api/stripe/checkout", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      // Sent in cents
-      amount: amount * 100,
-    }),
-  });
+      if (response.success) toast.success(response.message);
+      else toast.error(response.message);
 
-  const data = await res.json();
+      return;
+    }
+    
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: amount * 100, // cents
+      }),
+    });
 
-  if (data.url) {
-    window.location.href = data.url;
-  }
-};
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+  };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-      <Button
-        variant="default"
-        className={`rounded-full p-5 ${
-          component !== "checkout" ? "w-full" : ""
-        }`}
-      >
-        Top Up
-      </Button>      
-</DialogTrigger>
-      <DialogTitle>
-        
-      </DialogTitle>
+        <Button
+          variant="default"
+          className={`rounded-full p-5 ${
+            component !== "checkout" ? "w-full" : ""
+          }`}
+        >
+          Top Up
+        </Button>
+      </DialogTrigger>
+      <DialogTitle></DialogTitle>
 
       <DialogContent
         className="sm:max-w-sm p-0 overflow-hidden gap-0 border-0"
@@ -92,7 +103,9 @@ export function TopUpDialog({ component }: { component: "checkout" | "wallet" })
             </div>
             <p className="text-sm font-semibold text-gray-700">Top Up Wallet</p>
           </div>
-          <p className="text-[11px] text-gray-400 font-medium tracking-wide uppercase">CAD</p>
+          <p className="text-[11px] text-gray-400 font-medium tracking-wide uppercase">
+            CAD
+          </p>
         </div>
 
         <div className="p-5 pb-4 space-y-5">
@@ -124,41 +137,63 @@ export function TopUpDialog({ component }: { component: "checkout" | "wallet" })
               onClick={handleClear}
               className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95"
               style={{
-                background: inputVal ? "var(--color-primary)" : "rgba(0,0,0,0.06)",
+                background: inputVal
+                  ? "var(--color-primary)"
+                  : "rgba(0,0,0,0.06)",
               }}
             >
               <Delete
                 size={14}
-                style={{ color: inputVal ? "var(--color-primary-foreground)" : "#aaa" }}
+                style={{
+                  color: inputVal ? "var(--color-primary-foreground)" : "#aaa",
+                }}
               />
             </button>
           </div>
 
           {/* Presets */}
           <div>
-            <p className="text-[11px] font-medium text-gray-400 uppercase tracking-widest mb-2.5">Quick Select</p>
+            <p className="text-[11px] font-medium text-gray-400 uppercase tracking-widest mb-2.5">
+              Quick Select
+            </p>
             <div className="grid grid-cols-4 gap-2">
               {PRESETS.map((preset) => {
-                const isSelected = amount === preset && inputVal === String(preset)
+                const isSelected =
+                  amount === preset && inputVal === String(preset);
                 return (
                   <button
                     key={preset}
                     onClick={() => handlePreset(preset)}
                     className="rounded-xl py-2.5 text-sm transition-all active:scale-95"
                     style={{
-                      background: isSelected ? "var(--color-primary)" : "var(--color-secondary)",
-                      color: isSelected ? "var(--color-primary-foreground)" : "var(--color-secondary-foreground)",
+                      background: isSelected
+                        ? "var(--color-primary)"
+                        : "var(--color-secondary)",
+                      color: isSelected
+                        ? "var(--color-primary-foreground)"
+                        : "var(--color-secondary-foreground)",
                       fontWeight: isSelected ? 700 : 500,
                       transform: isSelected ? "scale(1.04)" : "scale(1)",
-                      boxShadow: isSelected ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+                      boxShadow: isSelected
+                        ? "0 4px 12px rgba(0,0,0,0.15)"
+                        : "none",
                     }}
                   >
                     ${preset}
                   </button>
-                )
+                );
               })}
             </div>
           </div>
+
+          {/* Payment mode */}
+
+          {customerId && (
+            <PaymentModeToggle
+              paymentMode={paymentMode}
+              setPaymentMode={setPaymentMode}
+            />
+          )}
 
           {/* Summary line */}
           {amount && (
@@ -166,8 +201,13 @@ export function TopUpDialog({ component }: { component: "checkout" | "wallet" })
               className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm"
               style={{ background: "var(--color-secondary)" }}
             >
-              <span style={{ color: "var(--color-muted-foreground)" }}>You're adding</span>
-              <span className="font-bold" style={{ color: "var(--color-primary)" }}>
+              <span style={{ color: "var(--color-muted-foreground)" }}>
+                You're adding
+              </span>
+              <span
+                className="font-bold"
+                style={{ color: "var(--color-primary)" }}
+              >
                 ${amount.toFixed(2)} CAD
               </span>
             </div>
@@ -191,5 +231,5 @@ export function TopUpDialog({ component }: { component: "checkout" | "wallet" })
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

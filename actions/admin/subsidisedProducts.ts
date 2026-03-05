@@ -40,7 +40,7 @@ export async function subsidisedProduct(productId: string, isSubsidised: boolean
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       { subsidised: isSubsidised },
-      { new: true },
+      { returnDocument: 'after' },
     );
 
     if (!updatedProduct) {

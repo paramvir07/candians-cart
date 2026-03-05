@@ -9,8 +9,9 @@ import { getMemberSince } from "@/lib/memberSince";
 
 type WalletViewProps = {
   customerData: Customer;
+  customerId?: string;
 };
-const WalletView = ({ customerData }: WalletViewProps) => {
+const WalletView = ({ customerData, customerId }: WalletViewProps) => {
   const topupWalletData = {
     balance: customerData.walletBalance,
     memberSince: getMemberSince(customerData.createdAt),
@@ -33,7 +34,10 @@ const WalletView = ({ customerData }: WalletViewProps) => {
 
       <div className="w-full justify-center p-8 hidden md:flex">
         <div className="flex-1">
-          <TopupWallet topupWalletData={topupWalletData} />
+          <TopupWallet
+            topupWalletData={topupWalletData}
+            customerId={customerId}
+          />
         </div>
         <Separator orientation="vertical" className="mx-8" />
         <div className="flex-1">

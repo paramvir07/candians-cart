@@ -149,7 +149,7 @@ const Page = async ({ params }: CustomerIdParams) => {
                     {/* Actions pinned toward bottom */}
                     <div className="mt-auto flex flex-col gap-2">
                       <Link
-                        href={`/cashier/customer/${customerId}/${card.actions[0].href}`}
+                        href={`/cashier/customer/${customerId}${card.actions[0].href}`}
                       >
                         <Button
                           className="w-full h-10 sm:h-11"

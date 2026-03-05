@@ -5,8 +5,9 @@ type TopupWalletProps = {
     balance: number;
     memberSince: string;
   };
+  customerId?: string;
 };
-const TopupWallet = ({ topupWalletData }: TopupWalletProps) => {
+const TopupWallet = ({ topupWalletData, customerId }: TopupWalletProps) => {
   return (
     <div>
       <div className="p-4 text-white">
@@ -70,7 +71,7 @@ const TopupWallet = ({ topupWalletData }: TopupWalletProps) => {
                 >
                   $
                 </span>
-                {topupWalletData.balance/100}
+                {topupWalletData.balance / 100}
               </h1>
               <WalletInfo />
             </div>
@@ -81,14 +82,16 @@ const TopupWallet = ({ topupWalletData }: TopupWalletProps) => {
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
                 Member Since
               </p>
-              <p className="font-semibold text-sm">{topupWalletData.memberSince}</p>
+              <p className="font-semibold text-sm">
+                {topupWalletData.memberSince}
+              </p>
             </div>
           </div>
         </div>
       </div>
-        <div className="w-full px-4 relative z-50">
-          <TopUpDialog component={"wallet"} />
-        </div>
+      <div className="w-full px-4 relative z-50">
+        <TopUpDialog component={"wallet"} customerId={customerId} />
+      </div>
     </div>
   );
 };

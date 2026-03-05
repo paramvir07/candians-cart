@@ -75,7 +75,7 @@ export const updateReferalCodeAction = async (
     const updatedReferalId = await ReferralCode.findByIdAndUpdate(
     referalCodeId,
       { $set: { maxUses: data.maxUses, expiresAt: data.expiresAt, isActive: data.isActive } },
-      { new: true },
+      { returnDocument: 'after' },
     );
     if (!updatedReferalId) {
       return {

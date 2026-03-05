@@ -1,5 +1,4 @@
 "use client";
-// components/customer/search/SearchResultsClient.tsx
 
 import { useState, useEffect, useMemo } from "react";
 import { IProduct } from "@/types/store/products.types";
@@ -22,6 +21,7 @@ import { Loader2, PackageOpen, Search } from "lucide-react";
 import { Customer } from "@/types/customer/customer";
 
 interface SearchResultsClientProps {
+  customerId?: string; 
   storeId: string;
   searchAction: (
     query: string,
@@ -36,6 +36,7 @@ interface SearchResultsClientProps {
 }
 
 export function SearchResultsClient({
+  customerId,
   storeId,
   searchAction,
   customerData,
@@ -107,18 +108,20 @@ export function SearchResultsClient({
   ];
 
   return (
-    <div className="min-h-screen bg-[#f7f8fa]">
-      <SearchNav 
-      initialQuery={query}
-       onQueryChange={setQuery}
-       customerData={customerData}
-       cartCount={cartCount}
-       />
+    <div className={!customerId? "min-h-screen bg-[#f7f8fa]" : "min-h-screen"}>
+      <SearchNav
+        customerId ={customerId}
+        initialQuery={query}
+        onQueryChange={setQuery}
+        customerData={customerData}
+        cartCount={cartCount}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-8">
           {/* Desktop sidebar — only shows when there are results */}
-          {hasSearched && allResults.length > 0 && (
+          
+          {hasSearched && allResults.length > 0 && !customerId && (
             <aside className="hidden lg:block w-60 shrink-0">
               <div className="sticky top-18.25 bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                 <div className="flex items-center gap-2 pb-4">
@@ -139,7 +142,6 @@ export function SearchResultsClient({
               </div>
             </aside>
           )}
-
           {/* Results column */}
           <div className="flex-1 min-w-0">
             {/* Idle — no query yet */}
@@ -216,6 +218,7 @@ export function SearchResultsClient({
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     {filtered.map((product) => (
                       <CustomerProductCard
+                        customerId={customerId}
                         key={product._id}
                         product={product}
                       />

@@ -150,9 +150,11 @@ function ProductDetailDialog({
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 export function CustomerProductCard({
+  customerId,
   product,
   cartQuantity = 0,
 }: {
+  customerId?: string;
   product: IProduct;
   cartQuantity?: number;
 }) {
@@ -175,7 +177,7 @@ export function CustomerProductCard({
     setQuantity(1); // Optimistic UI update
     startTransition(async () => {
       try {
-        const res = await AddtoCart(product._id as string);
+        const res = await AddtoCart(product._id as string, customerId);
         if (res?.success) {
           toast.success(`${product.name} added to cart!`);
         } else {
@@ -195,7 +197,7 @@ export function CustomerProductCard({
       try {
         const formData = new FormData();
         formData.append("productId", product._id as string);
-        await IncrementItem(undefined, formData);
+        await IncrementItem(customerId, formData);
       } catch (error) {
         setQuantity((q) => Math.max(0, q - 1)); // Revert on failure
       }
@@ -209,7 +211,7 @@ export function CustomerProductCard({
       try {
         const formData = new FormData();
         formData.append("productId", product._id as string);
-        await DecrementItem(undefined, formData);
+        await DecrementItem(customerId, formData);
       } catch (error) {
         setQuantity((q) => q + 1); // Revert on failure
       }

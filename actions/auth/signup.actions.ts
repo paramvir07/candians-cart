@@ -101,7 +101,7 @@ export const signupAction = async (
         const newStoreMember = await Store.findByIdAndUpdate(
           data.associatedStore,
           { $addToSet: { members: customer[0]._id } },
-          { new: true, session },
+          { returnDocument: "after" },
         );
 
         if (!newStoreMember)

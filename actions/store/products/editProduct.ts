@@ -107,7 +107,7 @@ export async function updateProduct(
       updatedProduct = await Product.findByIdAndUpdate(
         productId, // Add the store using _id
         { $set: dbPayload },
-        { new: true }, // Returns the updated document
+        { returnDocument: "after" }, // Returns the updated document
       );
     } else if (storeRole) {
       updatedProduct = await Product.findOneAndUpdate(

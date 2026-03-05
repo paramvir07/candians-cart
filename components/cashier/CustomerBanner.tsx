@@ -42,7 +42,7 @@ export function CustomerBanner({
     .join(", ");
 
   return (
-    <div className="w-full border-b border-border/50 bg-card/95 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+    <div className="w-full border-b border-border/50 bg-card/95 backdrop-blur-md sticky top-0 z-40 shadow-lg rounded-lg">
       {/* ── Always-visible main row ── */}
       <div className="flex items-center gap-2 px-3 py-2">
         {/* Avatar */}

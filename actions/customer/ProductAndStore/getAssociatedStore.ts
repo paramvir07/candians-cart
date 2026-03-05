@@ -15,13 +15,20 @@ export interface AssociatedStoreResponse{
   error?: string;
 }
 
-export default async function getStoreAndProduct() : Promise<AssociatedStoreResponse> {
+export default async function getStoreAndProduct(customerId?: string) : Promise<AssociatedStoreResponse> {
   try {
     const session = await getUserSession();
     const userId = session.user.id;
+    const cashierRole = session.user.role === "cashier";
     await dbConnect();
 
-    const customer = await Customer.findOne({ userId: userId }).lean();
+    let customer;
+    if (cashierRole) {
+      customer = await Customer.findById(customerId).lean();
+    }
+    else {
+      customer = await Customer.findOne({ userId: userId }).lean();
+    }
 
     if (!customer) {
       throw new Error("Customer not found");

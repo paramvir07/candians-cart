@@ -22,9 +22,9 @@ export default async function RootLayout({
     }
   }
   return (
-    <div className=" scroll-smooth">
+    <div className="scroll-smooth">
       <TooltipProvider>
-        <div className="flex-1 p-6 md:ml-18">{children}</div>
+        <div>{children}</div>
       </TooltipProvider>
     </div>
   );
