@@ -1,5 +1,3 @@
-
-
   /** Cents → full CAD currency string: 47348000 → CA$473,480.00 */
 export function fmt(cents?: number) {
   if (typeof cents !== "number") return "—";

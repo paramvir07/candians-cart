@@ -66,7 +66,9 @@ const filtered = useMemo(() => {
   };
 
   return (
-    <div className="space-y-3">
+    <div
+      className={`space-y-3 mb-20 sm:mb-0 ${cashierRole ? "px-0 md:px-5" : ""}`}
+    >
       {/* ── Toolbar ─────────────────────────────────────────────────────── */}
       <div className="border border-border rounded-xl bg-card">
         {/* Row 1: title + count + sort */}

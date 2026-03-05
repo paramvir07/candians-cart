@@ -5,7 +5,9 @@ import Link from "next/link"
 
 export const EmptyCart = ({ customerId }: { customerId?: string }) => {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div
+      className={`min-h-screen ${!customerId ? "bg-[#F7F6F3]" : ""}`}
+    >
       {!customerId && <Navbar />}
 
       <div className="px-5 pt-6 max-w-md mx-auto">

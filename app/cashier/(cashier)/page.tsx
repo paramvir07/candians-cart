@@ -7,10 +7,12 @@ const page = async () => {
   return (
     <>
       <CashierSidebar />
-      <UserList
-        myStoreCustomersData={myStoreCustomersData}
-        userRole="cashier"
-      />
+      <div className="flex-1 p-6 md:ml-18">
+        <UserList
+          myStoreCustomersData={myStoreCustomersData}
+          userRole="cashier"
+        />
+      </div>
     </>
   );
 };

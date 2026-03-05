@@ -106,7 +106,7 @@ export const getCustomerDataAction = async (customerId?: string) => {
 export const getMyStoreCustomers = async () => {
   const session = await getUserSession();
   const cashierRole = session.user.role === "cashier";
-  const adminRole = session.user.role === "admin";
+  const storeRole = session.user.role === "store";
   try {
     await dbConnect();
 
@@ -114,7 +114,7 @@ export const getMyStoreCustomers = async () => {
     if (cashierRole) {
       const cashier = await Cashier.findOne({ userId: session.user.id }).lean();
       myStoreId = cashier?.storeId;
-    } else if (adminRole) {
+    } else if (storeRole) {
       const myStore = await Store.findOne({ userId: session.user.id })
         .select("_id")
         .lean();
