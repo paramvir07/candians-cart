@@ -69,8 +69,6 @@ const customerCardInfo = [
 const Page = async ({ params }: CustomerIdParams) => {
   const recievedParams = await params;
   const customerId = recievedParams.customerId;
-  const customerDataResponse = await getCustomerDataAction(customerId);
-  const customerData: Customer = customerDataResponse.customerData;
 
   return (
     <div className="max-h-screen w-full bg-linear-to-b from-background to-muted/40">

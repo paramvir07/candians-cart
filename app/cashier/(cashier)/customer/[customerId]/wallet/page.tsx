@@ -12,7 +12,7 @@ const CustomerWallet = async({ params }: CustomerIdParams) => {
     const customerData: Customer = customerDataResponse.customerData;
   return (
     <div>
-      <WalletSwitcher />
+      <WalletSwitcher customerId={customerId} />
       <WalletView customerData={customerData} customerId={customerId} />
     </div>
   );
