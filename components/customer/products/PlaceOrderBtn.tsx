@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { PaymentMode } from "@/types/customer/OrdersClient";
 import { useAtom } from "jotai";
 import { ArrowRight, Store } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const PlaceOrderBtn = ({
   customerId,
@@ -16,15 +18,42 @@ const PlaceOrderBtn = ({
   compact?: boolean;
   paymentMode: PaymentMode;
 }) => {
-
+  const router = useRouter();
   const [SubsidyVal] = useAtom(SubsidyValue);
-  const handlePlaceOrder = () => {
-    if (customerId) {
-      PlaceOrder({ customerId, paymentMode,subsidyVal: SubsidyVal });
+
+  const handlePlaceOrder = async () => {
+    const placeOrder = customerId
+      ? await PlaceOrder({
+          customerId,
+          paymentMode,
+          subsidyVal: SubsidyVal,
+        })
+      : await PlaceOrder({
+          subsidyVal: SubsidyVal,
+        });
+
+    if (placeOrder.success) {
+      toast.success(placeOrder.message);
+      router.push(customerId ? `/cashier/customer/${customerId}` : "/");
+    } else {
+      toast.error(placeOrder.error);
     }
-    PlaceOrder({ customerId,subsidyVal: SubsidyVal})
   };
-  const handlePayAtStore = () => PlaceOrder({ customerId, status: "pending", paymentMode: "pending" });
+
+  const handlePayAtStore = async () => {
+    const placeOrder = await PlaceOrder({
+      status: "pending",
+      paymentMode: "pending",
+      subsidyVal: SubsidyVal,
+    });
+
+    if (placeOrder.success) {
+      toast.success(placeOrder.message);
+      router.push("/");
+    } else {
+      toast.error(placeOrder.error);
+    }
+  };
 
   if (compact) {
     return (

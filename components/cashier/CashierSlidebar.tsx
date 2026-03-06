@@ -21,6 +21,7 @@ type CustomerData = {
     id?: string;
     name?: string;
     cartCount?: number;
+    walletBalance?: number;
   };
 };
 
@@ -58,8 +59,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
           label: "Customer Wallet",
           href: `/cashier/customer/${customerId}/wallet`,
           icon: Wallet,
-      },
-        
+        },
       ]
     : [];
 
@@ -196,12 +196,10 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
                 variant="ghost"
                 className="h-11 w-11 rounded-2xl hover:bg-background/70"
               >
-                {/* <Link href="/cashier/profile" aria-label="Cashier Profile"> */}
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                {/* </Link> */}
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">

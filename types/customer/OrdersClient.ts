@@ -34,17 +34,26 @@ export type PlaceOrderParams = {
   status?:
     | "pending"
     | "completed"
-    | "canceled"
-    | "refund requested"
     | "refunded"
-    | "refund rejected"
-    | "failed";
   paymentMode?: "wallet" | "cash" | "card" | "pending";
-  subsidyVal?: number
+  subsidyVal?: number;
 };
 
 export enum PaymentMode {
   CASH = "cash",
   CARD = "card",
-  WALLET = "wallet"
+  WALLET = "wallet",
 }
+
+export type PlaceOrderResponse = Promise<
+  | {
+      success: boolean;
+      error: string;
+      message?: undefined;
+    }
+  | {
+      success: boolean;
+      message: string;
+      error?: undefined;
+    }
+>;

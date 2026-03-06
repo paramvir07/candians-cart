@@ -7,15 +7,15 @@ export interface PlaceOrderProduct {
   markup: number;
   tax: number;
   disposableFee: number;
-  status?: "completed" | "refund requested" | "refunded" | "refund rejected";
+  status?: "completed" | "refunded";
   subsidy?: number;
 }
 
 export interface PlaceOrderI {
   products: PlaceOrderProduct[];
   TotalGST: number;
-  TotalPST:number;
-  TotalDisposableFee:number;
+  TotalPST: number;
+  TotalDisposableFee: number;
   BaseTotal: number;
   cartTotal: number;
   userWalletBalance: number;
@@ -24,16 +24,10 @@ export interface PlaceOrderI {
   storeId: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
-  status?:
-    | "pending"
-    | "completed"
-    | "canceled"
-    | "refund requested"
-    | "refunded"
-    | "refund rejected"
-    | "failed";
+  status?: "pending" | "completed" | "refunded";
   subsidy?: number;
   paymentMode?: "wallet" | "cash" | "card" | "pending";
+  cashierId?: Types.ObjectId;
 }
 
 const placeOrderProductSchema = new Schema<PlaceOrderProduct>(
@@ -76,7 +70,7 @@ const placeOrderProductSchema = new Schema<PlaceOrderProduct>(
     },
     status: {
       type: String,
-      enum: ["completed", "refund requested", "refunded", "refund rejected"],
+      enum: ["completed", "refunded"],
       default: "completed",
       required: true,
       index: true,
@@ -91,22 +85,22 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       type: [placeOrderProductSchema],
       required: true,
     },
-    TotalGST:{
-      type: Number,
-      required: true,
-      min: 0, 
-    },
-    TotalPST:{
+    TotalGST: {
       type: Number,
       required: true,
       min: 0,
     },
-    TotalDisposableFee:{
+    TotalPST: {
       type: Number,
       required: true,
       min: 0,
     },
-    BaseTotal:{
+    TotalDisposableFee: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    BaseTotal: {
       type: Number,
       required: true,
       min: 0,
@@ -144,15 +138,7 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
     },
     status: {
       type: String,
-      enum: [
-        "pending",
-        "completed",
-        "canceled",
-        "refund requested",
-        "refunded",
-        "refund rejected",
-        "failed",
-      ],
+      enum: ["pending", "completed", "refunded"],
       default: "completed",
       required: true,
       index: true,
@@ -163,6 +149,10 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       default: "wallet",
       required: true,
       index: true,
+    },
+    cashierId: {
+      type: Schema.Types.ObjectId,
+      ref: "Cashier",
     },
   },
   { timestamps: true },

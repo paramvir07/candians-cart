@@ -14,9 +14,8 @@ import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { getCustomerDataAction } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
-import { PlaceOrderParams } from "@/types/customer/OrdersClient";
+import { PlaceOrderParams, PlaceOrderResponse } from "@/types/customer/OrdersClient";
 import { ICartItem } from "@/types/customer/CustomerCart";
-
 
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
@@ -171,27 +170,31 @@ export const RemoveItem = async (
   revalidatePath("/customer/cart");
 };
 
-export const getCart = async (customerId?: string): Promise<{
-  success: boolean
-  items: ICartItem[]
-  subItems: ISubsidyItems[]
+export const getCart = async (
+  customerId?: string,
+): Promise<{
+  success: boolean;
+  items: ICartItem[];
+  subItems: ISubsidyItems[];
 } | null> => {
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
-  if (!user) return {success:false, items:[], subItems:[]};
+  if (!user) return { success: false, items: [], subItems: [] };
 
   await dbConnect();
   try {
     const foundCart = await CartModel.findOne({
       customerId: user._id,
-    }).populate("items.productId").populate("subsidyItems.productId");
+    })
+      .populate("items.productId")
+      .populate("subsidyItems.productId");
 
     if (!foundCart) return null;
     return {
-    success: true,
-    items: foundCart.items as unknown as ICartItem[],
-    subItems: foundCart.subsidyItems
-  }
+      success: true,
+      items: foundCart.items as unknown as ICartItem[],
+      subItems: foundCart.subsidyItems,
+    };
     // return foundCart.items;
   } catch (error) {
     console.log(error);
@@ -203,14 +206,18 @@ export const PlaceOrder = async ({
   customerId,
   status = "completed",
   paymentMode = "wallet",
-  subsidyVal
-}: PlaceOrderParams) => {
+  subsidyVal,
+}: PlaceOrderParams): PlaceOrderResponse=> {
   await dbConnect();
-  
+
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
-  const cartItems = (await getCart(customerId)) as ICartItem[] | null;
-  if (!user || !cartItems || cartItems.length === 0) return { success: false, message: "Something went wrong!" };
+  const cartItemsResponse = await getCart(customerId);
+  if (!cartItemsResponse)
+    return { success: false, error: "Cart items not found" };
+  const cartItems: ICartItem[] = cartItemsResponse?.items;
+  if (!user || !cartItems || cartItems.length === 0)
+    return { success: false, message: "Something went wrong!" };
 
   try {
     const walletBalance = user.walletBalance ?? 0;
@@ -226,13 +233,19 @@ export const PlaceOrder = async ({
       const markupAmount = Math.round(base * (item.productId.markup / 100));
       const subtotalWithMarkup = base + markupAmount;
       const tax = item.productId.tax;
-      const dispFee = (item.productId.disposableFee ?? 0)* item.quantity;
+      const dispFee = (item.productId.disposableFee ?? 0) * item.quantity;
 
       // 0.05 = GST only | 0.07 = PST only | 0.12 = GST + PST
-      const gst = tax === 0.05 || tax === 0.12 ? Math.round(subtotalWithMarkup * 0.05) : 0;
-      const pst = tax === 0.07 || tax === 0.12 ? Math.round(subtotalWithMarkup * 0.07) : 0;
+      const gst =
+        tax === 0.05 || tax === 0.12
+          ? Math.round(subtotalWithMarkup * 0.05)
+          : 0;
+      const pst =
+        tax === 0.07 || tax === 0.12
+          ? Math.round(subtotalWithMarkup * 0.07)
+          : 0;
       totalDisposableFee += dispFee;
-      totalBase +=base; 
+      totalBase += base;
       totalGST += gst;
       totalPST += pst;
 
@@ -310,7 +323,7 @@ export const PlaceOrder = async ({
     if (customerId) {
       redirect(`/cashier/customer/${customerId}`);
     }
-    redirect("/");
+    return { success: true, message: "Order Placed Successfully" };
   } catch (error) {
     if (isRedirectError(error)) throw error;
     console.error("Error while placing order:", error);

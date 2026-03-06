@@ -336,7 +336,11 @@ export default function OrdersHistoryClient({
                         {/* Footer */}
                         <div className="flex items-center justify-between pt-3 mt-1 border-t border-border">
                           <div className="flex items-center gap-2">
-                            <ReorderBtn OrderId={order._id} />
+                            <ReorderBtn
+                              OrderId={order._id}
+                              customerId={customerId}
+                              orderStatus={order.status}
+                            />
                             {!customerId && (
                               <QrCodeButton orderId={order._id} />
                             )}

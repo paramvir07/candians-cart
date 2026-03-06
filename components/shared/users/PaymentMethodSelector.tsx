@@ -5,13 +5,11 @@ import { PaymentMode } from "@/types/customer/OrdersClient";
 type Props = {
   value: PaymentMode;
   onChange: (method: PaymentMode) => void;
-  compact?: boolean;
 };
 
 export default function PaymentMethodSelector({
   value,
   onChange,
-  compact,
 }: Props) {
   const btn =
     "flex-1 rounded-full border px-3 py-2 text-sm font-semibold transition";

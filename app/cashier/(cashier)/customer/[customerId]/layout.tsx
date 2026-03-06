@@ -24,6 +24,7 @@ export default async function RootLayout({ children, params }: Props) {
     id: customerId,
     name: customerData.name,
     cartCount,
+    walletBalance: customerData.walletBalance
   };
 
   return (

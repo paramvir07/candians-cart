@@ -26,7 +26,6 @@ export default function CheckoutActions({
         <PaymentMethodSelector
           value={method}
           onChange={setMethod}
-          compact={compact}
         />
       )}
 
