@@ -97,14 +97,16 @@ export function SearchResultsClient({
   }, [allResults, filters]);
 
   const QUICK_SUGGESTIONS = [
-    "🥭 Mango",
-    "🥛 Milk",
-    "🫓 Roti",
-    "🧀 Paneer",
-    "🥚 Eggs",
-    "🍗 Chicken",
-    "☕ Chai",
-    "🥟 Samosa",
+    "🥭 Fruits",
+    "🥦 Vegetables",
+    "🥛 Dairy",
+    "🍗 Meat",
+    "🫓 Bakery",
+    "☕ Beverages",
+    "🥟 Snacks",
+    "🧹 Household",
+    "🪥 Personal Care",
+    "🛒 Other",
   ];
 
   return (
@@ -117,7 +119,7 @@ export function SearchResultsClient({
         cartCount={cartCount}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-8">
           {/* Desktop sidebar — only shows when there are results */}
           

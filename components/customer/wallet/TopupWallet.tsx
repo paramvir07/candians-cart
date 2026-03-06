@@ -12,7 +12,7 @@ const TopupWallet = ({ topupWalletData, customerId }: TopupWalletProps) => {
     <div>
       <div className="p-4 text-white">
         <div
-          className="relative rounded-2xl p-6 space-y-21 lg:space-y-32 overflow-hidden"
+          className="relative rounded-2xl p-6 space-y-17 lg:space-y-32 overflow-hidden"
           style={{
             backgroundColor: "#2d6a35",
             boxShadow:

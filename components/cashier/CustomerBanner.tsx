@@ -14,6 +14,7 @@ import {
 import { Customer } from "@/types/customer/customer";
 import { useState } from "react";
 import { fmt, fmtShort } from "@/lib/fomatPrice";
+import Link from "next/link";
 
 type CustomerBannerProps = {
   customer: Customer;
@@ -42,18 +43,21 @@ export function CustomerBanner({
     .join(", ");
 
   return (
-    <div className="w-full border-b border-border/50 bg-card/95 backdrop-blur-md sticky top-0 z-40 shadow-lg rounded-lg">
+    <div className="w-[95%] md:w-[70%] border-b border-border/50 bg-card/95 backdrop-blur-md sticky top-0 z-40 shadow-lg rounded-lg">
       {/* ── Always-visible main row ── */}
       <div className="flex items-center gap-2 px-3 py-2">
         {/* Avatar */}
-        <div className="relative shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow ring-2 ring-primary/25">
-          {initials}
-          <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-background" />
-        </div>
+        <Link href={`/cashier/customer/${customerId}`} aria-label="Cashier Profile">
+          <div className="relative shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow ring-2 ring-primary/25">
+            {initials}
+            <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-background" />
+          </div>
+        </Link>
 
         {/* Name + ID — shrinks gracefully */}
+
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold leading-tight text-foreground">
+          <p className="truncate text-sm font-semibold leading-tight text-foreground ">
             {customer.name}
           </p>
           <p className="text-[10px] font-mono text-muted-foreground leading-tight">
@@ -143,8 +147,6 @@ export function CustomerBanner({
               value={fmt(customer.monthlyBudget)}
             />
           </div>
-
-        
         </div>
       </div>
     </div>

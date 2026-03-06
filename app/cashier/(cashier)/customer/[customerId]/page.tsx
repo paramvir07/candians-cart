@@ -71,7 +71,7 @@ const Page = async ({ params }: CustomerIdParams) => {
   const customerId = recievedParams.customerId;
 
   return (
-    <div className="max-h-screen w-full bg-linear-to-b from-background to-muted/40">
+    <div className="max-h-screen w-full bg-linear-to-b from-background to-muted/40 py-8 md:pl-10">
       <div className="mx-auto w-full max-w-6xl pb-20">
         {/* Header */}
         <div className="mb-6 sm:mb-8 flex flex-col gap-2">

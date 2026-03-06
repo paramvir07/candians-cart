@@ -124,7 +124,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
       {/* Desktop Sidebar */}
       <aside
         className={[
-          "hidden md:flex fixed top-4 bottom-4 left-4 z-40",
+          "hidden md:flex fixed top-6 bottom-6 left-4 z-40",
           "w-[74px] flex-col items-center justify-between",
           "rounded-[28px] border border-primary/10",
           "bg-gradient-to-b from-[#e8f6ed]/90 to-[#e8f6ed]/60",
@@ -150,7 +150,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
                       "grid place-items-center rounded-2xl p-1 transition",
                       "hover:bg-background/60",
                     ].join(" ")}
-                    aria-label="Customer Profile"
+                    aria-label="Customer"
                   >
                     <Avatar className="h-10 w-10 ring-2 ring-primary/25 ring-offset-2 ring-offset-transparent shadow-sm">
                       <AvatarImage
@@ -165,7 +165,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <p>Customer Profile</p>
+                  <p>Customer</p>
                 </TooltipContent>
               </Tooltip>
 
@@ -196,16 +196,16 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
                 variant="ghost"
                 className="h-11 w-11 rounded-2xl hover:bg-background/70"
               >
-                <Link href="/cashier/profile" aria-label="Cashier Profile">
+                {/* <Link href="/cashier/profile" aria-label="Cashier Profile"> */}
                   <Avatar className="h-9 w-9">
                     <AvatarImage src="https://github.com/shadcn.png" />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
-                </Link>
+                {/* </Link> */}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
-              <p>Cashier Profile</p>
+              <p>Cashier</p>
             </TooltipContent>
           </Tooltip>
 

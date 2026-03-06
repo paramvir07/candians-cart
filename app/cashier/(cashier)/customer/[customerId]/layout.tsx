@@ -30,17 +30,16 @@ export default async function RootLayout({ children, params }: Props) {
     <>
       <CashierSidebar customerData={sidebarData} />
       <TooltipProvider>
-        <div className="flex-1 md:ml-18 flex flex-col min-h-screen">
+        <div className="flex justify-center items-center max-w-full">
           {/* Persistent customer identity strip */}
           <CustomerBanner
             customer={customerData}
             customerId={customerId}
             cartCount={cartCount ?? 0}
           />
-
-          {/* Page content */}
-          <div className="flex-1 p-6">{children}</div>
         </div>
+        {/* Page content */}
+        <div className="flex-1 p-6 md:pl-20">{children}</div>
       </TooltipProvider>
     </>
   );

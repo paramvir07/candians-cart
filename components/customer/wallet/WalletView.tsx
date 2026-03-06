@@ -6,9 +6,6 @@ import { WalletSwitcherAtom, WalletViewEnum } from "@/atoms/customer/Wallet";
 import { Separator } from "@/components/ui/separator";
 import { Customer } from "@/types/customer/customer";
 import { getMemberSince } from "@/lib/memberSince";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
 
 type WalletViewProps = {
   customerData: Customer;
@@ -27,7 +24,7 @@ const WalletView = ({ customerData, customerId }: WalletViewProps) => {
   const [activeWallet] = useAtom(WalletSwitcherAtom);
   return (
     <div>
-      <div className="md:hidden">
+      <div className={`md:hidden`}>
         {activeWallet === WalletViewEnum.WALLET ? (
           <TopupWallet topupWalletData={topupWalletData} />
         ) : (
@@ -35,14 +32,8 @@ const WalletView = ({ customerData, customerId }: WalletViewProps) => {
         )}
       </div>
 
-      <div className="w-full justify-center p-8 hidden md:flex">
-        {customerId && (
-          <Link href={customerId ? `/cashier/customer/${customerId}` : "/"}>
-            <Button className="rounded-full" variant="outline" size="icon">
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-        )}
+      <div className={`hidden md:flex justify-center w-full p-8`}>
+        
         <div className="flex-1">
           <TopupWallet
             topupWalletData={topupWalletData}
