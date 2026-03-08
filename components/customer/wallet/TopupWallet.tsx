@@ -1,5 +1,7 @@
+import { Button } from "@/components/ui/button";
 import { TopUpDialog } from "./TopupDialog";
 import { WalletInfo } from "./WalletInfo";
+import Link from "next/link";
 type TopupWalletProps = {
   topupWalletData: {
     balance: number;
@@ -89,8 +91,17 @@ const TopupWallet = ({ topupWalletData, customerId }: TopupWalletProps) => {
           </div>
         </div>
       </div>
-      <div className="w-full px-4 relative z-50">
+      <div className="w-full px-4 relative z-50 flex flex-col gap-2">
         <TopUpDialog component={"wallet"} customerId={customerId} />
+        <Link href="/customer/wallet/history">
+          <Button
+            variant="default"
+            className={`rounded-full p-5 w-full
+          }`}
+          >
+            Wallet History
+          </Button>
+        </Link>
       </div>
     </div>
   );

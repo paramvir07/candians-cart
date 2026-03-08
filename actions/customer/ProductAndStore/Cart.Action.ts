@@ -14,8 +14,13 @@ import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { getCustomerDataAction } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
-import { PlaceOrderParams, PlaceOrderResponse } from "@/types/customer/OrdersClient";
+import {
+  PlaceOrderParams,
+  PlaceOrderResponse,
+} from "@/types/customer/OrdersClient";
 import { ICartItem } from "@/types/customer/CustomerCart";
+import { getUserSession } from "@/actions/auth/getUserSession.actions";
+import { Cashier } from "@/db/models/cashier/cashier.model";
 
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
@@ -206,11 +211,14 @@ export const PlaceOrder = async ({
   customerId,
   status = "completed",
   paymentMode = "wallet",
+  getCashierId,
   subsidyVal,
-}: PlaceOrderParams): PlaceOrderResponse=> {
+}: PlaceOrderParams): PlaceOrderResponse => {
   await dbConnect();
-
-  const customerDataresponse = await getCustomerDataAction(customerId);
+  const customerDataresponse = await getCustomerDataAction(
+    customerId,
+    getCashierId,
+  );
   const user = customerDataresponse.customerData;
   const cartItemsResponse = await getCart(customerId);
   if (!cartItemsResponse)
@@ -268,21 +276,48 @@ export const PlaceOrder = async ({
       return { success: false, error: "Insufficient Funds" };
     }
 
-    const orderData: PlaceOrderI = {
-      products,
-      cartTotal,
-      userWalletBalance: walletBalance,
-      giftWalletBalance,
-      TotalGST: totalGST,
-      TotalDisposableFee: totalDisposableFee,
-      BaseTotal: totalBase,
-      TotalPST: totalPST,
-      userId: user._id,
-      subsidy: subsidyVal,
-      storeId: user.associatedStoreId,
-      paymentMode,
-      status,
-    };
+    let orderData;
+    if (customerId) {
+      const cashier = await Cashier.findOne({
+        userId: customerDataresponse.cashierUserId,
+      })
+        .select("_id")
+        .lean();
+
+      if (!Cashier) return { success: false, error: "Cashier not found" };
+
+      orderData = {
+        products,
+        cartTotal,
+        userWalletBalance: walletBalance,
+        giftWalletBalance,
+        TotalGST: totalGST,
+        TotalDisposableFee: totalDisposableFee,
+        BaseTotal: totalBase,
+        TotalPST: totalPST,
+        userId: user._id,
+        subsidy: subsidyVal,
+        storeId: user.associatedStoreId,
+        paymentMode,
+        cashierId: cashier?._id,
+      };
+    } else {
+      orderData = {
+        products,
+        cartTotal,
+        userWalletBalance: walletBalance,
+        giftWalletBalance,
+        TotalGST: totalGST,
+        TotalDisposableFee: totalDisposableFee,
+        BaseTotal: totalBase,
+        TotalPST: totalPST,
+        userId: user._id,
+        subsidy: subsidyVal,
+        storeId: user.associatedStoreId,
+        paymentMode,
+        status,
+      };
+    }
 
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -318,10 +353,6 @@ export const PlaceOrder = async ({
       await session.abortTransaction();
       session.endSession();
       throw transactionError;
-    }
-
-    if (customerId) {
-      redirect(`/cashier/customer/${customerId}`);
     }
     return { success: true, message: "Order Placed Successfully" };
   } catch (error) {

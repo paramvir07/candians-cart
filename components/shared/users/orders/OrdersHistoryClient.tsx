@@ -35,9 +35,11 @@ const norm = (v: unknown) =>
 
 export default function OrdersHistoryClient({
   customerId,
+  allOrders,
   orders,
 }: {
   customerId?: string;
+  allOrders?: boolean;
   orders: OrderWithProductsClient[];
 }) {
   const [filter, setFilter] = useState<Filter>("all");
@@ -94,7 +96,9 @@ export default function OrdersHistoryClient({
             href={
               customerId
                 ? `/cashier/customer/${customerId}`
-                : "/customer/profile"
+                : allOrders
+                  ? `/cashier`
+                  : "/customer/profile"
             }
           >
             <Button className="rounded-full" variant="outline" size="icon">
@@ -103,7 +107,11 @@ export default function OrdersHistoryClient({
           </Link>
 
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-950">
-            {customerId ? "Customer order history" : "Order history"}
+            {customerId
+              ? "Customer order history"
+              : allOrders
+                ? "Store Order history"
+                : "Order history"}
           </h1>
         </div>
 
@@ -145,7 +153,9 @@ export default function OrdersHistoryClient({
 
         {/* Search */}
         <div className="flex items-center justify-center gap-3">
-          {customerId && <QrScannerButton onScan={handleScanResult} />}
+          {(customerId || allOrders) && (
+            <QrScannerButton onScan={handleScanResult} />
+          )}
           <div className="relative w-full sm:w-56 shrink-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <Input
@@ -222,7 +232,12 @@ export default function OrdersHistoryClient({
                                 <p className="text-[11px] text-muted-foreground mt-1">
                                   Payment:{" "}
                                   <span className="font-semibold text-foreground">
-                                    {order.paymentMode ?? "—"}
+                                    {order.paymentMode
+                                      ? order.paymentMode
+                                          .charAt(0)
+                                          .toUpperCase() +
+                                        order.paymentMode.slice(1)
+                                      : "—"}
                                   </span>
                                 </p>
                               </div>
@@ -272,7 +287,12 @@ export default function OrdersHistoryClient({
                                   Payment
                                 </p>
                                 <p className="text-sm font-bold text-foreground">
-                                  {order.paymentMode ?? "—"}
+                                  {order.paymentMode
+                                    ? order.paymentMode
+                                        .charAt(0)
+                                        .toUpperCase() +
+                                      order.paymentMode.slice(1)
+                                    : "—"}
                                 </p>
                               </div>
 
@@ -340,8 +360,10 @@ export default function OrdersHistoryClient({
                               OrderId={order._id}
                               customerId={customerId}
                               orderStatus={order.status}
+                              allOrders={allOrders}
+                              orderCustomerId={order.userId}
                             />
-                            {!customerId && (
+                            {!customerId && !allOrders && (
                               <QrCodeButton orderId={order._id} />
                             )}
                           </div>

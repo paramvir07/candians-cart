@@ -36,7 +36,8 @@ export type PlaceOrderParams = {
     | "completed"
     | "refunded"
   paymentMode?: "wallet" | "cash" | "card" | "pending";
-  subsidyVal?: number;
+  getCashierId?: boolean;
+  subsidyVal: number;
 };
 
 export enum PaymentMode {

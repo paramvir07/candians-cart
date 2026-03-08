@@ -18,8 +18,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { CustomerIdParams } from "@/types/cashier/customer";
-import { getCustomerDataAction } from "@/actions/customer/User.action";
-import { Customer } from "@/types/customer/customer";
 
 const customerCardInfo = [
   {
