@@ -17,10 +17,13 @@ import {
   Store,
   Copy,
   Check,
+  Download,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatCurrency, formatDate, formatTime } from "@/lib/walletHistory";
 import { UnifiedTransaction } from "@/types/customer/WalletHistory";
+import { formatCurrency, formatDate, formatTime } from "@/lib/walletHistory";
+import { downloadTransactionPDF } from "./DownloadPdf";
 
 interface TransactionDetailModalProps {
   transaction: UnifiedTransaction | null;
@@ -29,26 +32,29 @@ interface TransactionDetailModalProps {
 
 function StatusIcon({ status }: { status: string }) {
   if (status === "paid" || status === "completed")
-    return <CheckCircle2 className="w-12 h-12 text-emerald-500" />;
+    return <CheckCircle2 className="w-11 h-11 text-emerald-500" />;
   if (status === "pending")
-    return <Clock className="w-12 h-12 text-amber-500" />;
-  return <XCircle className="w-12 h-12 text-red-500" />;
+    return <Clock className="w-11 h-11 text-amber-500" />;
+  return <XCircle className="w-11 h-11 text-red-500" />;
 }
 
 function getStatusBg(status: string) {
-  if (status === "paid" || status === "completed") return "bg-emerald-50";
-  if (status === "pending") return "bg-amber-50";
-  return "bg-red-50";
+  if (status === "paid" || status === "completed")
+    return "bg-emerald-50 dark:bg-emerald-950/30";
+  if (status === "pending") return "bg-amber-50 dark:bg-amber-950/30";
+  return "bg-red-50 dark:bg-red-950/30";
 }
 
 function DetailRow({
   label,
   value,
   copyable,
+  mono,
 }: {
   label: string;
   value: string;
   copyable?: boolean;
+  mono?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -60,20 +66,28 @@ function DetailRow({
 
   return (
     <div className="flex items-start justify-between py-2.5 gap-4">
-      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
+      <span className="text-xs text-muted-foreground shrink-0 pt-0.5">
+        {label}
+      </span>
       <div className="flex items-center gap-1.5">
-        <span className="text-xs font-medium text-right text-foreground break-all">
+        <span
+          className={cn(
+            "text-xs font-medium text-right text-foreground break-all",
+            mono && "font-mono text-[11px]",
+          )}
+        >
           {value}
         </span>
         {copyable && (
           <button
             onClick={handleCopy}
-            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            className="shrink-0 p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
+            title="Copy to clipboard"
           >
             {copied ? (
-              <Check size={12} className="text-emerald-500" />
+              <Check size={11} className="text-emerald-500" />
             ) : (
-              <Copy size={12} />
+              <Copy size={11} />
             )}
           </button>
         )}
@@ -86,6 +100,8 @@ export function TransactionDetailModal({
   transaction,
   onClose,
 }: TransactionDetailModalProps) {
+  const [downloading, setDownloading] = useState(false);
+
   if (!transaction) return null;
 
   const isSuccess =
@@ -103,21 +119,40 @@ export function TransactionDetailModal({
         ? Store
         : CreditCard;
 
+  const methodLabel =
+    transaction.paymentMode === "online"
+      ? "Online via Stripe"
+      : transaction.paymentMode === "cash"
+        ? "Cash at Counter"
+        : "Card at Counter";
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await downloadTransactionPDF
+        (transaction);
+    } catch (e) {
+      console.error("PDF generation failed", e);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <Dialog open={!!transaction} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-sm w-[calc(100%-2rem)] rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
         {/* Header */}
-        <DialogHeader className="px-6 pt-6 pb-0">
+        <DialogHeader className="px-5 pt-5 pb-0">
           <DialogTitle className="text-center text-base font-semibold">
             {statusLabel}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="px-6 pb-6 pt-4 space-y-4">
-          {/* Status Icon + Amount */}
+        <div className="px-5 pb-5 pt-4 space-y-3.5">
+          {/* Status + Amount */}
           <div
             className={cn(
-              "rounded-2xl p-6 flex flex-col items-center gap-3",
+              "rounded-2xl p-5 flex flex-col items-center gap-2.5",
               getStatusBg(transaction.status),
             )}
           >
@@ -130,20 +165,16 @@ export function TransactionDetailModal({
             </div>
           </div>
 
-          {/* Details */}
+          {/* Details card */}
           <div className="bg-muted/30 rounded-2xl px-4 divide-y divide-border/60">
-            <DetailRow label="Transaction ID" value={transaction.id} copyable />
-            <DetailRow label="Type" value={transaction.label} />
             <DetailRow
-              label="Method"
-              value={
-                transaction.paymentMode === "online"
-                  ? "Online (Stripe)"
-                  : transaction.paymentMode === "cash"
-                    ? "Cash"
-                    : "Card"
-              }
+              label="Transaction ID"
+              value={transaction.id}
+              copyable
+              mono
             />
+            <DetailRow label="Type" value={transaction.label} />
+            <DetailRow label="Method" value={methodLabel} />
             <DetailRow
               label="Amount"
               value={formatCurrency(transaction.amount, transaction.currency)}
@@ -152,20 +183,36 @@ export function TransactionDetailModal({
             <DetailRow label="Time" value={formatTime(transaction.createdAt)} />
           </div>
 
-          {/* Reference */}
-          <div className="flex items-center justify-center gap-2 py-1">
-            <PaymentIcon size={14} className="text-muted-foreground" />
-            <span className="text-xs text-muted-foreground font-mono">
+          {/* Source chip */}
+          <div className="flex items-center justify-center gap-2 py-0.5">
+            <PaymentIcon size={13} className="text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">
               {transaction.sublabel}
             </span>
           </div>
 
-          <Button
-            onClick={onClose}
-            className="w-full rounded-xl h-11 font-semibold bg-primary hover:bg-primary/90"
-          >
-            Close
-          </Button>
+          {/* Actions */}
+          <div className="flex gap-2.5 pt-1">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-xl h-10 text-sm font-medium gap-1.5"
+              onClick={handleDownload}
+              disabled={downloading}
+            >
+              {downloading ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Download size={14} />
+              )}
+              {downloading ? "Generating..." : "Download PDF"}
+            </Button>
+            <Button
+              className="flex-1 rounded-xl h-10 text-sm font-semibold"
+              onClick={onClose}
+            >
+              Close
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

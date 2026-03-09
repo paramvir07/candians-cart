@@ -6,7 +6,7 @@ export interface IStripeTopUp {
   stripeEventId: string;
   checkoutSessionId: string;
   paymentIntentId: string;
-  amount: number; // in cents
+  amount: number;
   currency: string;
   status: PaymentStatus;
   createdAt: string;
@@ -17,7 +17,7 @@ export interface ICashierTopUp {
   _id: string;
   customerId: string;
   cashierId: string;
-  value: number; // in cents
+  value: number;
   paymentMode: "cash" | "card";
   createdAt: string;
   updatedAt: string;
@@ -31,11 +31,12 @@ export interface WalletTopUpHistory {
 export type UnifiedTransaction = {
   id: string;
   type: "stripe" | "cashier";
-  amount: number; // in cents
+  amount: number;
   currency: string;
   status: PaymentStatus | "completed";
   paymentMode?: "cash" | "card" | "online";
   createdAt: string;
   label: string;
   sublabel: string;
+  referenceId: string;
 };

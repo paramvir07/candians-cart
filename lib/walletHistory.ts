@@ -29,6 +29,18 @@ export function formatTime(dateString: string): string {
   }).format(new Date(dateString));
 }
 
+export function formatFullDateTime(dateString: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }).format(new Date(dateString));
+}
+
 export function unifyTransactions(
   stripeTopUps: IStripeTopUp[],
   cashierTopUps: ICashierTopUp[],
@@ -42,7 +54,8 @@ export function unifyTransactions(
     paymentMode: "online",
     createdAt: t.createdAt,
     label: "Online Top Up",
-    sublabel: `via Stripe • ${t.paymentIntentId.slice(0, 12)}...`,
+    sublabel: "Secure online payment",
+    referenceId: t.checkoutSessionId,
   }));
 
   const cashier: UnifiedTransaction[] = cashierTopUps.map((t) => ({
@@ -53,8 +66,12 @@ export function unifyTransactions(
     status: "completed",
     paymentMode: t.paymentMode,
     createdAt: t.createdAt,
-    label: "Store Top Up",
-    sublabel: `via ${t.paymentMode === "cash" ? "Cash" : "Card"} • In-store`,
+    label: "In-Store Top Up",
+    sublabel:
+      t.paymentMode === "cash"
+        ? "Paid with cash at counter"
+        : "Paid by card at counter",
+    referenceId: t._id,
   }));
 
   return [...stripe, ...cashier].sort(
@@ -74,7 +91,6 @@ export function getAnalytics(transactions: UnifiedTransaction[]) {
   const onlinePct = total > 0 ? Math.round((online / total) * 100) : 0;
   const inStorePct = total > 0 ? 100 - onlinePct : 0;
 
-  // Monthly breakdown for chart (last 6 months)
   const now = new Date();
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);

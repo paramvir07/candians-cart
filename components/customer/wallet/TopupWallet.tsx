@@ -91,7 +91,7 @@ const TopupWallet = ({ topupWalletData, customerId }: TopupWalletProps) => {
           </div>
         </div>
       </div>
-      <div className="w-full px-4 relative z-50 flex flex-col gap-2">
+      <div className="w-full px-4 relative z-50 flex flex-col gap-1">
         <TopUpDialog component={"wallet"} customerId={customerId} />
         <Link href="/customer/wallet/history">
           <Button
