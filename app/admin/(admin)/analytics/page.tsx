@@ -4,6 +4,7 @@ import MainOverview from "@/components/admin/analytics/MainOverview"
 import { ChartPieSimple } from "@/components/admin/analytics/PieChart"
 import { TopProducts } from "@/components/admin/analytics/TopProducts"
 import { TopSpenders } from "@/components/admin/analytics/TopSpenders"
+import ReceiptPage from "@/components/admin/analytics/reciept/RecieptComponent"
 
 const page = () => {
   return (
@@ -38,6 +39,7 @@ const page = () => {
           <TopSpenders fullHeight />
         </div>
       </div>
+      <ReceiptPage />
     </div>
   )
 }
