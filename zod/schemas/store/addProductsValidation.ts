@@ -29,7 +29,7 @@ export const ProductFormSchema = z.object({
     { message: "Invalid category selected" },
   ),
 
-  markup: z.number().min(0, "Markup must be a positive number").max(30, "Markup cannot exceed 30%"),
+  markup: z.number().min(30, "Markup must be between 30 and 35").max(35, "Markup cannot exceed 35%"),
 
   tax: z
     .number()
