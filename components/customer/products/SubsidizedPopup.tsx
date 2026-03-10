@@ -10,8 +10,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { IProduct } from "@/types/store/products.types";
-import { CheckSquare, Square, Wallet, ShoppingBag, X } from "lucide-react";
-import { AddSubsidyItem } from "@/actions/customer/ProductAndStore/SubsidyItems.Action";
+import { CheckSquare, Square, Wallet, ShoppingBag } from "lucide-react";
+import { AddSubsidyItem, saveSubsidytoWallet } from "@/actions/customer/SubsidyItems.Action";
+import { toast } from "sonner";
 
 const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
@@ -59,10 +60,23 @@ export function SubsidizedPopup({
   const youPay = Math.max(0, totalActual - subsidy);
   const allSelected = selected.size === products.length && products.length > 0;
 
+
+  
   const handleAddSubsidyItems = async () =>{
     AddSubsidyItem(selectedProducts,(subsidy*100))
     onOpenChange(false)
   }
+
+  const savetoWallet = async () =>{
+    const res = await saveSubsidytoWallet();
+    if(res?.success){
+      onOpenChange(false)
+      toast.success(res.message);
+      return
+    }
+    toast.success(res?.message);
+  }
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -75,6 +89,7 @@ export function SubsidizedPopup({
           rounded-2xl
         "
         style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}
+        showCloseButton={false}
       >
         {/* ── Header ── */}
         <DialogHeader className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-gray-100">
@@ -92,12 +107,6 @@ export function SubsidizedPopup({
                 </DialogTitle>
               </div>
             </div>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="text-gray-400 hover:text-gray-600 transition-colors mt-0.5 shrink-0 ml-2"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
 
           {/* Stats pills */}
@@ -223,13 +232,7 @@ export function SubsidizedPopup({
         {/* ── Footer ── */}
         <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-3.5 sm:py-4 border-t border-gray-100 bg-white">
           <Button
-            variant="outline"
-            className="flex-1 h-9 sm:h-10 rounded-xl border-gray-200 text-gray-600 font-semibold text-[12px] sm:text-[13px]"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancel
-          </Button>
-          <Button
+          onClick={savetoWallet}
             variant="outline"
             className="flex-1 h-9 sm:h-10 rounded-xl border-gray-200 text-gray-700 font-semibold text-[12px] sm:text-[13px] gap-1.5"
           >

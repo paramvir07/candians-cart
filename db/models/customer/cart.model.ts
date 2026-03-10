@@ -26,6 +26,8 @@ export interface ICart extends Document {
   customerId: Types.ObjectId;
   items: ICartItem[];
   subsidyItems:ISubsidyItems[];
+  isSavedtoWallet: boolean;
+  cartSubsidy: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -85,7 +87,7 @@ const SubsidyItemsSchema = new Schema<ISubsidyItems>(
       type: Number,
       required: true,
       min: 0,
-    }
+    },
   }
 )
 
@@ -104,6 +106,16 @@ const cartSchema = new Schema<ICart>(
     subsidyItems:{
       type:[SubsidyItemsSchema],
       default:[]
+    },
+    isSavedtoWallet:{
+      type:Boolean,
+      required:true,
+      default:false
+    },
+    cartSubsidy:{
+      type:Number,
+      required:true,
+      default:0
     }
   },
   { timestamps: true }

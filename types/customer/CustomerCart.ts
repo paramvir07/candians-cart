@@ -15,6 +15,7 @@ export interface IProduct {
   tax: number
   price: number
   stock: boolean
+  subsidised: boolean,
   images?: IProductImage[]
   createdAt: string
   updatedAt: string

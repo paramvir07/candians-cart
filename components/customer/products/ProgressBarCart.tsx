@@ -6,54 +6,49 @@ import { useAtom } from "jotai"
 import { SubsidyValue } from "@/atoms/customer/CartAtom"
 import { Wallet, Tag, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ClearSubsidy, updateCartSubsidy } from "@/actions/customer/SubsidyItems.Action"
 
-const ProgressBarCart = ({ total, customerId }: { total: number, customerId?: string }) => {
+const getFibBracketFrom21 = (value: number) => {
+  let a = 13, b = 21
+  while (b < value) { const next = a + b; a = b; b = next }
+  return { prev: a, current: b }
+}
+
+const ProgressBarCart = ({ total, customerId, giftWalletBalance }: { total: number, customerId?: string, giftWalletBalance?: number }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [showBtn, setShowBtn] = useState(false)
-  const [, setSubsidyVal] = useAtom(SubsidyValue)
-
-  const getFibBracketFrom21 = (value: number) => {
-    let a = 13
-    let b = 21
-    while (b < value) {
-      const next = a + b
-      a = b
-      b = next
-    }
-    return { prev: a, current: b }
-  }
+  const [SubsidyVal, setSubsidyVal] = useAtom(SubsidyValue)
 
   const amount = total / 100
+  const giftBalance = (giftWalletBalance ?? 0) / 100
   const { prev, current } = getFibBracketFrom21(amount)
-
-  const progressValue =
-    current === prev
-      ? 100
-      : Math.min(((amount - prev) / (current - prev)) * 100, 100)
-
   const subsidy = amount >= 21 ? prev * 0.15 : 0
-
-  useEffect(() => {
-    setSubsidyVal(subsidy)
-  }, [subsidy, setSubsidyVal])
+  const progressValue = current === prev ? 100 : Math.min(((amount - prev) / (current - prev)) * 100, 100)
 
   const lastMilestoneRef = useRef<number | null>(null)
+  const lastSubsidyRef = useRef<number | null>(null)
 
   useEffect(() => {
-    if (amount < 21) return
-    if (lastMilestoneRef.current !== prev) {
-      lastMilestoneRef.current = prev
-      setShowBtn(true)
-    }
-  }, [prev, amount])
+    setSubsidyVal(subsidy + giftBalance)
 
-  useEffect(() => {
+    if (lastSubsidyRef.current === subsidy) return
+    lastSubsidyRef.current = subsidy
+
     if (amount < 21) {
       setShowBtn(false)
       setDialogOpen(false)
       lastMilestoneRef.current = null
+      ClearSubsidy()
+      return
     }
-  }, [amount])
+
+    updateCartSubsidy(subsidy * 100)
+
+    if (lastMilestoneRef.current !== prev) {
+      lastMilestoneRef.current = prev
+      setShowBtn(true)
+    }
+  }, [subsidy, amount, prev])
 
   return (
     <>
@@ -63,6 +58,7 @@ const ProgressBarCart = ({ total, customerId }: { total: number, customerId?: st
           ${current}
         </p>
       </div>
+
       {showBtn && (
         <Button
           onClick={() => setDialogOpen(true)}
@@ -78,14 +74,14 @@ const ProgressBarCart = ({ total, customerId }: { total: number, customerId?: st
               </p>
             </div>
             <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white/20">
-              <ChevronRight className="w-4 h-4"/>
+              <ChevronRight className="w-4 h-4" />
             </div>
           </div>
         </Button>
       )}
 
       <SubsidizedPopup
-        subsidyGot={subsidy}
+        subsidyGot={SubsidyVal}
         customerId={customerId}
         isOpen={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -96,33 +92,23 @@ const ProgressBarCart = ({ total, customerId }: { total: number, customerId?: st
 
 export default ProgressBarCart
 
-export const SubsidyCart = ()=>{
-    const [SubsidyVal] = useAtom(SubsidyValue)
+export const SubsidyCart = () => {
+  const [SubsidyVal] = useAtom(SubsidyValue)
 
-          return(
-          <div className="relative flex justify-between items-center px-4 py-3 rounded-2xl overflow-hidden">
-            {/* Background gradient */}
-            <div className="absolute inset-0 bg-linear-to-r from-green-500 to-emerald-400 opacity-10 rounded-2xl" />
-            <div className="absolute inset-0 border border-green-300/40 rounded-2xl" />
+  if (SubsidyVal <= 0) return null
 
-            {/* Decorative blobs */}
-            <div className="absolute -top-3 -left-3 w-12 h-12 bg-green-400/20 rounded-full blur-md" />
-            <div className="absolute -bottom-3 -right-3 w-12 h-12 bg-emerald-400/20 rounded-full blur-md" />
-
-            <div className="relative flex items-center gap-2">
-              <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-green-500/20">
-                <Wallet className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-[13px] font-bold text-green-700 leading-none">Subsidy</p>
-              </div>
-            </div>
-
-            <div className="relative flex items-center gap-1">
-              <span className="text-[17px] font-extrabold text-green-600 tabular-nums tracking-tight">
-                CA${SubsidyVal.toFixed(2)}
-              </span>
-            </div>
-          </div>
-          )
-        }
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <div className="flex items-center gap-1.5">
+        <Wallet className="w-3.5 h-3.5 text-emerald-500" />
+        <div>
+          <span className="text-gray-500">Gift Wallet</span>
+          <p className="text-[10px] text-emerald-500 leading-none mt-0.5">Subsidy included</p>
+        </div>
+      </div>
+      <span className="font-medium text-emerald-600 tabular-nums">
+        CA${SubsidyVal.toFixed(2)}
+      </span>
+    </div>
+  )
+}

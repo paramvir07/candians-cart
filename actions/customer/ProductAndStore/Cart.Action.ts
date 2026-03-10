@@ -12,10 +12,11 @@ import OrderModel, {
 import Customer from "@/db/models/customer/customer.model";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { getCustomerDataAction } from "../User.action";
+import { getCustomerDataAction, getUser } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
 import { PlaceOrderParams, PlaceOrderResponse } from "@/types/customer/OrdersClient";
 import { ICartItem } from "@/types/customer/CustomerCart";
+import { IProduct } from "@/types/store/products.types";
 
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
@@ -134,6 +135,9 @@ export const DecrementItem = async (
     cart.items[index].quantity -= 1;
   } else {
     cart.items.splice(index, 1);
+    if(cart.items.length === 0 && cart.subsidyItems.length === 0){
+      await CartModel.findOneAndDelete({customerId:user._id})
+    }
   }
 
   await cart.save();
@@ -167,6 +171,9 @@ export const RemoveItem = async (
     cart.items.splice(index, 1);
   }
   await cart.save();
+  if(cart.items.length === 0 && cart.subsidyItems.length === 0){
+      await CartModel.findOneAndDelete({customerId:user._id})
+  }
   revalidatePath("/customer/cart");
 };
 
@@ -174,12 +181,13 @@ export const getCart = async (
   customerId?: string,
 ): Promise<{
   success: boolean;
+  isSavedtoWallet: boolean,
   items: ICartItem[];
   subItems: ISubsidyItems[];
 } | null> => {
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
-  if (!user) return { success: false, items: [], subItems: [] };
+  if (!user) return { success: false,isSavedtoWallet:false, items: [], subItems: [] };
 
   await dbConnect();
   try {
@@ -192,6 +200,7 @@ export const getCart = async (
     if (!foundCart) return null;
     return {
       success: true,
+      isSavedtoWallet: foundCart.isSavedtoWallet,
       items: foundCart.items as unknown as ICartItem[],
       subItems: foundCart.subsidyItems,
     };
@@ -431,3 +440,4 @@ export const getCartQuantities = async (customerId?: string) => {
     return {};
   }
 };
+
