@@ -14,7 +14,10 @@ export const createReferalCodeAction = async (
   formData: FormData,
 ): Promise<IFormActionResponse> => {
   try {
-    await getUserSession();
+    const session = await getUserSession();
+
+    if (session.user.role !== "admin")
+      return { success: false, message: "Unauthorized" };
     const rawData = formDataToObject(formData);
     const result = createReferralCodeSchema.safeParse(rawData);
     if (!result.success) {
@@ -41,7 +44,10 @@ export const createReferalCodeAction = async (
 
 export const getReferalCodesAction = async () => {
   try {
-    await getUserSession();
+    const session = await getUserSession();
+
+    if (session.user.role !== "admin")
+      return { success: false, message: "Unauthorized" };
     await dbConnect();
     const referralCodes = await ReferralCode.find().lean();
     const serializedReferralCodes = JSON.parse(JSON.stringify(referralCodes));
@@ -62,7 +68,10 @@ export const updateReferalCodeAction = async (
   formData: FormData,
 ): Promise<IFormActionResponse> => {
   try {
-    await getUserSession();
+    const session = await getUserSession();
+
+    if (session.user.role !== "admin") return { success: false, message: "Unauthorized" };
+    
     const rawData = formDataToObject(formData);
     const result = createReferralCodeSchema.safeParse(rawData);
     if (!result.success) {

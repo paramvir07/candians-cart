@@ -27,6 +27,7 @@ const PlaceOrderBtn = ({
           customerId,
           paymentMode,
           subsidyVal: SubsidyVal,
+          getCashierId: true,
         })
       : await PlaceOrder({
           subsidyVal: SubsidyVal,

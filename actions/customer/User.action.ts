@@ -68,7 +68,7 @@ export const getCustomerAndStoreDataAction = async () => {
   }
 };
 
-export const getCustomerDataAction = async (customerId?: string) => {
+export const getCustomerDataAction = async (customerId?: string, getCashierId? :boolean) => {
   const session = await getUserSession();
   const cashierRole = session.user.role === "cashier";
   try {
@@ -90,6 +90,13 @@ export const getCustomerDataAction = async (customerId?: string) => {
 
     const serializedCustomerData = JSON.parse(JSON.stringify(customerData));
 
+    if (cashierRole && getCashierId === true) {
+      return {
+        success: true,
+        customerData: serializedCustomerData,
+        cashierUserId: session.user.id
+      };
+    }
     return {
       success: true,
       customerData: serializedCustomerData,

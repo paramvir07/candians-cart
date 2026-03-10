@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   HomeIcon,
   Package,
+  ReceiptText,
   ShoppingBag,
   ShoppingCartIcon,
   Wallet,
@@ -137,6 +138,12 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
           {/* Dashboard */}
           <IconButton href="/cashier" label="Dashboard" icon={HomeIcon} />
 
+          <IconButton
+            href="/cashier/customer/orders"
+            label="Orders"
+            icon={ReceiptText}
+          />
+
           {customerId && (
             <>
               <Separator className="my-2 w-10 bg-primary/30" />
@@ -237,6 +244,22 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
           >
             <Link href="/cashier" aria-label="Dashboard">
               <HomeIcon />
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            size="icon"
+            variant="ghost"
+            className={[
+              "h-11 w-11 rounded-full",
+              isActive("/cashier/customer/orders")
+                ? "bg-background/80 ring-1 ring-primary/25"
+                : "",
+            ].join(" ")}
+          >
+            <Link href="/cashier/customer/orders" aria-label="Orders">
+              <ReceiptText />
             </Link>
           </Button>
 

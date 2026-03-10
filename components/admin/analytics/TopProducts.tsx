@@ -1,142 +1,46 @@
 "use client"
 
-import { TrendingUp } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart"
+export function TopProducts({ data, keys, fullHeight }: { data: Record<string, any>[]; keys: string[]; fullHeight?: boolean }) {
+  const chartConfig = keys.reduce((acc, key, i) => {
+    const safeKey = key.replace(/[^a-zA-Z0-9]/g, "") || `key${i}`
+    acc[safeKey] = { label: key, color: `var(--chart-${(i % 5) + 1})` }
+    return acc
+  }, {} as ChartConfig)
 
-export const description = "A stacked bar chart with a legend"
+  const safeData = data.map(d => {
+    const nd: Record<string, any> = { month: d.month }
+    keys.forEach((k, i) => {
+      const safeKey = k.replace(/[^a-zA-Z0-9]/g, "") || `key${i}`
+      nd[safeKey] = d[k] || 0
+    })
+    return nd
+  })
 
-const chartData = [
-  {
-    month: "January",
-    basmatiRice: 420,
-    atta: 360,
-    masala: 280,
-    ghee: 240,
-    tea: 310,
-  },
-  {
-    month: "February",
-    basmatiRice: 510,
-    atta: 430,
-    masala: 320,
-    ghee: 290,
-    tea: 360,
-  },
-  {
-    month: "March",
-    basmatiRice: 480,
-    atta: 410,
-    masala: 300,
-    ghee: 270,
-    tea: 340,
-  },
-  {
-    month: "April",
-    basmatiRice: 390,
-    atta: 350,
-    masala: 260,
-    ghee: 230,
-    tea: 300,
-  },
-  {
-    month: "May",
-    basmatiRice: 560,
-    atta: 480,
-    masala: 360,
-    ghee: 320,
-    tea: 410,
-  },
-  {
-    month: "June",
-    basmatiRice: 610,
-    atta: 520,
-    masala: 390,
-    ghee: 350,
-    tea: 450,
-  },
-]
-
-
-const chartConfig = {
-  basmatiRice: {
-    label: "Basmati Rice",
-    color: "var(--chart-1)",
-  },
-  atta: {
-    label: "Wheat Atta",
-    color: "var(--chart-2)",
-  },
-  masala: {
-    label: "Spice Masala",
-    color: "var(--chart-3)",
-  },
-  ghee: {
-    label: "Desi Ghee",
-    color: "var(--chart-4)",
-  },
-  tea: {
-    label: "Assam Tea",
-    color: "var(--chart-5)",
-  },
-} satisfies ChartConfig
-
-
-export function TopProducts({ fullHeight }: { fullHeight?: boolean }) {
   return (
     <Card className={fullHeight ? "h-full" : ""}>      
-    <CardHeader>
+      <CardHeader>
         <CardTitle>Top 5 Products</CardTitle>
-        <CardDescription>Monthly sales (Jan – Jun 2024)</CardDescription>
+        <CardDescription>Monthly sales quantity</CardDescription>
       </CardHeader>
-
-        <CardContent className={fullHeight ? "flex-1 min-h-0" : ""}>
+      <CardContent className={fullHeight ? "flex-1 min-h-0" : ""}>
         <ChartContainer config={chartConfig} className={fullHeight ? "h-full w-full" : "w-full"}>
-          <BarChart accessibilityLayer data={chartData}>
+          <BarChart accessibilityLayer data={safeData}>
             <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
-            />
-
+            <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} tickFormatter={(value) => value.slice(0, 3)} />
             <ChartTooltip content={<ChartTooltipContent />} />
             <ChartLegend content={<ChartLegendContent />} />
-
-            <Bar dataKey="basmatiRice" fill="var(--color-basmatiRice)" />
-            <Bar dataKey="atta" fill="var(--color-atta)" />
-            <Bar dataKey="masala" fill="var(--color-masala)" />
-            <Bar dataKey="ghee" fill="var(--color-ghee)" />
-            <Bar dataKey="tea" fill="var(--color-tea)" />
+            {Object.keys(chartConfig).map((safeKey) => (
+               <Bar key={safeKey} dataKey={safeKey} fill={`var(--color-${safeKey})`} />
+            ))}
           </BarChart>
         </ChartContainer>
       </CardContent>
-
       <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="leading-none font-medium">
-          Comparing top-selling products month over month
-        </div>
-        <div className="text-muted-foreground leading-none">
-          Higher bars indicate higher sales volume
-        </div>
+        <div className="leading-none font-medium">Comparing top-selling products month over month</div>
       </CardFooter>
     </Card>
   )

@@ -34,6 +34,7 @@ const productSchema = new Schema(
         "Household",
         "Personal Care",
         "Other",
+        // fats and oil | flour? | Pulses & lentils? | Produce | Dry fruits | Disposables | Utintles? household | 
       ],
       required: true,
     },

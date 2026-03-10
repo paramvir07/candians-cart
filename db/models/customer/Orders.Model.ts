@@ -130,11 +130,13 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
     storeId: {
       type: Schema.Types.ObjectId,
       ref: "Store",
       required: true,
+      index: true,
     },
     status: {
       type: String,

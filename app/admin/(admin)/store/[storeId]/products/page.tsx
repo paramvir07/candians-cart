@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { StoreProductsList } from "@/components/admin/store/products/StoreProductsList";
+import ReceiptPage from "@/components/admin/analytics/reciept/RecieptComponent";
 
 const StoreProductsPage = async ({
   params,
@@ -18,6 +19,8 @@ const StoreProductsPage = async ({
       >
         <ArrowLeft className="w-4 h-4 mr-1" /> Back to Stores
       </Link>
+
+      <ReceiptPage initialStoreId={storeId} />
 
       <StoreProductsList storeId={storeId} role="admin" />
     </div>

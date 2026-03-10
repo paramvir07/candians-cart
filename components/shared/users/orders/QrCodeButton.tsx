@@ -8,13 +8,11 @@ const QrCodeButton = ({orderId}: {orderId: string}) => {
       <Dialog>
         <DialogTrigger asChild>
           <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            
+            size="icon"
+            className="sm:w-auto sm:px-3 sm:gap-1.5 shrink-0"
           >
-            <QrCode className="w-4 h-4" />
-            QR code
+            <QrCode size={14} />
+            <span className="hidden sm:inline text-sm">QR code</span>
           </Button>
         </DialogTrigger>
 
