@@ -23,6 +23,7 @@ function serializeProduct(product: IProductDB): IProduct {
         ...img,
         _id: img._id?.toString(),
       })) ?? [],
+      InvoiceId: product.InvoiceId.toString(),
   };
 }
 
