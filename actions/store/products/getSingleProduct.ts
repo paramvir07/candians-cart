@@ -41,6 +41,7 @@ export async function getSingleProduct(
       ...product,
       _id: product._id.toString(),
       storeId: product.storeId.toString(),
+      InvoiceId: product.InvoiceId ? product.InvoiceId.toString() : "",
       images: product.images.map((img) => ({
         url: img.url,
         fileId: img.fileId,

@@ -1,5 +1,4 @@
 import { z } from "zod";
-import mongoose from "mongoose";
 
 export const ALLOWED_TAX_RATES = [0, 5, 7, 12] as const; //percentages
 
@@ -70,9 +69,7 @@ export const BaseProductFormSchema = z.object({
   InvoiceId: z
     .string()
     .trim()
-    .refine((val) => mongoose.Types.ObjectId.isValid(val), {
-      message: "Invalid Invoice ID",
-    }),
+    .regex(/^[0-9a-fA-F]{24}$/, { message: "Invalid Invoice ID format" }),
 });
 
 export const createProductFormSchema = (role: "Admin" | "Store") => {

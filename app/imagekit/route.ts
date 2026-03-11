@@ -5,8 +5,12 @@ const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
 });
 
-const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
-const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_FILE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+];
 
 export async function POST(req: Request) {
   try {
@@ -27,16 +31,23 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: `File type ${file.type} is not allowed. Please upload JPG, PNG, or WEBP.`,
+          error: `File type ${file.type} is not allowed. Please upload JPG, PNG, WEBP or PDF.`,
         },
         { status: 400 },
       );
     }
 
+    const isPDF = file.type === "application/pdf";
+    const maxSize = isPDF ? 10 * 1024 * 1024 : 4 * 1024 * 1024;
+    // 10 mb for PDF and 4 mb for Photos
+
     // 2. File Size Restriction (4MB)
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > maxSize) {
       return NextResponse.json(
-        { success: false, error: `File ${file.name} exceeds the 4MB limit.` },
+        {
+          success: false,
+          error: `File exceeds the ${isPDF ? "10MB" : "4MB"} limit.`,
+        },
         { status: 400 },
       );
     }
@@ -52,6 +63,10 @@ export async function POST(req: Request) {
     // Return the image data in the array format expected by your Zod schema
     return NextResponse.json({
       success: true,
+      // for invoiceForm
+      url: upload.url,
+      fileId: upload.fileId,
+      // For ProductForm
       images: [
         {
           url: upload.url,

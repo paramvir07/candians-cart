@@ -1,4 +1,11 @@
-import { BarChart, HomeIcon, Store, Users2, PackageCheck } from "lucide-react";
+import {
+  BarChart,
+  HomeIcon,
+  Store,
+  Users2,
+  PackageCheck,
+  ReceiptText,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
@@ -26,7 +33,7 @@ const StoreSidebar = () => {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link href="/store">
+              <Link href="/store/analytics">
                 <Button size="icon" variant="ghost">
                   <BarChart />
                 </Button>
@@ -73,6 +80,19 @@ const StoreSidebar = () => {
             </TooltipTrigger>
             <TooltipContent side="right">
               <p>Orders</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link href="/store/invoice">
+                <Button size="icon" variant="ghost">
+                  <ReceiptText />
+                </Button>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Invoice</p>
             </TooltipContent>
           </Tooltip>
         </div>

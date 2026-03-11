@@ -11,7 +11,7 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
 import ImageKit from "@imagekit/nodejs";
-import ProductInvoice from "@/db/models/store/invoice.model"
+import ProductInvoice from "@/db/models/store/invoice.model";
 
 const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
@@ -100,10 +100,10 @@ export async function updateProduct(
       }
     }
 
-        const invoice = await ProductInvoice.findById(InvoiceId)
-        if(!invoice){
-          return{ success: false, message: "Invoice does not exists"}
-        }
+    const invoice = await ProductInvoice.findById(InvoiceId);
+    if (!invoice) {
+      return { success: false, message: "Invoice does not exists" };
+    }
 
     const dbPayload = {
       ...otherData,

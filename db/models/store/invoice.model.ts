@@ -2,12 +2,6 @@ import { model, models, Schema } from "mongoose";
 
 const ProductInvoiceSchema = new Schema(
   {
-    productId: {
-      type: Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
-      index: true,
-    },
     // Image kit document id
     documentId: {
       type: {
