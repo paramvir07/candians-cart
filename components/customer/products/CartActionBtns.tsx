@@ -120,11 +120,9 @@ export default CartActionBtns
 
 
 export const AddtoSubsidyBtn = ({ ProductId }: { ProductId: string }) => {
-  const [SubsidyVal] = useAtom(SubsidyValue)
-
   return (
     <button
-      onClick={() => movetoSubsidy(ProductId, SubsidyVal)}
+      onClick={() => movetoSubsidy(ProductId)}
       className="cursor-pointer shrink-0 flex items-center gap-1 text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 active:scale-95 transition-all px-2 py-0.5 rounded-md"
     >
       Use Subsidy

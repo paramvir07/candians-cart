@@ -2,6 +2,7 @@
 
 import { dbConnect } from "@/db/dbConnect"
 import CartModel, { ISubsidyItems } from "@/db/models/customer/cart.model"
+import CustomerModel from "@/db/models/customer/customer.model"
 import { IProduct } from "@/types/store/products.types"
 import { getUser } from "./User.action"
 import { revalidatePath } from "next/cache"
@@ -38,6 +39,18 @@ const distributeSubsidy = (items: PlainSubsidyItem[], totalSubsidy: number): Pla
   return items.map((original) =>
     distributed.find((d) => d._id.toString() === original._id.toString()) ?? original
   );
+};
+
+const getTotalSubsidy = async (customerId: Types.ObjectId): Promise<number> => {
+  const [cart, customer] = await Promise.all([
+    CartModel.findOne({ customerId }).select("cartSubsidy"),
+    CustomerModel.findById(customerId).select("giftWalletBalance"),
+  ]);
+
+  const cartSubsidy = cart?.cartSubsidy ?? 0;
+  const giftWallet = Math.round((customer?.giftWalletBalance ?? 0));
+
+  return cartSubsidy + giftWallet;
 };
 
 
@@ -131,10 +144,11 @@ export const IncrementSubsidyItem = async (productId: string) => {
     const user = await getUser();
     if (!user) return { success: false, message: "User not found" };
 
-    const cart = await CartModel.findOne({ customerId: user._id });
+    const [cart, totalSubsidy] = await Promise.all([
+      CartModel.findOne({ customerId: user._id }),
+      getTotalSubsidy(user._id),
+    ]);
     if (!cart) return { success: false, message: "Cart not found" };
-
-    const totalSubsidy = cart.subsidyItems.reduce((sum, i) => sum + i.subsidy, 0);
 
     const plainItems: PlainSubsidyItem[] = cart.subsidyItems.map(
       (s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject()
@@ -168,10 +182,12 @@ export const DecrementSubsidyItem = async (productId: string) => {
     const user = await getUser();
     if (!user) return { success: false, message: "User not found" };
 
-    const cart = await CartModel.findOne({ customerId: user._id });
+    const [cart, totalSubsidy] = await Promise.all([
+      CartModel.findOne({ customerId: user._id }),
+      getTotalSubsidy(user._id),
+    ]);
     if (!cart) return { success: false, message: "Cart not found" };
 
-    const totalSubsidy = cart.subsidyItems.reduce((sum, i) => sum + i.subsidy, 0);
     const item = cart.subsidyItems.find((i) => i.productId.toString() === productId);
 
     if (!item || item.quantity <= 1) {
@@ -226,10 +242,11 @@ export const RemoveSubsidyItem = async (productId: string) => {
     const user = await getUser();
     if (!user) return { success: false, message: "User not found" };
 
-    const cart = await CartModel.findOne({ customerId: user._id });
+    const [cart, totalSubsidy] = await Promise.all([
+      CartModel.findOne({ customerId: user._id }),
+      getTotalSubsidy(user._id),
+    ]);
     if (!cart) return { success: false, message: "Cart not found" };
-
-    const totalSubsidy = cart.subsidyItems.reduce((sum, i) => sum + i.subsidy, 0);
 
     const remaining = cart.subsidyItems
       .filter((i) => i.productId.toString() !== productId)
@@ -302,7 +319,7 @@ export const updateCartSubsidy = async (subsidy: number) => {
 };
 
 
-export const movetoSubsidy = async (ProductId: string, totalSubsidy: number) => {
+export const movetoSubsidy = async (ProductId: string) => {
   try {
     await dbConnect();
 
@@ -310,9 +327,12 @@ export const movetoSubsidy = async (ProductId: string, totalSubsidy: number) => 
     if (!User) return { message: "User not found", success: false };
     const customerId = User._id;
 
-    const cart = await CartModel.findOne({ customerId })
-      .populate("items.productId")
-      .populate("subsidyItems.productId");
+    const [cart, totalSubsidy] = await Promise.all([
+      CartModel.findOne({ customerId })
+        .populate("items.productId")
+        .populate("subsidyItems.productId"),
+      getTotalSubsidy(customerId),
+    ]);
 
     if (!cart) return { success: false, message: "Cart not found" };
 
@@ -324,25 +344,36 @@ export const movetoSubsidy = async (ProductId: string, totalSubsidy: number) => 
 
     const [item] = cart.items.splice(index, 1);
     const product = item.productId as unknown as IProduct;
-
     const TotalPrice = product.price + Math.round(product.price * (product.markup / 100));
+
+    const alreadyInSubsidy = cart.subsidyItems.find(
+      (s) => (s.productId as unknown as IProduct)._id.toString() === product._id.toString()
+    );
 
     const existingPlain: PlainSubsidyItem[] = cart.subsidyItems.map(
       (s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject()
     );
 
-    const allItems: PlainSubsidyItem[] = [
-      ...existingPlain,
-      {
-        _id: new Types.ObjectId(),
-        productId: product._id as unknown as Types.ObjectId,
-        storeId: item.storeId as unknown as Types.ObjectId,
-        quantity: item.quantity,
-        TotalPrice,
-        subsidy: 0,
-        afterSubsidy: TotalPrice * item.quantity,
-      },
-    ];
+    const allItems: PlainSubsidyItem[] = alreadyInSubsidy
+      ? existingPlain.map((s) => {
+          const itemProductId = (s.productId as unknown as { _id: Types.ObjectId })?._id?.toString()
+            ?? s.productId.toString();
+          return itemProductId === product._id.toString()
+            ? { ...s, quantity: s.quantity + item.quantity }
+            : s;
+        })
+      : [
+          ...existingPlain,
+          {
+            _id: new Types.ObjectId(),
+            productId: product._id as unknown as Types.ObjectId,
+            storeId: item.storeId as unknown as Types.ObjectId,
+            quantity: item.quantity,
+            TotalPrice,
+            subsidy: 0,
+            afterSubsidy: TotalPrice * item.quantity,
+          },
+        ];
 
     const distributed = distributeSubsidy(allItems, totalSubsidy);
 
