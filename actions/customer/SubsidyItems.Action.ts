@@ -1,62 +1,72 @@
 "use server"
 
 import { dbConnect } from "@/db/dbConnect"
-import CartModel from "@/db/models/customer/cart.model"
+import CartModel, { ISubsidyItems } from "@/db/models/customer/cart.model"
 import { IProduct } from "@/types/store/products.types"
 import { getUser } from "./User.action"
 import { revalidatePath } from "next/cache"
 import { Types } from "mongoose"
 
-
-export const saveSubsidytoWallet = async () => {
-
-  try {
-    await dbConnect()
-
-    const user = await getUser()
-    if (!user) {
-      return { success: false, message: "User not found" }
-    }
-
-    const cart = await CartModel.findOneAndUpdate(
-      {
-        customerId: user._id,
-        isSavedtoWallet: false
-      },
-      {
-        $set: { isSavedtoWallet: true }
-      },
-      { new: true }
-    )
-
-    if (!cart) {
-      return {
-        success: true,
-        message: "Preference already been saved"
-      }
-    }
-
-    revalidatePath("/customer/cart")
-
-    return {
-      success: true,
-      message: `Preference saved`
-    }
-
-  } catch (err) {
-    console.error(err)
-    return {
-      success: false,
-      message: "Error while saving subsidy amount to wallet"
-    }
-  }
+type PlainSubsidyItem = {
+  _id: Types.ObjectId
+  productId: Types.ObjectId
+  storeId: Types.ObjectId
+  quantity: number
+  TotalPrice: number
+  subsidy: number
+  afterSubsidy: number
 }
 
+const distributeSubsidy = (items: PlainSubsidyItem[], totalSubsidy: number): PlainSubsidyItem[] => {
+  const sorted = [...items].sort(
+    (a, b) => (a.TotalPrice * a.quantity) - (b.TotalPrice * b.quantity)
+  );
 
-export const AddSubsidyItem = async (
-  selectedProducts: IProduct[],
-  subsidy: number,
-) => {
+  let remaining = totalSubsidy;
+
+  const distributed = sorted.map((item) => {
+    const itemTotal = item.TotalPrice * item.quantity;
+    const give = Math.min(remaining, itemTotal);
+    remaining -= give;
+    return {
+      ...item,
+      subsidy: give,
+      afterSubsidy: Math.max(itemTotal - give, 0),
+    };
+  });
+
+  return items.map((original) =>
+    distributed.find((d) => d._id.toString() === original._id.toString()) ?? original
+  );
+};
+
+
+export const saveSubsidytoWallet = async () => {
+  try {
+    await dbConnect();
+
+    const user = await getUser();
+    if (!user) return { success: false, message: "User not found" };
+
+    const cart = await CartModel.findOneAndUpdate(
+      { customerId: user._id, isSavedtoWallet: false },
+      { $set: { isSavedtoWallet: true } },
+      { new: true }
+    );
+
+    if (!cart) return { success: true, message: "Preference already been saved" };
+
+    revalidatePath("/customer/cart");
+    return { success: true, message: "Preference saved" };
+
+  } catch (err) {
+    console.error(err);
+    return { success: false, message: "Error while saving subsidy amount to wallet" };
+  }
+};
+
+
+export const AddSubsidyItem = async (selectedProducts: IProduct[], totalSubsidy: number) => {
   try {
     await dbConnect();
 
@@ -66,46 +76,41 @@ export const AddSubsidyItem = async (
     }
 
     const storeId = CurrentUser.associatedStoreId;
-
     const cart = await CartModel.findOne({ customerId: CurrentUser._id });
-    const existingSubsidyItems = cart?.subsidyItems ?? [];
+    const existingSubsidyItems = (cart?.subsidyItems ?? []) as (ISubsidyItems & { toObject: () => PlainSubsidyItem })[];
 
     const newProducts = selectedProducts.filter(
-      (p) => !existingSubsidyItems.some((s: any) => s.productId.toString() === p._id.toString())
+      (p) => !existingSubsidyItems.some((s) => s.productId.toString() === p._id.toString())
     );
 
-    const totalCount = existingSubsidyItems.length + newProducts.length;
-    const calcSubsidy = subsidy / (totalCount || 1);
-
-    const updatedExistingItems = existingSubsidyItems.map((item: any) => {
+    const updatedExistingItems: PlainSubsidyItem[] = existingSubsidyItems.map((item) => {
       const plain = item.toObject();
       const isBeingAdded = selectedProducts.some(
         (p) => p._id.toString() === plain.productId.toString()
       );
       const newQty = isBeingAdded ? plain.quantity + 1 : plain.quantity;
+      return { ...plain, quantity: newQty };
+    });
+
+    const newItems: PlainSubsidyItem[] = newProducts.map((item) => {
+      const totalPrice = item.price + Math.round(item.price * (item.markup / 100));
       return {
-        ...plain,
-        quantity: newQty,
-        subsidy: calcSubsidy,
-        afterSubsidy: Math.max((plain.TotalPrice * newQty) - calcSubsidy, 0),
+        _id: new Types.ObjectId(),
+        productId: item._id as unknown as Types.ObjectId,
+        storeId: storeId as unknown as Types.ObjectId,
+        quantity: 1,
+        TotalPrice: totalPrice,
+        subsidy: 0,
+        afterSubsidy: totalPrice,
       };
     });
 
-    const newItems = newProducts.map((item) => {
-      const totalPrice = item.price + Math.round(item.price * (item.markup / 100));
-      return {
-        productId: item._id,
-        storeId,
-        quantity: 1,
-        TotalPrice: totalPrice,
-        subsidy: calcSubsidy,
-        afterSubsidy: Math.max(totalPrice - calcSubsidy, 0),
-      };
-    });
+    const allItems = [...updatedExistingItems, ...newItems];
+    const distributed = distributeSubsidy(allItems, totalSubsidy);
 
     await CartModel.findOneAndUpdate(
       { customerId: CurrentUser._id },
-      { $set: { subsidyItems: [...updatedExistingItems, ...newItems] } },
+      { $set: { subsidyItems: distributed } },
       { upsert: true }
     );
 
@@ -118,35 +123,8 @@ export const AddSubsidyItem = async (
   }
 };
 
+
 export const IncrementSubsidyItem = async (productId: string) => {
-  try {
-    await dbConnect()
-
-    const user = await getUser()
-    if (!user) {
-      return { success: false, message: "User not found" }
-    }
-
-    await CartModel.updateOne(
-      {
-        customerId: user._id,
-        "subsidyItems.productId": new Types.ObjectId(productId),
-      } as any,
-      {
-        $inc: { "subsidyItems.$.quantity": 1 },
-      }
-    )
-
-    revalidatePath("/customer/cart")
-    return { success: true }
-
-  } catch (err) {
-    console.log(err)
-    return { success: false, message: "Increment failed" }
-  }
-}
-
-export const DecrementSubsidyItem = async (productId: string, subsidy: number) => {
   try {
     await dbConnect();
 
@@ -156,46 +134,82 @@ export const DecrementSubsidyItem = async (productId: string, subsidy: number) =
     const cart = await CartModel.findOne({ customerId: user._id });
     if (!cart) return { success: false, message: "Cart not found" };
 
-    const item = cart.subsidyItems.find(
-      (i: any) => i.productId.toString() === productId
+    const totalSubsidy = cart.subsidyItems.reduce((sum, i) => sum + i.subsidy, 0);
+
+    const plainItems: PlainSubsidyItem[] = cart.subsidyItems.map(
+      (s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject()
     );
 
+    const updated = plainItems.map((s) =>
+      s.productId.toString() === productId ? { ...s, quantity: s.quantity + 1 } : s
+    );
+
+    const distributed = distributeSubsidy(updated, totalSubsidy);
+
+    await CartModel.findOneAndUpdate(
+      { customerId: user._id },
+      { $set: { subsidyItems: distributed } }
+    );
+
+    revalidatePath("/customer/cart");
+    return { success: true };
+
+  } catch (err) {
+    console.log(err);
+    return { success: false, message: "Increment failed" };
+  }
+};
+
+
+export const DecrementSubsidyItem = async (productId: string) => {
+  try {
+    await dbConnect();
+
+    const user = await getUser();
+    if (!user) return { success: false, message: "User not found" };
+
+    const cart = await CartModel.findOne({ customerId: user._id });
+    if (!cart) return { success: false, message: "Cart not found" };
+
+    const totalSubsidy = cart.subsidyItems.reduce((sum, i) => sum + i.subsidy, 0);
+    const item = cart.subsidyItems.find((i) => i.productId.toString() === productId);
+
     if (!item || item.quantity <= 1) {
-      const remaining = cart.subsidyItems.filter(
-        (i: any) => i.productId.toString() !== productId
-      );
+      const remaining = cart.subsidyItems
+        .filter((i) => i.productId.toString() !== productId)
+        .map((s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject());
 
       if (remaining.length === 0 && cart.items.length === 0) {
         await CartModel.findOneAndDelete({ customerId: user._id });
-        revalidatePath("/", "layout");
+        revalidatePath("/customer/cart");
         return { success: true };
       }
 
-      const totalSubsidy = subsidy * cart.subsidyItems.length;
-      const subsidyPerItem = remaining.length > 0 ? totalSubsidy / remaining.length : 0;
-
-      const rebuilt = remaining.map((s: any) => {
-        const plain = s.toObject();
-        return {
-          ...plain,
-          subsidy: subsidyPerItem,
-          afterSubsidy: Math.max((plain.TotalPrice * plain.quantity) - subsidyPerItem, 0),
-        };
-      });
+      const distributed = distributeSubsidy(remaining, totalSubsidy);
 
       await CartModel.findOneAndUpdate(
         { customerId: user._id },
-        { $set: { subsidyItems: rebuilt } }
+        { $set: { subsidyItems: distributed } }
       );
 
     } else {
-      await CartModel.updateOne(
-        { customerId: user._id, "subsidyItems.productId": new Types.ObjectId(productId) } as any,
-        { $inc: { "subsidyItems.$.quantity": -1 } }
+      const plainItems: PlainSubsidyItem[] = cart.subsidyItems.map(
+        (s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject()
+      );
+
+      const updated = plainItems.map((s) =>
+        s.productId.toString() === productId ? { ...s, quantity: s.quantity - 1 } : s
+      );
+
+      const distributed = distributeSubsidy(updated, totalSubsidy);
+
+      await CartModel.findOneAndUpdate(
+        { customerId: user._id },
+        { $set: { subsidyItems: distributed } }
       );
     }
 
-    revalidatePath("/", "layout");
+    revalidatePath("/customer/cart");
     return { success: true };
 
   } catch (err) {
@@ -204,7 +218,8 @@ export const DecrementSubsidyItem = async (productId: string, subsidy: number) =
   }
 };
 
-export const RemoveSubsidyItem = async (productId: string, subsidy: number) => {
+
+export const RemoveSubsidyItem = async (productId: string) => {
   try {
     await dbConnect();
 
@@ -214,34 +229,26 @@ export const RemoveSubsidyItem = async (productId: string, subsidy: number) => {
     const cart = await CartModel.findOne({ customerId: user._id });
     if (!cart) return { success: false, message: "Cart not found" };
 
-    const remaining = cart.subsidyItems.filter(
-      (i: any) => i.productId.toString() !== productId
-    );
+    const totalSubsidy = cart.subsidyItems.reduce((sum, i) => sum + i.subsidy, 0);
+
+    const remaining = cart.subsidyItems
+      .filter((i) => i.productId.toString() !== productId)
+      .map((s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject());
 
     if (remaining.length === 0 && cart.items.length === 0) {
       await CartModel.findOneAndDelete({ customerId: user._id });
-      revalidatePath("/", "layout");
+      revalidatePath("/customer/cart");
       return { success: true };
     }
 
-    const totalSubsidy = subsidy * cart.subsidyItems.length;
-    const subsidyPerItem = remaining.length > 0 ? totalSubsidy / remaining.length : 0;
-
-    const rebuilt = remaining.map((s: any) => {
-      const plain = s.toObject();
-      return {
-        ...plain,
-        subsidy: subsidyPerItem,
-        afterSubsidy: Math.max((plain.TotalPrice * plain.quantity) - subsidyPerItem, 0),
-      };
-    });
+    const distributed = distributeSubsidy(remaining, totalSubsidy);
 
     await CartModel.findOneAndUpdate(
       { customerId: user._id },
-      { $set: { subsidyItems: rebuilt } }
+      { $set: { subsidyItems: distributed } }
     );
 
-    revalidatePath("/", "layout");
+    revalidatePath("/customer/cart");
     return { success: true };
 
   } catch (err) {
@@ -250,52 +257,52 @@ export const RemoveSubsidyItem = async (productId: string, subsidy: number) => {
   }
 };
 
-export const ClearSubsidy = async () =>{
-  try{
+
+export const ClearAllSubsidyItems = async () => {
+  try {
     await dbConnect();
 
     const user = await getUser();
-    if(!user) return {success:false,message:"User not found"}
+    if (!user) return { success: false, message: "User not found" };
 
     await CartModel.findOneAndUpdate(
       { customerId: user._id },
-      {
-        $set: {
-          cartSubsidy: 0
-        }
-      }
-    )
+      { $set: { subsidyItems: [] } }
+    );
 
     revalidatePath("/customer/cart");
-    return {success:true,message:"Subsidy Items cleared successfully"}   
+    return { success: true, message: "Subsidy Items cleared successfully" };
 
-  }catch(err){
-    console.log(err)
-    return {success:false,message:"Error while clearing SubsidyItems"}
+  } catch (err) {
+    console.log(err);
+    return { success: false, message: "Error while clearing SubsidyItems" };
   }
-}
+};
 
-export const updateCartSubsidy = async (subsidy:number) =>{
-  try{
+
+export const updateCartSubsidy = async (subsidy: number) => {
+  try {
     await dbConnect();
 
     const user = await getUser();
-    if(!user) return {success:false,message:"User not found"}
+    if (!user) return { success: false, message: "User not found" };
 
     await CartModel.findOneAndUpdate(
-      {customerId:user._id},
-      {$set:{cartSubsidy:subsidy}}
-    )
-    revalidatePath("/customer/cart"); 
-    return {success:true, message:"Subsidy Updated"}
+      { customerId: user._id },
+      { $set: { cartSubsidy: subsidy } }
+    );
 
-  }catch(err){
-    console.log(err)
-    return {success:false,message:"Error while updating subsidy"}
+    revalidatePath("/customer/cart");
+    return { success: true, message: "Subsidy Updated" };
+
+  } catch (err) {
+    console.log(err);
+    return { success: false, message: "Error while updating subsidy" };
   }
-}
+};
 
-export const movetoSubsidy = async (ProductId: string, subsidyAmount: number) => {
+
+export const movetoSubsidy = async (ProductId: string, totalSubsidy: number) => {
   try {
     await dbConnect();
 
@@ -319,35 +326,29 @@ export const movetoSubsidy = async (ProductId: string, subsidyAmount: number) =>
     const product = item.productId as unknown as IProduct;
 
     const TotalPrice = product.price + Math.round(product.price * (product.markup / 100));
-    const newTotalCount = cart.subsidyItems.length + 1;
-    const calcSubsidy = subsidyAmount / newTotalCount;
 
-    const updatedSubsidyItems = cart.subsidyItems.map((s: any) => {
-      const plain = s.toObject();
-      return {
-        ...plain,
-        subsidy: calcSubsidy,
-        afterSubsidy: Math.max((plain.TotalPrice * plain.quantity) - calcSubsidy, 0),
-      };
-    });
+    const existingPlain: PlainSubsidyItem[] = cart.subsidyItems.map(
+      (s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject()
+    );
 
-    updatedSubsidyItems.push({
-      productId: product._id,
-      storeId: item.storeId,
-      quantity: item.quantity,
-      TotalPrice,
-      subsidy: calcSubsidy,
-      afterSubsidy: Math.max((TotalPrice * item.quantity) - calcSubsidy, 0),
-    });
+    const allItems: PlainSubsidyItem[] = [
+      ...existingPlain,
+      {
+        _id: new Types.ObjectId(),
+        productId: product._id as unknown as Types.ObjectId,
+        storeId: item.storeId as unknown as Types.ObjectId,
+        quantity: item.quantity,
+        TotalPrice,
+        subsidy: 0,
+        afterSubsidy: TotalPrice * item.quantity,
+      },
+    ];
+
+    const distributed = distributeSubsidy(allItems, totalSubsidy);
 
     await CartModel.findOneAndUpdate(
       { customerId },
-      {
-        $set: {
-          items: cart.items,
-          subsidyItems: updatedSubsidyItems,
-        },
-      }
+      { $set: { items: cart.items, subsidyItems: distributed } }
     );
 
     revalidatePath("/customer/cart");

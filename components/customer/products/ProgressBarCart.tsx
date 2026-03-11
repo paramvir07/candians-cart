@@ -6,7 +6,7 @@ import { useAtom } from "jotai"
 import { SubsidyValue } from "@/atoms/customer/CartAtom"
 import { Wallet, Tag, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ClearSubsidy, updateCartSubsidy } from "@/actions/customer/SubsidyItems.Action"
+import { ClearAllSubsidyItems, updateCartSubsidy } from "@/actions/customer/SubsidyItems.Action"
 
 const getFibBracketFrom21 = (value: number) => {
   let a = 13, b = 21
@@ -38,7 +38,7 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance }: { total: numb
       setShowBtn(false)
       setDialogOpen(false)
       lastMilestoneRef.current = null
-      ClearSubsidy()
+      ClearAllSubsidyItems()
       return
     }
 

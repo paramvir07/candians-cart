@@ -34,7 +34,7 @@ const CartActionBtns = ({
       <div className="flex items-center justify-between mt-2.5">
         <button
           type="button"
-          onClick={() => RemoveSubsidyItem(productId,subsidy*100)}
+          onClick={() => RemoveSubsidyItem(productId)}
           className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-400 transition-colors"
         >
           <Trash2 size={12} />
@@ -44,7 +44,7 @@ const CartActionBtns = ({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => DecrementSubsidyItem(productId,subsidy*100)}
+            onClick={() => DecrementSubsidyItem(productId)}
             className="w-7 h-7 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors"
           >
             <Minus size={12} strokeWidth={2} />
@@ -73,7 +73,7 @@ const CartActionBtns = ({
           variant="outline"
           type="button"
           size="icon"
-          onClick={() => DecrementSubsidyItem(productId,subsidy*100)}
+          onClick={() => DecrementSubsidyItem(productId)}
           className="w-8 h-8 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100"
         >
           <Minus size={13} strokeWidth={2} />
@@ -106,7 +106,7 @@ const CartActionBtns = ({
         variant="ghost"
         type="button"
         size="icon"
-        onClick={() => RemoveSubsidyItem(productId,subsidy*100)}
+        onClick={() => RemoveSubsidyItem(productId)}
         className="text-gray-300 hover:text-red-400 transition-colors ml-1"
         aria-label="Remove item"
       >

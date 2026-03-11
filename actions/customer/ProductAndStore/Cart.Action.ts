@@ -10,16 +10,14 @@ import OrderModel, {
   PlaceOrderProduct,
 } from "@/db/models/customer/Orders.Model";
 import Customer from "@/db/models/customer/customer.model";
-import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { getCustomerDataAction, getUser } from "../User.action";
+import { getCustomerDataAction } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
 import {
   PlaceOrderParams,
   PlaceOrderResponse,
 } from "@/types/customer/OrdersClient";
 import { ICartItem } from "@/types/customer/CustomerCart";
-import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { Cashier } from "@/db/models/cashier/cashier.model";
 
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
