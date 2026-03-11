@@ -1,8 +1,8 @@
 import { model, models, Schema } from "mongoose";
+import { number } from "zod";
 
 const productSchema = new Schema(
   {
-
     storeId: {
       //Refer to the _id store model
       type: Schema.Types.ObjectId,
@@ -32,9 +32,24 @@ const productSchema = new Schema(
         "Beverages",
         "Snacks",
         "Household",
+        "Oil & Ghee",
+        "Pulses & Lentils",
+        "Flour & Atta",
+        "Rice",
+        "Spices",
+        "Pickles & Chutneys",
+        "Instant Foods",
+        "Frozen Foods",
+        "Sweets & Mithai",
+        "Dry Fruits & Nuts",
+        "Tea & Coffee",
+        "Sauces & Condiments",
+        "Papad & Fryums",
+        "Pooja / Religious Items",
+        "Utensils",
+        "Disposables",
         "Personal Care",
         "Other",
-        // fats and oil | flour? | Pulses & lentils? | Produce | Dry fruits | Disposables | Utintles? household | 
       ],
       required: true,
     },
@@ -66,14 +81,11 @@ const productSchema = new Schema(
       default: true,
       required: true,
     },
-    
-    subsidised:{
-      // Is the item subsizied, by default no
-      type: Boolean,
-      default: false
-    },
 
-    // weight or quantity of products like onions which are sold by weight will also be stored by weight in KGs. It is not required now since we are storing the boolean
+    subsidised: {
+      type: Boolean,
+      default: false,
+    },
 
     images: {
       type: [
@@ -84,9 +96,21 @@ const productSchema = new Schema(
       ],
       required: false, // For the time being this is false, have to integrate Imagekit
     },
+
+    isFeatured: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+
+    // This is the invoice Id
+    InvoiceId: {
+      type: Schema.Types.ObjectId,
+      ref: "ProductInvoice",
+      required: true,
+    },
   },
   { timestamps: true },
 );
 
-export default models.Product ||
-  model("Product", productSchema);
+export default models.Product || model("Product", productSchema);

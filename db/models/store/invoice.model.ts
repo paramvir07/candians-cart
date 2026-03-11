@@ -1,0 +1,46 @@
+import { model, models, Schema } from "mongoose";
+
+const ProductInvoiceSchema = new Schema(
+  {
+    productId: {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+      index: true,
+    },
+    // Image kit document id
+    documentId: {
+      type: {
+        url: { type: String, required: true },
+        fileId: { type: String, required: true },
+      },
+      required: true,
+    },
+    additionalNote: {
+      type: String,
+      required: false,
+    },
+    // Name of product in invoice whose value is being changed
+    productNameInInvoice: {
+      type: String,
+      required: false,
+    },
+    vendorName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    DateInvoiceCame: {
+      type: Date,
+      required: true,
+    },
+    InvoiceNumber: {
+      type: Number,
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
+
+export default models.ProductInvoice ||
+  model("ProductInvoice", ProductInvoiceSchema);

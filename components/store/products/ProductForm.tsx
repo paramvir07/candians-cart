@@ -54,6 +54,8 @@ const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
       ? (initialData.disposableFee / 100).toFixed(2)
       : "",
     stock: initialData ? String(initialData.stock) : "true",
+    isFeatured: initialData ? String(initialData.stock) : "false",
+    InvoiceId: initialData?.InvoiceId || "",
   });
 
   const handleChange = (field: string, value: string) => {
@@ -130,6 +132,8 @@ const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
         price: parseFloat(formData.price) || 0,
         stock: formData.stock === "true",
         images: finalImages,
+        isFeatured: formData.isFeatured === "false",
+        InvoiceId: formData.InvoiceId,
       };
 
       // 3. Conditional Submission (Create vs Update)
@@ -243,6 +247,23 @@ const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
                     <SelectContent>
                       <SelectItem value="true">In Stock</SelectItem>
                       <SelectItem value="false">Out of Stock</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>
+                    Featured Status <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={formData.isFeatured}
+                    onValueChange={(val) => handleChange("isFeatured", val)}
+                  >
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Featured</SelectItem>
+                      <SelectItem value="false">Not Featured</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -398,6 +419,22 @@ const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
                       "Beverages",
                       "Snacks",
                       "Household",
+                      "Oil & Ghee",
+                      "Pulses & Lentils",
+                      "Flour & Atta",
+                      "Rice",
+                      "Spices",
+                      "Pickles & Chutneys",
+                      "Instant Foods",
+                      "Frozen Foods",
+                      "Sweets & Mithai",
+                      "Dry Fruits & Nuts",
+                      "Tea & Coffee",
+                      "Sauces & Condiments",
+                      "Papad & Fryums",
+                      "Pooja / Religious Items",
+                      "Utensils",
+                      "Disposables",
                       "Personal Care",
                       "Other",
                     ].map((cat) => (
@@ -407,6 +444,28 @@ const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-sm ring-1 ring-slate-200">
+            <CardContent className="p-6 space-y-4">
+              <h2 className="text-lg font-semibold">Invoice Details</h2>
+              <div className="space-y-2">
+                <Label htmlFor="InvoiceId">
+                  Invoice ID <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="InvoiceId"
+                  placeholder="Paste verified Invoice ID here..."
+                  value={formData.InvoiceId}
+                  onChange={(e) => handleChange("InvoiceId", e.target.value)}
+                  className="bg-white"
+                />
+                <p className="text-[10px] text-slate-500 leading-tight">
+                  You must attach an Invoice ID for creating a new product or
+                  changing prices.
+                </p>
               </div>
             </CardContent>
           </Card>

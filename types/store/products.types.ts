@@ -1,4 +1,4 @@
-import {Types} from "mongoose";
+import { Types } from "mongoose";
 
 // Interface for the Server/DB (Raw Mongoose Documents)
 export interface IProductDB {
@@ -14,23 +14,41 @@ export interface IProductDB {
   stock: boolean; // Changed to boolean
   images: (ProductImage & { _id?: Types.ObjectId })[];
   subsidised: boolean;
+  isFeatured: boolean;
+  InvoiceId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export type ProductCategory = 
-  | "Fruits" 
-  | "Vegetables" 
-  | "Dairy" 
-  | "Meat" 
-  | "Bakery" 
-  | "Beverages" 
-  | "Snacks" 
-  | "Household" 
-  | "Personal Care" 
+export type ProductCategory =
+  | "Fruits"
+  | "Vegetables"
+  | "Dairy"
+  | "Meat"
+  | "Bakery"
+  | "Beverages"
+  | "Snacks"
+  | "Household"
+  | "Oil & Ghee"
+  | "Flour & Atta"
+  | "Pulses & Lentils"
+  | "Rice"
+  | "Spices"
+  | "Pickles & Chutneys"
+  | "Instant Foods"
+  | "Frozen Foods"
+  | "Sweets & Mithai"
+  | "Dry Fruits & Nuts"
+  | "Tea & Coffee"
+  | "Sauces & Condiments"
+  | "Papad & Fryums"
+  | "Pooja / Religious Items"
+  | "Utensils"
+  | "Disposables"
+  | "Personal Care"
   | "Other";
 
-export type TaxRate = 0.00 | 0.05 | 0.07 | 0.12;
+export type TaxRate = 0.0 | 0.05 | 0.07 | 0.12;
 
 export interface ProductImage {
   url: string;
@@ -49,14 +67,16 @@ export interface IProduct {
   tax: TaxRate;
   disposableFee?: number; // Optional
   price: number; // In cents
-  stock: boolean;  // Changed it to boolean from number
-  images: ProductImage[]; 
+  stock: boolean; // Changed it to boolean from number
+  images: ProductImage[];
   subsidised: boolean;
+  isFeatured: boolean;
+  InvoiceId: string;
   createdAt: string; // ISO Date string
   updatedAt: string; // ISO Date string
 }
 
 // Optional: specific type for the server action response
-export type ProductActionResponse = 
+export type ProductActionResponse =
   | { success: true; data: IProduct[] }
   | { success: false; error: string };

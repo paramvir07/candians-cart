@@ -4,13 +4,14 @@ import { revalidatePath } from "next/cache";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import {
-  ProductFormSchema,
+  createProductFormSchema,
   ProductFormValues,
 } from "@/zod/schemas/store/addProductsValidation";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
 import ImageKit from "@imagekit/nodejs";
+import ProductInvoice from "@/db/models/store/invoice.model"
 
 const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
@@ -27,15 +28,23 @@ export async function updateProduct(
   data: ProductFormValues,
 ): Promise<ActionResponse> {
   try {
-    const validationResult = ProductFormSchema.safeParse(data);
+    const session = await getUserSession();
+    if (!session?.user?.id) {
+      return { success: false, message: "Unauthorized" };
+    }
+
+    const userRole = (session.user.role as "Admin" | "Store") || "Store";
+
+    const adminRole = userRole === "Admin";
+    const storeRole = userRole === "Store";
+
+    const schema = createProductFormSchema(userRole);
+    const validationResult = schema.safeParse(data);
     if (!validationResult.success) {
       const errorMessage = zodErrorResponse(validationResult);
       return { success: false, message: errorMessage || "Validation error" };
     }
 
-    const session = await getUserSession();
-    const storeRole = session.user.role === "store";
-    const adminRole = session.user.role === "admin";
     await dbConnect();
 
     let existingProduct;
@@ -66,7 +75,7 @@ export async function updateProduct(
       };
     }
 
-    const { price, disposableFee, tax, images, ...otherData } =
+    const { price, disposableFee, tax, images, InvoiceId, ...otherData } =
       validationResult.data;
 
     // Comparing the old and the new images
@@ -91,6 +100,11 @@ export async function updateProduct(
       }
     }
 
+        const invoice = await ProductInvoice.findById(InvoiceId)
+        if(!invoice){
+          return{ success: false, message: "Invoice does not exists"}
+        }
+
     const dbPayload = {
       ...otherData,
       images: images || [], // Set the new images array
@@ -100,6 +114,7 @@ export async function updateProduct(
       price: Math.round(price * 100),
       // converting dollars to cents
       disposableFee: Math.round((disposableFee || 0) * 100),
+      InvoiceId: InvoiceId,
     };
 
     let updatedProduct;

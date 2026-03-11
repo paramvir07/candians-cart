@@ -4,12 +4,13 @@ import { revalidatePath } from "next/cache";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import {
-  ProductFormSchema,
+  createProductFormSchema,
   ProductFormValues,
 } from "@/zod/schemas/store/addProductsValidation";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
+import ProductInvoice from "@/db/models/store/invoice.model"
 
 interface ActionResponse {
   success: boolean;
@@ -22,15 +23,17 @@ export async function createProduct(
   recievedStoreId?: string,
 ): Promise<ActionResponse> {
   try {
-    const validationResult = ProductFormSchema.safeParse(data);
-    if (!validationResult.success) {
-      const errorMessage = zodErrorResponse(validationResult);
-      return { success: false, message: errorMessage || "Validation error" };
-    }
-
     const session = await getUserSession();
     if (!session?.user?.id) {
       return { success: false, message: "Unauthorized" };
+    }
+
+    const userRole = (session.user.role as "Admin" | "Store") || "Store";
+    const schema = createProductFormSchema(userRole);
+    const validationResult = schema.safeParse(data);
+    if (!validationResult.success) {
+      const errorMessage = zodErrorResponse(validationResult);
+      return { success: false, message: errorMessage || "Validation error" };
     }
 
     await dbConnect();
@@ -49,8 +52,13 @@ export async function createProduct(
       storeId = String(store._id); // ensure it's not undefined
     }
 
-    const { price, disposableFee, tax, images, ...otherData } =
+    const { price, disposableFee, tax, images, InvoiceId, ...otherData } =
       validationResult.data;
+
+    const invoice = await ProductInvoice.findById(InvoiceId)
+    if(!invoice){
+      return{ success: false, message: "Invoice does not exists"}
+    }
 
     const dbPayload = {
       ...otherData,
@@ -59,6 +67,7 @@ export async function createProduct(
       tax: tax > 0 ? tax / 100 : 0,
       price: Math.round(price * 100),
       disposableFee: Math.round((disposableFee ?? 0) * 100),
+      InvoiceId: InvoiceId
     };
 
     await Product.create(dbPayload);
