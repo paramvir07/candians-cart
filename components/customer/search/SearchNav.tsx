@@ -1,15 +1,14 @@
 "use client";
-// components/customer/search/SearchNav.tsx
 
 import { useState, useTransition } from "react";
 import Logo from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ArrowLeft, X, Loader2, ShoppingCartIcon, Wallet } from "lucide-react";
+import { ArrowLeft, X, ShoppingCartIcon, Wallet } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Customer } from "@/types/customer/customer";
-import { fmt, fmtShort } from "@/lib/fomatPrice";
+import { fmtShort } from "@/lib/fomatPrice";
 
 interface SearchNavProps {
   customerId?: string;
@@ -47,7 +46,7 @@ export function SearchNav({
     <nav
       className={`flex items-center justify-between sticky top-0 z-30 py-4 px-4 ${!customerId ? "shadow-md " : ""}`}
     >
-      {/* Back Button — Mobile - Redirtects to home page*/}
+
       {!customerId && (
         <>
           <Link href="/" className="md:hidden mr-3">
@@ -65,7 +64,6 @@ export function SearchNav({
         </>
       )}
 
-      {/* Search Form (Matches the flex-1 mx-6 layout from Navbar) */}
       <form
         onSubmit={handleSubmit}
         className="flex-1 md:mx-6 flex items-center justify-center w-full min-w-0"
@@ -113,7 +111,7 @@ export function SearchNav({
                 className="flex items-center gap-1 px-3"
               >
                 <Wallet className="w-5 h-5" />
-                {fmt(customerData.walletBalance)}
+                {fmtShort(customerData.walletBalance)}
               </Button>
             </Link>
 

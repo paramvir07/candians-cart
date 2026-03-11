@@ -16,7 +16,7 @@ const CustomerWallet = async ({ params }: CustomerIdParams) => {
   return (
     <div>
       <div className="flex items-center gap-2 md:pl-12 pt-4">
-        <Link href="/cashier/customer/${customerId}">
+        <Link href={`/cashier/customer/${customerId}`}>
           <Button className="rounded-full" variant="outline" size="icon">
             <ChevronLeft className="w-4 h-4" />
           </Button>

@@ -120,8 +120,6 @@ export function ProductsSection({ products }: ProductsSectionProps) {
     currentPage * ITEMS_PER_PAGE,
   );
 
-  const subsidisedProducts = products.filter((p) => p.subsidised).slice(0, 8);
-  const popularProducts = products.filter((p) => p.stock).slice(0, 8);
   const isShowingAll = getActiveFilterCount(filters) === 0;
 
   const getPageNumbers = (): (number | "ellipsis")[] => {
@@ -181,57 +179,6 @@ export function ProductsSection({ products }: ProductsSectionProps) {
 
           {/* Main content */}
           <div className="flex-1 min-w-0 space-y-8">
-            {/* Featured rows — only when no filters are active */}
-            {isShowingAll && (
-              <>
-                {subsidisedProducts.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-violet-500" />
-                        Subsidised
-                      </h2>
-                      <button
-                        onClick={() => updateFilters({ subsidisedOnly: true })}
-                        className="text-sm text-green-600 hover:text-green-700 font-semibold flex items-center gap-0.5 group"
-                      >
-                        See all
-                        <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {subsidisedProducts.map((p) => (
-                        <CustomerProductCard 
-                          key={p._id} 
-                          product={p} 
-                          cartQuantity={cartMap[p._id as string] || 0}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {popularProducts.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-                        <Flame className="h-5 w-5 text-orange-500" />
-                        Popular Right Now
-                      </h2>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {popularProducts.map((p) => (
-                        <CustomerProductCard 
-                          key={p._id} 
-                          product={p} 
-                          cartQuantity={cartMap[p._id as string] || 0}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
 
             {/* All products grid - SCROLL OFFSET KEEPS HEADER VISIBLE */}
             <div ref={gridRef} className="scroll-mt-24">
@@ -368,9 +315,9 @@ export function ProductsSection({ products }: ProductsSectionProps) {
 
       {/* Mobile Filter Sheet */}
       <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
-        <SheetContent side="right" className="w-full max-w-sm overflow-y-auto">
+        <SheetContent side="right" className="w-full max-w-[70%] overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="flex items-center gap-2 text-base">
+            <SheetTitle className="flex items-center gap-2 text-base text-primary">
               Filters
               {activeFilterCount > 0 && (
                 <span className="bg-green-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
@@ -379,7 +326,7 @@ export function ProductsSection({ products }: ProductsSectionProps) {
               )}
             </SheetTitle>
           </SheetHeader>
-          <div className="mt-6">
+          <div className="px-5 pb-5">
             <FilterPanel
               filters={filters}
               onChange={updateFilters}

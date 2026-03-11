@@ -47,107 +47,112 @@ export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {activeCount > 0 && (
-        <button
-          onClick={onReset}
-          className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 font-medium transition-colors"
-        >
-          <X className="h-3.5 w-3.5" />
-          Clear all filters
-        </button>
-      )}
+    <>
+      <button
+        onClick={onReset}
+        className={`flex items-center gap-1.5 text-sm text-destructive font-medium transition-colors mb-4 ${
+          activeCount > 0 ? "visible" : "invisible"
+        }`}
+      >
+        <X className="h-3.5 w-3.5" />
+        Clear all filters
+      </button>
+      <div className="space-y-6">
+        {/* Categories */}
+        <div>
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+            Category
+          </h4>
+          <div className="flex flex-col gap-1.5">
+            {ALL_CATEGORIES.map((cat) => {
+              const cfg = getCategoryConfig(cat);
+              const active = filters.categories.includes(cat);
+              return (
+                <button
+                  key={cat}
+                  onClick={() => toggleCategory(cat)}
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left ${
+                    active
+                      ? `${cfg.bg} ${cfg.text} ${cfg.border} shadow-sm`
+                      : "bg-white text-slate-600 border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="text-base leading-none">{cfg.emoji}</span>
+                  <span className="flex-1">{cat}</span>
+                  {active && <X className="h-3.5 w-3.5 opacity-50 shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-      {/* Categories */}
-      <div>
-        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-          Category
-        </h4>
-        <div className="flex flex-col gap-1.5">
-          {ALL_CATEGORIES.map((cat) => {
-            const cfg = getCategoryConfig(cat);
-            const active = filters.categories.includes(cat);
-            return (
+        {/* Availability */}
+        <div>
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+            Availability
+          </h4>
+          <div className="flex flex-col gap-1.5">
+            {[
+              {
+                key: "inStockOnly" as const,
+                label: "In stock only",
+                icon: "✅",
+              },
+              {
+                key: "subsidisedOnly" as const,
+                label: "Subsidised only",
+                icon: "✨",
+              },
+            ].map(({ key, label, icon }) => (
               <button
-                key={cat}
-                onClick={() => toggleCategory(cat)}
+                key={key}
+                onClick={() => onChange({ [key]: !filters[key] })}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left ${
-                  active
-                    ? `${cfg.bg} ${cfg.text} ${cfg.border} shadow-sm`
+                  filters[key]
+                    ? "bg-green-50 text-green-700 border-green-200 shadow-sm"
                     : "bg-white text-slate-600 border-slate-100 hover:border-slate-200 hover:bg-slate-50"
                 }`}
               >
-                <span className="text-base leading-none">{cfg.emoji}</span>
-                <span className="flex-1">{cat}</span>
-                {active && <X className="h-3.5 w-3.5 opacity-50 shrink-0" />}
+                <span>{icon}</span>
+                <span className="flex-1">{label}</span>
+                {filters[key] && (
+                  <X className="h-3.5 w-3.5 opacity-50 shrink-0" />
+                )}
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Availability */}
-      <div>
-        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-          Availability
-        </h4>
-        <div className="flex flex-col gap-1.5">
-          {[
-            { key: "inStockOnly" as const, label: "In stock only", icon: "✅" },
-            {
-              key: "subsidisedOnly" as const,
-              label: "Subsidised only",
-              icon: "✨",
-            },
-          ].map(({ key, label, icon }) => (
-            <button
-              key={key}
-              onClick={() => onChange({ [key]: !filters[key] })}
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left ${
-                filters[key]
-                  ? "bg-green-50 text-green-700 border-green-200 shadow-sm"
-                  : "bg-white text-slate-600 border-slate-100 hover:border-slate-200 hover:bg-slate-50"
-              }`}
-            >
-              <span>{icon}</span>
-              <span className="flex-1">{label}</span>
-              {filters[key] && (
-                <X className="h-3.5 w-3.5 opacity-50 shrink-0" />
-              )}
-            </button>
-          ))}
+        {/* Sort */}
+        <div>
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+            Sort By
+          </h4>
+          <div className="flex flex-col gap-1.5">
+            {[
+              { value: "default", label: "Recommended" },
+              { value: "price_asc", label: "Price: Low → High" },
+              { value: "price_desc", label: "Price: High → Low" },
+              { value: "name_asc", label: "Name A → Z" },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() =>
+                  onChange({ sortBy: opt.value as FilterState["sortBy"] })
+                }
+                className={`px-3 py-2.5 rounded-xl text-sm font-medium border text-left transition-all ${
+                  filters.sortBy === opt.value
+                    ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                    : "bg-white text-slate-600 border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* Sort */}
-      <div>
-        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-          Sort By
-        </h4>
-        <div className="flex flex-col gap-1.5">
-          {[
-            { value: "default", label: "Recommended" },
-            { value: "price_asc", label: "Price: Low → High" },
-            { value: "price_desc", label: "Price: High → Low" },
-            { value: "name_asc", label: "Name A → Z" },
-          ].map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() =>
-                onChange({ sortBy: opt.value as FilterState["sortBy"] })
-              }
-              className={`px-3 py-2.5 rounded-xl text-sm font-medium border text-left transition-all ${
-                filters.sortBy === opt.value
-                  ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-                  : "bg-white text-slate-600 border-slate-100 hover:border-slate-200 hover:bg-slate-50"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
 

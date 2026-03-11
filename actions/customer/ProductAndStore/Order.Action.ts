@@ -5,7 +5,6 @@ import { getUser } from "../User.action";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import "@/db/models/store/products.model";
 import CartModel from "@/db/models/customer/cart.model";
-import { revalidatePath } from "next/cache";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { Cashier } from "@/db/models/cashier/cashier.model";
 import mongoose from "mongoose";
@@ -70,19 +69,47 @@ export const ReOrder = async (orderId: string) => {
     await dbConnect();
 
     const userOrder = await OrderModel.findById(orderId).lean();
-    if (!userOrder) return { success: false, message: "Order not found" };
+    if (!userOrder) {
+      return { success: false, message: "Order not found" };
+    }
 
-    const itemsToInsert = userOrder.products.map((product) => ({
-      productId: product.productId,
-      quantity: product.quantity,
-      storeId: userOrder.storeId,
-    }));
+    for (const product of userOrder.products) {
+      const updatedCart = await CartModel.findOneAndUpdate(
+        {
+          customerId: userOrder.userId,
+          "items.productId": product.productId,
+          "items.storeId": userOrder.storeId,
+        },
+        {
+          $inc: {
+            "items.$.quantity": product.quantity,
+          },
+        },
+        {
+          new: true,
+        },
+      );
 
-    await CartModel.findOneAndUpdate(
-      { customerId: userOrder.userId },
-      { $push: { items: { $each: itemsToInsert } } },
-      { upsert: true, returnDocument: "after" },
-    );
+      if (!updatedCart) {
+        await CartModel.findOneAndUpdate(
+          { customerId: userOrder.userId },
+          {
+            $push: {
+              items: {
+                productId: product.productId,
+                quantity: product.quantity,
+                storeId: userOrder.storeId,
+              },
+            },
+          },
+          {
+            upsert: true,
+            returnDocument: "after",
+          },
+        );
+      }
+    }
+
     return { success: true, message: "Items added to cart successfully" };
   } catch (error) {
     console.log("Error Reordering Items:", error);

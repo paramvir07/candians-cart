@@ -91,14 +91,12 @@ const TopupWallet = ({ topupWalletData, customerId }: TopupWalletProps) => {
           </div>
         </div>
       </div>
-      <div className="w-full px-4 relative z-50 flex flex-col gap-1">
+      <div className="w-full px-4 relative z-50 flex justify-center gap-1">
         <TopUpDialog component={"wallet"} customerId={customerId} />
         <Link href="/customer/wallet/history">
           <Button
             variant="default"
-            className={`rounded-full p-5 w-full
-          }`}
-          >
+            className="rounded-full p-5 w-full">
             Wallet History
           </Button>
         </Link>

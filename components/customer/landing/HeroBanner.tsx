@@ -36,14 +36,14 @@ export function HeroBanner() {
             </h1>
 
             <p className="text-green-100 text-lg leading-relaxed max-w-md">
-              From farm-fresh produce to pantry essentials — 
-              everything you need, all in one place.
+              From farm-fresh produce to pantry essentials — everything you
+              need, all in one place.
             </p>
 
             {/* Search bar — links to /customer/search */}
             <Link
               href="/customer/search"
-              className="flex items-center gap-3 bg-white rounded-2xl px-5 py-4 shadow-2xl shadow-green-900/30 hover:shadow-green-900/40 transition-shadow max-w-md group"
+              className="flex items-center gap-3 bg-white rounded-2xl px-5 h-12 shadow-2xl shadow-green-900/30 hover:shadow-green-900/40 transition-shadow max-w-md group"
             >
               <svg
                 className="h-5 w-5 text-slate-400 shrink-0"
@@ -58,7 +58,7 @@ export function HeroBanner() {
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="text-slate-400 text-[15px] group-hover:text-slate-600 transition-colors flex-1">
+              <span className="text-slate-400 text-[15px] group-hover:text-slate-600 transition-colors flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
                 Search bananas, milk, bread…
               </span>
               <span className="text-xs font-semibold bg-green-600 text-white px-3 py-1.5 rounded-xl shrink-0">

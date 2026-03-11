@@ -2,8 +2,10 @@ import { getWalletTopUpHistory } from "@/actions/common/getWalletRechargeHistory
 import { AnalyticsPanel } from "@/components/customer/walletHistory/AnalyticsPanel";
 import { WalletHistoryClient } from "@/components/customer/walletHistory/WalletHistoryClient";
 import { WalletStatsHeader } from "@/components/customer/walletHistory/WalletStatsHeader";
+import { Button } from "@/components/ui/button";
 import { unifyTransactions } from "@/lib/walletHistory";
-import { History, AlertTriangle } from "lucide-react";
+import { History, AlertTriangle, ChevronLeft } from "lucide-react";
+import Link from "next/link";
 
 const WalletHistoryPage = async () => {
   const walletHistoryResponse = await getWalletTopUpHistory();
@@ -45,9 +47,16 @@ const WalletHistoryPage = async () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
         {/* Page header */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pt-6 pb-4">
-          <div className="flex items-center gap-2 mb-5">
-            <History size={18} className="text-primary" />
-            <h1 className="text-xl font-bold tracking-tight">Wallet top up history</h1>
+          <div className="flex items-center gap-2 mb-4">
+            <Link href="/customer/wallet">
+              <Button className="rounded-full" variant="outline" size="icon">
+                <ChevronLeft size={25} />
+              </Button>
+            </Link>
+            <History size={28} className="text-primary" />
+            <h1 className="text-2xl font-bold tracking-tight">
+              Wallet top up history
+            </h1>
           </div>
 
           {/* Stats card — full width on mobile/tablet, constrained on desktop */}

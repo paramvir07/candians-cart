@@ -165,7 +165,7 @@ const filtered = useMemo(() => {
                 }
               }}
             >
-              <CustomerCard customer={customer} />
+              <CustomerCard customer={customer} userRole={userRole} />
             </div>
           ))}
         </div>

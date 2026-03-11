@@ -48,7 +48,7 @@ const ReorderBtn = ({
           ? `/cashier/customer/${customerId}/cart`
           : allOrders
             ? `/cashier/customer/${orderCustomerId}/cart`
-            : "customer/cart",
+            : "/customer/cart",
       );
     } else {
       toast.error(res.message);

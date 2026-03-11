@@ -19,6 +19,7 @@ import ReorderBtn from "@/components/customer/orderHistory/ReorderBtn";
 import { OrderWithProductsClient } from "@/types/customer/OrdersClient";
 import QrCodeButton from "./QrCodeButton";
 import QrScannerButton from "../QrScannerButton";
+import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
 
 /** cents → "3.99" (keep your existing logic) */
 const fmt = (cents: number) => (cents / 100).toFixed(2);
@@ -88,7 +89,9 @@ export default function OrdersHistoryClient({
   }, [orders, filter, q]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div
+      className={`max-w-5xl mx-auto py-6 sm:py-8 px-4 sm:px-6 ${customerId || allOrders ? "md:pl-30 lg:pl-20" : "sm:px-6 "}`}
+    >
       {/* Header */}
       <div className="mb-5">
         <div className="flex items-center gap-2">
@@ -152,18 +155,21 @@ export default function OrdersHistoryClient({
         </div>
 
         {/* Search */}
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center sm:justify-end gap-3 w-full">
           {(customerId || allOrders) && (
-            <QrScannerButton onScan={handleScanResult} />
+            <div className="shrink-0">
+              <QrScannerButton onScan={handleScanResult} />
+            </div>
           )}
-          <div className="relative w-full sm:w-56 shrink-0">
+
+          <div className="relative w-full max-w-[260px] sm:max-w-none sm:w-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               type="text"
               placeholder="Order ID, product name..."
-              className="pl-8 text-sm h-9 bg-white border-gray-200 placeholder:text-gray-400 w-full"
+              className="pl-8 text-sm h-9 bg-white border-gray-200 placeholder:text-gray-400 w-full sm:w-[260px]"
             />
           </div>
         </div>
@@ -178,8 +184,7 @@ export default function OrdersHistoryClient({
         ) : (
           filteredOrders.map((order: any) => {
             const firstProduct = order.products?.[0];
-            const thumbUrl =
-              firstProduct?.productId?.images?.[0]?.url ?? PLACEHOLDER;
+            const thumbUrl = firstProduct?.productId?.images?.[0]?.url;
 
             const orderId = order._id.toString().slice(-7).toUpperCase();
             const date = new Date(order.createdAt).toLocaleDateString("en-CA", {
@@ -206,14 +211,21 @@ export default function OrdersHistoryClient({
                       <AccordionTrigger className="hover:no-underline cursor-pointer hover:bg-muted/40 transition-colors px-4 py-4 sm:px-5 [&>svg]:shrink-0">
                         <div className="flex items-center gap-3 w-full min-w-0">
                           {/* Thumbnail */}
-                          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-muted shrink-0 ring-2 ring-primary/10">
-                            <Image
-                              src={thumbUrl}
-                              alt="Order thumbnail"
-                              width={56}
-                              height={56}
-                              className="w-full h-full object-cover"
-                            />
+                          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-muted shrink-0 ring-2 ring-primary/10 border border-border shadow-sm">
+                            {thumbUrl ? (
+                              <Image
+                                src={thumbUrl}
+                                alt="Order thumbnail"
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <CategoryIllustration
+                                category={
+                                  firstProduct?.productId?.category ?? "Other"
+                                }
+                              />
+                            )}
                           </div>
 
                           {/* Meta */}
@@ -314,21 +326,29 @@ export default function OrdersHistoryClient({
                         <div className="border-t border-border divide-y divide-border">
                           {order.products.map((item: any, i: number) => {
                             const p = item.productId;
-                            const imgUrl = p?.images?.[0]?.url ?? PLACEHOLDER;
+                            const imgUrl = p?.images?.[0]?.url;
 
                             return (
                               <div
                                 key={i}
                                 className="flex items-center gap-4 py-3"
                               >
-                                <div className="w-11 h-11 rounded-lg overflow-hidden bg-muted shrink-0">
-                                  <Image
-                                    src={imgUrl}
-                                    alt={p?.name ?? "Product"}
-                                    width={44}
-                                    height={44}
-                                    className="w-full h-full object-cover"
-                                  />
+                                <div className="relative w-10 h-10 rounded-md overflow-hidden bg-muted shrink-0 border border-border">
+                                  {imgUrl ? (
+                                    <Image
+                                      src={imgUrl}
+                                      alt={p?.name ?? "Product"}
+                                      fill
+                                      className="object-cover opacity-80"
+                                    />
+                                  ) : (
+                                    <div className="relative w-full h-full">
+                                      <CategoryIllustration
+                                        category={p?.category ?? "Other"}
+                                        className="opacity-80"
+                                      />
+                                    </div>
+                                  )}
                                 </div>
 
                                 <div className="flex-1 min-w-0">

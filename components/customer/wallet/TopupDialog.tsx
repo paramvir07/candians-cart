@@ -73,8 +73,7 @@ export function TopUpDialog({
       <DialogTrigger asChild>
         <Button
           variant="default"
-          className={`rounded-full p-5 ${
-            component !== "checkout" ? "w-full" : ""
+          className={`rounded-full p-5 w-full"
           }`}
         >
           Top Up

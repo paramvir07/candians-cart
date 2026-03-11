@@ -9,13 +9,17 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogOverlay,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import QrCodeClient from "./QrCodeClient";
 
 type Props = {
-  customer: Pick<Customer, "_id" |  "name" | "email" | "address" | "city" | "province">;
+  customer: Pick<
+    Customer,
+    "_id" | "name" | "email" | "address" | "city" | "province"
+  >;
 };
 
 export default function ProfileHero({ customer }: Props) {
@@ -60,6 +64,9 @@ export default function ProfileHero({ customer }: Props) {
                 Verified
               </span>
             </div>
+            <p className="text-xs sm:text-sm text-primary/90 font-bold mt-1">
+              #{customer._id.toString().slice(-6).toUpperCase()}
+            </p>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               {customer.email}
             </p>
@@ -82,28 +89,66 @@ export default function ProfileHero({ customer }: Props) {
               </Button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-sm rounded-2xl p-6">
-              {/* Close Button */}
-              <DialogClose asChild>
-                <button className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition">
-                  <X className="h-4 w-4" />
-                </button>
-              </DialogClose>
+            <DialogOverlay className="bg-black/60 backdrop-blur-sm" />
+            <DialogContent className="sm:max-w-md rounded-3xl border-border/60 p-0 overflow-hidden">
+              {/* Top gradient header */}
+              <div className="relative bg-linear-to-br from-primary/15 via-primary/5 to-transparent px-6 pt-6 pb-4 border-b">
+                <DialogClose asChild>
+                  <button className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-background/80 transition">
+                    <X className="h-4 w-4" />
+                  </button>
+                </DialogClose>
 
-              <DialogHeader className="text-center space-y-2">
-                <DialogTitle className="text-lg font-semibold">
-                  Your QR Code
-                </DialogTitle>
-                <DialogDescription className="text-sm text-muted-foreground">
-                  Let others scan this code to instantly connect with your
-                  profile.
-                </DialogDescription>
-              </DialogHeader>
+                <DialogHeader className="text-center space-y-2">
+                  <DialogTitle className="text-primary text-xl font-bold tracking-tight">
+                    Customer QR Code
+                  </DialogTitle>
+                  <DialogDescription className="text-sm text-muted-foreground max-w-xs mx-auto">
+                    Scan this code to quickly access the customer profile and
+                    details.
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
 
-              {/* QR Section */}
-              <div className="flex justify-center py-2">
-                <div className="p-4 bg-white rounded-xl shadow-sm border">
-                  <QrCodeClient id={customer._id.toString()} />
+              {/* Main content */}
+              <div className="px-6 py-6">
+                <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+                  {/* Customer info section */}
+                  <div className="flex items-center gap-3 px-4 py-4 border-b bg-muted/30">
+                    <Avatar className="h-12 w-12 ring-1 ring-border">
+                      <AvatarImage
+                        src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(customer.name)}`}
+                      />
+                      <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm sm:text-base truncate">
+                        {customer.name}
+                      </p>
+                      {/* <p className="text-xs text-muted-foreground truncate">
+                        {customer.email}
+                      </p> */}
+                      <p className="text-[11px] text-primary font-medium mt-1">
+                        Customer ID: #
+                        {customer._id.toString().slice(-6).toUpperCase()}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* QR section */}
+                  <div className="flex flex-col items-center justify-center px-4 py-6 bg-background">
+                    <div className="relative">
+                      {/* subtle glow */}
+                      <div className="absolute inset-0 scale-110 rounded-2xl bg-primary/10 blur-2xl" />
+
+                      <div className="relative rounded-2xl bg-white p-4 sm:p-5 shadow-lg border">
+                        <QrCodeClient id={customer._id.toString()} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </DialogContent>

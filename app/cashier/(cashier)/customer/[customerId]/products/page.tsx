@@ -28,7 +28,7 @@ const CustomerProducts = async ({ params }: CustomerIdParams) => {
   return (
     <>
       <div className="flex items-center gap-2 md:pl-30 lg:pl-40 pt-2">
-        <Link href="/cashier/customer/${customerId}">
+        <Link href={`/cashier/customer/${customerId}`}>
           <Button className="rounded-full" variant="outline" size="icon">
             <ChevronLeft className="w-4 h-4" />
           </Button>

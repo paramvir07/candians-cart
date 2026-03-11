@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { Customer } from "@/types/customer/customer";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { fmtShort } from "@/lib/fomatPrice";
 
 const Navbar = async () => {
   const [customerDataResponse, cartCount] = await Promise.all([
@@ -53,7 +54,7 @@ const Navbar = async () => {
           <Button variant="default" className="flex items-center gap-1 px-3">
             <Wallet className="w-5 h-5" />
             {/* Optional: hide the text balance on super small screens if it gets tight, otherwise leave as is */}
-            <span>${(customerData.walletBalance/100).toFixed(2)}</span>
+            <span>{fmtShort(customerData.walletBalance)}</span>
           </Button>
         </Link>
 
