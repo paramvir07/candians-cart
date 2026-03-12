@@ -64,7 +64,7 @@ export const saveSubsidytoWallet = async () => {
     const cart = await CartModel.findOneAndUpdate(
       { customerId: user._id, isSavedtoWallet: false },
       { $set: { isSavedtoWallet: true } },
-      { new: true }
+      { returnDocument: "after" },
     );
 
     if (!cart) return { success: true, message: "Preference already been saved" };

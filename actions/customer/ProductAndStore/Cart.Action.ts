@@ -75,6 +75,58 @@ export const AddtoCart = async (ItemId: string, customerId?: string) => {
   }
 };
 
+export const UpdateItemQuantity = async (
+  customerId: string | undefined,
+  formData: FormData,
+) => {
+  const customerDataresponse = await getCustomerDataAction(customerId);
+  const user = customerDataresponse.customerData;
+  if (!user) return { success: false, message: "User not found" };
+
+  const itemId = formData.get("productId");
+  const quantityValue = formData.get("quantity");
+
+  if (!itemId || typeof itemId !== "string") {
+    throw new Error("Invalid productId");
+  }
+
+  if (
+    quantityValue === null ||
+    typeof quantityValue !== "string" ||
+    Number.isNaN(Number(quantityValue))
+  ) {
+    throw new Error("Invalid quantity");
+  }
+
+  const quantity = Math.max(0, Math.min(99, Number(quantityValue)));
+
+  await dbConnect();
+
+  const cart = await CartModel.findOne({
+    customerId: user._id,
+  });
+
+  if (!cart) return { success: false, message: "Cart not found" };
+
+  const index = cart.items.findIndex(
+    (item) => item.productId.toString() === itemId,
+  );
+
+  if (index === -1) return { success: false, message: "Item not found" };
+
+  if (quantity === 0) {
+    cart.items.splice(index, 1);
+  } else {
+    cart.items[index].quantity = quantity;
+  }
+
+  await cart.save();
+
+  revalidatePath("/customer/cart");
+
+  return { success: true, message: "Cart quantity updated" };
+};
+
 export const IncrementItem = async (
   customerId: string | undefined,
   formData: FormData,

@@ -1,7 +1,7 @@
 "use client";
 // components/customer/products/CustomerProductCard.tsx
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,8 @@ import {
   AddtoCart,
   IncrementItem,
   DecrementItem,
+  RemoveItem,
+  UpdateItemQuantity,
 } from "@/actions/customer/ProductAndStore/Cart.Action";
 
 // ─── Shared helper ────────────────────────────────────────────────────────────
@@ -36,13 +38,10 @@ import {
 async function removeAllFromServer(
   productId: string,
   customerId: string | undefined,
-  count: number,
 ) {
-  for (let i = 0; i < count; i++) {
-    const formData = new FormData();
-    formData.append("productId", productId);
-    await DecrementItem(customerId, formData);
-  }
+  const formData = new FormData();
+  formData.append("productId", productId);
+  await RemoveItem(customerId, formData);
 }
 
 // ─── Detail Dialog ────────────────────────────────────────────────────────────
@@ -66,72 +65,144 @@ function ProductDetailDialog({
   const catConfig = getCategoryConfig(product.category);
   const [isPending, startTransition] = useTransition();
   const [quantity, setQuantity] = useState(cartQuantity);
+  const [inputValue, setInputValue] = useState(String(cartQuantity));
 
   useEffect(() => {
-    setQuantity(cartQuantity);
-  }, [cartQuantity]);
+    if (open) {
+      setQuantity(cartQuantity);
+      setInputValue(String(cartQuantity));
+    }
+  }, [open, cartQuantity]);
 
-  const sync = (q: number) => {
-    setQuantity(q);
-    onQuantityChange(q);
-  };
+  useEffect(() => {
+    setInputValue(String(quantity));
+  }, [quantity]);
+
+  const optimisticUpdate = useCallback(
+    (
+      newQty: number,
+      serverAction: () => Promise<void>,
+      rollbackQty: number,
+    ) => {
+      setQuantity(newQty);
+      onQuantityChange(newQty);
+
+      startTransition(async () => {
+        try {
+          await serverAction();
+        } catch {
+          setQuantity(rollbackQty);
+          onQuantityChange(rollbackQty);
+          toast.error("Something went wrong. Please try again.");
+        }
+      });
+    },
+    [onQuantityChange],
+  );
 
   const handleAddToCart = () => {
-    sync(1);
-    startTransition(async () => {
-      try {
+    optimisticUpdate(
+      1,
+      async () => {
         const res = await AddtoCart(product._id as string, customerId);
         if (res?.success) {
           toast.success(`${product.name} added to cart!`);
         } else {
-          sync(0);
+          throw new Error("Add to cart failed");
         }
-      } catch {
-        sync(0);
-        toast.error("Failed to add to cart");
-      }
-    });
+      },
+      0,
+    );
   };
 
   const handleIncrement = () => {
-    sync(quantity + 1);
-    startTransition(async () => {
-      try {
+    const newQty = quantity + 1;
+    optimisticUpdate(
+      newQty,
+      async () => {
         const formData = new FormData();
         formData.append("productId", product._id as string);
         await IncrementItem(customerId, formData);
-      } catch {
-        sync(Math.max(0, quantity - 1));
-      }
-    });
+      },
+      quantity,
+    );
   };
 
   const handleDecrement = () => {
-    sync(Math.max(0, quantity - 1));
-    startTransition(async () => {
-      try {
+    const newQty = Math.max(0, quantity - 1);
+    optimisticUpdate(
+      newQty,
+      async () => {
         const formData = new FormData();
         formData.append("productId", product._id as string);
         await DecrementItem(customerId, formData);
-      } catch {
-        sync(quantity + 1);
-      }
-    });
+      },
+      quantity,
+    );
   };
 
   const handleRemoveAll = () => {
     const prev = quantity;
-    sync(0);
+    optimisticUpdate(
+      0,
+      async () => {
+        await removeAllFromServer(product._id as string, customerId);
+        toast.success(`${product.name} removed from cart`);
+      },
+      prev,
+    );
+  };
+
+  const handleQuantityInputCommit = useCallback(() => {
+    const parsed = Number(inputValue);
+
+    if (Number.isNaN(parsed)) {
+      setInputValue(String(quantity));
+      return;
+    }
+
+    const newQty = Math.max(0, Math.min(99, parsed));
+    const prevQty = quantity;
+
+    if (newQty === prevQty) {
+      setInputValue(String(prevQty));
+      return;
+    }
+
+    setQuantity(newQty);
+    onQuantityChange(newQty);
+    setInputValue(String(newQty));
+
     startTransition(async () => {
       try {
-        await removeAllFromServer(product._id as string, customerId, prev);
-        toast.success(`${product.name} removed from cart`);
+        const formData = new FormData();
+        formData.append("productId", product._id as string);
+        formData.append("quantity", String(newQty));
+
+        const res = await UpdateItemQuantity(customerId, formData);
+
+        if (!res?.success) {
+          throw new Error(res?.message || "Failed to update quantity");
+        }
+
+        if (newQty === 0) {
+          toast.success(`${product.name} removed from cart`);
+        }
       } catch {
-        sync(prev);
-        toast.error("Failed to remove item");
+        setQuantity(prevQty);
+        onQuantityChange(prevQty);
+        setInputValue(String(prevQty));
+        toast.error("Something went wrong. Please try again.");
       }
     });
-  };
+  }, [
+    inputValue,
+    quantity,
+    onQuantityChange,
+    product._id,
+    product.name,
+    customerId,
+  ]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -213,7 +284,7 @@ function ProductDetailDialog({
                 Price
               </p>
               <p className="text-2xl font-black text-slate-900 tracking-tight">
-                {fmt(product.price)}
+                {fmt(product.price + product.markup)}
               </p>
               {product.tax > 0 && (
                 <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
@@ -238,24 +309,21 @@ function ProductDetailDialog({
           <div className="px-5 pb-5 pt-1">
             {product.stock ? (
               quantity > 0 ? (
-                /* ── Dialog stepper with trash ── */
                 <div className="flex items-center gap-2">
-                  {/* Trash button */}
                   <button
                     type="button"
                     onClick={handleRemoveAll}
                     disabled={isPending}
-                    className="w-11 h-11 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
+                    className="w-11 h-11 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-red-50 hover:border-red-200 flex items-center justify-center transition-colors disabled:opacity-40 shrink-0 group"
                     title="Remove all from cart"
                   >
                     <Trash2
                       size={15}
                       strokeWidth={2}
-                      className="text-slate-400"
+                      className="text-slate-400 group-hover:text-red-400 transition-colors"
                     />
                   </button>
 
-                  {/* Stepper pill */}
                   <div className="flex items-center justify-between flex-1 bg-green-50 border border-green-200 rounded-2xl px-3 py-2.5">
                     <button
                       type="button"
@@ -269,14 +337,29 @@ function ProductDetailDialog({
                         className="text-green-700"
                       />
                     </button>
-                    <div className="flex flex-col items-center">
-                      <span className="text-base font-black text-green-800 tabular-nums leading-none">
-                        {quantity}
-                      </span>
+
+                    <div className="flex flex-col items-center min-w-[64px]">
+                      <input
+                        type="number"
+                        min={0}
+                        max={99}
+                        inputMode="numeric"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onBlur={handleQuantityInputCommit}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.currentTarget.blur();
+                          }
+                        }}
+                        disabled={isPending}
+                        className="w-16 h-8 rounded-lg border border-green-200 bg-white text-center text-base font-black text-green-800 tabular-nums outline-none focus:ring-2 focus:ring-green-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
                       <span className="text-[10px] text-green-500 font-medium mt-0.5">
                         in cart
                       </span>
                     </div>
+
                     <button
                       type="button"
                       onClick={handleIncrement}
@@ -292,7 +375,6 @@ function ProductDetailDialog({
                   </div>
                 </div>
               ) : (
-                /* ── Add to cart ── */
                 <button
                   type="button"
                   onClick={handleAddToCart}
@@ -300,16 +382,10 @@ function ProductDetailDialog({
                   className="group relative w-full h-12 rounded-2xl bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2 shadow-lg shadow-green-600/25 disabled:opacity-60 disabled:cursor-not-allowed overflow-hidden"
                 >
                   <span className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-                  {isPending ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-white" />
-                  ) : (
-                    <>
-                      <ShoppingCart className="h-5 w-5 text-white" />
-                      <span className="text-sm font-bold text-white tracking-wide">
-                        Add to Cart
-                      </span>
-                    </>
-                  )}
+                  <ShoppingCart className="h-5 w-5 text-white" />
+                  <span className="text-sm font-bold text-white tracking-wide">
+                    Add to Cart
+                  </span>
                 </button>
               )
             ) : (
@@ -348,10 +424,16 @@ export function CustomerProductCard({
   const [imgError, setImgError] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [quantity, setQuantity] = useState(cartQuantity);
+  const [inputValue, setInputValue] = useState(String(cartQuantity));
 
   useEffect(() => {
     setQuantity(cartQuantity);
+    setInputValue(String(cartQuantity));
   }, [cartQuantity]);
+
+  useEffect(() => {
+    setInputValue(String(quantity));
+  }, [quantity]);
 
   const hasImage = product.images?.length > 0 && !imgError;
   const catConfig = getCategoryConfig(product.category);
@@ -359,6 +441,7 @@ export function CustomerProductCard({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     setQuantity(1);
+
     startTransition(async () => {
       try {
         const res = await AddtoCart(product._id as string, customerId);
@@ -377,6 +460,7 @@ export function CustomerProductCard({
   const handleIncrement = (e: React.MouseEvent) => {
     e.stopPropagation();
     setQuantity((q) => q + 1);
+
     startTransition(async () => {
       try {
         const formData = new FormData();
@@ -391,6 +475,7 @@ export function CustomerProductCard({
   const handleDecrement = (e: React.MouseEvent) => {
     e.stopPropagation();
     setQuantity((q) => Math.max(0, q - 1));
+
     startTransition(async () => {
       try {
         const formData = new FormData();
@@ -406,9 +491,10 @@ export function CustomerProductCard({
     e.stopPropagation();
     const prev = quantity;
     setQuantity(0);
+
     startTransition(async () => {
       try {
-        await removeAllFromServer(product._id as string, customerId, prev);
+        await removeAllFromServer(product._id as string, customerId);
         toast.success(`${product.name} removed from cart`);
       } catch {
         setQuantity(prev);
@@ -416,6 +502,48 @@ export function CustomerProductCard({
       }
     });
   };
+
+  const handleQuantityInputCommit = useCallback(() => {
+    const parsed = Number(inputValue);
+
+    if (Number.isNaN(parsed)) {
+      setInputValue(String(quantity));
+      return;
+    }
+
+    const newQty = Math.max(0, Math.min(99, parsed));
+    const prevQty = quantity;
+
+    if (newQty === prevQty) {
+      setInputValue(String(prevQty));
+      return;
+    }
+
+    setQuantity(newQty);
+    setInputValue(String(newQty));
+
+    startTransition(async () => {
+      try {
+        const formData = new FormData();
+        formData.append("productId", product._id as string);
+        formData.append("quantity", String(newQty));
+
+        const res = await UpdateItemQuantity(customerId, formData);
+
+        if (!res?.success) {
+          throw new Error(res?.message || "Failed to update quantity");
+        }
+
+        if (newQty === 0) {
+          toast.success(`${product.name} removed from cart`);
+        }
+      } catch {
+        setQuantity(prevQty);
+        setInputValue(String(prevQty));
+        toast.error("Failed to update quantity");
+      }
+    });
+  }, [inputValue, quantity, product._id, product.name, customerId]);
 
   return (
     <>
@@ -446,6 +574,13 @@ export function CustomerProductCard({
               <div className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-violet-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-br-xl">
                 <Sparkles className="h-3 w-3" />
                 SUBSIDISED
+              </div>
+            </div>
+          )}
+          {product.isFeatured && (
+            <div className="absolute top-0 right-0 z-10">
+              <div className="flex items-center gap-1 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[10px] font-bold px-2.5 py-1 rounded-bl-xl">
+                ⭐ FEATURED
               </div>
             </div>
           )}
@@ -483,7 +618,7 @@ export function CustomerProductCard({
           </h3>
           <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-50">
             <span className="text-base font-black text-slate-900">
-              {fmt(product.price)}
+              {fmt(product.price + product.markup)}
             </span>
             {product.stock ? (
               <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-200" />
@@ -495,28 +630,25 @@ export function CustomerProductCard({
           {/* Action Buttons */}
           <div className="mt-2 flex items-center" style={{ minHeight: "36px" }}>
             {quantity > 0 ? (
-              /* ── Card stepper with trash ── */
               <div
                 className="flex items-center gap-1.5 w-full"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Trash */}
                 <button
                   type="button"
                   onClick={handleRemoveAll}
                   disabled={isPending}
-                  className="w-8 h-8 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
+                  className="w-8 h-8 rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 hover:border-red-200 flex items-center justify-center transition-colors disabled:opacity-40 shrink-0 group/trash"
                   title="Remove all"
                 >
                   <Trash2
                     size={13}
                     strokeWidth={2}
-                    className="text-slate-400"
+                    className="text-slate-400 group-hover/trash:text-red-400 transition-colors"
                   />
                 </button>
 
-                {/* − qty + */}
-                <div className="flex items-center justify-between flex-1 bg-green-50 border border-green-200 rounded-xl px-2 py-1">
+                <div className="flex items-center justify-between flex-1 bg-green-50 border border-green-200 rounded-xl px-2 py-1 gap-2">
                   <button
                     type="button"
                     onClick={handleDecrement}
@@ -529,9 +661,29 @@ export function CustomerProductCard({
                       className="text-green-700"
                     />
                   </button>
-                  <span className="text-sm font-bold text-green-800 tabular-nums">
-                    {quantity}
-                  </span>
+
+                  <input
+                    type="number"
+                    min={0}
+                    max={99}
+                    inputMode="numeric"
+                    value={inputValue}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      setInputValue(e.target.value);
+                    }}
+                    onBlur={handleQuantityInputCommit}
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      if (e.key === "Enter") {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    disabled={isPending}
+                    className="w-12 h-7 rounded-md border border-green-200 bg-white text-center text-sm font-bold text-green-800 tabular-nums outline-none focus:ring-2 focus:ring-green-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+
                   <button
                     type="button"
                     onClick={handleIncrement}
