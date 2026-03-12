@@ -1,20 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
@@ -24,6 +10,8 @@ import { Spinner } from "../ui/spinner";
 import { UserRole } from "@/types/auth";
 import { Eye, EyeOff, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Button } from "../ui/button";
+import Image from "next/image";
 
 const initialState = {
   success: false,
@@ -31,6 +19,7 @@ const initialState = {
 };
 
 type loginProps = React.ComponentProps<"div"> & { userRole: UserRole };
+
 export function LoginForm({ userRole, className, ...props }: loginProps) {
   const customer = userRole === "customer";
   const admin = userRole === "admin";
@@ -39,10 +28,8 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
 
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [state, formAction, isPending] = useActionState(
-    loginAction,
-    initialState,
-  );
+  const [state, formAction, isPending] = useActionState(loginAction, initialState);
+
   useEffect(() => {
     if (state.message) {
       if (state.success) {
@@ -62,120 +49,131 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
     }
   }, [state]);
 
+  const title = store
+    ? "Login to your store account"
+    : admin
+      ? "Login to your admin account"
+      : cashier
+        ? "Login to your cashier account"
+        : "Login to your account";
+
+  const formContent = (
+    <>
+      {/* Logo */}
+      <div className="mb-8">
+        <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+          <ShoppingCart className="text-primary-foreground" size={22} />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
+          {title}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Enter your credentials below to sign in
+        </p>
+      </div>
+
+      {/* Form */}
+      <form action={formAction} className="flex flex-col gap-3">
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="Email"
+          required
+          className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+        />
+        <div className="relative">
+          <Input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            required
+            className="h-12 rounded-xl border-border bg-background px-4 pr-11 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+          />
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </Button>
+        </div>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="h-12 w-full rounded-full bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all mt-1 flex items-center justify-center"
+        >
+          {isPending ? <Spinner /> : "Log in"}
+        </Button>
+      </form>
+
+      {/* Footer links */}
+      <div className="mt-6 flex flex-col gap-1.5">
+        <Link href="/forget-password" className="text-sm hover:underline text-primary">
+          Forgot password?
+        </Link>
+        {customer && (
+          <>
+            <p className="text-sm text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <Link href="/customer/signup" className="text-primary hover:underline">
+                Sign up
+              </Link>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Are you a store?{" "}
+              <Link href="/store/login" className="text-primary hover:underline">
+                Login here
+              </Link>
+            </p>
+          </>
+        )}
+        {store && (
+          <p className="text-sm text-muted-foreground">
+            Are you a customer?{" "}
+            <Link href="/customer/login" className="text-primary hover:underline">
+              Login here
+            </Link>
+          </p>
+        )}
+      </div>
+    </>
+  );
+
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col justify-center items-center gap-3">
-            <div className="mx-auto bg-primary text-primary-foreground p-3 rounded-full w-fit group">
-              <ShoppingCart
-                className="transition-transform group-hover:scale-110"
-                size={35}
-              />
-            </div>
-            <div className="flex flex-col items-center justify-center">
-              <CardTitle>
-                {store
-                  ? "Login to your store account"
-                  : admin
-                    ? "Login to your admin account"
-                    : cashier
-                      ? "Login to your cashier account"
-                      : "Login to your account"}
-              </CardTitle>
-              <CardDescription>
-                Enter your email below to login to your account
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form action={formAction}>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="password">Password *</FieldLabel>
-                <div style={{ position: "relative" }}>
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-none border-0 cursor-pointer text-sm"
-                  >
-                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                </div>
-              </Field>
-              <Field>
-                <Button type="submit">
-                  {isPending ? <Spinner /> : "Login"}
-                </Button>
-                {/* <Button variant="outline" type="button">
-                  Login with Google
-                </Button> */}
-                {customer && (
-                  <FieldDescription className="text-center">
-                    <div className="flex flex-col justify-center items-center gap-2">
-                      <div className="text-sm flex justify-center items-center gap-1">
-                        <div className="text-muted-foreground ">
-                          Don&apos;t have an account?
-                        </div>
-                        <Link
-                          href="/customer/signup"
-                          className="text-primary font-bold"
-                        >
-                          Sign up
-                        </Link>
-                      </div>
-                      <div className="text-sm flex justify-center items-center gap-1">
-                        <div className="text-muted-foreground ">
-                          Are you a store?
-                        </div>
-                        <Link
-                          href="/store/login"
-                          className="text-primary font-bold"
-                        >
-                          Login here.
-                        </Link>
-                      </div>
-                    </div>
-                  </FieldDescription>
-                )}
-                {store && (
-                  <FieldDescription className="text-center">
-                    <div className="text-sm flex justify-center items-center gap-1">
-                      <div className="text-muted-foreground ">
-                        Are you a customer?
-                      </div>
-                      <Link
-                        href="/customer/login"
-                        className="text-primary font-bold"
-                      >
-                        Login here.
-                      </Link>
-                    </div>
-                  </FieldDescription>
-                )}
-              </Field>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      {/* ── MOBILE layout: image top, form slides up from bottom ── */}
+      <div className={cn("flex flex-col w-full lg:hidden min-h-screen overflow-hidden", className)} {...props}>
+
+        {/* Top image */}
+        <div className="relative w-full h-[52vh] shrink-0">
+        <div className="relative w-full h-full">
+          <Image
+            src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80"
+            alt="Fresh groceries"
+            fill
+            className="object-cover"
+            priority
+          />
+
+          <div className="absolute inset-0 bg-black/40"></div>
+        </div>
+                  {/* soft bottom fade into card */}
+          <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black to-transparent" />
+        </div>
+
+        {/* Form card — overlaps image slightly */}
+        <div className="relative z-10 -mt-45 flex-1 bg-background rounded-t-3xl px-6 pt-8 pb-10 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+          {formContent}
+        </div>
+      </div>
+
+      {/* ── DESKTOP layout: plain, no image (handled by page carousel) ── */}
+      <div className={cn("hidden lg:block w-full max-w-sm", className)} {...props}>
+        {formContent}
+      </div>
+    </>
   );
 }

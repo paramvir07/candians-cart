@@ -1,0 +1,103 @@
+"use client"
+
+import * as React from "react"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
+import { ShoppingCart } from "lucide-react"
+import Image from "next/image"
+
+const slides = [
+  {
+    image: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800&q=80",
+    title: "Fresh Produce,\nAlways in Stock",
+    sub: "CANDIAN'S CART",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1518843875459-f738682238a6?w=800&q=80",
+    title: "Handpicked\nFruits & Veggies",
+    sub: "CANDIAN'S CART",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1467453678174-768ec283a940?w=800&q=80",
+    title: "Earn While\nYou Shop",
+    sub: "CANDIAN'S CART",
+  },
+]
+
+const autoplayPlugin = Autoplay({ delay: 3000, stopOnInteraction: false })
+
+export function LoginCarousel() {
+  const [api, setApi] = React.useState<CarouselApi>()
+  const [current, setCurrent] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!api) return
+    setCurrent(api.selectedScrollSnap())
+    api.on("select", () => setCurrent(api.selectedScrollSnap()))
+  }, [api])
+
+  return (
+    <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-2xl">
+      <Carousel
+        setApi={setApi}
+        plugins={[autoplayPlugin]}
+        className="h-full min-w-full"
+        opts={{ loop: true }}
+      >
+        <CarouselContent className="h-full ml-0 [&>div]:h-full select-none">
+          {slides.map((slide, index) => (
+            <CarouselItem key={index} className="h-full pl-0">
+              <div className="relative h-full w-full flex flex-col min-h-[575px]">
+
+                <Image
+                  src={slide.image}
+                  alt={slide.title}
+                  fill
+                  className="object-cover"
+                  priority={index === 0}
+                />
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 z-[1]" />
+
+                <div className="relative z-10 flex items-center justify-between px-6 pt-6">
+                  <div className="w-12 h-12 bg-primary backdrop-blur-sm rounded-lg flex items-center justify-center shadow-2xl">
+                    <ShoppingCart size={22} className="text-white" />
+                  </div>
+                </div>
+
+                <div className="flex-1" />
+
+                <div className="relative z-10 px-6 pb-6">
+                  <p className="text-white/60 text-xs font-medium mb-1.5 tracking-widest uppercase">
+                    {slide.sub}
+                  </p>
+                  <h2 className="text-white text-2xl font-bold whitespace-pre-line mb-5">
+                    {slide.title}
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    {slides.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => api?.scrollTo(i)}
+                        className="h-[3px] cursor-pointer rounded-full transition-all duration-300"
+                        style={{
+                          width: i === current ? "28px" : "10px",
+                          background: i === current ? "white" : "rgba(255,255,255,0.35)",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+    </div>
+  )
+}
