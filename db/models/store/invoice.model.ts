@@ -11,13 +11,13 @@ const ProductInvoiceSchema = new Schema(
       required: true,
     },
 
-    //     storeId: {
-    //   //Refer to the _id store model
-    //   type: Schema.Types.ObjectId,
-    //   ref: "Store",
-    //   required: true,
-    //   index: true,
-    // },
+    storeId: {
+      //Refer to the _id store model
+      type: Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+      index: true,
+    },
 
     additionalNote: {
       type: String,

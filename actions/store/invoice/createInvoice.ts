@@ -1,5 +1,6 @@
 "use server";
 
+import mongoose from "mongoose";
 import { revalidatePath } from "next/cache";
 import { dbConnect } from "@/db/dbConnect";
 import ProductInvoice from "@/db/models/store/invoice.model";
@@ -18,6 +19,7 @@ interface ActionResponse {
 
 export async function createInvoice(
   data: InvoiceFormValue,
+  storeId: string,
 ): Promise<ActionResponse> {
   try {
     const session = await getUserSession();
@@ -42,6 +44,7 @@ export async function createInvoice(
     } = validationResult.data;
 
     const invoice = await ProductInvoice.create({
+      storeId: new mongoose.Types.ObjectId(storeId),
       vendorName,
       InvoiceNumber: invoiceNumber,
       DateInvoiceCame: dateInvoiceCame,

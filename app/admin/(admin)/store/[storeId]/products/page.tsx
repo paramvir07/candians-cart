@@ -42,7 +42,7 @@ const StoreProductsPage = async ({
       {/* Invoices Section (Client Component handles fetching & state) */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">Invoices</h2>
-        <StoreInvoices />
+        <StoreInvoices storeId={storeId}/>
       </div>
 
       {/* Products Section */}
