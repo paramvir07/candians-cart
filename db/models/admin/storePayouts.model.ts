@@ -1,0 +1,108 @@
+import { model, models, Schema, Document, Types } from "mongoose";
+
+export interface IStorePayout {
+  startDate: Date;
+  endDate: Date;
+  storeId: Types.ObjectId;
+  totalCustomerPaid: number;
+  totalGST: number;
+  totalPST: number;
+  totalTax: number;
+  totalDisposableFee: number;
+  storeFixedValue: number;
+  storeProfit: number;
+  storePayout: number;
+  totalCashCollected?: number;
+  platformCommision: number;
+  status: "pending" | "paid";
+  additionalNote?: string;
+  paymentReciept?: {
+    url: string;
+    fileId: string;
+  };
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface IStorePayoutDoc extends IStorePayout, Document {}
+
+const StorePayoutSchema = new Schema<IStorePayoutDoc>(
+  {
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
+    },
+    storeId: {
+      type: Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
+      index: true,
+    },
+    totalCustomerPaid: {
+      type: Number,
+      required: true,
+    },
+    totalGST: {
+      type: Number,
+      required: true,
+    },
+    totalPST: {
+      type: Number,
+      required: true,
+    },
+    totalTax: {
+      type: Number,
+      required: true,
+    },
+    totalDisposableFee: {
+      type: Number,
+      required: true,
+    },
+    storeFixedValue: {
+      type: Number,
+      required: true,
+    },
+    storeProfit: {
+      type: Number,
+      required: true,
+    },
+    storePayout: {
+      type: Number,
+      required: true,
+    },
+    totalCashCollected: {
+      type: Number,
+      required: false,
+    },
+    platformCommision: {
+      type: Number,
+      required: true,
+    },
+
+    status: {
+      type: String,
+      enum: ["pending", "paid"],
+      default: "pending",
+    },
+
+    additionalNote: {
+      type: String,
+      required: false,
+    },
+    // any proof of payment, Imagekit
+    paymentReciept: {
+      type: {
+        url: { type: String, required: true },
+        fileId: { type: String, required: true },
+      },
+      required: false,
+    },
+  },
+  { timestamps: true },
+);
+
+export default models.StorePayout || model("StorePayout", StorePayoutSchema);

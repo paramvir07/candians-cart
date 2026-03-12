@@ -11,8 +11,9 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { createInvoice } from "@/actions/store/invoice/createInvoice";
 import { InvoiceFormSchema } from "@/zod/schemas/store/addProductsValidation";
+import { zodErrorResponse } from "@/zod/validation/error";
 
-const InvoiceForm = () => {
+const InvoiceForm = ({ storeId }: { storeId: string }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -108,16 +109,13 @@ const InvoiceForm = () => {
       // 3. Client-Side Validation (Optional but immediate feedback)
       const validation = InvoiceFormSchema.safeParse(payload);
       if (!validation.success) {
-        // You could map through errors and show specific toasts, or a generic one
-        toast.error("Please ensure all fields are formatted correctly.");
-        console.error(validation.error.flatten());
-        setLoading(false);
-        return;
-      }
+      const errorMessage = zodErrorResponse(validation);
+      return { success: false, message: errorMessage || "Validation error" };
+    }
 
       // 4. Submit to Server Action
       // We pass validation.data because it guarantees strict typing and coerced dates
-      const result = await createInvoice(validation.data);
+      const result = await createInvoice(validation.data, storeId);
 
       // 5. Handle Result
       if (result.success) {

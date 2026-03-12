@@ -1,10 +1,11 @@
 "use server";
 
+import mongoose from "mongoose";
 import { dbConnect } from "@/db/dbConnect";
 import ProductInvoice from "@/db/models/store/invoice.model";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 
-export async function getInvoices(searchQuery: string = "") {
+export async function getInvoices(storeId: string) {
   try {
     const session = await getUserSession();
     if (!session?.user?.id || session.user.role === "Customer") {
@@ -13,13 +14,31 @@ export async function getInvoices(searchQuery: string = "") {
 
     await dbConnect();
 
-    const invoices = await ProductInvoice.find().sort({createdAt: -1}).limit(50).lean();
+    // Find invoices specifically matching the passed storeId
+    const invoices = await ProductInvoice.find({
+      storeId: new mongoose.Types.ObjectId(storeId),
+    })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
 
-    const serializedInvoices = JSON.parse(JSON.stringify(invoices))
+    // Safely serialize for React Client Components
+    const serializedInvoices = invoices.map((invoice: any) => ({
+      ...invoice,
+      _id: invoice._id?.toString(),
+      storeId: invoice.storeId?.toString(),
+      documentId: {
+        url: invoice.documentId?.url,
+        fileId: invoice.documentId?.fileId,
+      },
+      DateInvoiceCame: invoice.DateInvoiceCame?.toISOString(),
+      createdAt: invoice.createdAt?.toISOString(),
+      updatedAt: invoice.updatedAt?.toISOString(),
+    }));
 
-    return{success: true, data: serializedInvoices}
+    return { success: true, data: serializedInvoices };
   } catch (error) {
-    console.log(`Error fetching the invoices: ${error}`);
-    return{success: false, error: "Failed to fetch invoices"}
+    console.error(`Error fetching the invoices:`, error);
+    return { success: false, error: "Failed to fetch invoices" };
   }
 }
