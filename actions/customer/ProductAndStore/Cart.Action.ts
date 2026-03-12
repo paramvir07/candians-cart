@@ -5,21 +5,14 @@ import "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
 import mongoose, { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
-import OrderModel, {
-  PlaceOrderProduct,
-} from "@/db/models/customer/Orders.Model";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { getCustomerDataAction, getUser } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
-import {
-  PlaceOrderParams,
-  PlaceOrderResponse,
-} from "@/types/customer/OrdersClient";
 import { ICartItem } from "@/types/customer/CustomerCart";
-import { Cashier } from "@/db/models/cashier/cashier.model";
 import { CartTotals } from "@/components/shared/users/CheckOutActions";
 import { IProduct } from "@/types/store/products.types";
 import Customer from "@/db/models/customer/customer.model";
+import { getUserSession } from "@/actions/auth/getUserSession.actions";
+import OrderModel from "@/db/models/customer/Orders.Model";
 
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
@@ -190,8 +183,8 @@ export const DecrementItem = async (
     cart.items[index].quantity -= 1;
   } else {
     cart.items.splice(index, 1);
-    if(cart.items.length === 0 && cart.subsidyItems.length === 0){
-      await CartModel.findOneAndDelete({customerId:user._id})
+    if (cart.items.length === 0 && cart.subsidyItems.length === 0) {
+      await CartModel.findOneAndDelete({ customerId: user._id });
     }
   }
 
@@ -226,8 +219,8 @@ export const RemoveItem = async (
     cart.items.splice(index, 1);
   }
   await cart.save();
-  if(cart.items.length === 0 && cart.subsidyItems.length === 0){
-      await CartModel.findOneAndDelete({customerId:user._id})
+  if (cart.items.length === 0 && cart.subsidyItems.length === 0) {
+    await CartModel.findOneAndDelete({ customerId: user._id });
   }
   revalidatePath("/customer/cart");
 };
@@ -236,13 +229,14 @@ export const getCart = async (
   customerId?: string,
 ): Promise<{
   success: boolean;
-  isSavedtoWallet: boolean,
+  isSavedtoWallet: boolean;
   items: ICartItem[];
   subItems: ISubsidyItems[];
 } | null> => {
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
-  if (!user) return { success: false,isSavedtoWallet:false, items: [], subItems: [] };
+  if (!user)
+    return { success: false, isSavedtoWallet: false, items: [], subItems: [] };
 
   await dbConnect();
   try {
@@ -266,174 +260,35 @@ export const getCart = async (
   }
 };
 
+export const PlaceCustomerOrder = async ({
+  TotalCart,
+}: {
+  TotalCart: CartTotals;
+}) => {
+  const session = await mongoose.startSession();
 
-export const PlaceOrder = async ({
-  customerId,
-  status = "completed",
-  paymentMode = "wallet",
-  getCashierId,
-  subsidyVal,
-}: PlaceOrderParams): PlaceOrderResponse => {
-  await dbConnect();
-  const customerDataresponse = await getCustomerDataAction(
-    customerId,
-    getCashierId,
-  );
-  const user = customerDataresponse.customerData;
-  const cartItemsResponse = await getCart(customerId);
-  if (!cartItemsResponse)
-    return { success: false, error: "Cart items not found" };
-
-  const cartItems: ICartItem[] = cartItemsResponse?.items;
-
-  if (!user || !cartItems || cartItems.length === 0)
-    return { success: false, message: "Something went wrong!" };
-
-  try {
-    const walletBalance = user.walletBalance ?? 0;
-    const giftWalletBalance = user.giftWalletBalance ?? 0;
-
-    let totalGST = 0;
-    let totalPST = 0;
-    let totalDisposableFee = 0;
-    let totalBase = 0;
-
-    const products: PlaceOrderProduct[] = cartItems.map((item) => {
-      const base = item.productId.price * item.quantity;
-      const markupAmount = Math.round(base * (item.productId.markup / 100));
-      const subtotalWithMarkup = base + markupAmount;
-      const tax = item.productId.tax;
-      const dispFee = (item.productId.disposableFee ?? 0) * item.quantity;
-
-      // 0.05 = GST only | 0.07 = PST only | 0.12 = GST + PST
-      const gst =
-        tax === 0.05 || tax === 0.12
-          ? Math.round(subtotalWithMarkup * 0.05)
-          : 0;
-      const pst =
-        tax === 0.07 || tax === 0.12
-          ? Math.round(subtotalWithMarkup * 0.07)
-          : 0;
-      totalDisposableFee += dispFee;
-      totalBase += base;
-      totalGST += gst;
-      totalPST += pst;
-
-      const disposableFee = item.productId.disposableFee ?? 0;
-      const total = subtotalWithMarkup + gst + pst + disposableFee;
-
-      return {
-        productId: new Types.ObjectId(item.productId._id),
-        quantity: item.quantity,
-        markup: item.productId.markup,
-        tax: item.productId.tax,
-        disposableFee,
-        total,
-      };
-    });
-
-    const cartTotal = products.reduce((sum, item) => sum + item.total, 0);
-
-    if (paymentMode === "wallet" && walletBalance < cartTotal) {
-      return { success: false, error: "Insufficient Funds" };
-    }
-
-    let orderData;
-    if (customerId) {
-      const cashier = await Cashier.findOne({
-        userId: customerDataresponse.cashierUserId,
-      })
-        .select("_id")
-        .lean();
-
-      if (!Cashier) return { success: false, error: "Cashier not found" };
-
-      orderData = {
-        products,
-        cartTotal,
-        userWalletBalance: walletBalance,
-        giftWalletBalance,
-        TotalGST: totalGST,
-        TotalDisposableFee: totalDisposableFee,
-        BaseTotal: totalBase,
-        TotalPST: totalPST,
-        userId: user._id,
-        subsidy: subsidyVal,
-        storeId: user.associatedStoreId,
-        paymentMode,
-        cashierId: cashier?._id,
-      };
-    } else {
-      orderData = {
-        products,
-        cartTotal,
-        userWalletBalance: walletBalance,
-        giftWalletBalance,
-        TotalGST: totalGST,
-        TotalDisposableFee: totalDisposableFee,
-        BaseTotal: totalBase,
-        TotalPST: totalPST,
-        userId: user._id,
-        subsidy: subsidyVal,
-        storeId: user.associatedStoreId,
-        paymentMode,
-        status,
-      };
-    }
-
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-      if (paymentMode === "wallet") {
-        const updatedCustomer = await Customer.findOneAndUpdate(
-          {
-            _id: user._id,
-            walletBalance: { $gte: cartTotal },
-          },
-          { $inc: { walletBalance: -cartTotal } },
-          { returnDocument: "after", session },
-        );
-
-        if (!updatedCustomer) {
-          await session.abortTransaction();
-          session.endSession();
-          return {
-            success: false,
-            error: "Insufficient Funds (Transaction Aborted)",
-          };
-        }
-        orderData.userWalletBalance = updatedCustomer.walletBalance;
-      }
-
-      const OrderDetails = await OrderModel.create([orderData], { session });
-      // console.log(OrderDetails);
-      await CartModel.deleteOne({ customerId: user._id }, { session });
-
-      await session.commitTransaction();
-      session.endSession();
-    } catch (transactionError) {
-      await session.abortTransaction();
-      session.endSession();
-      throw transactionError;
-    }
-    return { success: true, message: "Order Placed Successfully" };
-  } catch (error) {
-    if (isRedirectError(error)) throw error;
-    console.error("Error while placing order:", error);
-    return { success: false, error: "Something went wrong" };
-  }
-};
-
-export const PlaceCustomerOrder = async ({ TotalCart }: { TotalCart: CartTotals }) => {
   try {
     await dbConnect();
-    const User = await getUser();
-    if (!User) return { success: false, message: "User not found" };
+    session.startTransaction();
+
+    // Use your actual customer model here
+    const User = await Customer.findById((await getUser())?._id).session(
+      session,
+    );
+    if (!User) {
+      await session.abortTransaction();
+      return { success: false, message: "User not found" };
+    }
 
     const customerCart = await CartModel.findOne({ customerId: User._id })
       .populate("items.productId")
-      .populate("subsidyItems.productId");
-    if (!customerCart) return { success: false, message: "Cart not found" };
+      .populate("subsidyItems.productId")
+      .session(session);
+
+    if (!customerCart) {
+      await session.abortTransaction();
+      return { success: false, message: "Cart not found" };
+    }
 
     const CartItems = customerCart.items as unknown as ICartItem[];
     const SubItems = customerCart.subsidyItems;
@@ -448,8 +303,15 @@ export const PlaceCustomerOrder = async ({ TotalCart }: { TotalCart: CartTotals 
       const tax = item.productId.tax;
       const disposableFee = item.productId.disposableFee ?? 0;
 
-      const gst = tax === 0.05 || tax === 0.12 ? Math.round(subtotalWithMarkup * 0.05) : 0;
-      const pst = tax === 0.07 || tax === 0.12 ? Math.round(subtotalWithMarkup * 0.07) : 0;
+      const gst =
+        tax === 0.05 || tax === 0.12
+          ? Math.round(subtotalWithMarkup * 0.05)
+          : 0;
+
+      const pst =
+        tax === 0.07 || tax === 0.12
+          ? Math.round(subtotalWithMarkup * 0.07)
+          : 0;
 
       baseTotal += base;
 
@@ -466,12 +328,18 @@ export const PlaceCustomerOrder = async ({ TotalCart }: { TotalCart: CartTotals 
 
     const subsidyItems = SubItems.map((item) => {
       const product = item.productId as unknown as IProduct;
-      const afterSubsidy = Math.max((item.TotalPrice * item.quantity) - item.subsidy, 0);
+      const afterSubsidy = Math.max(
+        item.TotalPrice * item.quantity - item.subsidy,
+        0,
+      );
       const tax = product.tax;
       const disposableFee = product.disposableFee ?? 0;
 
-      const gst = tax === 0.05 || tax === 0.12 ? Math.round(afterSubsidy * 0.05) : 0;
-      const pst = tax === 0.07 || tax === 0.12 ? Math.round(afterSubsidy * 0.07) : 0;
+      const gst =
+        tax === 0.05 || tax === 0.12 ? Math.round(afterSubsidy * 0.05) : 0;
+
+      const pst =
+        tax === 0.07 || tax === 0.12 ? Math.round(afterSubsidy * 0.07) : 0;
 
       baseTotal += product.price * item.quantity;
       TotalUsedSubsidy += item.subsidy;
@@ -487,11 +355,151 @@ export const PlaceCustomerOrder = async ({ TotalCart }: { TotalCart: CartTotals 
       };
     });
 
+    const cartTotal = TotalCart.total;
+    const walletBalance = User.walletBalance ?? 0;
+
+    const OrderData = {
+      products,
+      subsidyItems,
+      TotalGST: TotalCart.gst,
+      TotalPST: TotalCart.pst,
+      TotalDisposableFee: TotalCart.disposable,
+      BaseTotal: baseTotal,
+      cartTotal,
+      subsidy: customerCart.cartSubsidy,
+      susbsidyUsed: Number((TotalUsedSubsidy / 100).toFixed(2)) * 100,
+      userId: User._id,
+      storeId: User.associatedStoreId,
+      paymentMode: "pending",
+      status: "pending",
+      userWalletBalance: walletBalance,
+      giftWalletBalance: User.giftWalletBalance,
+    };
+
+    await OrderModel.create([OrderData], { session });
+    await CartModel.deleteOne({ customerId: User._id }, { session });
+
+    await session.commitTransaction();
+    return { success: true, message: "Order Placed Successfully" };
+  } catch (error) {
+    await session.abortTransaction();
+    console.error("Error while placing customer order:", error);
+    return { success: false, message: "Something went wrong" };
+  } finally {
+    session.endSession();
+  }
+};
+
+export const PlaceOrder = async ({
+  customerId,
+  paymentMode,
+  TotalCart,
+}: {
+  customerId: string;
+  paymentMode: "card" | "cash" | "wallet";
+  TotalCart: CartTotals;
+}) => {
+  const session = await mongoose.startSession();
+
+  try {
+    await dbConnect();
+
+    const authSession = await getUserSession();
+    if (authSession.user.role !== "cashier") {
+      return { success: false, message: "Unauthorized" };
+    }
+
+    const cashierId = authSession.user.id;
+    const walletPayment = paymentMode === "wallet";
+
+    session.startTransaction();
+
+    const User = await Customer.findById(customerId).session(session);
+    if (!User) {
+      await session.abortTransaction();
+      return { success: false, message: "User not found" };
+    }
+
+    const customerCart = await CartModel.findOne({ customerId: User._id })
+      .populate("items.productId")
+      .populate("subsidyItems.productId")
+      .session(session);
+
+    if (!customerCart) {
+      await session.abortTransaction();
+      return { success: false, message: "Cart not found" };
+    }
+
+    const CartItems = customerCart.items as unknown as ICartItem[];
+    const SubItems = customerCart.subsidyItems;
+
+    let baseTotal = 0;
+    let TotalUsedSubsidy = 0;
+
+    const products = CartItems.map((item) => {
+      const base = item.productId.price * item.quantity;
+      const markup = Math.round(base * (item.productId.markup / 100));
+      const subtotalWithMarkup = base + markup;
+      const tax = item.productId.tax;
+      const disposableFee = item.productId.disposableFee ?? 0;
+
+      const gst =
+        tax === 0.05 || tax === 0.12
+          ? Math.round(subtotalWithMarkup * 0.05)
+          : 0;
+
+      const pst =
+        tax === 0.07 || tax === 0.12
+          ? Math.round(subtotalWithMarkup * 0.07)
+          : 0;
+
+      baseTotal += base;
+
+      return {
+        productId: new Types.ObjectId(item.productId._id),
+        quantity: item.quantity,
+        markup: item.productId.markup,
+        tax,
+        disposableFee,
+        subsidy: 0,
+        total: subtotalWithMarkup + gst + pst + disposableFee,
+      };
+    });
+
+    const subsidyItems = SubItems.map((item) => {
+      const product = item.productId as unknown as IProduct;
+      const afterSubsidy = Math.max(
+        item.TotalPrice * item.quantity - item.subsidy,
+        0,
+      );
+      const tax = product.tax;
+      const disposableFee = product.disposableFee ?? 0;
+
+      const gst =
+        tax === 0.05 || tax === 0.12 ? Math.round(afterSubsidy * 0.05) : 0;
+
+      const pst =
+        tax === 0.07 || tax === 0.12 ? Math.round(afterSubsidy * 0.07) : 0;
+
+      baseTotal += product.price * item.quantity;
+      TotalUsedSubsidy += item.subsidy;
+
+      return {
+        productId: new Types.ObjectId(product._id),
+        quantity: item.quantity,
+        markup: product.markup,
+        tax,
+        disposableFee,
+        subsidy: item.subsidy,
+        total: afterSubsidy + gst + pst + disposableFee,
+      };
+    });
 
     const cartTotal = TotalCart.total;
     const walletBalance = User.walletBalance ?? 0;
 
-    if (walletBalance < cartTotal) {
+    if (walletPayment && walletBalance < cartTotal) {
+      await session.abortTransaction();
       return { success: false, message: "Insufficient Funds" };
     }
 
@@ -504,26 +512,65 @@ export const PlaceCustomerOrder = async ({ TotalCart }: { TotalCart: CartTotals 
       BaseTotal: baseTotal,
       cartTotal,
       subsidy: customerCart.cartSubsidy,
-      subsidyLeft:Number((((User.giftWalletBalance ?? 0) + (customerCart.cartSubsidy ?? 0)-TotalUsedSubsidy)/100).toFixed(2))*100,
-      susbsidyUsed:Number((TotalUsedSubsidy / 100).toFixed(2))*100,
+      subsidyLeft:
+        Number(
+          (
+            ((User.giftWalletBalance) +
+              (customerCart.cartSubsidy) -
+              TotalUsedSubsidy) /
+            100
+          ).toFixed(2),
+        ) * 100,
+      susbsidyUsed: Number((TotalUsedSubsidy / 100).toFixed(2)) * 100,
       userId: User._id,
       storeId: User.associatedStoreId,
-      paymentMode: "wallet",
-      status: "pending",
+      paymentMode,
+      status: "completed",
       userWalletBalance: walletBalance,
-      giftWalletBalance: (User.giftWalletBalance ?? 0) + (customerCart.cartSubsidy ?? 0)
+      giftWalletBalance: User.giftWalletBalance,
+      cashierId,
     };
 
-      await OrderModel.create([OrderData]);
-      await CartModel.deleteOne({ customerId: User._id });
-      revalidatePath("/customer/cart");
-      return { success: true, message: "Order Placed Successfully" };
+    await OrderModel.create([OrderData], { session });
 
+    if (walletPayment) {
+      await Customer.findByIdAndUpdate(
+        customerId,
+        {
+          $inc: {
+            walletBalance: -OrderData.cartTotal,
+          },
+          $set: {
+            giftWalletBalance: OrderData.subsidyLeft,
+          },
+        },
+        { session },
+      );
+    } else {
+      await Customer.findByIdAndUpdate(
+        customerId,
+        {
+          $set: {
+            giftWalletBalance: OrderData.subsidyLeft,
+          },
+        },
+        { session },
+      );
+    }
+
+    await CartModel.deleteOne({ customerId: User._id }, { session });
+
+    await session.commitTransaction();
+    return { success: true, message: "Order Placed Successfully" };
   } catch (error) {
-    console.log(error);
-    return { success: false, message: "Something went wrong" };
+    await session.abortTransaction();
+    console.error("Error while placing order:", error);
+    return { success: false, error: "Something went wrong" };
+  } finally {
+    session.endSession();
   }
 };
+
 /**
  * Retrieves the total count of unique products currently in the user's cart.
  * * @description
@@ -551,8 +598,10 @@ export const getCartItemsCount = async (customerId?: string) => {
     const Cart = await CartModel.findOne({ customerId: user._id });
     if (!Cart) return 0;
 
+    const subsidyItemsCount = Cart.subsidyItems.length;
     const count = Cart.items.length;
-    return count;
+    const totalCount = count + subsidyItemsCount;
+    return totalCount;
   } catch (err) {
     console.log(err);
   }
@@ -624,4 +673,3 @@ export const getCartQuantities = async (customerId?: string) => {
     return {};
   }
 };
-

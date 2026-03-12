@@ -145,13 +145,6 @@ export default function OrdersHistoryClient({
           >
             Pending
           </Button>
-          <Button
-            size="sm"
-            variant={filter === "refunded" ? "default" : "outline"}
-            onClick={() => setFilter("refunded")}
-          >
-            Refunded
-          </Button>
         </div>
 
         {/* Search */}
@@ -362,7 +355,7 @@ export default function OrdersHistoryClient({
 
                                 <div className="flex items-center gap-3 shrink-0 text-right">
                                   <p className="text-xs text-muted-foreground tabular-nums hidden sm:block">
-                                    CA${fmt(p?.price ?? 0)} × {item.quantity}
+                                    CA${fmt(p.price + p.markup)} × {item.quantity}
                                   </p>
                                   <p className="text-sm font-bold text-foreground tabular-nums w-16">
                                     CA${fmt(item.total)}

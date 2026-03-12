@@ -28,7 +28,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Sparkles, PackageOpen, Star, Filter } from "lucide-react";
+import { PackageOpen, Filter } from "lucide-react";
 
 const ITEMS_PER_PAGE = 16;
 
@@ -107,22 +107,12 @@ export function ProductsSection({ products }: ProductsSectionProps) {
 
   const activeFilterCount = getActiveFilterCount(filters);
 
-  // Apply all filters + sort (featuredOnly is a special default filter)
+  // Apply all filters + sort, then always float featured products to the top
   const filtered = useMemo(() => {
     let result = [...products];
 
-    // If no category filters AND featuredOnly is active → show featured
-    // If any category is selected → ignore featuredOnly
-    const hasCategoryFilter = filters.categories.length > 0;
-
-    if (!hasCategoryFilter && filters.featuredOnly) {
-      result = result.filter((p) => p.isFeatured);
-    }
-
-    if (hasCategoryFilter) {
+    if (filters.categories.length > 0)
       result = result.filter((p) => filters.categories.includes(p.category));
-    }
-
     if (filters.inStockOnly) result = result.filter((p) => p.stock);
     if (filters.subsidisedOnly) result = result.filter((p) => p.subsidised);
 
@@ -137,6 +127,10 @@ export function ProductsSection({ products }: ProductsSectionProps) {
         result.sort((a, b) => a.name.localeCompare(b.name));
         break;
     }
+
+    // Featured products always float to top, preserving relative order within each group
+    result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+
     return result;
   }, [products, filters]);
 
@@ -152,12 +146,7 @@ export function ProductsSection({ products }: ProductsSectionProps) {
       ? filters.categories[0]
       : filters.categories.length > 1
         ? "Multiple Categories"
-        : filters.featuredOnly && filters.categories.length === 0
-          ? "Featured"
-          : "All Products";
-
-  const isFeaturedView =
-    filters.featuredOnly && filters.categories.length === 0;
+        : "All Products";
 
   const getPageNumbers = (): (number | "ellipsis")[] => {
     if (totalPages <= 5)
@@ -230,18 +219,8 @@ export function ProductsSection({ products }: ProductsSectionProps) {
               <div className="flex items-end justify-between mb-5">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2.5">
-                    {isFeaturedView && (
-                      <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 shrink-0">
-                        <Star className="h-4 w-4 text-amber-500 fill-amber-400" />
-                      </span>
-                    )}
                     <h2 className="font-black text-slate-900 text-2xl tracking-tight leading-none">
                       {headingLabel}
-                      {isFeaturedView && (
-                        <span className="ml-2 text-sm font-semibold text-amber-500 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full align-middle">
-                          Picks
-                        </span>
-                      )}
                     </h2>
                   </div>
                   <p className="text-sm text-slate-400 font-medium">
@@ -276,11 +255,9 @@ export function ProductsSection({ products }: ProductsSectionProps) {
               <div className="flex items-center gap-2 mb-5">
                 <div
                   className={`h-1 rounded-full transition-all duration-500 ${
-                    isFeaturedView
-                      ? "w-16 bg-gradient-to-r from-amber-400 to-orange-400"
-                      : filters.categories.length === 1
-                        ? "w-10 bg-gradient-to-r from-green-400 to-emerald-500"
-                        : "w-8 bg-green-500"
+                    filters.categories.length === 1
+                      ? "w-10 bg-linear-to-r from-green-400 to-emerald-500"
+                      : "w-8 bg-green-500"
                   }`}
                 />
                 <div className="h-1 w-4 rounded-full bg-slate-100" />
