@@ -74,7 +74,7 @@ grossMargin = CP - SFV = 285 (Our cost)
 the 0.30 or 30% Value can be changed in future.
 Store Profit = (grossMargin + [subsidy] )) * 0.30 = 85 cents
 
-Store Payout = Store Profit + SFV = 2157
+Store Payout = (Store Profit + SFV) - Cash Collected = 2157
 
 Our Profit = CP - SP(store payout) = 200 (platformProfit)
 
@@ -108,7 +108,7 @@ export interface GetRecieptParams {
 }
 
 export interface AggregatedReciept {
-  _id: Types.ObjectId | null;
+  _id: string | null;
   orderCount: number;
   totalCustomerPaid: number; // sum of individual cart totals
   totalBasePrice: number;
@@ -123,6 +123,8 @@ export interface AggregatedReciept {
   storeProfit: number;
   storePayout: number;
   platformProfit: number; // Our profit
+  platformCommision: number;
+  totalCashCollected: number;
 }
 
 export async function getRecieptDataByDateRange(
@@ -172,6 +174,11 @@ export async function getRecieptDataByDateRange(
           totalGST: { $sum: "$TotalGST" },
           totalPST: { $sum: "$TotalPST" },
           totalSubsidy: { $sum: "$subsidy" },
+          totalCashCollected: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentMode", "cash"] }, "$cartTotal", 0],
+            },
+          },
         },
       },
 
@@ -230,14 +237,27 @@ export async function getRecieptDataByDateRange(
       // Final payout
       {
         $addFields: {
-          storePayout: { $add: ["$storeFixedValue", "$storeProfit"] },
+          storePayout: {
+            $subtract: [
+              { $add: ["$storeFixedValue", "$storeProfit"] },
+              "$totalCashCollected",
+            ],
+          },
+        },
+      },
+      {
+        $addFields: {
+          // platform Profit = (Cart Total - Store Payout)
           platformProfit: {
             $subtract: ["$totalCustomerPaid", "$storePayout"],
           },
-          // platform Profit = (Cart Total - Store Payout)
+        },
+      },
+      {
+        $addFields: {
           // [platform commission = platform Profit  + subsidy (for store reciept) ]
           platformCommision: {
-            $add: ["$platformProfit", "$subsidy"],
+            $add: ["$platformProfit", "$totalSubsidy"],
           },
         },
       },
@@ -255,9 +275,10 @@ export async function getRecieptDataByDateRange(
       throw new Error("No completed orders found for this date range.");
     }
 
-    const serialisedReceipts = JSON.parse(JSON.stringify(receipts));
-
-    return serialisedReceipts;
+    return receipts.map((receipt) => ({
+      ...receipt,
+      _id: receipt._id ? receipt._id.toString() : null,
+    })) as AggregatedReciept[];
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("[getReceiptDataByDateRange] Database error:", errorMessage);

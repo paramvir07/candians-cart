@@ -13,7 +13,7 @@ const GREEN_DARK = rgb(0.18, 0.35, 0.22);
 const GRAY_LINE = rgb(0.88, 0.93, 0.88);
 const MUTED = rgb(0.52, 0.6, 0.54);
 const WHITE = rgb(1, 1, 1);
-const BLUE_ACCENT = rgb(0.14, 0.38, 0.92); // Kept for platform profit contrast
+const RED_ALERT = rgb(0.8, 0.2, 0.2); // Added for Subsidies
 
 const formatMoney = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
@@ -129,7 +129,7 @@ async function generateReceiptPDF(
   };
 
   // --- Meta Information ---
-  drawLabel("STORE ID", String(data._id), y);
+  drawLabel("STORE ID", String(data._id || "Platform-Wide"), y);
 
   const formattedStart = new Date(startDateIso).toLocaleDateString("en-CA", {
     year: "numeric",
@@ -165,7 +165,7 @@ async function generateReceiptPDF(
     height: 22,
     color: GREEN_LIGHT,
   });
-  page.drawText("FINANCIAL BREAKDOWN", {
+  page.drawText("ORDER BREAKDOWN", {
     x: margin + 8,
     y: y + 4,
     font: boldFont,
@@ -175,6 +175,8 @@ async function generateReceiptPDF(
   y -= 20;
 
   let rowIndex = 0;
+  
+  // Added Subsidies exactly like UI
   const breakdownItems = [
     {
       label: "Total Customer Paid",
@@ -184,12 +186,23 @@ async function generateReceiptPDF(
     { label: "Total Base Price", value: formatMoney(data.totalBasePrice) },
     { label: "Total GST", value: formatMoney(data.totalGST) },
     { label: "Total PST", value: formatMoney(data.totalPST) },
-    { label: "Total Tax (GST + PST)", value: formatMoney(data.totalTax) },
-    {
-      label: "Total Disposable Fee",
-      value: formatMoney(data.totalDisposableFee),
-    },
+    { label: "Disposable Fees", value: formatMoney(data.totalDisposableFee) },
   ];
+
+  if (data.totalSubsidy > 0) {
+    breakdownItems.push({
+      label: "Subsidies Applied",
+      value: `-${formatMoney(data.totalSubsidy)}`,
+      bold: false,
+      color: RED_ALERT // Highlights in red just like the UI
+    } as any);
+  }
+
+  breakdownItems.push({
+    label: "Store Fixed Value",
+    value: formatMoney(data.storeFixedValue),
+    bold: true,
+  });
 
   for (const item of breakdownItems) {
     if (rowIndex % 2 === 0) {
@@ -201,7 +214,7 @@ async function generateReceiptPDF(
         color: rgb(0.98, 1, 0.98),
       });
     }
-    drawRow(item.label, item.value, y, item.bold);
+    drawRow(item.label, item.value, y, item.bold, (item as any).color);
     y -= 24;
     rowIndex++;
   }
@@ -224,7 +237,7 @@ async function generateReceiptPDF(
     height: 22,
     color: GREEN_LIGHT,
   });
-  page.drawText("MARGIN & PROFIT", {
+  page.drawText("PROFIT & MARGINS", {
     x: margin + 8,
     y: y + 4,
     font: boldFont,
@@ -234,19 +247,22 @@ async function generateReceiptPDF(
   y -= 20;
 
   rowIndex = 0;
+  
+  // Added Total Markup and Platform Commission exactly like UI
   const marginItems = [
+    { label: "Total Markup", value: formatMoney(data.totalMarkup) },
     {
-      label: "Store Fixed Value (SFV)",
-      value: formatMoney(data.storeFixedValue),
-    },
-    {
-      label: "Gross Margin (CP - SFV)",
+      label: "Gross Margin",
       value: formatMoney(data.grossMargin),
       bold: true,
     },
     {
-      label: "Store Profit (30% Margin)",
+      label: "Store Profit (From Markup)",
       value: formatMoney(data.storeProfit),
+    },
+    {
+      label: "Platform Commision",
+      value: formatMoney(data.platformCommision),
     },
   ];
 
@@ -374,7 +390,7 @@ export async function downloadReceiptPdfAction(
   const receipts = await getRecieptDataByDateRange({
     startDate: new Date(startDateIso),
     endDate: new Date(endDateIso),
-    storeId,
+    storeId: storeId ? storeId : undefined,
   });
 
   const data = Array.isArray(receipts) ? receipts[0] : receipts;

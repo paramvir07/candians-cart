@@ -13,6 +13,8 @@ import {
 import { StoreDocument } from "@/types/store/store";
 import { DownloadButton } from "./DownloadButton";
 import { DatePickerWithRange } from "./DatePickerWithRange";
+import { saveStorePayoutAction } from "@/actions/admin/reciept/saveStorePayout"; // Import the new action
+import { toast } from "sonner";
 
 // Utility Imports
 import { fmt } from "@/lib/fomatPrice";
@@ -36,6 +38,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button"; // Added Button
 import {
   AlertCircle,
   FileJson,
@@ -44,9 +47,10 @@ import {
   TrendingUp,
   DollarSign,
   Receipt,
+  Save, // Added Save Icon
 } from "lucide-react";
+// import { toast } from "sonner"; // Assuming you use Sonner for toasts, uncomment if available
 
-// Add the optional prop here
 export default function RecieptComponent({
   initialStoreId,
 }: {
@@ -56,8 +60,10 @@ export default function RecieptComponent({
   const [receipts, setReceipts] = useState<AggregatedReciept[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Track saving state per receipt card (using the store ID as the key)
+  const [isSaving, setIsSaving] = useState<Record<string, boolean>>({});
+
   const [stores, setStores] = useState<StoreDocument[]>([]);
-  // Use the optional prop to set the initial state, fallback to "all"
   const [storeId, setStoreId] = useState<string>(initialStoreId || "all");
   const [isStoresLoading, setIsStoresLoading] = useState(true);
 
@@ -114,6 +120,36 @@ export default function RecieptComponent({
     fetchData();
   }, [date, storeId]);
 
+ const handleSavePayout = async (receipt: AggregatedReciept) => {
+    if (!receipt._id || !date?.from || !date?.to) return;
+
+    // Set loading state for this specific store's button
+    setIsSaving((prev) => ({ ...prev, [receipt._id as string]: true }));
+
+    try {
+      // Re-create the exact UTC boundaries used to query
+      const startDate = new Date(date.from);
+      startDate.setUTCHours(0, 0, 0, 0);
+      const endDate = new Date(date.to);
+      endDate.setUTCHours(23, 59, 59, 999);
+
+      const res = await saveStorePayoutAction(receipt, startDate, endDate);
+
+      if (res.success) {
+        // Show success toast
+        toast.success("Payout saved successfully!");
+      } else {
+        // Show error toast with the message from the server action
+        toast.error(res.error || "Failed to save payout");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setIsSaving((prev) => ({ ...prev, [receipt._id as string]: false }));
+    }
+  };
+
   const hasData = receipts && receipts.length > 0;
   const fromIso = date?.from ? date.from.toISOString() : "";
   const toIso = date?.to ? date.to.toISOString() : "";
@@ -129,10 +165,14 @@ export default function RecieptComponent({
       <CardHeader className="bg-muted/30 border-b pb-6">
         <CardTitle className="text-xl flex items-center gap-2">
           <Store className="h-5 w-5 text-primary" />
-          {initialStoreId ? "Store Settlement Generator" : "Platform Settlement Generator"}
+          {initialStoreId
+            ? "Store Settlement Generator"
+            : "Platform Settlement Generator"}
         </CardTitle>
         <CardDescription>
-          Generate and download settlement receipts {initialStoreId ? "for this store" : "across stores or platform-wide"}.
+          Generate and download settlement receipts{" "}
+          {initialStoreId ? "for this store" : "across stores or platform-wide"}
+          .
         </CardDescription>
       </CardHeader>
 
@@ -207,20 +247,38 @@ export default function RecieptComponent({
             {/* Render nicely formatted settlement cards for each record */}
             <div className="space-y-6">
               {receipts.map((r, index) => {
-                // Safely convert ObjectId to string if it exists
                 const rIdString = r._id?.toString();
 
-                // Determine store name (fallback to "Platform Total" if global and no ID)
                 const sName = rIdString
                   ? stores.find((s) => s._id.toString() === rIdString)?.name ||
                     "Store Data"
                   : "Platform Total";
 
+                const isCurrentlySaving = rIdString
+                  ? isSaving[rIdString]
+                  : false;
+
                 return (
                   <Card
                     key={rIdString || index}
-                    className="overflow-hidden border-border/50 shadow-sm"
+                    className="overflow-hidden border-border/50 shadow-sm relative"
                   >
+                    {/* Header showing store name and save button */}
+                    <div className="px-6 py-4 border-b flex items-center justify-between bg-muted/5">
+                      <h3 className="font-semibold">{sName}</h3>
+                      {rIdString && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleSavePayout(r)}
+                          disabled={isCurrentlySaving}
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          {isCurrentlySaving ? "Saving..." : "Save Payout"}
+                        </Button>
+                      )}
+                    </div>
+
                     {/* Settlement Top Metrics */}
                     <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 border-b bg-muted/10">
                       <div className="p-4 flex flex-col justify-center">
@@ -348,6 +406,8 @@ export default function RecieptComponent({
                             <div className="flex justify-between items-center font-bold text-base text-green-700">
                               <span>Platform Profit</span>
                               <span>{fmt(r.platformProfit)}</span>
+                              <span>Platform Commision</span>
+                              <span>{fmt(r.platformCommision)}</span>
                             </div>
                           </div>
                         </div>
