@@ -29,16 +29,6 @@ export interface OrderWithProductsClient {
   updatedAt: string;
 }
 
-export type PlaceOrderParams = {
-  customerId?: string;
-  status?:
-    | "pending"
-    | "completed"
-    | "refunded"
-  paymentMode?: "wallet" | "cash" | "card" | "pending";
-  getCashierId?: boolean;
-  subsidyVal: number;
-};
 
 export enum PaymentMode {
   CASH = "cash",
@@ -46,15 +36,3 @@ export enum PaymentMode {
   WALLET = "wallet",
 }
 
-export type PlaceOrderResponse = Promise<
-  | {
-      success: boolean;
-      error: string;
-      message?: undefined;
-    }
-  | {
-      success: boolean;
-      message: string;
-      error?: undefined;
-    }
->;

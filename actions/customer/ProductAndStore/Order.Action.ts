@@ -168,15 +168,23 @@ export const completePendingOrder = async (
 
       const cartTotal = Number(order.cartTotal ?? 0);
       const subsidy = Number(order.subsidy ?? 0);
+      const subsidyUsed = Number(order.susbsidyUsed ?? 0);
 
       const customer = await Customer.findById(customerId)
-        .select("_id walletBalance")
+        .select("giftWalletBalance")
         .session(mongoSession)
         .lean();
 
       if (!customer) {
         throw new Error("Customer not found");
       }
+
+      const subsidyLeft =
+        Number(
+          ((customer.giftWalletBalance + subsidy - subsidyUsed) / 100).toFixed(
+            2,
+          ),
+        ) * 100;
 
       if (paymentMode === "wallet") {
         const walletDeduction = await Customer.findOneAndUpdate(
@@ -186,6 +194,7 @@ export const completePendingOrder = async (
           },
           {
             $inc: { walletBalance: -cartTotal },
+            $set: { giftWalletBalance: subsidyLeft },
           },
           {
             session: mongoSession,
@@ -196,16 +205,14 @@ export const completePendingOrder = async (
         if (!walletDeduction) {
           throw new Error("Insufficient wallet balance");
         }
-      }
-
-      if (subsidy > 0) {
-        const subsidyCredit = await Customer.findByIdAndUpdate(
+      } else {
+        const newGiftWalletBalance = await Customer.findByIdAndUpdate(
           customerId,
-          { $inc: { giftWalletBalance: subsidy } },
+          { $set: { giftWalletBalance: subsidyLeft } },
           { session: mongoSession, returnDocument: "after" },
         );
 
-        if (!subsidyCredit) {
+        if (!newGiftWalletBalance) {
           throw new Error("Failed to credit gift wallet balance");
         }
       }
@@ -220,6 +227,7 @@ export const completePendingOrder = async (
           $set: {
             status: "completed",
             paymentMode,
+            subsidyLeft,
             cashierId: cashier._id,
           },
         },

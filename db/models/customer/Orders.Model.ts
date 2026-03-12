@@ -126,8 +126,6 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
     },
     subsidyLeft:{
       type: Number,
-      required: true,
-      default: 0,
       min: 0,
     },
     susbsidyUsed:{
