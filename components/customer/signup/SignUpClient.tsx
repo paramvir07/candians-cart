@@ -12,6 +12,7 @@ import StoreSelected from "./StoreSelected";
 import Budget from "./Budget";
 import SelectStore from "./SelectStore";
 import { SignupForm } from "@/components/auth/signup-form";
+import { SignupCarousel } from "./SignupCarousel";
 import { ReferralCodeForm } from "./ReferralCodeForm";
 import Image from "next/image";
 
@@ -51,10 +52,25 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
 
   const currentStepIndex = STEPS.indexOf(step as typeof STEPS[number]);
 
+  // ── SIGNUP FORM STEP: carousel + form layout (mirrors login page) ──
   if (step === "signUpForm") {
     return (
-      <main className="min-h-screen w-full flex items-center justify-center lg:p-8 bg-muted/30">
-        <SignupForm userRole="customer" />
+      <main className="min-h-screen w-full flex items-center justify-center lg:p-8 relative overflow-hidden">
+        <div className="absolute inset-0 hidden lg:block bg-muted/30 z-0" />
+
+        <div className="relative z-10 w-full lg:max-w-5xl lg:flex shadow-2xl rounded-2xl">
+          {/* Carousel — desktop only */}
+          <div className="hidden lg:block w-[45%] shrink-0 p-2.5">
+            <div className="h-full min-h-[600px]">
+              <SignupCarousel />
+            </div>
+          </div>
+
+          {/* Form */}
+          <div className="flex-1 lg:flex lg:items-center lg:justify-center lg:px-14 lg:py-12">
+            <SignupForm userRole="customer" className="w-full lg:max-w-[380px]" />
+          </div>
+        </div>
       </main>
     );
   }
@@ -74,29 +90,30 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
     <main className="w-full min-h-screen">
       <StoreSelected />
 
-      {/* ── MOBILE: image top, frosted card bottom ── */}
-      <div className="flex flex-col lg:hidden h-svh overflow-hidden">
+      {/* ── MOBILE: matches login exactly — tall image, deep overlap, solid card ── */}
+      <div className="flex flex-col lg:hidden min-h-screen overflow-hidden">
 
-        {/* Top image */}
-        <div className="relative w-full h-[42vh] shrink-0">
+        {/* Top image — same height as login h-[52vh] */}
+        <div className="relative w-full h-[52vh] shrink-0">
           <Image
-            src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80"
-            alt="Fresh produce"
+            src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80"
+            alt="Fresh groceries"
             fill
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/35" />
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-background to-transparent" />
+          <div className="absolute inset-0 bg-black/40" />
+          {/* same deep fade as login */}
+          <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black to-transparent" />
 
           {/* Logo on image */}
-          <div className="absolute top-5 left-5 flex items-center gap-2">
+          <div className="absolute top-5 left-5">
             <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg">
               <ShoppingCart size={22} className="text-primary-foreground" />
             </div>
           </div>
 
-          {/* Mobile step counter on image */}
+          {/* Step counter */}
           <div className="absolute top-5 right-5">
             <span className="text-xs text-white/80 font-medium bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
               Step {currentStepIndex + 1}/{STEPS.length}
@@ -104,15 +121,10 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
           </div>
         </div>
 
-        {/* Frosted glass form card */}
-        <div className="relative z-10 -mt-8 flex-1 overflow-y-auto
-          bg-background/85 backdrop-blur-2xl
-          rounded-t-3xl px-5 pt-6 pb-8
-          shadow-[0_-8px_40px_rgba(0,0,0,0.12)]
-          border-t border-x border-white/20
-          ring-1 ring-inset ring-white/10"
-        >
-          {/* Mobile step dots */}
+        {/* Form card — same deep overlap + solid bg as login */}
+        <div className="relative z-10 -mt-45 flex-1 bg-background rounded-t-3xl px-6 pt-8 pb-10 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+
+          {/* Step dots */}
           <div className="flex items-center gap-1.5 mb-5">
             {STEPS.map((_, i) => (
               <div key={i} className={`h-1 rounded-full transition-all duration-300 ${
@@ -123,32 +135,30 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
             ))}
           </div>
 
-          {/* Step heading */}
+         {/* Step heading */}
           <div className="mb-5">
-            <p className="text-[10px] font-semibold text-primary uppercase tracking-widest mb-1">
+            <p className="text-[10px] font-semibold text-primary uppercase tracking-widest mb-1.5">
               {STEP_META[STEPS[currentStepIndex] ?? "location"]?.label}
             </p>
-            <h1 className="text-xl font-bold text-foreground tracking-tight">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight leading-tight">
               {STEP_TITLES[step]}
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
               {STEP_DESCRIPTIONS[step]}
             </p>
           </div>
 
           {/* Step content */}
-          <div className="flex-1 min-h-[200px]">
+          <div className="min-h-[200px]">
             {stepContent}
           </div>
 
           {/* Bottom nav */}
           <div className="mt-5 pt-4 border-t border-border flex items-center justify-between">
-            <div className="flex flex-col gap-0.5">
-              <p className="text-xs text-muted-foreground">
-                Have an account?{" "}
-                <Link href="/customer/login" className="text-primary hover:underline font-medium">Login</Link>
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              Have an account?{" "}
+              <Link href="/customer/login" className="text-primary hover:underline font-medium">Login</Link>
+            </p>
             <div className="flex items-center gap-2">
               {step !== "location" && (
                 <Button variant="ghost" size="sm" onClick={handleBack}
@@ -171,7 +181,7 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
       <div className="hidden lg:flex items-center justify-center w-full min-h-screen bg-muted/30 p-8">
         <div className="flex w-full max-w-4xl xl:max-w-5xl h-[680px] xl:h-[720px] rounded-2xl overflow-hidden shadow-2xl border border-border bg-card">
 
-          {/* LEFT SIDEBAR — fixed width, full height */}
+          {/* LEFT SIDEBAR */}
           <div className="flex flex-col w-[280px] xl:w-[300px] shrink-0 bg-card border-r border-border p-8">
 
             {/* Logo */}
@@ -233,7 +243,7 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
             </div>
           </div>
 
-          {/* RIGHT CONTENT — fills remaining space */}
+          {/* RIGHT CONTENT */}
           <div className="flex-1 flex flex-col overflow-hidden">
 
             {/* Top bar */}
@@ -249,10 +259,8 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
               </span>
             </div>
 
-            {/* Main content area — centered vertically */}
+            {/* Main content area */}
             <div className="flex-1 flex flex-col justify-center px-12 xl:px-16 py-8 overflow-y-auto">
-
-              {/* Step heading */}
               <div className="mb-8">
                 <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1.5">
                   {STEP_META[STEPS[currentStepIndex] ?? "location"]?.label}
@@ -265,7 +273,6 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
                 </p>
               </div>
 
-              {/* Step content */}
               <div className="w-full max-w-lg min-h-[220px]">
                 {stepContent}
               </div>
