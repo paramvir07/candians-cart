@@ -361,7 +361,7 @@ const totals = {
               CA${fmt(totals.total)}
             </p>
           </div>
-          <CheckoutActions customerId={customerId} compact />
+          <CheckoutActions customerId={customerId} compact TotalCart={totals} />
         </div>
         <div className="flex items-center justify-center gap-1.5">
           <Shield className="w-3 h-3 text-gray-300" />
@@ -552,7 +552,7 @@ const totals = {
                 </div>
               </div>
 
-              <CheckoutActions customerId={customerId} />
+              <CheckoutActions customerId={customerId} TotalCart={totals} />
 
               <div className="flex items-center justify-center gap-1.5 mt-3">
                 <Shield className="w-3 h-3 text-gray-300" />

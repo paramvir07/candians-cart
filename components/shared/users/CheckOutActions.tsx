@@ -6,10 +6,21 @@ import PlaceOrderBtn from "@/components/customer/products/PlaceOrderBtn";
 import PaymentMethodSelector from "./PaymentMethodSelector";
 import { PaymentMode } from "@/types/customer/OrdersClient";
 
+export interface CartTotals {
+  subtotal: number;
+  gst: number;
+  pst: number;
+  totalTax: number;
+  disposable: number;
+  total: number;
+}
+
 export default function CheckoutActions({
+  TotalCart,
   customerId,
   compact,
 }: {
+  TotalCart: CartTotals;
   customerId?: string;
   compact?: boolean;
 }) {
@@ -30,6 +41,7 @@ export default function CheckoutActions({
       )}
 
       <PlaceOrderBtn
+        TotalCart={TotalCart}
         customerId={customerId}
         compact={compact}
         paymentMode={paymentMode}
