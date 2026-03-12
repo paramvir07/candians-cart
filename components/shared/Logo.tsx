@@ -10,7 +10,6 @@ const Logo = () => {
           className="text-white"
         />
       </div>
-      <h1 className="text-md font-bold ">Candian&apos;s Cart</h1>
     </Link>
   );
 };
