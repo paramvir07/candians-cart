@@ -33,10 +33,10 @@ export async function updateProduct(
       return { success: false, message: "Unauthorized" };
     }
 
-    const userRole = (session.user.role as "Admin" | "Store") || "Store";
+    const userRole = (session.user.role as "admin" | "store") || "store";
 
-    const adminRole = userRole === "Admin";
-    const storeRole = userRole === "Store";
+    const adminRole = userRole === "admin";
+    const storeRole = userRole === "store";
 
     const schema = createProductFormSchema(userRole);
     const validationResult = schema.safeParse(data);
@@ -71,7 +71,7 @@ export async function updateProduct(
       return {
         success: false,
         message:
-          "Product not found or you don't have permission to update the product",
+          "Product not found",
       };
     }
 
@@ -100,9 +100,12 @@ export async function updateProduct(
       }
     }
 
-    const invoice = await ProductInvoice.findById(InvoiceId);
-    if (!invoice) {
-      return { success: false, message: "Invoice does not exists" };
+    // Checks if invoice exists for store role, No checks for admin
+    if (storeRole) {
+      const invoice = await ProductInvoice.findById(InvoiceId);
+      if (!invoice) {
+        return { success: false, message: "Invoice does not exists" };
+      }
     }
 
     const dbPayload = {
@@ -114,7 +117,7 @@ export async function updateProduct(
       price: Math.round(price * 100),
       // converting dollars to cents
       disposableFee: Math.round((disposableFee || 0) * 100),
-      InvoiceId: InvoiceId,
+      InvoiceId: InvoiceId || undefined,
     };
 
     let updatedProduct;

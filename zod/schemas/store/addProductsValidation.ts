@@ -33,6 +33,22 @@ export const BaseProductFormSchema = z.object({
       "Beverages",
       "Snacks",
       "Household",
+      "Oil & Ghee",
+      "Pulses & Lentils",
+      "Flour & Atta",
+      "Rice",
+      "Spices",
+      "Pickles & Chutneys",
+      "Instant Foods",
+      "Frozen Foods",
+      "Sweets & Mithai",
+      "Dry Fruits & Nuts",
+      "Tea & Coffee",
+      "Sauces & Condiments",
+      "Papad & Fryums",
+      "Pooja / Religious Items",
+      "Utensils",
+      "Disposables",
       "Personal Care",
       "Other",
     ],
@@ -66,22 +82,33 @@ export const BaseProductFormSchema = z.object({
     .default([]), // For the time being this is optional, have to integrate Imagekit
 
   isFeatured: z.boolean(),
-  InvoiceId: z
-    .string()
-    .trim()
-    .regex(/^[0-9a-fA-F]{24}$/, { message: "Invalid Invoice ID format" }),
+  markup: z
+    .number()
+    .min(30, "Markup must be between 30% and 35%")
+    .max(35, "Markup cannot exceed 35%"),
+
 });
 
-export const createProductFormSchema = (role: "Admin" | "Store") => {
+export const createProductFormSchema = (role: "admin" | "store") => {
   return BaseProductFormSchema.extend({
-    markup:
-      role === "Store"
+    InvoiceId:
+      role === "store"
         ? z
-            .number()
-            .min(30, "Markup must be between 30 and 35")
-            .max(35, "Markup cannot excede 35%") // for store
-        : z.number().min(0, "Markup cannot be negative"), // for admin
+            .string()
+            .trim()
+            .regex(/^[0-9a-fA-F]{24}$/, {
+              message: "Invoice ID is required and must be valid",
+            }) // Required for Store
+        : z
+            .string()
+            .trim()
+            .optional() // Allows undefined
+            .refine((val) => !val || /^[0-9a-fA-F]{24}$/.test(val), {
+              message: "Invalid Invoice ID format",
+            }), // For Admin: Allows empty string OR a valid 24-char ObjectId
   });
+
+  // have to make invoice optional for admin
 };
 
 export type ProductFormValues = z.infer<

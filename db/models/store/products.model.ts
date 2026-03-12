@@ -1,5 +1,4 @@
 import { model, models, Schema } from "mongoose";
-import { number } from "zod";
 
 const productSchema = new Schema(
   {
@@ -103,11 +102,11 @@ const productSchema = new Schema(
       required: true,
     },
 
-    // This is the invoice Id
+    // This is the invoice Id, have to keep this required false because otherwise the admin validation will fail
     InvoiceId: {
       type: Schema.Types.ObjectId,
       ref: "ProductInvoice",
-      required: true,
+      required: false,
     },
   },
   { timestamps: true },

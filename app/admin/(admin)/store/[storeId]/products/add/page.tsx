@@ -9,7 +9,7 @@ const page = async ({ params }: PageParams) => {
   const storeId = localparams.storeId;
   return (
     <div>
-      <ProductForm initialData={null} storeId={ storeId } />
+      <ProductForm initialData={null} storeId={ storeId } role="admin" />
     </div>
   );
 };

@@ -10,7 +10,7 @@ import {
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
-import ProductInvoice from "@/db/models/store/invoice.model"
+import ProductInvoice from "@/db/models/store/invoice.model";
 
 interface ActionResponse {
   success: boolean;
@@ -28,7 +28,7 @@ export async function createProduct(
       return { success: false, message: "Unauthorized" };
     }
 
-    const userRole = (session.user.role as "Admin" | "Store") || "Store";
+    const userRole = (session.user.role as "admin" | "store") || "store";
     const schema = createProductFormSchema(userRole);
     const validationResult = schema.safeParse(data);
     if (!validationResult.success) {
@@ -55,9 +55,12 @@ export async function createProduct(
     const { price, disposableFee, tax, images, InvoiceId, ...otherData } =
       validationResult.data;
 
-    const invoice = await ProductInvoice.findById(InvoiceId)
-    if(!invoice){
-      return{ success: false, message: "Invoice does not exists"}
+      // Checks if the invoice Id exists when the role is Store, for admin no checking so it can bypass
+    if (userRole === "store") {
+      const invoice = await ProductInvoice.findById(InvoiceId);
+      if (!invoice) {
+        return { success: false, message: "Invoice does not exists" };
+      }
     }
 
     const dbPayload = {
@@ -67,7 +70,7 @@ export async function createProduct(
       tax: tax > 0 ? tax / 100 : 0,
       price: Math.round(price * 100),
       disposableFee: Math.round((disposableFee ?? 0) * 100),
-      InvoiceId: InvoiceId
+      InvoiceId: InvoiceId || undefined,
     };
 
     await Product.create(dbPayload);

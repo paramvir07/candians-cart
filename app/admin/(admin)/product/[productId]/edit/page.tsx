@@ -21,7 +21,7 @@ export default async function EditProductPage({ params }: PageParams) {
 
   return (
     <div className="container mx-auto py-10">
-      <ProductForm initialData={result.data} />
+      <ProductForm initialData={result.data} role = "admin"/>
     </div>
   );
 }

@@ -16,11 +16,16 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // Actions
 import { createProduct } from "@/actions/store/products/addProducts";
 import { updateProduct } from "@/actions/store/products/editProduct";
-import { ProductFormValues } from "@/zod/schemas/store/addProductsValidation";
+import {
+  createProductFormSchema,
+  ProductFormValues,
+} from "@/zod/schemas/store/addProductsValidation";
+import { zodErrorResponse } from "@/zod/validation/error";
 
 // Types
 import { IProduct } from "@/types/store/products.types";
@@ -28,9 +33,10 @@ import { IProduct } from "@/types/store/products.types";
 interface ProductFormProps {
   initialData?: IProduct | null; // If null, we are in "Add Mode"
   storeId?: string;
+  role: "admin" | "store";
 }
 
-const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
+const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | string[]>([]);
@@ -122,7 +128,7 @@ const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
       }
 
       // 2. Prepare JSON payload matching ProductFormValues Zod schema
-      const payload: ProductFormValues = {
+      const rawpayload: ProductFormValues = {
         name: formData.name,
         description: formData.description,
         category: formData.category as ProductFormValues["category"],
@@ -135,6 +141,17 @@ const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
         isFeatured: formData.isFeatured === "false",
         InvoiceId: formData.InvoiceId,
       };
+
+      const schema = createProductFormSchema(role);
+      const validationResult = schema.safeParse(rawpayload);
+      if (!validationResult.success) {
+        const errorMessage = zodErrorResponse(validationResult);
+        toast.error(`Validation Error: ${errorMessage}`);
+        setLoading(false);
+        return;
+      }
+
+      const payload = validationResult.data;
 
       // 3. Conditional Submission (Create vs Update)
       let result;
@@ -300,6 +317,8 @@ const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
                     type="number"
                     placeholder="30"
                     value={formData.markup}
+                    min={30}
+                    max={35}
                     onChange={(e) => handleChange("markup", e.target.value)}
                   />
                 </div>
@@ -466,6 +485,7 @@ const ProductForm = ({ initialData, storeId }: ProductFormProps) => {
                   You must attach an Invoice ID for creating a new product or
                   changing prices.
                 </p>
+                <Link href="/store/invoice/add/" className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition">Want to add a new Invoice?</Link>
               </div>
             </CardContent>
           </Card>

@@ -1,6 +1,7 @@
 import ProductForm from "@/components/store/products/ProductForm";
 import { getSingleProduct } from "@/actions/store/products/getSingleProduct";
 import { redirect } from "next/navigation";
+import { role } from 'better-auth/plugins';
 
 interface PageParams {
   params: {
@@ -21,7 +22,7 @@ export default async function EditProductPage({ params }: PageParams) {
 
   return (
     <div className="container mx-auto py-10">
-      <ProductForm initialData={result.data} />
+      <ProductForm initialData={result.data} role = "store" />
     </div>
   );
 }

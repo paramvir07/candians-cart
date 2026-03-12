@@ -57,6 +57,33 @@ Verify -:
 Our Profit + Store Payout = Customer Paid
 200 + 2157 = 2357
 
+---
+
+
+
+.........................................................new logic ..................................................
+
+Customer paid = [Cart total]
+Customer Paid = 2357
+
+SFV = BP + Total Disposable Fee + Total tax
+SFV = 2072
+
+grossMargin = CP - SFV = 285 (Our cost)
+
+the 0.30 or 30% Value can be changed in future.
+Store Profit = (grossMargin + [subsidy] )) * 0.30 = 85 cents
+
+Store Payout = Store Profit + SFV = 2157
+
+Our Profit = CP - SP(store payout) = 200 (platformProfit)
+
+[platform commission = our profit  + subsidy (for store reciept) ]
+
+Verify -:
+Our Profit + Store Payout = Customer Paid
+200 + 2157 = 2357
+
 */
 
 import mongoose, { PipelineStage, Types } from "mongoose";
@@ -191,7 +218,12 @@ export async function getRecieptDataByDateRange(
       {
         $addFields: {
           storeProfit: {
-            $round: [{ $multiply: ["$grossMargin", 0.3] }, 0],
+            $round: [
+              {
+                $multiply: [{ $add: ["$grossMargin", "$totalSubsidy"] }, 0.3],
+              },
+              0,
+            ],
           },
         },
       },
@@ -200,10 +232,12 @@ export async function getRecieptDataByDateRange(
         $addFields: {
           storePayout: { $add: ["$storeFixedValue", "$storeProfit"] },
           platformProfit: {
-            $subtract: [
-              "$totalCustomerPaid",
-              { $add: ["$storeFixedValue", "$storeProfit"] },
-            ],
+            $subtract: ["$totalCustomerPaid", "$storePayout"],
+          },
+          // platform Profit = (Cart Total - Store Payout)
+          // [platform commission = platform Profit  + subsidy (for store reciept) ]
+          platformCommision: {
+            $add: ["$platformProfit", "$subsidy"],
           },
         },
       },

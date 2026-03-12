@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { StoreProductsList } from "@/components/admin/store/products/StoreProductsList";
 import ReceiptPage from "@/components/admin/analytics/reciept/RecieptComponent";
+import StoreInvoices from "@/components/store/invoice/storeInvoices"; // Adjust path if needed
 
 const StoreProductsPage = async ({
   params,
@@ -20,8 +21,13 @@ const StoreProductsPage = async ({
         <ArrowLeft className="w-4 h-4 mr-1" /> Back to Stores
       </Link>
 
+      {/* Receipts Section */}
       <ReceiptPage initialStoreId={storeId} />
 
+      {/* Invoices Section (Client Component handles fetching & state) */}
+      <StoreInvoices />
+
+      {/* Products Section */}
       <StoreProductsList storeId={storeId} role="admin" />
     </div>
   );
