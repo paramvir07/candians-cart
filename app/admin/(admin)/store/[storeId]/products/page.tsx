@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileWarning } from "lucide-react";
 import { StoreProductsList } from "@/components/admin/store/products/StoreProductsList";
 import ReceiptPage from "@/components/admin/analytics/reciept/RecieptComponent";
 import StoreInvoices from "@/components/store/invoice/storeInvoices";
+import { Button } from "@/components/ui/button";
 
 // Import the Server Component and its Skeleton
 import StoreOverviewCards from "@/components/admin/store/overview/StoreOverviewCards";
@@ -35,14 +36,23 @@ const StoreProductsPage = async ({
 
       {/* Receipts Section */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold tracking-tight">Receipts & Analytics</h2>
+        <h2 className="text-xl font-semibold tracking-tight">
+          Receipts & Analytics
+        </h2>
         <ReceiptPage initialStoreId={storeId} />
       </div>
+
+      <Link href={`/admin/store/${storeId}/products/price-changes`}>
+        <Button variant="outline" className="flex items-center gap-2">
+          <FileWarning className="w-4 h-4" />
+          Review Price Changes
+        </Button>
+      </Link>
 
       {/* Invoices Section (Client Component handles fetching & state) */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">Invoices</h2>
-        <StoreInvoices storeId={storeId}/>
+        <StoreInvoices storeId={storeId} />
       </div>
 
       {/* Products Section */}

@@ -86,7 +86,6 @@ export const BaseProductFormSchema = z.object({
     .number()
     .min(30, "Markup must be between 30% and 35%")
     .max(35, "Markup cannot exceed 35%"),
-
 });
 
 export const createProductFormSchema = (role: "admin" | "store") => {
@@ -107,8 +106,6 @@ export const createProductFormSchema = (role: "admin" | "store") => {
               message: "Invalid Invoice ID format",
             }), // For Admin: Allows empty string OR a valid 24-char ObjectId
   });
-
-  // have to make invoice optional for admin
 };
 
 export type ProductFormValues = z.infer<

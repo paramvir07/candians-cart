@@ -11,6 +11,7 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
 import ProductInvoice from "@/db/models/store/invoice.model";
+import products from "@/app/store/(store)/products/page";
 
 interface ActionResponse {
   success: boolean;
@@ -55,27 +56,51 @@ export async function createProduct(
     const { price, disposableFee, tax, images, InvoiceId, ...otherData } =
       validationResult.data;
 
-      // Checks if the invoice Id exists when the role is Store, for admin no checking so it can bypass
+    // Checks if the invoice Id exists when the role is Store, for admin no checking so it can bypass
     if (userRole === "store") {
+      if (!InvoiceId) {
+        return {
+          success: false,
+          message: "An Invoice Id is required when adding a new product",
+        };
+      }
       const invoice = await ProductInvoice.findById(InvoiceId);
       if (!invoice) {
         return { success: false, message: "Invoice does not exists" };
       }
     }
 
+    const newPriceinCents = Math.round(price * 100);
+
     const dbPayload = {
       ...otherData,
       storeId, // guaranteed defined now
       images: images ?? [],
       tax: tax > 0 ? tax / 100 : 0,
-      price: Math.round(price * 100),
+      price: newPriceinCents,
       disposableFee: Math.round((disposableFee ?? 0) * 100),
       InvoiceId: InvoiceId || undefined,
     };
 
-    await Product.create(dbPayload);
+    const newProduct = await Product.create(dbPayload);
 
-    revalidatePath("/store/products");
+    if (userRole === "store" && InvoiceId) {
+      await ProductInvoice.findByIdAndUpdate(InvoiceId, {
+        $push: {
+          products: {
+            productId: newProduct._id,
+            newPrice: newPriceinCents,
+            status: "PENDING",
+          },
+        },
+      });
+    }
+
+    if (userRole === "store") {
+      revalidatePath("/store/products");
+    } else if (userRole === "admin" && recievedStoreId) {
+      revalidatePath(`/admin/store/${recievedStoreId}/products`);
+    }
 
     return { success: true, message: "Product created successfully" };
   } catch (error) {
