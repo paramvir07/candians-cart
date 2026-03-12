@@ -59,7 +59,7 @@ export const getAllOrders = async () => {
 
     return JSON.parse(JSON.stringify(prevOrders));
   } catch (err) {
-    console.log("Error while getting all store orders: ",err);
+    console.log("Error while getting all store orders: ", err);
     return null;
   }
 };
@@ -86,7 +86,7 @@ export const ReOrder = async (orderId: string) => {
           },
         },
         {
-          new: true,
+          returnDocument: "after",
         },
       );
 
@@ -189,7 +189,7 @@ export const completePendingOrder = async (
           },
           {
             session: mongoSession,
-            new: true,
+            returnDocument: "after",
           },
         );
 
@@ -202,7 +202,7 @@ export const completePendingOrder = async (
         const subsidyCredit = await Customer.findByIdAndUpdate(
           customerId,
           { $inc: { giftWalletBalance: subsidy } },
-          { session: mongoSession, new: true },
+          { session: mongoSession, returnDocument: "after" },
         );
 
         if (!subsidyCredit) {
