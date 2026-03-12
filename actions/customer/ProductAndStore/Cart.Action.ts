@@ -6,12 +6,10 @@ import { dbConnect } from "@/db/dbConnect";
 import mongoose, { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
 import OrderModel, {
-  PlaceOrderI,
   PlaceOrderProduct,
 } from "@/db/models/customer/Orders.Model";
-import Customer from "@/db/models/customer/customer.model";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { getCustomerDataAction } from "../User.action";
+import { getCustomerDataAction, getUser } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
 import {
   PlaceOrderParams,
@@ -19,6 +17,9 @@ import {
 } from "@/types/customer/OrdersClient";
 import { ICartItem } from "@/types/customer/CustomerCart";
 import { Cashier } from "@/db/models/cashier/cashier.model";
+import { CartTotals } from "@/components/shared/users/CheckOutActions";
+import { IProduct } from "@/types/store/products.types";
+import Customer from "@/db/models/customer/customer.model";
 
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
@@ -213,6 +214,7 @@ export const getCart = async (
   }
 };
 
+
 export const PlaceOrder = async ({
   customerId,
   status = "completed",
@@ -229,7 +231,9 @@ export const PlaceOrder = async ({
   const cartItemsResponse = await getCart(customerId);
   if (!cartItemsResponse)
     return { success: false, error: "Cart items not found" };
+
   const cartItems: ICartItem[] = cartItemsResponse?.items;
+
   if (!user || !cartItems || cartItems.length === 0)
     return { success: false, message: "Something went wrong!" };
 
@@ -368,6 +372,106 @@ export const PlaceOrder = async ({
   }
 };
 
+export const PlaceCustomerOrder = async ({ TotalCart }: { TotalCart: CartTotals }) => {
+  try {
+    await dbConnect();
+    const User = await getUser();
+    if (!User) return { success: false, message: "User not found" };
+
+    const customerCart = await CartModel.findOne({ customerId: User._id })
+      .populate("items.productId")
+      .populate("subsidyItems.productId");
+    if (!customerCart) return { success: false, message: "Cart not found" };
+
+    const CartItems = customerCart.items as unknown as ICartItem[];
+    const SubItems = customerCart.subsidyItems;
+
+    let baseTotal = 0;
+    let TotalUsedSubsidy = 0;
+
+    const products = CartItems.map((item) => {
+      const base = item.productId.price * item.quantity;
+      const markup = Math.round(base * (item.productId.markup / 100));
+      const subtotalWithMarkup = base + markup;
+      const tax = item.productId.tax;
+      const disposableFee = item.productId.disposableFee ?? 0;
+
+      const gst = tax === 0.05 || tax === 0.12 ? Math.round(subtotalWithMarkup * 0.05) : 0;
+      const pst = tax === 0.07 || tax === 0.12 ? Math.round(subtotalWithMarkup * 0.07) : 0;
+
+      baseTotal += base;
+
+      return {
+        productId: new Types.ObjectId(item.productId._id),
+        quantity: item.quantity,
+        markup: item.productId.markup,
+        tax,
+        disposableFee,
+        subsidy: 0,
+        total: subtotalWithMarkup + gst + pst + disposableFee,
+      };
+    });
+
+    const subsidyItems = SubItems.map((item) => {
+      const product = item.productId as unknown as IProduct;
+      const afterSubsidy = Math.max((item.TotalPrice * item.quantity) - item.subsidy, 0);
+      const tax = product.tax;
+      const disposableFee = product.disposableFee ?? 0;
+
+      const gst = tax === 0.05 || tax === 0.12 ? Math.round(afterSubsidy * 0.05) : 0;
+      const pst = tax === 0.07 || tax === 0.12 ? Math.round(afterSubsidy * 0.07) : 0;
+
+      baseTotal += product.price * item.quantity;
+      TotalUsedSubsidy += item.subsidy;
+
+      return {
+        productId: new Types.ObjectId(product._id),
+        quantity: item.quantity,
+        markup: product.markup,
+        tax,
+        disposableFee,
+        subsidy: item.subsidy,
+        total: afterSubsidy + gst + pst + disposableFee,
+      };
+    });
+
+
+    const cartTotal = TotalCart.total;
+    const walletBalance = User.walletBalance ?? 0;
+
+    if (walletBalance < cartTotal) {
+      return { success: false, message: "Insufficient Funds" };
+    }
+
+    const OrderData = {
+      products,
+      subsidyItems,
+      TotalGST: TotalCart.gst,
+      TotalPST: TotalCart.pst,
+      TotalDisposableFee: TotalCart.disposable,
+      BaseTotal: baseTotal,
+      cartTotal,
+      subsidy: customerCart.cartSubsidy,
+      subsidyLeft:Number((((User.giftWalletBalance ?? 0) + (customerCart.cartSubsidy ?? 0)-TotalUsedSubsidy)/100).toFixed(2))*100,
+      susbsidyUsed:Number((TotalUsedSubsidy / 100).toFixed(2))*100,
+      userId: User._id,
+      storeId: User.associatedStoreId,
+      paymentMode: "wallet",
+      status: "pending",
+      userWalletBalance: walletBalance,
+      giftWalletBalance: (User.giftWalletBalance ?? 0) + (customerCart.cartSubsidy ?? 0)
+    };
+
+      await OrderModel.create([OrderData]);
+      await CartModel.deleteOne({ customerId: User._id });
+      revalidatePath("/customer/cart");
+      return { success: true, message: "Order Placed Successfully" };
+
+  } catch (error) {
+    console.log(error);
+    return { success: false, message: "Something went wrong" };
+  }
+};
 /**
  * Retrieves the total count of unique products currently in the user's cart.
  * * @description

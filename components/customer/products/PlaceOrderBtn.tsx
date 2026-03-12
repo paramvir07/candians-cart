@@ -1,7 +1,8 @@
 "use client";
 
-import { PlaceOrder } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { PlaceCustomerOrder, PlaceOrder } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { SubsidyValue } from "@/atoms/customer/CartAtom";
+import { CartTotals } from "@/components/shared/users/CheckOutActions";
 import { Button } from "@/components/ui/button";
 import { PaymentMode } from "@/types/customer/OrdersClient";
 import { useAtom } from "jotai";
@@ -10,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 const PlaceOrderBtn = ({
+  TotalCart,
   customerId,
   compact = false,
   paymentMode,
@@ -17,6 +19,7 @@ const PlaceOrderBtn = ({
   customerId?: string;
   compact?: boolean;
   paymentMode: PaymentMode;
+  TotalCart: CartTotals
 }) => {
   const router = useRouter();
   const [SubsidyVal] = useAtom(SubsidyValue);
@@ -41,6 +44,16 @@ const PlaceOrderBtn = ({
     }
   };
 
+  const handleCustomerOrder = async () =>{
+      const res = await PlaceCustomerOrder({TotalCart});
+      if (res.success) {
+      toast.success(res.message);
+      router.push(customerId ? `/cashier/customer/${customerId}` : "/");
+    } else {
+      toast.error(res.message);
+  }
+}
+
   const handlePayAtStore = async () => {
     const placeOrder = await PlaceOrder({
       status: "pending",
@@ -60,7 +73,7 @@ const PlaceOrderBtn = ({
     return (
       <div className="flex flex-col gap-2 w-40">
         <Button
-          onClick={handlePlaceOrder}
+          onClick={handleCustomerOrder}
           className="w-full py-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2"
         >
           Place Order
@@ -85,7 +98,7 @@ const PlaceOrderBtn = ({
   return (
     <div className="w-full mt-5 flex flex-col gap-2">
       <Button
-        onClick={handlePlaceOrder}
+        onClick={handleCustomerOrder}
         className="w-full py-5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
       >
         Place Order

@@ -13,6 +13,7 @@ export interface PlaceOrderProduct {
 
 export interface PlaceOrderI {
   products: PlaceOrderProduct[];
+  subsidyItems:PlaceOrderProduct[];
   TotalGST: number;
   TotalPST: number;
   TotalDisposableFee: number;
@@ -26,6 +27,8 @@ export interface PlaceOrderI {
   updatedAt?: Date;
   status?: "pending" | "completed" | "refunded";
   subsidy?: number;
+  subsidyLeft:number;
+  susbsidyUsed:number;
   paymentMode?: "wallet" | "cash" | "card" | "pending";
   cashierId?: Types.ObjectId;
 }
@@ -85,6 +88,11 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       type: [placeOrderProductSchema],
       required: true,
     },
+    subsidyItems:{
+      type:[placeOrderProductSchema],
+      required: true,
+      default:[]
+    },
     TotalGST: {
       type: Number,
       required: true,
@@ -111,6 +119,18 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       min: 0,
     },
     subsidy: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    subsidyLeft:{
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    susbsidyUsed:{
       type: Number,
       required: true,
       default: 0,

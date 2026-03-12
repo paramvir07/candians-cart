@@ -284,7 +284,7 @@ export const ClearAllSubsidyItems = async () => {
 
     await CartModel.findOneAndUpdate(
       { customerId: user._id },
-      { $set: { subsidyItems: [] } }
+      { $set: { subsidyItems: [],cartSubsidy: 0 } }
     );
 
     revalidatePath("/customer/cart");
