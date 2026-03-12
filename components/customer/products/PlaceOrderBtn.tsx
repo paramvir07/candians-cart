@@ -33,11 +33,11 @@ const PlaceOrderBtn = ({
       TotalCart,
     });
 
-    if (placeOrder?.success) {
-      toast.success(placeOrder?.message);
+    if (placeOrder.success) {
+      toast.success(placeOrder.message);
       router.push(`/cashier/customer/${customerId}`);
     } else {
-      toast.error(placeOrder?.error);
+      toast.error(placeOrder.message);
     }
   };
 

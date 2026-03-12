@@ -21,8 +21,6 @@ export interface OrderWithProductsClient {
     disposableFee: number;
   }[];
   cartTotal: number;
-  userWalletBalance: number;
-  giftWalletBalance: number;
   userId: string;
   storeId: string;
   createdAt: string;

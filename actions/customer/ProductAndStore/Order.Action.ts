@@ -203,7 +203,9 @@ export const completePendingOrder = async (
         );
 
         if (!walletDeduction) {
-          throw new Error("Insufficient wallet balance");
+          throw new Error(
+            "Insufficient wallet balance. Please add funds or choose another payment method.",
+          );
         }
       } else {
         const newGiftWalletBalance = await Customer.findByIdAndUpdate(

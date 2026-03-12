@@ -63,12 +63,12 @@ export function SubsidizedPopup({
 
   
   const handleAddSubsidyItems = async () =>{
-    AddSubsidyItem(selectedProducts,(subsidy*100))
+    AddSubsidyItem(selectedProducts,(subsidy*100), customerId)
     onOpenChange(false)
   }
 
   const savetoWallet = async () =>{
-    const res = await saveSubsidytoWallet();
+    const res = await saveSubsidytoWallet(customerId);
     if(res?.success){
       onOpenChange(false)
       toast.success(res.message);

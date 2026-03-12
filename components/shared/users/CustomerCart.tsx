@@ -245,6 +245,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                     {item.productId.subsidised && (
                       <AddtoSubsidyBtn
                         ProductId={item.productId._id.toString()}
+                        customerId={customerId}
                       />
                     )}
                   </p>
@@ -313,7 +314,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           })}
         </div>
 
-        <SubsidyItemsSection subItems={subItems} />
+        <SubsidyItemsSection subItems={subItems} customerId={customerId} />
         {/* Wallet */}
         <div className="bg-white rounded-2xl border border-gray-100 px-4 py-3.5 flex items-center justify-between shadow-[0_1px_4px_rgba(0,0,0,0.05)] mb-3">
           <div className="flex items-center gap-3">
@@ -322,7 +323,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </div>
             <div>
               <p className="text-sm font-semibold text-gray-900">
-                Pay with Wallet
+                {customerId ? "Pay with Wallet" : "Wallet"}
               </p>
               <p className="text-xs text-gray-400">
                 Balance: CA${fmt(UserData?.walletBalance ?? 0)}
@@ -457,6 +458,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                         {item.productId.subsidised && (
                           <AddtoSubsidyBtn
                             ProductId={item.productId._id.toString()}
+                            customerId={customerId}
                           />
                         )}
                       </p>
@@ -524,7 +526,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               })}
             </div>
 
-            <SubsidyItemsSection subItems={subItems} />
+            <SubsidyItemsSection subItems={subItems} customerId={customerId} />
 
             {/* Wallet */}
 
@@ -535,7 +537,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-gray-900">
-                    Pay with Wallet
+                    {customerId ? "Pay with Wallet" : "Wallet"}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     Current balance: CA${fmt(UserData?.walletBalance ?? 0)}

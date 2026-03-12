@@ -1,26 +1,29 @@
-"use server"
+"use server";
 
-import { dbConnect } from "@/db/dbConnect"
-import CartModel, { ISubsidyItems } from "@/db/models/customer/cart.model"
-import CustomerModel from "@/db/models/customer/customer.model"
-import { IProduct } from "@/types/store/products.types"
-import { getUser } from "./User.action"
-import { revalidatePath } from "next/cache"
-import { Types } from "mongoose"
+import { dbConnect } from "@/db/dbConnect";
+import CartModel, { ISubsidyItems } from "@/db/models/customer/cart.model";
+import CustomerModel from "@/db/models/customer/customer.model";
+import { IProduct } from "@/types/store/products.types";
+import { getUser } from "./User.action";
+import { revalidatePath } from "next/cache";
+import { Types } from "mongoose";
 
 type PlainSubsidyItem = {
-  _id: Types.ObjectId
-  productId: Types.ObjectId
-  storeId: Types.ObjectId
-  quantity: number
-  TotalPrice: number
-  subsidy: number
-  afterSubsidy: number
-}
+  _id: Types.ObjectId;
+  productId: Types.ObjectId;
+  storeId: Types.ObjectId;
+  quantity: number;
+  TotalPrice: number;
+  subsidy: number;
+  afterSubsidy: number;
+};
 
-const distributeSubsidy = (items: PlainSubsidyItem[], totalSubsidy: number): PlainSubsidyItem[] => {
+const distributeSubsidy = (
+  items: PlainSubsidyItem[],
+  totalSubsidy: number,
+): PlainSubsidyItem[] => {
   const sorted = [...items].sort(
-    (a, b) => (a.TotalPrice * a.quantity) - (b.TotalPrice * b.quantity)
+    (a, b) => a.TotalPrice * a.quantity - b.TotalPrice * b.quantity,
   );
 
   let remaining = totalSubsidy;
@@ -36,8 +39,10 @@ const distributeSubsidy = (items: PlainSubsidyItem[], totalSubsidy: number): Pla
     };
   });
 
-  return items.map((original) =>
-    distributed.find((d) => d._id.toString() === original._id.toString()) ?? original
+  return items.map(
+    (original) =>
+      distributed.find((d) => d._id.toString() === original._id.toString()) ??
+      original,
   );
 };
 
@@ -48,17 +53,16 @@ const getTotalSubsidy = async (customerId: Types.ObjectId): Promise<number> => {
   ]);
 
   const cartSubsidy = cart?.cartSubsidy ?? 0;
-  const giftWallet = Math.round((customer?.giftWalletBalance ?? 0));
+  const giftWallet = Math.round(customer?.giftWalletBalance ?? 0);
 
   return cartSubsidy + giftWallet;
 };
 
-
-export const saveSubsidytoWallet = async () => {
+export const saveSubsidytoWallet = async (customerId?: string) => {
   try {
     await dbConnect();
 
-    const user = await getUser();
+    const user = await getUser(customerId);
     if (!user) return { success: false, message: "User not found" };
 
     const cart = await CartModel.findOneAndUpdate(
@@ -67,46 +71,62 @@ export const saveSubsidytoWallet = async () => {
       { returnDocument: "after" },
     );
 
-    if (!cart) return { success: true, message: "Preference already been saved" };
+    if (!cart)
+      return { success: true, message: "Preference already been saved" };
 
     revalidatePath("/customer/cart");
     return { success: true, message: "Preference saved" };
-
   } catch (err) {
     console.error(err);
-    return { success: false, message: "Error while saving subsidy amount to wallet" };
+    return {
+      success: false,
+      message: "Error while saving subsidy amount to wallet",
+    };
   }
 };
 
-
-export const AddSubsidyItem = async (selectedProducts: IProduct[], totalSubsidy: number) => {
+export const AddSubsidyItem = async (
+  selectedProducts: IProduct[],
+  totalSubsidy: number,
+  customerId?: string,
+) => {
   try {
     await dbConnect();
 
-    const CurrentUser = await getUser();
+    const CurrentUser = await getUser(customerId);
     if (!CurrentUser) {
-      return { success: false, message: "Adding Subsidy Item Action : Error fetching User" };
+      return {
+        success: false,
+        message: "Adding Subsidy Item Action : Error fetching User",
+      };
     }
 
     const storeId = CurrentUser.associatedStoreId;
     const cart = await CartModel.findOne({ customerId: CurrentUser._id });
-    const existingSubsidyItems = (cart?.subsidyItems ?? []) as (ISubsidyItems & { toObject: () => PlainSubsidyItem })[];
+    const existingSubsidyItems = (cart?.subsidyItems ??
+      []) as (ISubsidyItems & { toObject: () => PlainSubsidyItem })[];
 
     const newProducts = selectedProducts.filter(
-      (p) => !existingSubsidyItems.some((s) => s.productId.toString() === p._id.toString())
+      (p) =>
+        !existingSubsidyItems.some(
+          (s) => s.productId.toString() === p._id.toString(),
+        ),
     );
 
-    const updatedExistingItems: PlainSubsidyItem[] = existingSubsidyItems.map((item) => {
-      const plain = item.toObject();
-      const isBeingAdded = selectedProducts.some(
-        (p) => p._id.toString() === plain.productId.toString()
-      );
-      const newQty = isBeingAdded ? plain.quantity + 1 : plain.quantity;
-      return { ...plain, quantity: newQty };
-    });
+    const updatedExistingItems: PlainSubsidyItem[] = existingSubsidyItems.map(
+      (item) => {
+        const plain = item.toObject();
+        const isBeingAdded = selectedProducts.some(
+          (p) => p._id.toString() === plain.productId.toString(),
+        );
+        const newQty = isBeingAdded ? plain.quantity + 1 : plain.quantity;
+        return { ...plain, quantity: newQty };
+      },
+    );
 
     const newItems: PlainSubsidyItem[] = newProducts.map((item) => {
-      const totalPrice = item.price + Math.round(item.price * (item.markup / 100));
+      const totalPrice =
+        item.price + Math.round(item.price * (item.markup / 100));
       return {
         _id: new Types.ObjectId(),
         productId: item._id as unknown as Types.ObjectId,
@@ -124,24 +144,25 @@ export const AddSubsidyItem = async (selectedProducts: IProduct[], totalSubsidy:
     await CartModel.findOneAndUpdate(
       { customerId: CurrentUser._id },
       { $set: { subsidyItems: distributed } },
-      { upsert: true }
+      { upsert: true },
     );
 
     revalidatePath("/customer/cart");
     return { success: true, message: "Subsidy Item Added Successfully" };
-
   } catch (error) {
     console.log(error);
     return { success: false, message: "Failed to add subsidy item" };
   }
 };
 
-
-export const IncrementSubsidyItem = async (productId: string) => {
+export const IncrementSubsidyItem = async (
+  productId: string,
+  customerId?: string,
+) => {
   try {
     await dbConnect();
 
-    const user = await getUser();
+    const user = await getUser(customerId);
     if (!user) return { success: false, message: "User not found" };
 
     const [cart, totalSubsidy] = await Promise.all([
@@ -150,36 +171,39 @@ export const IncrementSubsidyItem = async (productId: string) => {
     ]);
     if (!cart) return { success: false, message: "Cart not found" };
 
-    const plainItems: PlainSubsidyItem[] = cart.subsidyItems.map(
-      (s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject()
+    const plainItems: PlainSubsidyItem[] = cart.subsidyItems.map((s) =>
+      (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject(),
     );
 
     const updated = plainItems.map((s) =>
-      s.productId.toString() === productId ? { ...s, quantity: s.quantity + 1 } : s
+      s.productId.toString() === productId
+        ? { ...s, quantity: s.quantity + 1 }
+        : s,
     );
 
     const distributed = distributeSubsidy(updated, totalSubsidy);
 
     await CartModel.findOneAndUpdate(
       { customerId: user._id },
-      { $set: { subsidyItems: distributed } }
+      { $set: { subsidyItems: distributed } },
     );
 
     revalidatePath("/customer/cart");
     return { success: true };
-
   } catch (err) {
     console.log(err);
     return { success: false, message: "Increment failed" };
   }
 };
 
-
-export const DecrementSubsidyItem = async (productId: string) => {
+export const DecrementSubsidyItem = async (
+  productId: string,
+  customerId?: string,
+) => {
   try {
     await dbConnect();
 
-    const user = await getUser();
+    const user = await getUser(customerId);
     if (!user) return { success: false, message: "User not found" };
 
     const [cart, totalSubsidy] = await Promise.all([
@@ -188,12 +212,18 @@ export const DecrementSubsidyItem = async (productId: string) => {
     ]);
     if (!cart) return { success: false, message: "Cart not found" };
 
-    const item = cart.subsidyItems.find((i) => i.productId.toString() === productId);
+    const item = cart.subsidyItems.find(
+      (i) => i.productId.toString() === productId,
+    );
 
     if (!item || item.quantity <= 1) {
       const remaining = cart.subsidyItems
         .filter((i) => i.productId.toString() !== productId)
-        .map((s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject());
+        .map((s) =>
+          (
+            s as ISubsidyItems & { toObject: () => PlainSubsidyItem }
+          ).toObject(),
+        );
 
       if (remaining.length === 0 && cart.items.length === 0) {
         await CartModel.findOneAndDelete({ customerId: user._id });
@@ -205,41 +235,43 @@ export const DecrementSubsidyItem = async (productId: string) => {
 
       await CartModel.findOneAndUpdate(
         { customerId: user._id },
-        { $set: { subsidyItems: distributed } }
+        { $set: { subsidyItems: distributed } },
       );
-
     } else {
-      const plainItems: PlainSubsidyItem[] = cart.subsidyItems.map(
-        (s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject()
+      const plainItems: PlainSubsidyItem[] = cart.subsidyItems.map((s) =>
+        (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject(),
       );
 
       const updated = plainItems.map((s) =>
-        s.productId.toString() === productId ? { ...s, quantity: s.quantity - 1 } : s
+        s.productId.toString() === productId
+          ? { ...s, quantity: s.quantity - 1 }
+          : s,
       );
 
       const distributed = distributeSubsidy(updated, totalSubsidy);
 
       await CartModel.findOneAndUpdate(
         { customerId: user._id },
-        { $set: { subsidyItems: distributed } }
+        { $set: { subsidyItems: distributed } },
       );
     }
 
     revalidatePath("/customer/cart");
     return { success: true };
-
   } catch (err) {
     console.log(err);
     return { success: false, message: "Decrement failed" };
   }
 };
 
-
-export const RemoveSubsidyItem = async (productId: string) => {
+export const RemoveSubsidyItem = async (
+  productId: string,
+  customerId?: string,
+) => {
   try {
     await dbConnect();
 
-    const user = await getUser();
+    const user = await getUser(customerId);
     if (!user) return { success: false, message: "User not found" };
 
     const [cart, totalSubsidy] = await Promise.all([
@@ -250,7 +282,9 @@ export const RemoveSubsidyItem = async (productId: string) => {
 
     const remaining = cart.subsidyItems
       .filter((i) => i.productId.toString() !== productId)
-      .map((s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject());
+      .map((s) =>
+        (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject(),
+      );
 
     if (remaining.length === 0 && cart.items.length === 0) {
       await CartModel.findOneAndDelete({ customerId: user._id });
@@ -262,70 +296,82 @@ export const RemoveSubsidyItem = async (productId: string) => {
 
     await CartModel.findOneAndUpdate(
       { customerId: user._id },
-      { $set: { subsidyItems: distributed } }
+      { $set: { subsidyItems: distributed } },
     );
 
     revalidatePath("/customer/cart");
     return { success: true };
-
   } catch (err) {
     console.log(err);
     return { success: false, message: "Remove failed" };
   }
 };
 
-
-export const ClearAllSubsidyItems = async () => {
+export const ClearAllSubsidyItems = async (customerId?: string) => {
   try {
     await dbConnect();
 
-    const user = await getUser();
+    const user = await getUser(customerId);
     if (!user) return { success: false, message: "User not found" };
+    const cart = await CartModel.findOne({ customerId: user._id }).lean();
+
+    if (!cart) return { success: false, message: "Cart not found" };
+    if (cart.items.length < 1) {
+      await CartModel.findOneAndDelete({ customerId: user._id });
+    } else {
+      await CartModel.findOneAndUpdate(
+        { customerId: user._id },
+        { $set: { subsidyItems: [], cartSubsidy: 0 } },
+      );
+    }
 
     await CartModel.findOneAndUpdate(
       { customerId: user._id },
-      { $set: { subsidyItems: [],cartSubsidy: 0 } }
+      { $set: { subsidyItems: [], cartSubsidy: 0 } },
     );
 
     revalidatePath("/customer/cart");
     return { success: true, message: "Subsidy Items cleared successfully" };
-
   } catch (err) {
     console.log(err);
     return { success: false, message: "Error while clearing SubsidyItems" };
   }
 };
 
-
-export const updateCartSubsidy = async (subsidy: number) => {
+export const updateCartSubsidy = async (
+  subsidy: number,
+  customerId?: string,
+) => {
   try {
     await dbConnect();
 
-    const user = await getUser();
+    const user = await getUser(customerId);
     if (!user) return { success: false, message: "User not found" };
 
     await CartModel.findOneAndUpdate(
       { customerId: user._id },
-      { $set: { cartSubsidy: subsidy } }
+      { $set: { cartSubsidy: subsidy } },
     );
 
     revalidatePath("/customer/cart");
     return { success: true, message: "Subsidy Updated" };
-
   } catch (err) {
     console.log(err);
     return { success: false, message: "Error while updating subsidy" };
   }
 };
 
-
-export const movetoSubsidy = async (ProductId: string) => {
+export const movetoSubsidy = async (
+  ProductId: string,
+  receivedcustomerId?: string,
+) => {
   try {
     await dbConnect();
 
-    const User = await getUser();
+    const User = await getUser(receivedcustomerId);
     if (!User) return { message: "User not found", success: false };
     const customerId = User._id;
+    console.log({ customerId });
 
     const [cart, totalSubsidy] = await Promise.all([
       CartModel.findOne({ customerId })
@@ -337,27 +383,32 @@ export const movetoSubsidy = async (ProductId: string) => {
     if (!cart) return { success: false, message: "Cart not found" };
 
     const index = cart.items.findIndex(
-      (item) => item.productId._id.toString() === ProductId
+      (item) => item.productId._id.toString() === ProductId,
     );
 
     if (index === -1) return { success: false, message: "Item not found" };
 
     const [item] = cart.items.splice(index, 1);
     const product = item.productId as unknown as IProduct;
-    const TotalPrice = product.price + Math.round(product.price * (product.markup / 100));
+    const TotalPrice =
+      product.price + Math.round(product.price * (product.markup / 100));
 
     const alreadyInSubsidy = cart.subsidyItems.find(
-      (s) => (s.productId as unknown as IProduct)._id.toString() === product._id.toString()
+      (s) =>
+        (s.productId as unknown as IProduct)._id.toString() ===
+        product._id.toString(),
     );
 
-    const existingPlain: PlainSubsidyItem[] = cart.subsidyItems.map(
-      (s) => (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject()
+    const existingPlain: PlainSubsidyItem[] = cart.subsidyItems.map((s) =>
+      (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject(),
     );
 
     const allItems: PlainSubsidyItem[] = alreadyInSubsidy
       ? existingPlain.map((s) => {
-          const itemProductId = (s.productId as unknown as { _id: Types.ObjectId })?._id?.toString()
-            ?? s.productId.toString();
+          const itemProductId =
+            (
+              s.productId as unknown as { _id: Types.ObjectId }
+            )?._id?.toString() ?? s.productId.toString();
           return itemProductId === product._id.toString()
             ? { ...s, quantity: s.quantity + item.quantity }
             : s;
@@ -379,12 +430,11 @@ export const movetoSubsidy = async (ProductId: string) => {
 
     await CartModel.findOneAndUpdate(
       { customerId },
-      { $set: { items: cart.items, subsidyItems: distributed } }
+      { $set: { items: cart.items, subsidyItems: distributed } },
     );
 
     revalidatePath("/customer/cart");
     return { success: true };
-
   } catch (err) {
     console.log(err);
     return { success: false, message: "Failed to move item" };

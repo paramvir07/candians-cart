@@ -89,6 +89,7 @@ export const SubsidyItemsSection = ({
                   </div>
 
                   <CartActionBtns
+                    customerId={customerId}
                     variant="mobile"
                     quantity={item.quantity}
                     beforeSubsidy={item.TotalPrice}
@@ -154,6 +155,7 @@ export const SubsidyItemsSection = ({
               </div>
 
               <CartActionBtns
+                customerId={customerId}
                 variant="desktop"
                 subsidy={item.subsidy}
                 quantity={item.quantity}

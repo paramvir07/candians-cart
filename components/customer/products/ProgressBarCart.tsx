@@ -38,11 +38,11 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance }: { total: numb
       setShowBtn(false)
       setDialogOpen(false)
       lastMilestoneRef.current = null
-      ClearAllSubsidyItems()
+      ClearAllSubsidyItems(customerId)
       return
     }
 
-    updateCartSubsidy(subsidy * 100)
+    updateCartSubsidy((subsidy * 100),customerId)
 
     if (lastMilestoneRef.current !== prev) {
       lastMilestoneRef.current = prev

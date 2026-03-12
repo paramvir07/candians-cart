@@ -356,7 +356,6 @@ export const PlaceCustomerOrder = async ({
     });
 
     const cartTotal = TotalCart.total;
-    const walletBalance = User.walletBalance ?? 0;
 
     const OrderData = {
       products,
@@ -372,8 +371,6 @@ export const PlaceCustomerOrder = async ({
       storeId: User.associatedStoreId,
       paymentMode: "pending",
       status: "pending",
-      userWalletBalance: walletBalance,
-      giftWalletBalance: User.giftWalletBalance,
     };
 
     await OrderModel.create([OrderData], { session });
@@ -500,7 +497,11 @@ export const PlaceOrder = async ({
 
     if (walletPayment && walletBalance < cartTotal) {
       await session.abortTransaction();
-      return { success: false, message: "Insufficient Funds" };
+      return {
+        success: false,
+        message:
+          "Insufficient wallet balance. Please add funds or choose another payment method.",
+      };
     }
 
     const OrderData = {
@@ -526,8 +527,6 @@ export const PlaceOrder = async ({
       storeId: User.associatedStoreId,
       paymentMode,
       status: "completed",
-      userWalletBalance: walletBalance,
-      giftWalletBalance: User.giftWalletBalance,
       cashierId,
     };
 

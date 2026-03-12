@@ -7,7 +7,6 @@ export interface PlaceOrderProduct {
   markup: number;
   tax: number;
   disposableFee: number;
-  status?: "completed" | "refunded";
   subsidy?: number;
 }
 
@@ -19,13 +18,11 @@ export interface PlaceOrderI {
   TotalDisposableFee: number;
   BaseTotal: number;
   cartTotal: number;
-  userWalletBalance: number;
-  giftWalletBalance: number;
   userId: Types.ObjectId;
   storeId: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
-  status?: "pending" | "completed" | "refunded";
+  status?: "pending" | "completed";
   subsidy?: number;
   subsidyLeft:number;
   susbsidyUsed:number;
@@ -70,13 +67,6 @@ const placeOrderProductSchema = new Schema<PlaceOrderProduct>(
       required: true,
       default: 0,
       min: 0,
-    },
-    status: {
-      type: String,
-      enum: ["completed", "refunded"],
-      default: "completed",
-      required: true,
-      index: true,
     },
   },
   { _id: false },
@@ -134,16 +124,6 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       default: 0,
       min: 0,
     },
-    userWalletBalance: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    giftWalletBalance: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -158,15 +138,13 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
     },
     status: {
       type: String,
-      enum: ["pending", "completed", "refunded"],
-      default: "completed",
+      enum: ["pending", "completed"],
       required: true,
       index: true,
     },
     paymentMode: {
       type: String,
       enum: ["wallet", "cash", "card", "pending"],
-      default: "wallet",
       required: true,
       index: true,
     },
