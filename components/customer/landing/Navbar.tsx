@@ -7,6 +7,7 @@ import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { Customer } from "@/types/customer/customer";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { fmtShort } from "@/lib/fomatPrice";
+import { Button } from "@/components/ui/button";
 
 const Navbar = async () => {
   const [customerDataResponse, cartCount] = await Promise.all([
@@ -44,14 +45,14 @@ const Navbar = async () => {
 
           {/* Cart */}
           <Link href="/customer/cart">
-            <button className="relative w-9 h-9 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <Button className="relative w-9 h-9 flex items-center justify-center rounded-full text-white hover:bg-primary/50 transition-colors">
               <ShoppingCartIcon className="w-[18px] h-[18px]" />
               {(cartCount ?? 0) > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
                   {(cartCount ?? 0) > 99 ? "99+" : cartCount}
                 </span>
               )}
-            </button>
+            </Button>
           </Link>
 
           {/* Wallet pill — orange CTA style like "Get full access" */}
