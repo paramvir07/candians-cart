@@ -9,21 +9,36 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { QrCode, X, ScanLine } from "lucide-react";
+import { QrCode, X, ScanLine, Barcode } from "lucide-react";
 
-// MUST be dynamically imported with ssr:false — library uses browser APIs
-// that don't exist during Next.js server rendering
 const Scanner = dynamic(
   () => import("@yudiel/react-qr-scanner").then((mod) => mod.Scanner),
   { ssr: false },
 );
 
+type UsedFor = "qr" | "barcode";
+
 type QrScannerButtonProps = {
   onScan: (value: string) => void;
+  usedFor?: UsedFor;
+  /** Optional extra classes on the trigger button */
+  className?: string;
 };
 
-export default function QrScannerButton({ onScan }: QrScannerButtonProps) {
+export default function QrScannerButton({
+  onScan,
+  usedFor = "qr",
+  className = "",
+}: QrScannerButtonProps) {
   const [open, setOpen] = useState(false);
+
+  const isBarcode = usedFor === "barcode";
+
+  const label = isBarcode ? "Scan Barcode" : "Scan QR";
+  const dialogTitle = isBarcode ? "Scan Product Barcode" : "Scan Customer QR";
+  const hint = isBarcode
+    ? "Point the camera at the product barcode — detects automatically."
+    : "Align the customer's QR code inside the frame — detects automatically.";
 
   function handleClose() {
     setOpen(false);
@@ -44,21 +59,24 @@ export default function QrScannerButton({ onScan }: QrScannerButtonProps) {
       <Button
         variant="secondary"
         size="sm"
-        className="shadow-sm gap-1.5 shrink-0"
+        className={`shadow-sm gap-1.5 shrink-0 ${className}`}
         type="button"
         onClick={() => setOpen(true)}
       >
-        <QrCode className="w-4 h-4" />
-        <span className="hidden sm:inline">Scan QR</span>
+        {isBarcode ? (
+          <Barcode className="w-4 h-4" />
+        ) : (
+          <QrCode className="w-4 h-4" />
+        )}
+        <span className="hidden sm:inline">{label}</span>
       </Button>
 
       <Dialog open={open} onOpenChange={(next) => !next && handleClose()}>
         <DialogContent className="w-[calc(100vw-2rem)] max-w-sm p-0 overflow-hidden rounded-2xl">
-          {/* Header */}
           <DialogHeader className="flex flex-row items-center justify-between px-4 pt-4 pb-2 space-y-0">
             <DialogTitle className="text-base flex items-center gap-2 font-semibold">
               <ScanLine className="w-4 h-4 text-primary" />
-              Scan Customer QR
+              {dialogTitle}
             </DialogTitle>
             <Button
               variant="ghost"
@@ -71,18 +89,27 @@ export default function QrScannerButton({ onScan }: QrScannerButtonProps) {
             </Button>
           </DialogHeader>
 
-          {/* Scanner — only mounts when dialog is open, so camera starts fresh each time */}
           {open && (
             <div className="overflow-hidden rounded-b-2xl">
               <Scanner
                 onScan={handleScan}
-                onError={(err) => console.error("QR Scanner error:", err)}
-                constraints={{
-                  facingMode: "environment", // rear camera on phones
-                }}
-                components={{
-                  finder: true,
-                }}
+                onError={(err) => console.error("Scanner error:", err)}
+                constraints={{ facingMode: "environment" }}
+                components={{ finder: true }}
+                formats={
+                  isBarcode
+                    ? [
+                        // Common 1-D barcode formats used on product packaging
+                        "ean_13",
+                        "ean_8",
+                        "upc_a",
+                        "upc_e",
+                        "code_128",
+                        "code_39",
+                        "itf",
+                      ]
+                    : undefined // default — scans everything including QR
+                }
                 styles={{
                   container: { width: "100%", paddingTop: 0 },
                   video: {
@@ -96,8 +123,7 @@ export default function QrScannerButton({ onScan }: QrScannerButtonProps) {
           )}
 
           <p className="text-xs text-muted-foreground text-center py-3 px-4">
-            Align the customer's QR code inside the frame — detects
-            automatically.
+            {hint}
           </p>
         </DialogContent>
       </Dialog>

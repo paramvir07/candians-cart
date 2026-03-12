@@ -2,6 +2,7 @@ import { ISubsidyItems } from "@/db/models/customer/cart.model";
 import { Tag } from "lucide-react";
 import Image from "next/image";
 import CartActionBtns from "./CartActionBtns";
+import { CategoryIllustration } from "../shared/CategoryIllustration";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -35,10 +36,11 @@ export const SubsidyItemsSection = ({
 
         <div className="flex flex-col gap-3">
           {subItems.map((item, i) => {
+            const hasImage = item.productId.images?.[0]?.url;
             const productId = item.productId._id?.toString() ?? String(i);
-            let AfterSubsidy = (item.TotalPrice * item.quantity) - item.subsidy;
-            leftOffSubsidy =  (item.TotalPrice * item.quantity) - AfterSubsidy;
-            if(AfterSubsidy < 0){
+            let AfterSubsidy = item.TotalPrice * item.quantity - item.subsidy;
+            leftOffSubsidy = item.TotalPrice * item.quantity - AfterSubsidy;
+            if (AfterSubsidy < 0) {
               leftOffSubsidy = AfterSubsidy + item.subsidy;
               AfterSubsidy = 0;
             }
@@ -47,14 +49,21 @@ export const SubsidyItemsSection = ({
                 key={productId}
                 className="bg-white rounded-2xl p-4 flex gap-3 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-gray-100 border-l-[3px] border-l-emerald-400"
               >
-                <div className="w-18 h-18 rounded-xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100">
-                  <Image
-                    src={item.productId.images?.[0]?.url ?? "/placeholder.jpg"}
-                    alt={item.productId.name}
-                    width={72}
-                    height={72}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="relative w-18 h-18 rounded-xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100">
+                  {hasImage ? (
+                    <Image
+                      src={item.productId.images?.[0]?.url ?? ""}
+                      alt={item.productId.name}
+                      width={72}
+                      height={72}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <CategoryIllustration
+                      category={item.productId.category}
+                      className="w-full h-full"
+                    />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -108,20 +117,28 @@ export const SubsidyItemsSection = ({
         </div>
 
         {subItems.map((item, i) => {
+          const hasImage = item.productId.images?.[0]?.url;
           const productId = item.productId._id?.toString() ?? String(i);
           return (
             <div
               key={productId}
               className={`flex items-center gap-5 px-6 py-4 ${i !== subItems.length - 1 ? "border-b border-gray-50" : ""}`}
             >
-              <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 shrink-0 border border-gray-100">
-                <Image
-                  src={item.productId.images?.[0]?.url ?? "/placeholder.jpg"}
-                  alt={item.productId.name}
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative w-18 h-18 rounded-xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100">
+                {hasImage ? (
+                  <Image
+                    src={item.productId.images?.[0]?.url ?? ""}
+                    alt={item.productId.name}
+                    width={72}
+                    height={72}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <CategoryIllustration
+                    category={item.productId.category}
+                    className="w-full h-full"
+                  />
+                )}
               </div>
 
               <div className="flex-1 min-w-0">

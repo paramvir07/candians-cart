@@ -28,6 +28,7 @@ import CheckoutActions from "./CheckOutActions";
 import { SubsidyItemsSection } from "@/components/customer/products/SubsidyItemsSection";
 import { ISubsidyItems } from "@/db/models/customer/cart.model";
 import { AddtoSubsidyBtn } from "@/components/customer/products/CartActionBtns";
+import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -73,76 +74,79 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const giftWalletBalance = UserData?.giftWalletBalance ?? 0;
   const items = CartItems?.items as ICartItem[] | null;
-  const subItems = CartItems?.subItems as ISubsidyItems[] ?? [];
+  const subItems = (CartItems?.subItems as ISubsidyItems[]) ?? [];
 
-  if (!items || items.length === 0 && !subItems)
+  if (!items || (items.length === 0 && !subItems))
     return <EmptyCart customerId={customerId} />;
 
   // ── Totals
-const itemTotals = items.reduce(
-  (acc, item) => {
-    const { afterMarkup, gst, pst, totalTax, disposable, lineTotal } =
-      calcLine(item);
+  const itemTotals = items.reduce(
+    (acc, item) => {
+      const { afterMarkup, gst, pst, totalTax, disposable, lineTotal } =
+        calcLine(item);
 
-    acc.subtotal += afterMarkup;
-    acc.gst += gst;
-    acc.pst += pst;
-    acc.totalTax += totalTax;
-    acc.disposable += disposable;
-    acc.total += lineTotal;
+      acc.subtotal += afterMarkup;
+      acc.gst += gst;
+      acc.pst += pst;
+      acc.totalTax += totalTax;
+      acc.disposable += disposable;
+      acc.total += lineTotal;
 
-    return acc;
-  },
-  { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 }
-);
+      return acc;
+    },
+    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
+  );
 
-const progressTotal = items.reduce((acc, item) => {
-  if (item.productId.subsidised) return acc;
-  const { lineTotal } = calcLine(item);
-  return acc + lineTotal;
-}, 0);
+  const progressTotal = items.reduce((acc, item) => {
+    if (item.productId.subsidised) return acc;
+    const { lineTotal } = calcLine(item);
+    return acc + lineTotal;
+  }, 0);
 
-const subsidyTotals = subItems.reduce(
-  (acc, item) => {
-    const afterSubsidy = Math.max((item.TotalPrice * item.quantity) - item.subsidy, 0);
-    const taxRate = item.productId.tax ?? 0;
-    const disposable = (item.productId.disposableFee ?? 0) * item.quantity;
+  const subsidyTotals = subItems.reduce(
+    (acc, item) => {
+      const afterSubsidy = Math.max(
+        item.TotalPrice * item.quantity - item.subsidy,
+        0,
+      );
+      const taxRate = item.productId.tax ?? 0;
+      const disposable = (item.productId.disposableFee ?? 0) * item.quantity;
 
-    // Always apply tax and disposable on whatever the effective price is
-    const effectiveBase = afterSubsidy > 0 ? afterSubsidy : 0;
+      // Always apply tax and disposable on whatever the effective price is
+      const effectiveBase = afterSubsidy > 0 ? afterSubsidy : 0;
 
-    let gst = 0;
-    let pst = 0;
-    if (taxRate === 0.05) gst = Math.round(effectiveBase * 0.05);
-    else if (taxRate === 0.07) pst = Math.round(effectiveBase * 0.07);
-    else if (taxRate === 0.12) {
-      gst = Math.round(effectiveBase * 0.05);
-      pst = Math.round(effectiveBase * 0.07);
-    }
+      let gst = 0;
+      let pst = 0;
+      if (taxRate === 0.05) gst = Math.round(effectiveBase * 0.05);
+      else if (taxRate === 0.07) pst = Math.round(effectiveBase * 0.07);
+      else if (taxRate === 0.12) {
+        gst = Math.round(effectiveBase * 0.05);
+        pst = Math.round(effectiveBase * 0.07);
+      }
 
-    const totalTax = gst + pst;
-    const lineTotal = effectiveBase + totalTax + disposable;
+      const totalTax = gst + pst;
+      const lineTotal = effectiveBase + totalTax + disposable;
 
-    acc.subtotal += effectiveBase;
-    acc.gst += gst;
-    acc.pst += pst;
-    acc.totalTax += totalTax;
-    acc.disposable += disposable;
-    acc.total += lineTotal;
+      acc.subtotal += effectiveBase;
+      acc.gst += gst;
+      acc.pst += pst;
+      acc.totalTax += totalTax;
+      acc.disposable += disposable;
+      acc.total += lineTotal;
 
-    return acc;
-  },
-  { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 }
-);
+      return acc;
+    },
+    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
+  );
 
-const totals = {
-  subtotal: itemTotals.subtotal + subsidyTotals.subtotal,
-  gst: itemTotals.gst + subsidyTotals.gst,
-  pst: itemTotals.pst + subsidyTotals.pst,
-  totalTax: itemTotals.totalTax + subsidyTotals.totalTax,
-  disposable: itemTotals.disposable + subsidyTotals.disposable, 
-  total: itemTotals.total + subsidyTotals.total,
-};
+  const totals = {
+    subtotal: itemTotals.subtotal + subsidyTotals.subtotal,
+    gst: itemTotals.gst + subsidyTotals.gst,
+    pst: itemTotals.pst + subsidyTotals.pst,
+    totalTax: itemTotals.totalTax + subsidyTotals.totalTax,
+    disposable: itemTotals.disposable + subsidyTotals.disposable,
+    total: itemTotals.total + subsidyTotals.total,
+  };
 
   const showDisposable = totals.disposable > 0;
   const showGST = totals.gst > 0;
@@ -197,37 +201,51 @@ const totals = {
             {customerId ? "Customer's cart" : "My Cart"}
           </h1>
           <span className="text-sm text-gray-400 font-normal">
-            ({items.length+subItems.length})
+            ({items.length + subItems.length})
           </span>
         </div>
 
         <div className="mb-4">
-          <ProgressBarCart total={progressTotal} customerId={customerId} giftWalletBalance={giftWalletBalance} />
+          <ProgressBarCart
+            total={progressTotal}
+            customerId={customerId}
+            giftWalletBalance={giftWalletBalance}
+          />
         </div>
 
         <div className="flex flex-col gap-3 mb-4">
           {items.map((item: ICartItem) => {
             const { afterMarkup } = calcLine(item);
+            const hasImage = item.productId.images?.[0]?.url;
             return (
               <div
                 key={item.productId._id}
                 className="bg-white rounded-2xl p-4 flex gap-3 shadow-[0_1px_4px_rgba(0,0,0,0.06)] border border-gray-100"
               >
-                <div className="w-18 h-18 rounded-xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100">
-                  <Image
-                    src={item.productId.images?.[0]?.url ?? "/placeholder.jpg"}
-                    alt={item.productId.name}
-                    width={72}
-                    height={72}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="relative w-18 h-18 rounded-xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100">
+                  {hasImage ? (
+                    <Image
+                      src={item.productId.images?.[0]?.url ?? ""}
+                      alt={item.productId.name}
+                      width={72}
+                      height={72}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <CategoryIllustration
+                      category={item.productId.category}
+                      className="w-full h-full"
+                    />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate flex items-center gap-3">
                     {item.productId.name}
                     {item.productId.subsidised && (
-                      <AddtoSubsidyBtn ProductId={item.productId._id.toString()}/>
+                      <AddtoSubsidyBtn
+                        ProductId={item.productId._id.toString()}
+                      />
                     )}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
@@ -338,7 +356,7 @@ const totals = {
                 </span>
               </div>
             )}
-            <SubsidyCart/>
+            <SubsidyCart />
             <div className="h-px bg-gray-100" />
             <div className="flex justify-between">
               <span className="font-bold text-gray-900">Total</span>
@@ -384,52 +402,64 @@ const totals = {
             {customerId ? "Customer's cart" : "My Cart"}
           </h1>
           <span className="text-gray-400 font-normal text-lg">
-            ({items.length+subItems.length})
+            ({items.length + subItems.length})
           </span>
         </div>
 
         <div className="mb-6">
-          <ProgressBarCart total={progressTotal} customerId={customerId} giftWalletBalance={giftWalletBalance} />
+          <ProgressBarCart
+            total={progressTotal}
+            customerId={customerId}
+            giftWalletBalance={giftWalletBalance}
+          />
         </div>
 
         <div className="flex gap-6 items-start">
           <div className="flex-1 flex flex-col gap-4">
             {/* Items */}
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-[0_1px_6px_rgba(0,0,0,0.06)]">
-              {items.length > 0 &&               
-              <div className="px-6 pt-5 pb-2">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-                  {items.length} {items.length === 1 ? "item" : "items"}
-                </p>
-              </div>}
-
+              {items.length > 0 && (
+                <div className="px-6 pt-5 pb-2">
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+                    {items.length} {items.length === 1 ? "item" : "items"}
+                  </p>
+                </div>
+              )}
 
               {items.map((item: ICartItem, i) => {
                 const { afterMarkup } = calcLine(item);
+                const hasImage = item.productId.images?.[0]?.url;
                 return (
                   <div
                     key={item.productId._id}
                     className={`flex items-center gap-5 px-6 py-4 ${i !== items.length - 1 ? "border-b border-gray-50" : ""}`}
                   >
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 shrink-0 border border-gray-100">
-                      <Image
-                        src={
-                          item.productId.images?.[0]?.url ?? "/placeholder.jpg"
-                        }
-                        alt={item.productId.name}
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="relative w-18 h-18 rounded-xl bg-gray-50 overflow-hidden shrink-0 border border-gray-100">
+                      {hasImage ? (
+                        <Image
+                          src={item.productId.images?.[0]?.url ?? ""}
+                          alt={item.productId.name}
+                          width={72}
+                          height={72}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <CategoryIllustration
+                          category={item.productId.category}
+                          className="w-full h-full"
+                        />
+                      )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate flex items-center gap-3">
-                    {item.productId.name}
-                    {item.productId.subsidised && (
-                      <AddtoSubsidyBtn ProductId={item.productId._id.toString()}/>
-                    )}
-                  </p>
+                        {item.productId.name}
+                        {item.productId.subsidised && (
+                          <AddtoSubsidyBtn
+                            ProductId={item.productId._id.toString()}
+                          />
+                        )}
+                      </p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {item.productId.category}
                       </p>
@@ -542,7 +572,7 @@ const totals = {
                     </span>
                   </div>
                 )}
-                <SubsidyCart/>
+                <SubsidyCart />
                 <div className="h-px bg-gray-100" />
                 <div className="flex justify-between">
                   <span className="font-bold text-gray-900">Total</span>

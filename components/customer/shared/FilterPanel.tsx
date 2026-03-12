@@ -1,7 +1,7 @@
 "use client";
 // components/customer/shared/FilterPanel.tsx
 
-import { X, SlidersHorizontal, Sparkles } from "lucide-react";
+import { X, SlidersHorizontal } from "lucide-react";
 import {
   ALL_CATEGORIES,
   getCategoryConfig,
@@ -11,7 +11,6 @@ export interface FilterState {
   categories: string[];
   inStockOnly: boolean;
   subsidisedOnly: boolean;
-  featuredOnly: boolean;
   sortBy: "default" | "price_asc" | "price_desc" | "name_asc";
 }
 
@@ -19,7 +18,6 @@ export const DEFAULT_FILTERS: FilterState = {
   categories: [],
   inStockOnly: false,
   subsidisedOnly: false,
-  featuredOnly: true, // Default: show featured products
   sortBy: "default",
 };
 
@@ -28,7 +26,6 @@ export function getActiveFilterCount(filters: FilterState) {
     filters.categories.length +
     (filters.inStockOnly ? 1 : 0) +
     (filters.subsidisedOnly ? 1 : 0) +
-    // featuredOnly is default so we don't count it as an "active" filter badge
     (filters.sortBy !== "default" ? 1 : 0)
   );
 }
@@ -67,7 +64,7 @@ export function FilterPanel({
         <button
           onClick={onReset}
           className={`flex items-center gap-1.5 text-sm text-destructive font-medium transition-colors mb-4 ${
-            activeCount > 0 || !filters.featuredOnly ? "visible" : "invisible"
+            activeCount > 0 ? "visible" : "invisible"
           }`}
         >
           <X className="h-3.5 w-3.5" />
@@ -75,27 +72,6 @@ export function FilterPanel({
         </button>
 
         <div className="space-y-6">
-          {/* Featured */}
-          <div>
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-              Highlights
-            </h4>
-            <button
-              onClick={() => onChange({ featuredOnly: !filters.featuredOnly })}
-              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left w-full ${
-                filters.featuredOnly
-                  ? "bg-amber-50 text-amber-700 border-amber-300 shadow-sm"
-                  : "bg-white text-slate-600 border-slate-100 hover:border-slate-200 hover:bg-slate-50"
-              }`}
-            >
-              <Sparkles className="h-4 w-4 shrink-0" />
-              <span className="flex-1">Featured Products</span>
-              {filters.featuredOnly && (
-                <X className="h-3.5 w-3.5 opacity-50 shrink-0" />
-              )}
-            </button>
-          </div>
-
           {/* Categories */}
           <div>
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
