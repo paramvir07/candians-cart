@@ -17,7 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Filter, Loader2, PackageOpen, Search } from "lucide-react";
+import { Filter, Loader2, PackageOpen, Search, SlidersHorizontal, X } from "lucide-react";
 import { Customer } from "@/types/customer/customer";
 
 interface SearchResultsClientProps {
@@ -26,28 +26,24 @@ interface SearchResultsClientProps {
   searchAction: (
     query: string,
     storeId: string,
-  ) => Promise<{
-    success: boolean;
-    data?: IProduct[];
-    error?: string;
-  }>;
+  ) => Promise<{ success: boolean; data?: IProduct[]; error?: string }>;
   customerData: Customer;
   cartCount: number;
 }
 
 const QUICK_SUGGESTIONS = [
-  "🥭 Fruits",
-  "🥦 Vegetables",
-  "🥛 Dairy",
-  "🍗 Meat",
-  "🫓 Bakery",
-  "🧃 Beverages",
-  "🍿 Snacks",
-  "🧹 Household",
-  "🌶️ Spices",
-  "☕ Tea & Coffee",
-  "🫘 Pulses & Lentils",
-  "🍮 Sweets & Mithai",
+  { emoji: "🥭", label: "Fruits" },
+  { emoji: "🥦", label: "Vegetables" },
+  { emoji: "🥛", label: "Dairy" },
+  { emoji: "🍗", label: "Meat" },
+  { emoji: "🫓", label: "Bakery" },
+  { emoji: "🧃", label: "Beverages" },
+  { emoji: "🍿", label: "Snacks" },
+  { emoji: "🧹", label: "Household" },
+  { emoji: "🌶️", label: "Spices" },
+  { emoji: "☕", label: "Tea & Coffee" },
+  { emoji: "🫘", label: "Pulses & Lentils" },
+  { emoji: "🍮", label: "Sweets & Mithai" },
 ];
 
 export function SearchResultsClient({
@@ -64,52 +60,33 @@ export function SearchResultsClient({
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
-  // Ref to scroll to results heading when filters change
   const resultsRef = useRef<HTMLDivElement>(null);
   const isFirstFilterRender = useRef(true);
 
-  // Scroll to results top whenever filters change (but not on initial mount)
   useEffect(() => {
-    if (isFirstFilterRender.current) {
-      isFirstFilterRender.current = false;
-      return;
-    }
+    if (isFirstFilterRender.current) { isFirstFilterRender.current = false; return; }
     if (!resultsRef.current) return;
     const rect = resultsRef.current.getBoundingClientRect();
-    const absoluteTop = window.scrollY + rect.top;
-    // 70px offset for the sticky SearchNav
-    window.scrollTo({ top: absoluteTop - 70, behavior: "smooth" });
+    window.scrollTo({ top: window.scrollY + rect.top - 70, behavior: "smooth" });
   }, [filters]);
 
-  const updateFilters = (partial: Partial<FilterState>) => {
+  const updateFilters = (partial: Partial<FilterState>) =>
     setFilters((prev) => ({ ...prev, ...partial }));
-  };
-
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
   const activeFilterCount = getActiveFilterCount(filters);
 
-  // Debounced search
   useEffect(() => {
-    if (!query.trim()) {
-      setAllResults([]);
-      setHasSearched(false);
-      return;
-    }
+    if (!query.trim()) { setAllResults([]); setHasSearched(false); return; }
     const timer = setTimeout(async () => {
       setIsLoading(true);
       setHasSearched(true);
       const res = await searchAction(query.trim(), storeId);
-      if (res.success && res.data) {
-        setAllResults(res.data);
-      } else {
-        setAllResults([]);
-      }
+      setAllResults(res.success && res.data ? res.data : []);
       setIsLoading(false);
     }, 350);
     return () => clearTimeout(timer);
   }, [query, storeId]);
 
-  // Apply filters + sort, featured always on top
   const filtered = useMemo(() => {
     let result = [...allResults];
     if (filters.categories.length > 0)
@@ -117,23 +94,16 @@ export function SearchResultsClient({
     if (filters.inStockOnly) result = result.filter((p) => p.stock);
     if (filters.subsidisedOnly) result = result.filter((p) => p.subsidised);
     switch (filters.sortBy) {
-      case "price_asc":
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case "price_desc":
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case "name_asc":
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
+      case "price_asc":  result.sort((a, b) => a.price - b.price); break;
+      case "price_desc": result.sort((a, b) => b.price - a.price); break;
+      case "name_asc":   result.sort((a, b) => a.name.localeCompare(b.name)); break;
     }
-    // Featured always floats to top
     result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
     return result;
   }, [allResults, filters]);
 
   return (
-    <div className={!customerId ? "min-h-screen bg-[#f7f8fa]" : "min-h-screen"}>
+    <div className="min-h-screen bg-muted/30">
       <SearchNav
         customerId={customerId}
         initialQuery={query}
@@ -143,101 +113,119 @@ export function SearchResultsClient({
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex gap-8">
-          {/* Desktop sidebar — only when there are results */}
+        <div className="flex gap-6">
+
+          {/* ── Desktop sidebar ── */}
           {hasSearched && allResults.length > 0 && !customerId && (
-            <aside className="hidden lg:flex flex-col w-60 shrink-0">
+            <aside className="hidden lg:flex flex-col w-64 shrink-0">
               <div
-                className="sticky top-[4.5rem] bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col"
+                className="sticky top-[4.5rem] rounded-2xl border border-border/60 bg-card overflow-hidden flex flex-col"
                 style={{ maxHeight: "calc(100vh - 5rem)" }}
               >
-                <div className="flex items-center gap-2 px-5 pt-5 pb-3 border-b border-slate-50 shrink-0">
-                  <Filter className="h-4 w-4 text-slate-400" />
-                  <span className="font-bold text-slate-900 text-sm">
-                    Refine
-                  </span>
+                {/* Sidebar header */}
+                <div className="flex items-center gap-2 px-5 pt-5 pb-3 border-b border-border/40 shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center">
+                    <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                  <span className="font-bold text-foreground text-sm">Refine</span>
                   {activeFilterCount > 0 && (
-                    <span className="bg-green-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center ml-auto">
-                      {activeFilterCount}
-                    </span>
+                    <>
+                      <span className="bg-green-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center ml-auto">
+                        {activeFilterCount}
+                      </span>
+                      <button
+                        onClick={resetFilters}
+                        className="text-[11px] text-muted-foreground hover:text-foreground font-medium transition-colors"
+                      >
+                        Clear
+                      </button>
+                    </>
                   )}
                 </div>
-                <div className="flex-1 overflow-y-auto px-5 py-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-                  <FilterPanel
-                    filters={filters}
-                    onChange={updateFilters}
-                    onReset={resetFilters}
-                  />
+
+                <div className="flex-1 overflow-y-auto px-5 py-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+                  <FilterPanel filters={filters} onChange={updateFilters} onReset={resetFilters} />
                 </div>
               </div>
             </aside>
           )}
 
-          {/* Results column */}
+          {/* ── Results column ── */}
           <div className="flex-1 min-w-0">
-            {/* Idle — no query yet */}
+
+            {/* ── Idle state ── */}
             {!query.trim() && !hasSearched && (
-              <div className="flex flex-col items-center justify-center py-24 gap-4 text-slate-400">
-                <div className="w-20 h-20 rounded-full bg-green-50 border-2 border-green-100 flex items-center justify-center">
-                  <Search className="h-8 w-8 text-green-400" />
+              <div className="flex flex-col items-center justify-center py-20 gap-6">
+                {/* Icon */}
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-3xl bg-card border border-border/60 flex items-center justify-center shadow-sm">
+                    <Search className="h-8 w-8 text-green-600" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-2 border-background" />
                 </div>
+
                 <div className="text-center">
-                  <p className="font-semibold text-slate-600 text-lg">
-                    What are you looking for?
-                  </p>
-                  <p className="text-sm mt-1">
-                    Type above to search products, or scan a barcode
+                  <p className="font-bold text-foreground text-xl tracking-tight">What are you looking for?</p>
+                  <p className="text-muted-foreground text-sm mt-1.5 max-w-xs">
+                   Type above to search products, or scan a barcode
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2 justify-center mt-2">
+
+                {/* Quick suggestion pills — reference style */}
+                <div className="flex flex-wrap gap-2 justify-center max-w-lg">
                   {QUICK_SUGGESTIONS.map((s) => (
                     <button
-                      key={s}
-                      onClick={() => setQuery(s.split(" ").slice(1).join(" "))}
-                      className="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-medium text-slate-600 hover:border-green-300 hover:text-green-700 transition-colors shadow-sm"
+                      key={s.label}
+                      onClick={() => setQuery(s.label)}
+                      className="group flex items-center gap-0 rounded-full border border-border/60 bg-card hover:border-green-200 hover:bg-green-50/40 transition-all duration-200 pr-4 shrink-0"
                     >
-                      {s}
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-muted group-hover:bg-green-100/70 m-0.5 text-sm transition-colors">
+                        {s.emoji}
+                      </span>
+                      <span className="text-sm font-semibold pl-2 text-muted-foreground group-hover:text-green-700 whitespace-nowrap">
+                        {s.label}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Loading */}
+            {/* ── Loading ── */}
             {isLoading && (
-              <div className="flex items-center justify-center py-24 gap-3 text-slate-500">
-                <Loader2 className="h-6 w-6 animate-spin text-green-500" />
-                <span className="font-medium">Searching…</span>
+              <div className="flex flex-col items-center justify-center py-24 gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-card border border-border/60 flex items-center justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-green-600" />
+                </div>
+                <p className="text-sm font-semibold text-muted-foreground">Searching…</p>
               </div>
             )}
 
-            {/* Results */}
+            {/* ── Results ── */}
             {!isLoading && hasSearched && (
               <>
-                {/* Toolbar — this is the scroll target */}
-                <div
-                  ref={resultsRef}
-                  className="flex items-center justify-between mb-5"
-                >
+                {/* Toolbar */}
+                <div ref={resultsRef} className="flex items-center justify-between mb-5 gap-3">
                   <div>
-                    <p className="text-slate-900 font-semibold">
+                    <p className="font-bold text-foreground">
                       {filtered.length > 0
                         ? `${filtered.length} result${filtered.length !== 1 ? "s" : ""}`
                         : "No results"}{" "}
-                      <span className="text-slate-400 font-normal">
+                      <span className="text-muted-foreground font-normal text-sm">
                         for &ldquo;{query}&rdquo;
                       </span>
                     </p>
                     {activeFilterCount > 0 && (
                       <button
                         onClick={resetFilters}
-                        className="text-xs text-green-600 font-medium hover:text-green-700 mt-0.5"
+                        className="text-xs text-green-600 font-semibold hover:text-green-700 mt-0.5 flex items-center gap-1"
                       >
-                        Clear {activeFilterCount} filter
-                        {activeFilterCount !== 1 ? "s" : ""}
+                        <X className="h-3 w-3" />
+                        Clear {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""}
                       </button>
                     )}
                   </div>
+
                   {allResults.length > 0 && (
                     <div className="lg:hidden">
                       <FilterTriggerButton
@@ -248,6 +236,7 @@ export function SearchResultsClient({
                   )}
                 </div>
 
+                {/* Product grid */}
                 {filtered.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     {filtered.map((product) => (
@@ -259,28 +248,40 @@ export function SearchResultsClient({
                     ))}
                   </div>
                 ) : allResults.length > 0 ? (
-                  <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-400">
-                    <PackageOpen className="h-10 w-10 opacity-30" />
-                    <p className="font-semibold text-slate-600">
-                      No products match your filters
-                    </p>
+                  /* Filters returned nothing */
+                  <div className="py-20 flex flex-col items-center justify-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center">
+                      <PackageOpen className="h-6 w-6 text-muted-foreground/50" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-foreground">No products match your filters</p>
+                      <p className="text-sm text-muted-foreground mt-1">Try adjusting or clearing your filters</p>
+                    </div>
                     <button
                       onClick={resetFilters}
-                      className="text-sm text-green-600 font-semibold hover:text-green-700 underline underline-offset-2"
+                      className="h-9 px-5 rounded-full bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors"
                     >
                       Clear filters
                     </button>
                   </div>
                 ) : (
-                  <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-400">
-                    <div className="text-5xl">🔍</div>
-                    <p className="font-semibold text-slate-600 text-lg">
-                      No results for &ldquo;{query}&rdquo;
-                    </p>
-                    <p className="text-sm text-center max-w-xs">
-                      Try a different spelling or browse by category on the home
-                      page.
-                    </p>
+                  /* No results at all */
+                  <div className="py-20 flex flex-col items-center justify-center gap-4">
+                    <div className="w-16 h-16 rounded-3xl bg-card border border-border/60 flex items-center justify-center text-3xl shadow-sm">
+                      🔍
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-foreground text-lg">Nothing found for &ldquo;{query}&rdquo;</p>
+                      <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
+                        Try a different spelling or browse by category
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setQuery("")}
+                      className="h-9 px-5 rounded-full border border-border/60 bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-all"
+                    >
+                      Clear search
+                    </button>
                   </div>
                 )}
               </>
@@ -289,15 +290,17 @@ export function SearchResultsClient({
         </div>
       </div>
 
-      {/* Mobile filter sheet */}
+      {/* ── Mobile filter sheet ── */}
       <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
         <SheetContent
           side="right"
-          className="w-full max-w-[80%] sm:max-w-[360px] p-0 flex flex-col overflow-hidden"
+          className="w-full max-w-[85%] sm:max-w-[360px] p-0 flex flex-col overflow-hidden rounded-l-3xl"
         >
-          <SheetHeader className="px-5 pt-5 pb-3 border-b border-slate-100 shrink-0">
-            <SheetTitle className="flex items-center gap-2 text-base text-slate-900">
-              <Filter className="h-4 w-4 text-slate-400" />
+          <SheetHeader className="px-5 pt-5 pb-3.5 border-b border-border/40 shrink-0">
+            <SheetTitle className="flex items-center gap-2 text-base text-foreground">
+              <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center">
+                <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+              </div>
               Refine Results
               {activeFilterCount > 0 && (
                 <span className="bg-green-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center ml-1">
@@ -308,25 +311,20 @@ export function SearchResultsClient({
           </SheetHeader>
 
           <div className="flex-1 overflow-hidden relative">
-            <div className="h-full overflow-y-auto px-5 pt-3 pb-24">
-              <FilterPanel
-                filters={filters}
-                onChange={updateFilters}
-                onReset={resetFilters}
-              />
+            <div className="h-full overflow-y-auto px-5 pt-4 pb-28">
+              <FilterPanel filters={filters} onChange={updateFilters} onReset={resetFilters} />
             </div>
 
             {/* Fixed apply button */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
               <button
                 onClick={() => setFilterSheetOpen(false)}
-                className="w-full h-12 rounded-2xl bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/25 flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
               >
                 Show {filtered.length} Result{filtered.length !== 1 ? "s" : ""}
                 {activeFilterCount > 0 && (
                   <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {activeFilterCount} filter
-                    {activeFilterCount !== 1 ? "s" : ""}
+                    {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""}
                   </span>
                 )}
               </button>

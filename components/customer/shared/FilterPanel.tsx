@@ -34,9 +34,17 @@ interface FilterPanelProps {
   filters: FilterState;
   onChange: (f: Partial<FilterState>) => void;
   onReset: () => void;
-  /** When true (mobile sheet), shows a fixed Apply button at bottom */
   showApplyButton?: boolean;
   onApply?: () => void;
+}
+
+// ── Shared section label ──────────────────────────────────────────────────────
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2.5">
+      {children}
+    </h4>
+  );
 }
 
 export function FilterPanel({
@@ -57,26 +65,24 @@ export function FilterPanel({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Scrollable content */}
-      <div
-        className={`flex-1 overflow-y-auto ${showApplyButton ? "pb-20" : ""}`}
-      >
+      <div className={`flex-1 overflow-y-auto pr-2 ${showApplyButton ? "pb-20" : ""}`}>
+
+        {/* Clear all */}
         <button
           onClick={onReset}
-          className={`flex items-center gap-1.5 text-sm text-destructive font-medium transition-colors mb-4 ${
+          className={`flex items-center gap-1.5 text-xs font-semibold text-destructive transition-colors mb-5 ${
             activeCount > 0 ? "visible" : "invisible"
           }`}
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3 w-3" />
           Clear all filters
         </button>
 
         <div className="space-y-6">
-          {/* Categories */}
+
+          {/* ── Categories ── */}
           <div>
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-              Category
-            </h4>
+            <SectionLabel>Category</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {ALL_CATEGORIES.map((cat) => {
                 const cfg = getCategoryConfig(cat);
@@ -85,81 +91,80 @@ export function FilterPanel({
                   <button
                     key={cat}
                     onClick={() => toggleCategory(cat)}
-                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left ${
+                    className={`flex items-center gap-0 rounded-full border transition-all duration-150 text-left pr-3 ${
                       active
-                        ? `${cfg.bg} ${cfg.text} ${cfg.border} shadow-sm`
-                        : "bg-white text-slate-600 border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                        ? `${cfg.bg} ${cfg.border} shadow-sm`
+                        : "bg-card border-border/60 hover:border-border hover:bg-secondary/60"
                     }`}
                   >
-                    <span className="text-base leading-none">{cfg.emoji}</span>
-                    <span className="flex-1">{cat}</span>
-                    {active && (
-                      <X className="h-3.5 w-3.5 opacity-50 shrink-0" />
-                    )}
+                    {/* Emoji bubble */}
+                    <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm m-0.5 shrink-0 transition-colors ${
+                      active ? "bg-white/30" : "bg-secondary"
+                    }`}>
+                      {cfg.emoji}
+                    </span>
+                    <span className={`text-sm font-semibold pl-2 flex-1 ${
+                      active ? cfg.text : "text-muted-foreground"
+                    }`}>
+                      {cat}
+                    </span>
+                    {active && <X className="h-3 w-3 opacity-50 shrink-0 ml-1" />}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Availability */}
+          {/* ── Availability ── */}
           <div>
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-              Availability
-            </h4>
+            <SectionLabel>Availability</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {[
-                {
-                  key: "inStockOnly" as const,
-                  label: "In stock only",
-                  icon: "✅",
-                },
-                {
-                  key: "subsidisedOnly" as const,
-                  label: "Subsidised only",
-                  icon: "✨",
-                },
-              ].map(({ key, label, icon }) => (
+                { key: "inStockOnly" as const,    label: "In stock only",    emoji: "✅" },
+                { key: "subsidisedOnly" as const, label: "Subsidised only",  emoji: "✨" },
+              ].map(({ key, label, emoji }) => (
                 <button
                   key={key}
                   onClick={() => onChange({ [key]: !filters[key] })}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all text-left ${
+                  className={`flex items-center gap-0 rounded-full border transition-all duration-150 text-left pr-3 ${
                     filters[key]
-                      ? "bg-green-50 text-green-700 border-green-200 shadow-sm"
-                      : "bg-white text-slate-600 border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                      ? "bg-green-500/10 border-green-300 shadow-sm"
+                      : "bg-card border-border/60 hover:border-border hover:bg-secondary/60"
                   }`}
                 >
-                  <span>{icon}</span>
-                  <span className="flex-1">{label}</span>
-                  {filters[key] && (
-                    <X className="h-3.5 w-3.5 opacity-50 shrink-0" />
-                  )}
+                  <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm m-0.5 shrink-0 transition-colors ${
+                    filters[key] ? "bg-white/40" : "bg-secondary"
+                  }`}>
+                    {emoji}
+                  </span>
+                  <span className={`text-sm font-semibold pl-2 flex-1 ${
+                    filters[key] ? "text-green-700" : "text-muted-foreground"
+                  }`}>
+                    {label}
+                  </span>
+                  {filters[key] && <X className="h-3 w-3 opacity-50 shrink-0 ml-1" />}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Sort */}
+          {/* ── Sort ── */}
           <div>
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-              Sort By
-            </h4>
+            <SectionLabel>Sort By</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {[
-                { value: "default", label: "Recommended" },
-                { value: "price_asc", label: "Price: Low → High" },
+                { value: "default",    label: "Recommended" },
+                { value: "price_asc",  label: "Price: Low → High" },
                 { value: "price_desc", label: "Price: High → Low" },
-                { value: "name_asc", label: "Name A → Z" },
+                { value: "name_asc",   label: "Name A → Z" },
               ].map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() =>
-                    onChange({ sortBy: opt.value as FilterState["sortBy"] })
-                  }
-                  className={`px-3 py-2.5 rounded-xl text-sm font-medium border text-left transition-all ${
+                  onClick={() => onChange({ sortBy: opt.value as FilterState["sortBy"] })}
+                  className={`px-4 py-2.5 rounded-full text-sm font-semibold border text-left transition-all duration-150 ${
                     filters.sortBy === opt.value
-                      ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-                      : "bg-white text-slate-600 border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                      ? "bg-foreground text-background border-foreground shadow-sm"
+                      : "bg-card text-muted-foreground border-border/60 hover:border-border hover:bg-secondary/60"
                   }`}
                 >
                   {opt.label}
@@ -167,15 +172,16 @@ export function FilterPanel({
               ))}
             </div>
           </div>
+
         </div>
       </div>
 
-      {/* Fixed Apply button for mobile sheet */}
+      {/* Mobile Apply button */}
       {showApplyButton && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
           <button
             onClick={onApply}
-            className="w-full h-12 rounded-2xl bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/25 flex items-center justify-center gap-2"
+            className="w-full h-12 rounded-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
           >
             Apply Filters
             {activeCount > 0 && (
@@ -200,7 +206,7 @@ export function FilterTriggerButton({
   return (
     <button
       onClick={onClick}
-      className="relative flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:border-slate-300 transition-colors shadow-sm"
+      className="relative flex items-center gap-2 px-4 py-2 rounded-full border border-border/60 bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-all duration-150"
     >
       <SlidersHorizontal className="h-4 w-4" />
       Filters

@@ -3,15 +3,16 @@
 
 import { useState, useTransition, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import {
-  Sparkles,
+  BadgeDollarSign,
+  Star,
   ShoppingCart,
   Loader2,
   Plus,
   Minus,
   Trash2,
   Check,
+  Tag,
 } from "lucide-react";
 import { toast } from "sonner";
 import { IProduct } from "@/types/store/products.types";
@@ -28,6 +29,7 @@ import {
   UpdateItemQuantity,
 } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { ProductDetailDialog } from "@/components/customer/products/ProductDetailDialog";
+import { Button } from "@/components/ui/button";
 
 async function removeAllFromServer(
   productId: string,
@@ -186,200 +188,209 @@ export function CustomerProductCard({
 
       <div
         onClick={() => setDialogOpen(true)}
-        className="group w-full h-full cursor-pointer text-left bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
+        className="group relative w-full cursor-pointer rounded-3xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        style={{ aspectRatio: "2/3" }}
       >
-        {/* Image */}
-        <div className="relative aspect-[4/3] w-full overflow-hidden shrink-0">
-          {!product.stock && (
-            <div className="absolute inset-0 bg-white/75 backdrop-blur-[2px] z-10 flex items-center justify-center">
-              <span className="text-xs font-bold text-slate-600 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-                Unavailable
-              </span>
-            </div>
-          )}
-
-          {/* SUBSIDISED — always top-left, always rounded-br */}
-          {product.subsidised && (
-            <div className="absolute top-0 left-0 z-10">
-              <div className="flex items-center gap-1 bg-gradient-to-r from-violet-600 to-violet-500 text-white text-[10px] font-bold px-2 py-1 rounded-br-xl leading-none whitespace-nowrap">
-                <Sparkles className="h-2.5 w-2.5 shrink-0" />
-                SUBSIDISED
-              </div>
-            </div>
-          )}
-
-          {/* FEATURED — always top-right, always rounded-bl */}
-          {product.isFeatured && (
-            <div className="absolute top-0 right-0 z-10">
-              <div className="flex items-center gap-1 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[10px] font-bold px-2 py-1 rounded-bl-xl leading-none whitespace-nowrap">
-                ⭐ FEATURED
-              </div>
-            </div>
-          )}
-
-          {/* Hover overlay */}
-          <div className="absolute inset-0 z-10 bg-black/0 group-hover:bg-black/8 transition-colors duration-300 flex items-end justify-center pb-3">
-            <span className="opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0 bg-white/95 text-slate-900 text-xs font-semibold px-3 py-1.5 rounded-full shadow-md border border-slate-100">
-              View details →
-            </span>
-          </div>
-
+        {/* ── Full-bleed image / illustration ── */}
+        <div className="absolute inset-0 w-full h-full">
           {hasImage ? (
             <Image
               src={product.images[0].url}
               alt={product.name}
               fill
               onError={() => setImgError(true)}
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (
-            <CategoryIllustration
-              category={product.category}
-              className="w-full h-full"
-            />
+            <div className="w-full h-full overflow-hidden">
+              <CategoryIllustration
+                category={product.category}
+                className="w-full h-full object-cover"
+              />
+            </div>
           )}
         </div>
 
-        {/* Body */}
-        <div className="p-3.5 flex flex-col flex-1 min-h-0">
-          <div className="flex flex-col gap-1.5 flex-1">
+        {/* ── Out-of-stock dimmer ── */}
+        {!product.stock && (
+          <div className="absolute inset-0 z-20 bg-black/50 flex items-center justify-center">
+            <span className="text-xs font-bold text-white bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
+              Unavailable
+            </span>
+          </div>
+        )}
+
+        <div className="absolute top-2 left-2 right-2 z-10 flex items-start justify-between gap-1">
+          {/* Left: badges stacked */}
+          <div className="flex flex-col gap-1">
+            {product.subsidised && (
+              <div className="flex items-center gap-1 bg-teal-500/90 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded-full leading-none whitespace-nowrap shadow-md shadow-teal-900/30">
+                <BadgeDollarSign className="h-2.5 w-2.5 shrink-0" strokeWidth={2.5} />
+                SUBSIDISED
+              </div>
+            )}
+            {product.isFeatured && (
+              <div className="flex items-center gap-1 bg-amber-400/90 backdrop-blur-sm text-amber-950 text-[9px] font-bold px-2 py-0.5 rounded-full leading-none whitespace-nowrap shadow-md shadow-amber-900/30">
+                <Star className="h-2.5 w-2.5 shrink-0 fill-amber-950" strokeWidth={2} />
+                FEATURED
+              </div>
+            )}
+          </div>
+
+          {/* Right: stock status pill */}
+          <div
+            className={`flex items-center gap-1 px-2 py-0.5 rounded-full backdrop-blur-sm border text-[9px] font-bold shadow shrink-0 ${
+              product.stock
+                ? "bg-emerald-500/80 border-emerald-400/30 text-white"
+                : "bg-red-500/80 border-red-400/30 text-white"
+            }`}
+          >
             <span
-              className={`self-start inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}
+              className={`w-1 h-1 rounded-full shrink-0 bg-white ${
+                product.stock ? "animate-pulse" : ""
+              }`}
+            />
+            {product.stock ? "In Stock" : "Sold Out"}
+          </div>
+        </div>
+
+        {/* ── Bottom blur content panel ── */}
+        <div className="absolute bottom-0 left-0 right-0 z-10">
+          {/* Dark gradient */}
+          <div
+            className="absolute inset-0 rounded-b-3xl"
+            style={{
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 50%, transparent 100%)",
+            }}
+          />
+          {/* Blur layer at bottom */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-24 rounded-b-3xl"
+            style={{
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              maskImage: "linear-gradient(to top, black 40%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to top, black 40%, transparent 100%)",
+            }}
+          />
+
+          <div className="relative px-3 pt-8 pb-3 flex flex-col gap-2">
+            {/* Category pill */}
+            <span
+              className={`self-start inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-full ${catConfig.bg} ${catConfig.text} ${catConfig.border} border opacity-90`}
             >
               {catConfig.emoji} {product.category}
             </span>
 
-            <h3 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2 min-h-[2.75rem] group-hover:text-green-700 transition-colors">
+            {/* Product name */}
+            <h3 className="font-bold text-white text-sm leading-tight line-clamp-2 drop-shadow">
               {product.name}
             </h3>
 
-            <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-50">
-              <span className="text-base font-black text-slate-900">
-                {fmt(product.price + product.markup)}
+            {/* Price row */}
+            <div className="flex items-center text-white/90 text-xs font-medium">
+              <span className="flex items-center gap-1">
+                <span className="font-black text-white">
+                  {fmt(product.price + product.markup)}
+                </span>
               </span>
-              {product.stock ? (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-200 shrink-0" />
-              ) : (
-                <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
-              )}
             </div>
-          </div>
 
-          {/* Cart controls */}
-          <div className="mt-3 flex items-center min-h-[36px]">
-            {quantity > 0 ? (
-              <div
-                className="flex items-center justify-center gap-1.5 w-full min-w-0"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Trash */}
-                <button
-                  type="button"
-                  onClick={handleRemoveAll}
-                  disabled={isPending}
-                  className="w-8 h-8 rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 hover:border-red-200 flex items-center justify-center transition-colors disabled:opacity-40 shrink-0 group/trash"
-                >
-                  <Trash2
-                    size={13}
-                    strokeWidth={2}
-                    className="text-slate-400 group-hover/trash:text-red-400 transition-colors"
-                  />
-                </button>
-
-                {/* Stepper row */}
-                <div className="flex items-center bg-green-50 border border-green-200 rounded-xl px-1.5 py-1 gap-1">
-                  {/* Minus */}
+            {/* ── Cart controls ── */}
+            <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+              {quantity > 0 ? (
+                <div className="flex items-center gap-1.5 w-full">
+                  {/* Trash */}
                   <button
                     type="button"
-                    onClick={handleDecrement}
+                    onClick={handleRemoveAll}
                     disabled={isPending}
-                    className="w-6 h-6 rounded-full border border-green-200 bg-white flex items-center justify-center hover:bg-green-100 transition-colors disabled:opacity-50 shrink-0"
+                    className="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-red-500/40 flex items-center justify-center transition-colors disabled:opacity-40 shrink-0 group/trash"
                   >
-                    <Minus
-                      size={11}
-                      strokeWidth={2.5}
-                      className="text-green-700"
+                    <Trash2
+                      size={13}
+                      strokeWidth={2}
+                      className="text-white/80 group-hover/trash:text-white transition-colors"
                     />
                   </button>
 
-                  {/* Input + Plus/Check — takes remaining space */}
-                  <div className="flex items-center justify-center flex-1 min-w-0 gap-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={99}
-                      inputMode="numeric"
-                      value={inputValue}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        setInputValue(e.target.value);
-                        setIsQtyDirty(true);
-                      }}
-                      onBlur={handleQuantityInputCommit}
-                      onClick={(e) => e.stopPropagation()}
-                      onKeyDown={(e) => {
-                        e.stopPropagation();
-                        if (e.key === "Enter") e.currentTarget.blur();
-                      }}
+                  {/* Stepper */}
+                  <div className="flex-1 flex items-center bg-white/15 backdrop-blur-sm border border-white/25 rounded-xl px-1.5 py-1 gap-1">
+                    <button
+                      type="button"
+                      onClick={handleDecrement}
                       disabled={isPending}
-                      className="w-10 h-6 rounded-md border border-green-200 bg-white text-center text-sm font-bold text-green-800 tabular-nums outline-none focus:ring-1 focus:ring-green-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shrink-0"
-                    />
+                      className="w-6 h-6 rounded-full border border-white/30 bg-white/20 flex items-center justify-center hover:bg-white/35 transition-colors disabled:opacity-50 shrink-0"
+                    >
+                      <Minus size={10} strokeWidth={2.5} className="text-white" />
+                    </button>
 
-                    {showConfirm ? (
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={(e) => {
+                    <div className="flex items-center justify-center flex-1 gap-1">
+                      <input
+                        type="number"
+                        min={0}
+                        max={99}
+                        inputMode="numeric"
+                        value={inputValue}
+                        onChange={(e) => {
                           e.stopPropagation();
-                          handleQuantityInputCommit();
+                          setInputValue(e.target.value);
+                          setIsQtyDirty(true);
+                        }}
+                        onBlur={handleQuantityInputCommit}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          e.stopPropagation();
+                          if (e.key === "Enter") e.currentTarget.blur();
                         }}
                         disabled={isPending}
-                        className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center hover:bg-green-700 transition-colors disabled:opacity-50 shrink-0"
-                      >
-                        <Check
-                          size={11}
-                          strokeWidth={3}
-                          className="text-white"
-                        />
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleIncrement}
-                        disabled={isPending || quantity >= 99}
-                        className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center hover:bg-green-700 transition-colors disabled:opacity-50 shrink-0"
-                      >
-                        <Plus
-                          size={11}
-                          strokeWidth={2.5}
-                          className="text-white"
-                        />
-                      </button>
-                    )}
+                        className="w-8 h-6 rounded-md bg-white/20 border border-white/30 text-center text-xs font-bold text-white tabular-nums outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+
+                      {showConfirm ? (
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleQuantityInputCommit();
+                          }}
+                          disabled={isPending}
+                          className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+                        >
+                          <Check size={10} strokeWidth={3} className="text-primary-foreground" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleIncrement}
+                          disabled={isPending || quantity >= 99}
+                          className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+                        >
+                          <Plus size={10} strokeWidth={2.5} className="text-primary-foreground" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <Button
-                type="button"
-                variant={product.stock ? "default" : "secondary"}
-                disabled={!product.stock || isPending}
-                onClick={handleAddToCart}
-                className={`w-full rounded-xl h-10 text-xs font-bold transition-all ${
-                  product.stock
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : ""
-                }`}
-              >
-                {isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ShoppingCart className="h-4 w-4 mr-1.5" />
-                )}
-                {product.stock ? "Add to Cart" : "Out of Stock"}
-              </Button>
-            )}
+              ) : (
+                <Button
+                  type="button"
+                  disabled={!product.stock || isPending}
+                  onClick={handleAddToCart}
+                  className="w-full h-9 rounded-xl bg-secondary text-primary border border-primary/20 text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-primary/15 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                >
+                  {isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <ShoppingCart className="h-3.5 w-3.5" />
+                  )}
+                  {product.stock ? "Add to Cart" : "Out of Stock"}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

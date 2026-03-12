@@ -100,7 +100,7 @@ const RIGHT_IMAGES = [
 
 // Mobile — two corner peeks, kept small so they don't overwhelm
 const MOBILE_BG_IMAGES = {
-  left:  { src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(2).png", rotation: 12, delay: "0.8s", duration: "7s" },
+  left:  { src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(6).png", rotation: 12, delay: "0.8s", duration: "7s" },
   right: { src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(5).png", rotation: 15, delay: "0.5s", duration: "6.5s" },
 };
 
@@ -264,7 +264,7 @@ export function HeroBanner() {
         </div>
 
         <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-sm">
-          Farm-fresh produce and pantry essentials — exclusively for Canadian families.
+          Farm-fresh produce and pantry essentials exclusively for Canadian families.
         </p>
 
         {/* Search */}
@@ -293,7 +293,7 @@ export function HeroBanner() {
           ].map(({ icon, label }) => (
             <div
               key={label}
-              className="flex items-center gap-1.5 text-green-700 text-xs font-semibold bg-green-600/8 px-3.5 py-1.5 rounded-full border border-green-600/15"
+              className="flex items-center gap-1.5 text-white text-xs bg-primary px-3.5 py-1.5 rounded-full border border-green-600/15"
             >
               {icon}
               {label}
