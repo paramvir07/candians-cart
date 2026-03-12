@@ -70,8 +70,7 @@ export async function updateProduct(
     if (!existingProduct) {
       return {
         success: false,
-        message:
-          "Product not found",
+        message: "Product not found",
       };
     }
 
@@ -100,12 +99,34 @@ export async function updateProduct(
       }
     }
 
+    const newPriceInCents = Math.round(price * 100);
+
+    const priceHasChanged = existingProduct.price !== newPriceInCents;
+
     // Checks if invoice exists for store role, No checks for admin
-    if (storeRole) {
+    if (storeRole && priceHasChanged) {
+      if (!InvoiceId) {
+        return {
+          success: false,
+          message:
+            "An Invoice Id is required when changing the price of a product",
+        };
+      }
       const invoice = await ProductInvoice.findById(InvoiceId);
       if (!invoice) {
         return { success: false, message: "Invoice does not exists" };
       }
+
+      await ProductInvoice.findByIdAndUpdate(InvoiceId, {
+        $push: {
+          products: {
+            productId: existingProduct._id,
+            oldPrice: existingProduct.price,
+            newPrice: newPriceInCents,
+            status: "PENDING", // Goes live immediately
+          },
+        },
+      });
     }
 
     const dbPayload = {
@@ -114,13 +135,14 @@ export async function updateProduct(
       // Converting percentage to decimal
       tax: tax > 0 ? tax / 100 : 0,
       // Converting Dollars to cents
-      price: Math.round(price * 100),
+      price: newPriceInCents,
       // converting dollars to cents
       disposableFee: Math.round((disposableFee || 0) * 100),
-      InvoiceId: InvoiceId || undefined,
+      InvoiceId: InvoiceId || existingProduct.InvoiceId,
     };
 
     let updatedProduct;
+
     if (adminRole) {
       updatedProduct = await Product.findByIdAndUpdate(
         productId, // Add the store using _id

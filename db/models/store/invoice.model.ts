@@ -19,6 +19,29 @@ const ProductInvoiceSchema = new Schema(
       index: true,
     },
 
+    products: [
+      {
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        oldPrice: {
+          type: Number, // In cents
+          required: false, // False for brand new products
+        },
+        newPrice: {
+          type: Number, // In cents
+          required: true,
+        },
+        status: {
+          type: String,
+          enum: ["PENDING","APPROVED", "REJECTED"],
+          default: "PENDING",
+        },
+      },
+    ],
+
     additionalNote: {
       type: String,
       required: false,
