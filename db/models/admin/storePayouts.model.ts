@@ -12,7 +12,8 @@ export interface IStorePayout {
   storeFixedValue: number;
   storeProfit: number;
   storePayout: number;
-  totalCashCollected?: number;
+  totalCashCollected: number;
+  platformProfit: number;
   platformCommision: number;
   status: "pending" | "paid";
   additionalNote?: string;
@@ -76,7 +77,11 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
     },
     totalCashCollected: {
       type: Number,
-      required: false,
+      default: 0
+    },
+    platformProfit: {
+      type: Number,
+      required: true,
     },
     platformCommision: {
       type: Number,

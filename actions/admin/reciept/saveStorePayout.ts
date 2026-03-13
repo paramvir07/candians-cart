@@ -46,6 +46,7 @@ export async function saveStorePayoutAction(
       storeProfit: receipt.storeProfit,
       storePayout: receipt.storePayout,
       totalCashCollected: receipt.totalCashCollected || 0,
+      platformProfit: receipt.platformProfit,
       platformCommision: receipt.platformCommision,
       status: "pending",
     });
