@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { getMemberSince, getMemberYear } from "@/lib/memberSince";
 import { Customer } from "@/types/customer/customer";
 import { DollarSign, ShoppingBag, CalendarDays, TrendingUp } from "lucide-react";
@@ -8,15 +7,6 @@ import { DollarSign, ShoppingBag, CalendarDays, TrendingUp } from "lucide-react"
 type Props = {
   customer: Pick<Customer, "monthlyBudget" | "createdAt">;
 };
-
-function useReveal(delay: number) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
-  return visible;
-}
 
 function fmtBudget(cents: number): string {
   const dollars = cents / 100;
@@ -34,15 +24,6 @@ const GRID_LIGHT = `
 `;
 
 export default function ProfileStats({ customer }: Props) {
-  const v0 = useReveal(60);
-  const v1 = useReveal(160);
-  const v2 = useReveal(260);
-
-  const anim = (v: boolean): React.CSSProperties => ({
-    opacity: v ? 1 : 0,
-    transform: v ? "translateY(0)" : "translateY(16px)",
-    transition: "opacity 0.5s ease, transform 0.5s ease",
-  });
 
   return (
     <div className="grid grid-cols-2 gap-2.5">
@@ -50,7 +31,7 @@ export default function ProfileStats({ customer }: Props) {
       {/* ── Budget — wide dark card, spans 2 cols ── */}
       <div
         className="relative col-span-2 rounded-3xl overflow-hidden flex flex-col justify-between p-5 sm:p-6 min-h-[160px] cursor-default"
-        style={{ background: "var(--primary)", ...anim(v0) }}
+        style={{ background: "var(--primary)" }}
       >
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: GRID_DARK, backgroundSize: "26px 26px" }} />
 
@@ -69,7 +50,7 @@ export default function ProfileStats({ customer }: Props) {
             {fmtBudget(customer.monthlyBudget)}
           </p>
           <p className="text-xs mt-2 font-medium" style={{ color: "rgba(255,255,255,0.45)" }}>
-            Budget per month
+            Budget allocated per month
           </p>
         </div>
       </div>
@@ -77,7 +58,6 @@ export default function ProfileStats({ customer }: Props) {
       {/* ── Orders ── */}
       <div
         className="relative col-span-1 rounded-3xl overflow-hidden flex flex-col justify-between p-4 sm:p-5 min-h-[160px] cursor-default border border-border/60 bg-secondary/40"
-        style={anim(v1)}
       >
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: GRID_LIGHT, backgroundSize: "26px 26px", opacity: 0.45 }} />
         <div className="relative z-10 w-9 h-9 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -96,7 +76,6 @@ export default function ProfileStats({ customer }: Props) {
       {/* ── Member since ── */}
       <div
         className="relative col-span-1 rounded-3xl overflow-hidden flex flex-col justify-between p-4 sm:p-5 min-h-[160px] cursor-default border border-border/60 bg-secondary/40"
-        style={anim(v2)}
       >
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: GRID_LIGHT, backgroundSize: "26px 26px", opacity: 0.45 }} />
         <div className="relative z-10 w-9 h-9 rounded-2xl bg-primary/10 flex items-center justify-center">

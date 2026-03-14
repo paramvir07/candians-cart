@@ -8,6 +8,7 @@ import LogoutButton from "@/components/customer/profile/LogoutButton";
 import { Edit, Package, Wallet, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { BlurFade } from "@/components/ui/blur-fade";
 
 export default async function ProfilePage() {
   const { customerData } = await getCustomerAndStoreDataAction();
@@ -26,8 +27,8 @@ export default async function ProfilePage() {
       desc: "View past orders",
       href: "/customer/orders",
       icon: Package,
-      iconBg: "bg-emerald-500/10",
-      iconColor: "text-emerald-600",
+      iconBg: "bg-blue-500/10",
+      iconColor: "text-blue-600",
     },
     {
       label: "My Wallet",
@@ -41,14 +42,11 @@ export default async function ProfilePage() {
 
   const QuickActions = () => (
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden">
-      {/* Section label */}
       <div className="px-5 pt-5 pb-3">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
           Quick Actions
         </p>
       </div>
-
-      {/* Rows */}
       <div className="px-3 pb-3 flex flex-col gap-1">
         {quickLinks.map((item) => (
           <Link
@@ -81,43 +79,73 @@ export default async function ProfilePage() {
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
-        <div className="flex items-center gap-3 py-4 lg:py-6">
-          <Link href="/">
-            <Button variant="ghost" size="icon" className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-base font-bold tracking-tight leading-none">My Profile</h1>
-            <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
-              Manage your account and preferences
-            </p>
+        <BlurFade delay={0.05} inView>
+          <div className="flex items-center gap-3 py-4 lg:py-6">
+            <Link href="/">
+              <Button variant="ghost" size="icon" className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-base font-bold tracking-tight leading-none">My Profile</h1>
+              <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+                Manage your account and preferences
+              </p>
+            </div>
           </div>
-        </div>
+        </BlurFade>
 
         <div className="pb-20 max-w-lg mx-auto lg:max-w-none">
 
-          {/* Mobile */}
+          {/* ── Mobile ── */}
           <div className="flex flex-col gap-4 lg:hidden">
-            <ProfileHero customer={customerData} />
-            <ProfileStats customer={customerData} />
-            <ProfileContact customer={customerData} />
-            <ProfileStore store={customerData.associatedStoreId} />
-            <QuickActions />
-            <LogoutButton variant="card" />
+            <BlurFade delay={0.10} inView>
+              <ProfileHero customer={customerData} />
+            </BlurFade>
+            <BlurFade delay={0.18} inView>
+              <ProfileStats customer={customerData} />
+            </BlurFade>
+            <BlurFade delay={0.26} inView>
+              <ProfileContact customer={customerData} />
+            </BlurFade>
+            <BlurFade delay={0.34} inView>
+              <ProfileStore store={customerData.associatedStoreId} />
+            </BlurFade>
+            <BlurFade delay={0.42} inView>
+              <QuickActions />
+            </BlurFade>
+            <BlurFade delay={0.50} inView>
+              <LogoutButton variant="card" />
+            </BlurFade>
           </div>
 
-          {/* Desktop */}
+          {/* ── Desktop ── */}
           <div className="hidden lg:grid grid-cols-[1fr_340px] gap-6 items-start">
+
+            {/* Left col */}
             <div className="flex flex-col gap-4">
-              <ProfileHero customer={customerData} />
-              <ProfileStore store={customerData.associatedStoreId} />
+              <BlurFade delay={0.10} inView>
+                <ProfileHero customer={customerData} />
+              </BlurFade>
+              <BlurFade delay={0.22} inView>
+                <ProfileStore store={customerData.associatedStoreId} />
+              </BlurFade>
             </div>
+
+            {/* Right col */}
             <div className="flex flex-col gap-4">
-              <ProfileStats customer={customerData} />
-              <ProfileContact customer={customerData} />
-              <QuickActions />
-              <LogoutButton variant="card" />
+              <BlurFade delay={0.16} inView>
+                <ProfileStats customer={customerData} />
+              </BlurFade>
+              <BlurFade delay={0.28} inView>
+                <ProfileContact customer={customerData} />
+              </BlurFade>
+              <BlurFade delay={0.36} inView>
+                <QuickActions />
+              </BlurFade>
+              <BlurFade delay={0.44} inView>
+                <LogoutButton variant="card" />
+              </BlurFade>
             </div>
           </div>
 

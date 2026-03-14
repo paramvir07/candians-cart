@@ -167,11 +167,11 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
                   <button
                     type="submit"
                     disabled={isPending}
-                    className="h-9 px-5 rounded-full bg-foreground text-background text-sm font-bold flex items-center gap-1.5 hover:opacity-85 active:scale-[0.98] transition-all disabled:opacity-60"
+                    className="h-9 px-5 rounded-full bg-primary text-background text-sm font-bold flex items-center gap-1.5 hover:opacity-85 active:scale-[0.98] transition-all disabled:opacity-60"
                   >
                     {isPending
-                      ? <><Spinner className="h-3.5 w-3.5" /> Saving…</>
-                      : <><Check className="h-3.5 w-3.5" strokeWidth={2.5} /> Save changes</>
+                      ? <><Spinner className="h-4 w-4" /> Saving…</>
+                      : <><Check className="h-4 w-4" strokeWidth={2.5} /> Save changes</>
                     }
                   </button>
                 </div>
@@ -278,7 +278,7 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full h-12 rounded-full bg-foreground text-background text-sm font-bold flex items-center justify-center gap-2 hover:opacity-85 active:scale-[0.98] transition-all disabled:opacity-60"
+              className="w-full h-12 rounded-full bg-primary text-background text-sm font-bold flex items-center justify-center gap-2 hover:opacity-85 active:scale-[0.98] transition-all disabled:opacity-60"
             >
               {isPending
                 ? <><Spinner className="h-4 w-4" /> Saving…</>
