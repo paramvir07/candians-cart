@@ -2,12 +2,12 @@ import Logo from "@/components/shared/Logo";
 import SearchBar from "./searchBar";
 import { ShoppingCartIcon, Wallet } from "lucide-react";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { Customer } from "@/types/customer/customer";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { fmtShort } from "@/lib/fomatPrice";
 import { Button } from "@/components/ui/button";
+import { NavAvatarMenu } from "./NavMenu";
 
 const Navbar = async () => {
   const [customerDataResponse, cartCount] = await Promise.all([
@@ -33,7 +33,7 @@ const Navbar = async () => {
         </div>
 
         {/* Search — tablet+ */}
-        <Link href="/customer/search" className="hidden md:block flex-1 max-w-sm mx-4">
+        <Link href="/customer/search" className="hidden md:block flex-1 max-w-full mx-4">
           <SearchBar />
         </Link>
 
@@ -43,40 +43,38 @@ const Navbar = async () => {
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
 
-          {/* Cart */}
-          <Link href="/customer/cart">
-            <Button className="relative w-9 h-9 flex items-center justify-center rounded-full text-white hover:bg-primary/50 transition-colors">
-              <ShoppingCartIcon className="w-[18px] h-[18px]" />
-              {(cartCount ?? 0) > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
-                  {(cartCount ?? 0) > 99 ? "99+" : cartCount}
-                </span>
-              )}
-            </Button>
-          </Link>
+      {/* Cart */}
+      <Link href="/customer/cart">
+        <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary/80 active:scale-[0.97] transition-all">
+          <ShoppingCartIcon className="w-[16px] h-[16px] text-primary" />
+          {(cartCount ?? 0) > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-primary-foreground border-2 border-background">
+              {(cartCount ?? 0) > 99 ? "99+" : cartCount}
+            </span>
+          )}
+        </div>
+      </Link>
 
-          {/* Wallet pill — orange CTA style like "Get full access" */}
+          {/* Wallet pill */}
           <Link href="/customer/wallet">
-            <div className="flex items-center gap-1.5 bg-primary text-primary-foreground rounded-full px-4 py-1.5 text-sm font-semibold hover:opacity-90 active:scale-[0.97] transition-all shadow-sm shadow-primary/25">
-              <Wallet className="w-3.5 h-3.5" />
-              <span>{fmtShort(customerData.walletBalance)}</span>
+            <div className="flex items-center gap-2 bg-secondary border border-border rounded-xl px-5 py-1.5 hover:bg-secondary/80 active:scale-[0.97] transition-all">
+              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
+                <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
+              </div>
+              <div className="flex flex-col leading-none">
+                <span className="text-[9px] text-primary font-semibold uppercase tracking-wide">Balance</span>
+                <span className="text-sm font-black text-foreground tracking-tight mt-0.5">
+                  {fmtShort(customerData.walletBalance)}
+                </span>
+              </div>
             </div>
           </Link>
 
           {/* Divider */}
           <div className="w-px h-5 bg-border mx-1" />
 
-          {/* Avatar */}
-          <Link href="/customer/profile">
-            <Avatar className="h-8 w-8 ring-2 ring-primary/20 ring-offset-1 ring-offset-background">
-              <AvatarImage
-                src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(customerData.name)}`}
-              />
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+          {/* Avatar dropdown */}
+          <NavAvatarMenu name={customerData.name} initials={initials} />
         </div>
 
       </div>
