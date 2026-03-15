@@ -150,8 +150,8 @@ export function StoreInfoDialog({ store, isOpen, onClose }: StoreInfoDialogProps
                   <span className={cn(
                     "text-[10px] font-semibold px-1.5 py-0.5 rounded-full",
                     storeOpen
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                      : "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-rose-100 text-rose-600"
                   )}>
                     {statusLabel}
                   </span>

@@ -25,7 +25,7 @@ const CustomerWallet = async ({ params }: CustomerIdParams) => {
           Customer Wallet
         </h1>
       </div>
-      <WalletSwitcher customerId={customerId} />
+      <WalletSwitcher/>
       <WalletView customerData={customerData} customerId={customerId} />
     </div>
   );

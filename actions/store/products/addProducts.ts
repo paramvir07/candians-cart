@@ -11,7 +11,6 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
 import ProductInvoice from "@/db/models/store/invoice.model";
-import products from "@/app/store/(store)/products/page";
 
 interface ActionResponse {
   success: boolean;

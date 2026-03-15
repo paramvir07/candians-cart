@@ -24,7 +24,11 @@ export default async function RootLayout({
   return (
     <div className="scroll-smooth">
       <TooltipProvider>
-        <div>{children}</div>
+        <div className="min-h-screen bg-gray-50">
+          <main className="md:ml-64 pt-14 md:pt-0 min-h-screen m-4">
+            {children}
+          </main>
+        </div>
       </TooltipProvider>
     </div>
   );

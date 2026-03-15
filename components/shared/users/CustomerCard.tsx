@@ -18,6 +18,7 @@ type CustomerCardProps = {
 
 const CustomerCard = ({ customer, userRole }: CustomerCardProps) => {
   const cashierRole = userRole === "cashier";
+  const storeRole = userRole === "store";
   const initials = customer.name
     .split(" ")
     .map((n) => n[0])
@@ -41,7 +42,7 @@ const CustomerCard = ({ customer, userRole }: CustomerCardProps) => {
               <p className="text-[10px] font-mono text-muted-foreground leading-tight">
                 #{customer._id.toString().slice(-6).toUpperCase()}
               </p>
-              {!cashierRole && (
+              {!cashierRole && !storeRole && (
                 <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
                   <Mail className="w-3 h-3 shrink-0" />
                   <span className="truncate">{customer.email}</span>
@@ -49,7 +50,7 @@ const CustomerCard = ({ customer, userRole }: CustomerCardProps) => {
               )}
             </div>
           </div>
-          {!cashierRole && (
+          {!cashierRole && !storeRole && (
             <Badge
               variant="outline"
               className="text-[10px] px-1.5 py-0.5 shrink-0 font-mono"
@@ -61,7 +62,7 @@ const CustomerCard = ({ customer, userRole }: CustomerCardProps) => {
         </div>
 
         {/* Location & phone */}
-        {!cashierRole && (
+        {!cashierRole && !storeRole && (
           <div className="space-y-1.5 mb-3 flex-1">
             <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
               <MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" />
@@ -77,39 +78,41 @@ const CustomerCard = ({ customer, userRole }: CustomerCardProps) => {
         )}
 
         {/* Wallet Stats */}
-        <div className="flex justify-between items-center px-5 pt-3 border-t border-border/50">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-0.5">
-              <Wallet className="w-3 h-3 text-muted-foreground" />
-            </div>
-            <p className="text-xs font-semibold tabular-nums">
-              ${(customer.walletBalance / 100).toFixed(2)}
-            </p>
-            <p className="text-[10px] text-muted-foreground">Wallet</p>
-          </div>
-          <div
-            className={`text-center px-3 ${!cashierRole ? "border-x border-border/50" : ""}`}
-          >
-            <div className="flex items-center justify-center mb-0.5">
-              <Gift className="w-3 h-3 text-muted-foreground" />
-            </div>
-            <p className="text-xs font-semibold tabular-nums">
-              ${(customer.giftWalletBalance / 100).toFixed(2)}
-            </p>
-            <p className="text-[10px] text-muted-foreground">Gift</p>
-          </div>
-          {!cashierRole && (
+        {!storeRole && (
+          <div className="flex justify-between items-center px-5 pt-3 border-t border-border/50">
             <div className="text-center">
               <div className="flex items-center justify-center mb-0.5">
-                <Building2 className="w-3 h-3 text-muted-foreground" />
+                <Wallet className="w-3 h-3 text-muted-foreground" />
               </div>
               <p className="text-xs font-semibold tabular-nums">
-                ${(customer.monthlyBudget / 100).toFixed(0)}
+                ${(customer.walletBalance / 100).toFixed(2)}
               </p>
-              <p className="text-[10px] text-muted-foreground">Budget</p>
+              <p className="text-[10px] text-muted-foreground">Wallet</p>
             </div>
-          )}
-        </div>
+            <div
+              className={`text-center px-3 ${!cashierRole ? "border-x border-border/50" : ""}`}
+            >
+              <div className="flex items-center justify-center mb-0.5">
+                <Gift className="w-3 h-3 text-muted-foreground" />
+              </div>
+              <p className="text-xs font-semibold tabular-nums">
+                ${(customer.giftWalletBalance / 100).toFixed(2)}
+              </p>
+              <p className="text-[10px] text-muted-foreground">Gift</p>
+            </div>
+            {!cashierRole && (
+              <div className="text-center">
+                <div className="flex items-center justify-center mb-0.5">
+                  <Building2 className="w-3 h-3 text-muted-foreground" />
+                </div>
+                <p className="text-xs font-semibold tabular-nums">
+                  ${(customer.monthlyBudget / 100).toFixed(0)}
+                </p>
+                <p className="text-[10px] text-muted-foreground">Budget</p>
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -14,7 +14,7 @@ const WalletHistoryPage = async () => {
   const transactions = walletHistory
     ? unifyTransactions(
         walletHistory.stripeTopUps ?? [],
-        walletHistory.cashierTopUps ?? [],
+        walletHistory.walletTopUps ?? [],
       )
     : [];
 

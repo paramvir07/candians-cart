@@ -1,40 +1,26 @@
-// import OrderHeader from "@/components/store/orders/OrdersHeader";
-// import OrderTable from "@/components/store/orders/OrderTable";
-// // Make sure the import name matches the export from the file above
-// import { AddOrderBanner } from "@/components/store/orders/AddOrdersBanner";
+import { getMyStoreData } from "@/actions/store/getStores.actions";
+import { StoreDocument } from "@/types/store/store";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { getOrderStats } from "@/actions/admin/orders/getOrderStats.action";
+import { OrdersList } from "@/components/admin/store/OrdersList";
 
-// const Page = () => {
-//   return (
-//     <div className="w-full">
-//       {/* 1. Main Page Header */}
-//       <div className="flex items-center justify-between w-full mb-8">
-//         <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-//           Orders
-//         </h1>
-//         <div className="flex gap-3"></div>
-//       </div>
+const StoreOrdersPage = async () => {
+  const storeDataResponse = await getMyStoreData();
+  if (!storeDataResponse.success || !storeDataResponse.data) {
+    return <div>Error: {storeDataResponse.error || "Could not load store data"}</div>;
+  }
+  const storeData: StoreDocument = storeDataResponse.data;
+  const storeId = storeData._id;
+  const stats = await getOrderStats(storeId);
 
-//       {/* 2. Filters */}
-//       <div className="mb-6">
-//          <OrderHeader />
-//       </div>
-
-//       {/* 3. Content Area */}
-//       {/* Use flex-col and gap-6 to separate the Banner from the Table cleanly */}
-//       <div className="flex flex-col gap-6 w-full">
-//         <AddOrderBanner />
-//         <OrderTable />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Page;
-
-import React from "react";
-
-const page = () => {
-  return <div>Order Page</div>;
+  return (
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-5">
+      <Link href="/store" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 mb-2 transition-colors">
+        <ArrowLeft className="w-4 h-4 mr-1" /> Back to Home
+      </Link>
+      <OrdersList storeId={storeId} stats={stats} />
+    </div>
+  );
 };
-
-export default page;
+export default StoreOrdersPage;

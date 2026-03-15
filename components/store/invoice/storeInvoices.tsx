@@ -64,7 +64,7 @@ const StoreInvoices = ({ storeId }: { storeId: string }) => {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          Invoices
+          Price Invoices
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
           Manage and view vendor invoices.

@@ -9,18 +9,19 @@ import {
 } from "@/components/ui/dialog";
 import { Delete, Wallet } from "lucide-react";
 import { PaymentModeToggle } from "@/components/cashier/wallet/PaymentModeToggle";
-import { cashierTopUpAction } from "@/actions/cashier/cashierTopUp.actions";
+import { walletTopUpAction } from "@/actions/cashier/walletTopUp.actions";
 import { toast } from "sonner";
 
 const PRESETS = [5, 10, 20, 50, 100, 150, 200, 250];
 
 export function TopUpDialog({
-  component,
   customerId,
+  userRole,
 }: {
-  component: "checkout" | "wallet";
   customerId?: string;
+  userRole?: string;
 }) {
+  const adminRole = userRole === "admin";
   const [amount, setAmount] = useState<number | null>(200);
   const [inputVal, setInputVal] = useState("200");
   const [paymentMode, setPaymentMode] = useState<"cash" | "card">("card");
@@ -43,19 +44,32 @@ export function TopUpDialog({
   const handleCheckout = async () => {
     if (!amount) return;
 
-    if (customerId) {
-      const response = await cashierTopUpAction(
+    if (adminRole && customerId) {
+      const response = await walletTopUpAction(
         customerId,
-        paymentMode,
-        amount * 100, // ✅ send cents
+        "gift",
+        amount * 100,
+        "admin"
       );
 
       if (response.success) toast.success(response.message);
       else toast.error(response.message);
-
       return;
     }
-    
+
+    if (customerId && !adminRole) {
+      const response = await walletTopUpAction(
+        customerId,
+        paymentMode,
+        amount * 100, // ✅ send cents
+        "cashier"
+      );
+
+      if (response.success) toast.success(response.message);
+      else toast.error(response.message);
+      return;
+    }
+
     const res = await fetch("/api/stripe/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -187,7 +201,7 @@ export function TopUpDialog({
 
           {/* Payment mode */}
 
-          {customerId && (
+          {customerId && !adminRole && (
             <PaymentModeToggle
               paymentMode={paymentMode}
               setPaymentMode={setPaymentMode}

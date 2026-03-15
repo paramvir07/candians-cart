@@ -32,10 +32,6 @@ function getReceiptBadge(status: string) {
 export default function RecentPayoutReceipts({
   recentPayoutReceipts,
 }: RecentPayoutReceiptsProps) {
-  const viewAllHref =
-    recentPayoutReceipts.length > 0
-      ? `/admin/store/${recentPayoutReceipts[0].storeId}/payout-reciepts`
-      : "/admin/payout-reciepts";
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col">
@@ -46,11 +42,11 @@ export default function RecentPayoutReceipts({
             <Receipt className="w-4 h-4 text-emerald-600" />
           </div>
           <h2 className="text-base sm:text-lg font-bold text-gray-900">
-            Payout Receipts
+            Recent Store Payouts
           </h2>
         </div>
         <Link
-          href={viewAllHref}
+          href="/admin/store-payouts"
           className="text-xs sm:text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
         >
           View all

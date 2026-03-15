@@ -33,12 +33,6 @@ function getOrderBadge(status: string) {
 }
 
 export default function RecentOrders({ orders }: RecentOrdersProps) {
-  // Use first order's storeId as the "view all" link if available
-  // Since this is an all-stores dashboard, link to the general orders page
-  const viewAllHref =
-    orders.length > 0
-      ? `/admin/store/${orders[0].storeId}/orders`
-      : "/admin/orders";
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col">
@@ -53,7 +47,7 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
           </h2>
         </div>
         <Link
-          href={viewAllHref}
+          href="/admin/orders"
           className="text-xs sm:text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
         >
           View all

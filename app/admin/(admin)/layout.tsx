@@ -24,10 +24,14 @@ export default async function RootLayout({
     }
   }
   return (
-    <div className="bg-[#F3F1ED] scroll-smooth ">
+    <div className="scroll-smooth">
       <TooltipProvider>
-        <AdminSidebar />
-        <div className="flex-1 p-6 md:ml-18">{children}</div>
+        <div className="min-h-screen bg-gray-50">
+          <AdminSidebar />
+          <main className="md:ml-64 pt-14 md:pt-0 min-h-screen m-4">
+            {children}
+          </main>
+        </div>
       </TooltipProvider>
     </div>
   );

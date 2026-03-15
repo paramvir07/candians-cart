@@ -1,3 +1,4 @@
+
 import { getMyStoreCustomers } from "@/actions/customer/User.action";
 import MainOverviewUser from "@/components/shared/users/MainOverviewUser";
 import UserList from "@/components/shared/users/UserList";
@@ -124,7 +125,7 @@ const page = async () => {
         avgBudgetChange={avgBudgetChange}
         avgBudgetUp={avgBudgetUp}
       />
-      <UserList myStoreCustomersData={myStoreCustomersData} />
+      <UserList myStoreCustomersData={myStoreCustomersData} userRole="store"/>
     </div>
   );
 };

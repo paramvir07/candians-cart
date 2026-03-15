@@ -1,4 +1,4 @@
-import { ICashierTopUp } from "@/db/models/cashier/cashierTopUp.model";
+import { ICashierTopUp } from "@/db/models/cashier/walletTopUp.model";
 
 export type CashierTopUp = ICashierTopUp & {
   _id: string;

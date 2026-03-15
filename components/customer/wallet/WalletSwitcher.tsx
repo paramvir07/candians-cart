@@ -1,10 +1,7 @@
 "use client";
 import { WalletSwitcherAtom, WalletViewEnum } from "@/atoms/customer/Wallet";
-import { Button } from "@/components/ui/button";
 import { useAtom } from "jotai";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
-const WalletSwitcher = ({ customerId }: { customerId?: string }) => {
+const WalletSwitcher = () => {
   const [active, setActive] = useAtom(WalletSwitcherAtom);
 
   return (

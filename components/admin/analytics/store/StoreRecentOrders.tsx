@@ -19,20 +19,13 @@ function formatCents(cents: number) {
   );
 }
 
-function getOrderBadge(status: string, paymentMode: string, amount: number) {
-  if (paymentMode === "pending") {
-    return {
-      label: `Pay ${formatCents(amount)}`,
-      className: "bg-red-100 text-red-600",
-    };
-  }
+function getOrderBadge(status: string) {
   if (status === "pending") {
     return { label: "Pending", className: "bg-amber-100 text-amber-700" };
   }
   if (status === "completed") {
     return { label: "Paid", className: "bg-green-100 text-green-700" };
   }
-  return { label: "Order confirmed", className: "bg-blue-100 text-blue-600" };
 }
 
 export default function StoreRecentOrders({
@@ -68,9 +61,6 @@ export default function StoreRecentOrders({
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-5 sm:px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Invoice
-              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -86,9 +76,7 @@ export default function StoreRecentOrders({
             ) : (
               orders.map((order) => {
                 const badge = getOrderBadge(
-                  order.status,
-                  order.paymentMode,
-                  order.amount,
+                  order.status
                 );
                 return (
                   <tr
@@ -103,15 +91,10 @@ export default function StoreRecentOrders({
                     </td>
                     <td className="px-3 py-3.5">
                       <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${badge.className}`}
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${badge?.className}`}
                       >
-                        {badge.label}
+                        {badge?.label}
                       </span>
-                    </td>
-                    <td className="px-5 sm:px-6 py-3.5 text-center">
-                      <button className="text-gray-300 hover:text-emerald-500 transition-colors p-1.5 rounded-lg hover:bg-emerald-50">
-                        <Eye className="w-4 h-4" />
-                      </button>
                     </td>
                   </tr>
                 );

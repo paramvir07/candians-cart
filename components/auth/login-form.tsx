@@ -111,33 +111,20 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
 
       {/* Footer links */}
       <div className="mt-6 flex flex-col gap-1.5">
-        <Link href="/forget-password" className="text-sm hover:underline text-primary">
-          Forgot password?
-        </Link>
         {customer && (
-          <>
             <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{" "}
               <Link href="/customer/signup" className="text-primary hover:underline">
                 Sign up
               </Link>
             </p>
-            <p className="text-sm text-muted-foreground">
-              Are you a store?{" "}
-              <Link href="/store/login" className="text-primary hover:underline">
-                Login here
-              </Link>
-            </p>
-          </>
         )}
-        {store && (
           <p className="text-sm text-muted-foreground">
-            Are you a customer?{" "}
-            <Link href="/customer/login" className="text-primary hover:underline">
+            Are you a partner?{" "}
+            <Link href="/partner-access" className="text-primary hover:underline">
               Login here
             </Link>
           </p>
-        )}
       </div>
     </>
   );

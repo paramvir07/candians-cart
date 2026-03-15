@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Search, PackageOpen, ArrowLeft, CirclePlus } from "lucide-react";
-
+import { Search, PackageOpen, CirclePlus, Store } from "lucide-react";
+import Link from "next/link";
 import {
   Pagination,
   PaginationContent,
@@ -15,15 +15,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-
-import { getStoreProductsPaginated } from "@/actions/admin/getStoreProductsPaginated";
-import { searchProducts } from "@/actions/common/searchProducts.action";
 import { ProductCard, ProductCardRole } from "./ProductCard";
 import { IProduct } from "@/types/store/products.types";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AdminProduct, getStoreProductsPaginated, searchProducts } from "@/actions/admin/products/getProducts.action";
 
-// Skeleton perfectly mirrors the real card
 const ProductCardSkeleton = () => (
   <div className="bg-card rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">
     <Skeleton className="w-full aspect-4/3 rounded-none" />
@@ -47,7 +43,7 @@ const ProductCardSkeleton = () => (
 );
 
 interface StoreProductsListProps {
-  storeId: string;
+  storeId?: string;
   role: ProductCardRole;
 }
 
@@ -55,66 +51,58 @@ export const StoreProductsList = ({
   storeId,
   role,
 }: StoreProductsListProps) => {
-  const [products, setProducts] = useState<IProduct[]>([]);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchMode, setIsSearchMode] = useState(false);
 
-  // Load paginated products
-  useEffect(() => {
-    let isMounted = true;
-    if (isSearchMode) return;
+  const isAllStores = !storeId;
 
+  useEffect(() => {
+    let mounted = true;
+    if (isSearchMode) return;
     const load = async () => {
       setIsLoading(true);
       const result = await getStoreProductsPaginated(storeId, currentPage, 12);
-      if (!isMounted) return;
+      if (!mounted) return;
       if (result.success) {
-        setProducts(result.data as IProduct[]);
+        setProducts(result.data);
         setTotalPages(result.totalPages ?? 1);
       } else {
         toast.error(result.error || "Failed to fetch products");
       }
       setIsLoading(false);
     };
-
     load();
     return () => {
-      isMounted = false;
+      mounted = false;
     };
   }, [storeId, currentPage, isSearchMode]);
 
-  // Debounced search
   useEffect(() => {
     if (!searchQuery.trim()) {
       setIsSearchMode(false);
       return;
     }
-
     const timer = setTimeout(async () => {
       setIsSearchMode(true);
       setIsLoading(true);
       const res = await searchProducts(searchQuery, storeId);
-      if (res.success) {
-        setProducts(res.data as unknown as IProduct[]);
-      } else {
-        toast.error(res.error || "Search failed");
-      }
+      if (res.success) setProducts(res.data);
+      else toast.error(res.error || "Search failed");
       setIsLoading(false);
     }, 350);
-
     return () => clearTimeout(timer);
   }, [searchQuery, storeId]);
 
-  const getPageNumbers = () => {
+  const getPageNumbers = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else if (currentPage <= 3) {
-      pages.push(1, 2, 3, 4, "ellipsis", totalPages);
-    } else if (currentPage >= totalPages - 2) {
+    } else if (currentPage <= 3) pages.push(1, 2, 3, 4, "ellipsis", totalPages);
+    else if (currentPage >= totalPages - 2)
       pages.push(
         1,
         "ellipsis",
@@ -123,7 +111,7 @@ export const StoreProductsList = ({
         totalPages - 1,
         totalPages,
       );
-    } else {
+    else
       pages.push(
         1,
         "ellipsis",
@@ -133,40 +121,43 @@ export const StoreProductsList = ({
         "ellipsis",
         totalPages,
       );
-    }
     return pages;
   };
 
-  // Page titles per role
   const titles: Record<ProductCardRole, { heading: string; sub: string }> = {
     admin: {
       heading: "Inventory",
-      sub: "Manage products, pricing, subsidies and stock.",
+      sub: isAllStores
+        ? "All products across every store."
+        : "Manage products, pricing, subsidies and stock.",
     },
     store: {
       heading: "My Products",
       sub: "View and manage your store's product listings.",
     },
-    customer: {
-      heading: "Products",
-      sub: "Browse available products.",
-    },
+    customer: { heading: "Products", sub: "Browse available products." },
   };
 
-  const { heading, sub } = titles[role];
+  const addProductHref =
+    role === "store"
+      ? "/store/products/add"
+      : storeId
+        ? `/admin/store/${storeId}/products/add`
+        : "/admin/products/add";
 
   return (
     <>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-            {heading}
+            {titles[role].heading}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {isSearchMode ? `Showing results for "${searchQuery}"` : sub}
+            {isSearchMode
+              ? `Showing results for "${searchQuery}"`
+              : titles[role].sub}
           </p>
         </div>
-
         <div className="relative w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -178,25 +169,19 @@ export const StoreProductsList = ({
           />
         </div>
       </div>
+
       <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg border">
         <p className="text-sm font-medium text-slate-600">
           Want to add a new product?
         </p>
         <Button asChild>
-          <Link
-            href={
-              role === "store"
-                ? "/store/products/add"
-                : `/admin/store/${storeId}/products/add`
-            }
-            className="flex items-center gap-2"
-          >
+          <Link href={addProductHref} className="flex items-center gap-2">
             <CirclePlus className="h-4 w-4" />
             Add product
           </Link>
         </Button>
       </div>
-      {/* Grid */}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {isLoading ? (
           Array.from({ length: 8 }).map((_, i) => (
@@ -204,14 +189,27 @@ export const StoreProductsList = ({
           ))
         ) : products.length > 0 ? (
           products.map((product) => (
-            <ProductCard
-              key={product._id}
-              product={product}
-              role={role}
-              onDelete={(id) =>
-                setProducts((prev) => prev.filter((p) => p._id !== id))
-              }
-            />
+            <div key={product._id} className="flex flex-col gap-0">
+              {/* Store chip — only shown in all-stores view */}
+              {isAllStores && product.storeId && (
+                <Link
+                  href={`/admin/store/${product.storeId}`}
+                  className="group inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors"
+                >
+                  <Store className="w-3 h-3 text-emerald-500 shrink-0" />
+                  <span className="text-xs font-semibold text-emerald-700 truncate max-w-[160px] group-hover:underline underline-offset-2">
+                    {product.storeName ?? "Unknown Store"}
+                  </span>
+                </Link>
+              )}
+              <ProductCard
+                product={product as unknown as IProduct}
+                role={role}
+                onDelete={(id) =>
+                  setProducts((prev) => prev.filter((p) => p._id !== id))
+                }
+              />
+            </div>
           ))
         ) : (
           <div className="col-span-full py-16 flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border rounded-2xl bg-muted/20">
@@ -232,7 +230,7 @@ export const StoreProductsList = ({
           </div>
         )}
       </div>
-      {/* Pagination */}
+
       {!isSearchMode && totalPages > 1 && (
         <div className="pt-4 border-t border-border">
           <Pagination>
@@ -252,7 +250,6 @@ export const StoreProductsList = ({
                   }
                 />
               </PaginationItem>
-
               {getPageNumbers().map((page, i) => (
                 <PaginationItem key={i}>
                   {page === "ellipsis" ? (
@@ -277,7 +274,6 @@ export const StoreProductsList = ({
                   )}
                 </PaginationItem>
               ))}
-
               <PaginationItem>
                 <PaginationNext
                   href="#"

@@ -199,12 +199,30 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
         {/* Hidden customer fields */}
         {customer && (
           <>
-            <Input id="monthlyBudget" type="hidden" name="monthlyBudget" value={budget ?? ""} required />
-            <Input id="referralCode" type="hidden" name="referralCode" value={referralCode ?? ""} required />
+            <Input
+              id="monthlyBudget"
+              type="hidden"
+              name="monthlyBudget"
+              value={budget ?? ""}
+              required
+            />
+            <Input
+              id="referralCode"
+              type="hidden"
+              name="referralCode"
+              value={referralCode ?? ""}
+              required
+            />
           </>
         )}
         {(customer || cashier) && (
-          <Input id="associatedStore" type="hidden" name="associatedStore" value={storeId.toString() || ""} required={customer || cashier} />
+          <Input
+            id="associatedStore"
+            type="hidden"
+            name="associatedStore"
+            value={storeId.toString() || ""}
+            required={customer || cashier}
+          />
         )}
 
         <Button
@@ -219,29 +237,22 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
       {/* Footer */}
       <div className="mt-6 flex flex-col gap-1.5">
         {customer && (
-          <>
-            <p className="text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/customer/login" className="text-primary hover:underline">
-                Log in
-              </Link>
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Are you a store?{" "}
-              <Link href="/store/login" className="text-primary hover:underline">
-                Login here
-              </Link>
-            </p>
-          </>
-        )}
-        {store && (
           <p className="text-sm text-muted-foreground">
-            Are you a customer?{" "}
-            <Link href="/customer/login" className="text-primary hover:underline">
-              Login here
+            Already have an account?{" "}
+            <Link
+              href="/customer/login"
+              className="text-primary hover:underline"
+            >
+              Log in
             </Link>
           </p>
         )}
+        <p className="text-sm text-muted-foreground">
+          Are you a partner?{" "}
+          <Link href="/partner-access" className="text-primary hover:underline">
+            Login here
+          </Link>
+        </p>
       </div>
     </>
   );
@@ -249,7 +260,12 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
   return (
     <>
       {/* ── MOBILE: image top, form slides up ── */}
-      <div className={cn("flex flex-col w-full lg:hidden min-h-screen overflow-hidden", className)}>
+      <div
+        className={cn(
+          "flex flex-col w-full lg:hidden min-h-screen overflow-hidden",
+          className,
+        )}
+      >
         <div className="relative w-full h-[40vh] shrink-0">
           <Image
             src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80"

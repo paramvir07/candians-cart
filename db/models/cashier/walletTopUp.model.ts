@@ -1,21 +1,23 @@
 import { model, Model, models, Schema, Types } from "mongoose";
 
-export interface ICashierTopUp {
+export interface IWalletTopUp {
   customerId: Types.ObjectId;
-  cashierId: Types.ObjectId;
+  userId: string;
   value: number; // in  cents
   paymentMode: "cash" | "card";
 }
 
-const cashierTopUpSchema = new Schema<ICashierTopUp>(
+const walletTopUpSchema = new Schema<IWalletTopUp>(
   {
     customerId: {
       type: Schema.Types.ObjectId,
       required: true,
+      index: true,
     },
-    cashierId: {
-      type: Schema.Types.ObjectId,
+    userId: {
+      type: String, // cashier or admin
       required: true,
+      index: true,
     },
     value: {
       type: Number, // in cents
@@ -23,13 +25,13 @@ const cashierTopUpSchema = new Schema<ICashierTopUp>(
     },
     paymentMode: {
       type: String,
-      enum: ["cash", "card"],
+      enum: ["cash", "card", "gift"],
       required: true,
+      index: true,
     },
   },
   { timestamps: true },
 );
 
-export const CashierTopUp: Model<ICashierTopUp> =
-  models.CashierTopUp ||
-  model<ICashierTopUp>("CashierTopUp", cashierTopUpSchema);
+export const WalletTopUp: Model<IWalletTopUp> =
+  models.WalletTopUp || model <IWalletTopUp>("WalletTopUp", walletTopUpSchema);

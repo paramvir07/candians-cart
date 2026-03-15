@@ -2,26 +2,30 @@
 
 import { dbConnect } from "@/db/dbConnect";
 import { getUserSession } from "../auth/getUserSession.actions";
-import { CashierTopUp } from "@/db/models/cashier/cashierTopUp.model";
 import { Cashier } from "@/db/models/cashier/cashier.model";
 import Customer from "@/db/models/customer/customer.model";
-import { cashierTopUpZodSchema } from "@/zod/schemas/cashier/cashierTopUpSchema";
+import { walletTopUpZodSchema } from "@/zod/schemas/cashier/cashierTopUpSchema";
 import { zodErrorResponse } from "@/zod/validation/error";
 import mongoose from "mongoose";
+import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 
-export const cashierTopUpAction = async (
+export const walletTopUpAction = async (
   customerId: string,
-  paymentMode: "cash" | "card",
+  paymentMode: "cash" | "card" | "gift",
   value: number,
+  userRole: "admin" | "cashier",
 ): Promise<{
-    success: boolean;
-    message: string;
+  success: boolean;
+  message: string;
 }> => {
+  const adminRole = userRole === "admin";
+  const cashierRole = userRole === "cashier";
+
   let session: mongoose.ClientSession | null = null;
 
   try {
     // ✅ Zod validation
-    const result = cashierTopUpZodSchema.safeParse({
+    const result = walletTopUpZodSchema.safeParse({
       customerId,
       paymentMode,
       value,
@@ -36,23 +40,30 @@ export const cashierTopUpAction = async (
 
     const userData = await getUserSession();
     await dbConnect();
+    
+    let userId;
 
-    const cashier = await Cashier.findOne({ userId: userData.user.id })
-      .lean()
-      .select("_id");
+    if (cashierRole) {
+      const cashier = await Cashier.findOne({ userId: userData.user.id })
+        .lean()
+        .select("_id");
+      userId = cashier?._id;
+    } else if (adminRole) {
+      userId = userData.user.id;
+    }
 
-    if (!cashier) {
-      return { success: false, message: "Cashier not found" };
+    if (!userId) {
+      return { success: false, message: "Authenticated User not found" };
     }
 
     // ✅ Transaction start
     session = await mongoose.startSession();
 
     await session.withTransaction(async () => {
-      await CashierTopUp.create(
+      await WalletTopUp.create(
         [
           {
-            cashierId: cashier._id,
+            userId,
             customerId: data.customerId,
             paymentMode: data.paymentMode,
             value: data.value,
@@ -84,39 +95,5 @@ export const cashierTopUpAction = async (
     };
   } finally {
     if (session) session.endSession();
-  }
-};
-
-export const getCashierTopUpHistoryAction = async () => {
-  const userData = await getUserSession();
-  await dbConnect();
-  try {
-    const customer = await Customer.findOne({ userId: userData.user.id })
-      .lean()
-      .select("_id");
-    if (!customer)
-      return {
-        success: false,
-        message: "Customer not found",
-      };
-
-    const cashierTopUpHistory = await CashierTopUp.find({
-      customerId: customer._id,
-    }).lean();
-
-    const serializedCashierTopUpHistory = JSON.parse(
-      JSON.stringify(cashierTopUpHistory),
-    );
-
-    return {
-      success: true,
-      cashierTopUpHistory: serializedCashierTopUpHistory,
-    };
-  } catch (error) {
-    console.log("Error while getting customer's top up history: ", error);
-    return {
-      success: false,
-      message: "Something went wrong",
-    };
   }
 };

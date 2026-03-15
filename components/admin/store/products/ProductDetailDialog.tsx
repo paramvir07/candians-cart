@@ -1,3 +1,5 @@
+"use client";
+
 interface ProductDialogProps {
   product: IProduct;
   role: ProductCardRole;
@@ -6,13 +8,7 @@ interface ProductDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   ImageIcon,
   Sparkles,
@@ -21,11 +17,13 @@ import {
   Receipt,
   Tag,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { ProductCardRole } from "./ProductCard";
 import { IProduct } from "@/types/store/products.types";
 import Image from "next/image";
 import { fmt } from "@/lib/fomatPrice";
+import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
 
 export const ProductDetailDialog = ({
   product,
@@ -38,32 +36,43 @@ export const ProductDetailDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-2xl gap-0">
-        {/* Image */}
-        <div className="relative w-full aspect-[16/9] bg-muted">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-3xl gap-0 border-0 shadow-2xl">
+        {/* ── Hero image ──────────────────────────────────────────────────────── */}
+        <div className="relative w-full aspect-[16/8] bg-muted overflow-hidden">
+          {/* Out of stock overlay */}
           {!product.stock && (
-            <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px] z-10 flex items-center justify-center">
-              <span className="flex items-center gap-1.5 bg-foreground text-background text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+            <div className="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
+              <span className="flex items-center gap-2 bg-white text-gray-900 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-widest shadow-lg">
                 <PackageX className="h-3.5 w-3.5" />
                 Out of Stock
               </span>
             </div>
           )}
 
+          {/* Subsidised ribbon */}
           {isSubsidised && role !== "store" && (
             <div className="absolute top-0 left-0 z-20">
-              <div className="flex items-center gap-1 bg-violet-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-br-xl">
+              <div className="flex items-center gap-1.5 bg-violet-500 text-white text-[10px] font-bold px-4 py-2 rounded-br-2xl tracking-wider">
                 <Sparkles className="h-3 w-3" />
                 SUBSIDISED
               </div>
             </div>
           )}
 
+          {/* Category badge */}
           <div className="absolute top-3 right-3 z-20">
-            <Badge variant="secondary" className="capitalize shadow-sm">
+            <span className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm capitalize">
               {product.category}
-            </Badge>
+            </span>
           </div>
+
+          {/* Close button */}
+          <button
+            onClick={() => onOpenChange(false)}
+            className="absolute top-3 left-3 z-30 w-8 h-8 flex items-center justify-center bg-black/30 hover:bg-black/50 text-white rounded-full transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
 
           {hasImage ? (
             <Image
@@ -74,107 +83,111 @@ export const ProductDetailDialog = ({
               sizes="(max-width: 768px) 100vw, 672px"
             />
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-muted-foreground/30 gap-2">
-              <ImageIcon className="h-14 w-14" strokeWidth={1} />
-              <span className="text-sm">No image available</span>
-            </div>
+            <CategoryIllustration
+              category={product.category}
+              className="w-full h-full"
+            />
           )}
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-4">
-          <DialogHeader>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <DialogTitle className="text-xl font-bold text-foreground leading-tight">
-                  {product.name}
-                </DialogTitle>
-                <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
+        {/* ── Content ─────────────────────────────────────────────────────────── */}
+        <div className="p-6 space-y-5 bg-white">
+          {/* Name + description + stock badge */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                {product.name}
+              </h2>
+              {product.description && (
+                <p className="text-sm text-gray-500 mt-1.5 leading-relaxed line-clamp-2">
                   {product.description}
                 </p>
-              </div>
-              <div className="shrink-0">
-                {product.stock ? (
-                  <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-                    <PackageCheck className="h-3.5 w-3.5" />
-                    In Stock
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5 text-xs font-semibold text-destructive bg-destructive/10 border border-destructive/20 px-2.5 py-1 rounded-full">
-                    <PackageX className="h-3.5 w-3.5" />
-                    Out of Stock
-                  </span>
-                )}
-              </div>
+              )}
             </div>
-          </DialogHeader>
+            {product.stock ? (
+              <span className="shrink-0 flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
+                <PackageCheck className="h-3.5 w-3.5" />
+                In Stock
+              </span>
+            ) : (
+              <span className="shrink-0 flex items-center gap-1.5 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 px-3 py-1.5 rounded-full">
+                <PackageX className="h-3.5 w-3.5" />
+                Out of Stock
+              </span>
+            )}
+          </div>
 
-          {/* Price + meta grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="bg-muted/50 rounded-xl p-3 border border-border/60">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1">
+          {/* ── Metrics grid ─────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* Price — always shown */}
+            <div className="col-span-2 sm:col-span-1 bg-gray-50 rounded-2xl p-4 border border-gray-100">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
                 Price
               </p>
-              <p className="text-xl font-bold text-foreground tracking-tight">
+              <p className="text-2xl font-bold text-gray-900 tracking-tight">
                 {fmt(product.price)}
               </p>
             </div>
 
+            {/* Tax */}
             {product.tax > 0 && (
-              <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60">
-                <div className="flex items-center gap-1 mb-1">
+              <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100">
+                <div className="flex items-center gap-1.5 mb-1">
                   <Receipt className="h-3 w-3 text-amber-500" />
-                  <p className="text-[10px] font-medium text-amber-600 uppercase tracking-widest">
+                  <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">
                     Tax
                   </p>
                 </div>
-                <p className="text-lg font-bold text-amber-700">
-                  {product.tax}%
+                <p className="text-xl font-bold text-amber-700">
+                  {product.tax * 100}%
                 </p>
               </div>
             )}
 
-            {/* Admin/Store only fields */}
+            {/* Markup — admin/store only */}
             {role !== "customer" && product.markup > 0 && (
-              <div className="bg-sky-50 rounded-xl p-3 border border-sky-200/60">
-                <div className="flex items-center gap-1 mb-1">
+              <div className="bg-sky-50 rounded-2xl p-4 border border-sky-100">
+                <div className="flex items-center gap-1.5 mb-1">
                   <TrendingUp className="h-3 w-3 text-sky-500" />
-                  <p className="text-[10px] font-medium text-sky-600 uppercase tracking-widest">
+                  <p className="text-[10px] font-bold text-sky-500 uppercase tracking-widest">
                     Markup
                   </p>
                 </div>
-                <p className="text-lg font-bold text-sky-700">
+                <p className="text-xl font-bold text-sky-700">
                   {product.markup}%
                 </p>
               </div>
             )}
 
+            {/* Disposable fee — admin/store only */}
             {role !== "customer" &&
             product.disposableFee &&
             product.disposableFee > 0 ? (
-              <div className="bg-orange-50 rounded-xl p-3 border border-orange-200/60">
-                <div className="flex items-center gap-1 mb-1">
+              <div className="bg-orange-50 rounded-2xl p-4 border border-orange-100">
+                <div className="flex items-center gap-1.5 mb-1">
                   <Tag className="h-3 w-3 text-orange-500" />
-                  <p className="text-[10px] font-medium text-orange-600 uppercase tracking-widest">
-                    Disposal Fee
+                  <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">
+                    Disposal
                   </p>
                 </div>
-                <p className="text-lg font-bold text-orange-700">
+                <p className="text-xl font-bold text-orange-700">
                   {fmt(product.disposableFee)}
                 </p>
               </div>
             ) : null}
           </div>
 
-          {/* Subsidised indicator — visible to all, but labeled differently */}
+          {/* ── Subsidised banner ────────────────────────────────────────────── */}
           {isSubsidised && role !== "store" && (
-            <div className="flex items-center gap-2.5 bg-violet-50 border border-violet-200 rounded-xl px-4 py-3">
-              <Sparkles className="h-4 w-4 text-violet-500 shrink-0" />
+            <div className="flex items-start gap-3 bg-violet-50 border border-violet-200 rounded-2xl px-4 py-3.5">
+              <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
+                <Sparkles className="h-4 w-4 text-violet-500" />
+              </div>
               <div>
-                <p className="text-sm font-semibold text-violet-700">
+                <p className="text-sm font-bold text-violet-700">
                   Subsidised Product
                 </p>
-                <p className="text-xs text-violet-500">
+                <p className="text-xs text-violet-500 mt-0.5">
                   {role === "customer"
                     ? "This product is subsidised — you may be eligible for a reduced price."
                     : "This product is currently marked as subsidised."}

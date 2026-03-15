@@ -4,7 +4,7 @@ import { dbConnect } from "@/db/dbConnect";
 import { getUserSession } from "../auth/getUserSession.actions";
 import Customer from "@/db/models/customer/customer.model";
 import WalletPayment from "@/db/models/customer/WalletPayment.model";
-import { CashierTopUp } from "@/db/models/cashier/cashierTopUp.model";
+import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 
 export const getWalletTopUpHistory = async (recievedCustomerId?: string) => {
   try {
@@ -34,11 +34,11 @@ export const getWalletTopUpHistory = async (recievedCustomerId?: string) => {
         success: false,
         message: "Stripe Top up history not found",
       };
-    const cashierTopUpHistory = await CashierTopUp.find({
+    const walletTopUpHistory = await WalletTopUp.find({
       customerId: customerId,
     }).lean();
 
-    if (!cashierTopUpHistory)
+    if (!walletTopUpHistory)
       return {
         success: false,
         message: "Store Top up history not found",
@@ -46,15 +46,15 @@ export const getWalletTopUpHistory = async (recievedCustomerId?: string) => {
     const serializedStripeTopUpHistory = JSON.parse(
       JSON.stringify(stripeTopUpHistory),
     );
-    const serializedCashierTopUpHistory = JSON.parse(
-      JSON.stringify(cashierTopUpHistory),
+    const serializedWalletTopUpHistory = JSON.parse(
+      JSON.stringify(walletTopUpHistory),
     );
     return {
       success: true,
       message: "Fetched wallet top up history successfully!!",
       walletTopUpHistory: {
         stripeTopUps: serializedStripeTopUpHistory,
-        cashierTopUps: serializedCashierTopUpHistory,
+        walletTopUps: serializedWalletTopUpHistory,
       },
     };
   } catch (error) {

@@ -17,6 +17,6 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Make all routes protectected except the ones listed in the negative lookahead in the next line
-    "/((?!api/auth|store/login|admin/login|customer/login|cashier/login|customer/signup|_next|favicon.ico|api/stripe/webhook).*)",
+    "/((?!api/auth|store/login|admin/login|customer/login|cashier/login|customer/signup|partner-access|_next|favicon.ico|api/stripe/webhook).*)",
   ],
 };

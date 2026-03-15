@@ -13,6 +13,8 @@ export interface ICustomer {
   referralCode: string;
   walletBalance: number;
   giftWalletBalance: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const customerSchema = new Schema<ICustomer>(

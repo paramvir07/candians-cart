@@ -85,7 +85,7 @@ export const BaseProductFormSchema = z.object({
   markup: z
     .number()
     .min(30, "Markup must be between 30% and 35%")
-    .max(35, "Markup cannot exceed 35%"),
+    .max(35, "Markup must be between 30% and 35%"),
 });
 
 export const createProductFormSchema = (role: "admin" | "store") => {

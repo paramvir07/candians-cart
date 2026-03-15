@@ -1,61 +1,35 @@
-import DashboardHome from "@/components/store/Dashboard";
+import { getStoreDashboardData } from "@/actions/store/getStoreDashboard.actions";
+import StoreDashRecentOrders from "@/components/store/dashboard/StoreDashRecentOrders";
+import StoreDashRecentPayouts from "@/components/store/dashboard/StoreDashRecentPayouts";
+import StoreDashStatCards from "@/components/store/dashboard/StoreDashStatsCards";
 
-const store = () => {
 
-  // store@demo.com
-  //Store@123
+export default async function StoreDashboardPage() {
+  const { stats, recentOrders, recentPayouts, storeId } =
+    await getStoreDashboardData();
+
   return (
-    <div>
-        <DashboardHome />
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
+        {/* Page heading */}
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+            Dashboard
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Overview of your store's performance
+          </p>
+        </div>
 
-      {/* 
-        Orders
-            ordered by username
-            previous orders
-            Return/refund
-            previous orders
+        {/* 4 stat cards — Products, Orders, Revenue, Users */}
+        <StoreDashStatCards stats={stats} storeId={storeId} />
 
-
-            order status -: pending, ready_for_pickup, completed, cancled, refund requested, refunded, failed
-
-        Products
-            add products
-            edit products
-            delete products
-            Out of stock
-            Change Images
-
-
-            
-        Information
-            change store information
-            Location
-            Contact information
-        Prmotions
-            add new promomotions
-            edit promotions
-            delete promotions
-        Analytics
-            sales data
-            customer data
-        
-
-
-
-            backend
-              Products
-              cart
-              orders
-              promotions
-
-            
-            
-            check proxy.ts for middleware and other checks
-            
-            
-    */}
+        {/* Recent Orders + Recent Payouts side by side */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
+          <StoreDashRecentOrders orders={recentOrders} />
+          <StoreDashRecentPayouts payouts={recentPayouts} />
+        </div>
+      </div>
     </div>
   );
-};
-
-export default store;
+}
