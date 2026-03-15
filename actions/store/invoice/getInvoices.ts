@@ -31,6 +31,12 @@ export async function getInvoices(storeId: string) {
         url: invoice.documentId?.url,
         fileId: invoice.documentId?.fileId,
       },
+      products: invoice.products?.map((product: any) => ({
+        ...product,
+        _id: product._id?.toString(),
+        productId: product.productId?.toString(),
+      })),
+      
       DateInvoiceCame: invoice.DateInvoiceCame?.toISOString(),
       createdAt: invoice.createdAt?.toISOString(),
       updatedAt: invoice.updatedAt?.toISOString(),

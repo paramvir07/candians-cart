@@ -22,11 +22,11 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Receipt, ArrowRight, Check, X, ExternalLink, Loader2 } from "lucide-react";
-import { resolvePriceChange, SerializedInvoiceWithChanges } from "@/actions/admin/invoice/getPriceChange";
+import { Eye, Receipt, ArrowRight, Check, X, ExternalLink, Loader2, Store } from "lucide-react";
+import { resolvePriceChange, SerializedGlobalInvoiceWithChanges } from "@/actions/admin/invoice/getPriceChange";
 
-interface PriceChangesTableProps {
-  invoices: SerializedInvoiceWithChanges[];
+interface AllPriceChangesTableProps {
+  invoices: SerializedGlobalInvoiceWithChanges[];
 }
 
 const formatPrice = (cents?: number) => {
@@ -34,12 +34,12 @@ const formatPrice = (cents?: number) => {
   return `$${(cents / 100).toFixed(2)}`;
 };
 
-export default function PriceChangesTable({ invoices }: PriceChangesTableProps) {
-  const [selectedInvoice, setSelectedInvoice] = useState<SerializedInvoiceWithChanges | null>(null);
+export default function AllPriceChangesTable({ invoices }: AllPriceChangesTableProps) {
+  const [selectedInvoice, setSelectedInvoice] = useState<SerializedGlobalInvoiceWithChanges | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const handleViewDetails = (invoice: SerializedInvoiceWithChanges) => {
+  const handleViewDetails = (invoice: SerializedGlobalInvoiceWithChanges) => {
     setSelectedInvoice(invoice);
     setIsSheetOpen(true);
   };
@@ -51,7 +51,7 @@ export default function PriceChangesTable({ invoices }: PriceChangesTableProps) 
       if (result.success) {
         toast.success(result.message);
         
-        // Optimistically update the status of the item instead of removing it
+        // Optimistic update
         if (selectedInvoice) {
             const updatedProducts = selectedInvoice.products.map(p => 
                 p._id === logId ? { ...p, status } : p
@@ -83,6 +83,7 @@ export default function PriceChangesTable({ invoices }: PriceChangesTableProps) 
           <TableHeader>
             <TableRow>
               <TableHead>Date Added</TableHead>
+              <TableHead>Store</TableHead>
               <TableHead>Vendor</TableHead>
               <TableHead>Invoice #</TableHead>
               <TableHead>Status</TableHead>
@@ -99,6 +100,15 @@ export default function PriceChangesTable({ invoices }: PriceChangesTableProps) 
                   <TableCell>
                     {format(new Date(invoice.createdAt), "MMM dd, yyyy")}
                   </TableCell>
+                  
+                  {/* NEW: Store Identification Column */}
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                        <Store className="w-4 h-4 text-muted-foreground" />
+                        <span className="font-semibold">{invoice.store?.name || "Unknown Store"}</span>
+                    </div>
+                  </TableCell>
+
                   <TableCell className="font-medium">{invoice.vendorName}</TableCell>
                   <TableCell>#{invoice.InvoiceNumber}</TableCell>
                   <TableCell>
@@ -133,9 +143,9 @@ export default function PriceChangesTable({ invoices }: PriceChangesTableProps) 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="sm:max-w-2xl overflow-y-auto">
           <SheetHeader className="mb-6">
-            <SheetTitle>Review Price Changes</SheetTitle>
+            <SheetTitle>Review Global Price Changes</SheetTitle>
             <SheetDescription>
-              View, approve, or reject the following price updates.
+              View, approve, or reject the following price updates for <strong className="text-primary">{selectedInvoice?.store?.name}</strong>.
             </SheetDescription>
           </SheetHeader>
 
