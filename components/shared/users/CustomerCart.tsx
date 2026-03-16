@@ -331,7 +331,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </div>
           </div>
           <div>
-            <TopUpDialog component="checkout" customerId={customerId} />
+            <TopUpDialog customerId={customerId} />
           </div>
         </div>
 
@@ -545,7 +545,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 </div>
               </div>
               <div>
-                <TopUpDialog component="checkout" customerId={customerId} />
+                <TopUpDialog customerId={customerId} />
               </div>
             </div>
           </div>
