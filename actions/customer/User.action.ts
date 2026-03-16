@@ -70,7 +70,7 @@ export const getCustomerAndStoreDataAction = async () => {
 
 export const getCustomerDataAction = async (customerId?: string, getCashierId? :boolean) => {
   const session = await getUserSession();
-  const cashierRole = session.user.role === "cashier" || "admin";
+    const cashierRole = session.user.role === "cashier" || session.user.role === "admin";
   try {
     await dbConnect();
     let customerData;

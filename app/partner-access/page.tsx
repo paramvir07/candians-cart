@@ -1,47 +1,96 @@
 import Link from "next/link";
-import { Shield, Store, UserCog, ShoppingBag } from "lucide-react";
+import { Shield, Store, UserCog, ChevronRight, ShoppingCart } from "lucide-react";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
+import Image from "next/image";
+import { LoginCarousel } from "@/components/customer/login/LoginCarousel";
 
 const PORTAL_OPTIONS = [
   {
     href: "/admin/login",
     icon: Shield,
-    label: "Admin Login",
-    description: "Access the main dashboard to oversee all operations.",
-    iconBg: "bg-blue-50",
+    label: "Admin",
+    description: "Oversee all operations and platform settings.",
+    iconBg: "bg-blue-500/10",
     iconColor: "text-blue-600",
-    border: "border-blue-100",
-    hoverBorder: "hover:border-blue-400",
-    hoverBg: "hover:bg-blue-50/40",
-    activeDot: "bg-blue-500",
   },
   {
     href: "/store/login",
     icon: Store,
-    label: "Store Login",
-    description: "Manage your grocery store, inventory, and promotions.",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-600",
-    border: "border-emerald-100",
-    hoverBorder: "hover:border-emerald-400",
-    hoverBg: "hover:bg-emerald-50/40",
-    activeDot: "bg-emerald-500",
+    label: "Store",
+    description: "Manage inventory, orders and promotions.",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
   },
   {
     href: "/cashier/login",
     icon: UserCog,
-    label: "Cashier Login",
-    description: "Process customer orders and manage in-store transactions.",
-    iconBg: "bg-amber-50",
+    label: "Cashier",
+    description: "Process customer orders and transactions.",
+    iconBg: "bg-amber-500/10",
     iconColor: "text-amber-600",
-    border: "border-amber-100",
-    hoverBorder: "hover:border-amber-400",
-    hoverBg: "hover:bg-amber-50/40",
-    activeDot: "bg-amber-500",
   },
 ] as const;
+
+// Shared selector content
+function SelectorContent() {
+  return (
+    <>
+      {/* Logo + heading */}
+      <div className="mb-8">
+        <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+          <ShoppingCart className="text-primary-foreground" size={22} />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
+          Partner Portal
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Select your role to continue.
+        </p>
+      </div>
+
+      {/* Options */}
+      <div className="flex flex-col gap-2">
+        {PORTAL_OPTIONS.map((option) => {
+          const Icon = option.icon;
+          return (
+            <Link
+              key={option.href}
+              href={option.href}
+              className="group flex items-center gap-3 px-4 py-3.5 rounded-2xl border border-border/60 bg-card hover:bg-secondary/60 hover:border-border transition-all"
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${option.iconBg}`}>
+                <Icon className={`h-[18px] w-[18px] ${option.iconColor}`} strokeWidth={1.75} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-none">
+                  {option.label} Login
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                  {option.description}
+                </p>
+              </div>
+              <div className="w-6 h-6 rounded-full bg-secondary group-hover:bg-primary/10 flex items-center justify-center shrink-0 transition-colors">
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-6">
+        <p className="text-sm text-muted-foreground">
+          Are you a customer?{" "}
+          <Link href="/customer/login" className="text-primary hover:underline underline-offset-2">
+            Login here
+          </Link>
+        </p>
+      </div>
+    </>
+  );
+}
 
 export default async function PartnerAccessPortal() {
   const session = await auth.api.getSession({
@@ -49,86 +98,48 @@ export default async function PartnerAccessPortal() {
   });
 
   if (session) redirect("/");
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex flex-col items-center justify-center p-4">
-      {/* Brand */}
-      <div className="flex items-center gap-3 mb-10">
-        <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-md">
-          <ShoppingBag className="w-5 h-5 text-white" />
-        </div>
-        <span className="text-xl font-bold text-gray-900 tracking-tight">
-          Candian Cart
-        </span>
-      </div>
-
-      {/* Card */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-xl w-full max-w-lg p-8 sm:p-10">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-            Partner Access Portal
-          </h1>
-          <p className="text-gray-500 text-sm mt-2">
-            Please select your login type to continue.
-          </p>
+    <>
+      {/* ── MOBILE: image top, card slides up ── */}
+      <div className="flex flex-col w-full lg:hidden min-h-screen overflow-hidden">
+        {/* Top image */}
+        <div className="relative w-full h-[52vh] shrink-0">
+          <Image
+            src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80"
+            alt="Fresh groceries"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black to-transparent" />
         </div>
 
-        <div className="grid grid-cols-1 gap-3">
-          {PORTAL_OPTIONS.map((option) => {
-            const Icon = option.icon;
-            return (
-              <Link
-                key={option.href}
-                href={option.href}
-                className={`group relative flex items-center gap-4 p-4 rounded-2xl border ${option.border} ${option.hoverBorder} ${option.hoverBg} bg-white transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}
-              >
-                {/* Icon */}
-                <div
-                  className={`w-12 h-12 rounded-xl ${option.iconBg} flex items-center justify-center shrink-0 transition-transform group-hover:scale-105`}
-                >
-                  <Icon className={`w-6 h-6 ${option.iconColor}`} />
-                </div>
-
-                {/* Text */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-900">
-                    {option.label}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                    {option.description}
-                  </p>
-                </div>
-
-                {/* Arrow */}
-                <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-0.5">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path
-                      d="M3 8h10M9 4l4 4-4 4"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={option.iconColor}
-                    />
-                  </svg>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-          <p className="text-sm text-muted-foreground">
-            Are you a customer?{" "}
-            <Link
-              href="/customer/login"
-              className="text-primary hover:underline"
-            >
-              Login here
-            </Link>
-          </p>
+        {/* Form card overlaps */}
+        <div className="relative z-10 -mt-45 flex-1 bg-background rounded-t-3xl px-6 pt-8 pb-10 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+          <SelectorContent />
         </div>
       </div>
-    </div>
+
+      {/* ── DESKTOP: same split as login page ── */}
+      <div className="hidden lg:flex min-h-screen w-full items-center justify-center p-8 relative overflow-hidden">
+        <div className="absolute inset-0 bg-muted/30" />
+        <div className="relative z-10 w-full max-w-5xl flex shadow-2xl rounded-2xl overflow-hidden">
+          {/* Left — carousel */}
+          <div className="w-[50%] shrink-0 p-2.5">
+            <div className="h-full min-h-[575px]">
+              <LoginCarousel />
+            </div>
+          </div>
+          {/* Right — selector */}
+          <div className="flex-1 flex items-center justify-center px-14 py-12 bg-card">
+            <div className="w-full max-w-[380px]">
+              <SelectorContent />
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

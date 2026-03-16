@@ -16,7 +16,7 @@ export function CategoryPillsBar({
   onSelect,
 }: CategoryPillsBarProps) {
   return (
-    <div className="bg-background/85 backdrop-blur-md border-b border-border/60 sticky top-18 z-40">
+    <div className="bg-background/85 backdrop-blur-md border-b border-border/60 sticky top-14 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center gap-2.5 py-3 overflow-x-auto scrollbar-none">
 

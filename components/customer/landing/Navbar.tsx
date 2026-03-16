@@ -6,7 +6,6 @@ import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { Customer } from "@/types/customer/customer";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { fmtShort } from "@/lib/fomatPrice";
-import { Button } from "@/components/ui/button";
 import { NavAvatarMenu } from "./NavMenu";
 
 const Navbar = async () => {
@@ -15,6 +14,7 @@ const Navbar = async () => {
     getCartItemsCount(),
   ]);
 
+  console.log(customerDataResponse)
   const customerData: Customer = customerDataResponse.customerData;
   const initials = customerData.name
     .split(" ")

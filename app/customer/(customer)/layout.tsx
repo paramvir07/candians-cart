@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
+import { Footer } from "@/components/customer/landing/Footer";
 import { redirect } from "next/navigation";
 
 export default async function RootLayout({
@@ -18,5 +19,11 @@ export default async function RootLayout({
       redirect("/customer/login");
     }
   }
-  return <>{children}</>;
+  return(
+  <>
+  {children}
+  <Footer/>
+  </>
+  ) 
+    
 }

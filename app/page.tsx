@@ -5,6 +5,7 @@ import { HeroBanner } from "@/components/customer/landing/HeroBanner";
 import { ProductsSection } from "@/components/customer/products/ProductsSection";
 import { redirect } from "next/navigation";
 import { IProduct } from "@/types/store/products.types";
+import { Footer } from "@/components/customer/landing/Footer";
 
 export default async function CustomerPage() {
   const session = await getUserSession();
@@ -45,6 +46,7 @@ export default async function CustomerPage() {
       <HeroBanner />
       {/* Client component — receives all products, handles filters/pagination */}
       <ProductsSection products={products} />
+      <Footer/>
     </div>
   );
 }

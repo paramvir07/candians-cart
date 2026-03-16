@@ -8,7 +8,13 @@ const page = async () => {
     return <div>{storesResponse.error}</div>;
   }
   const stores: StoreDocument[] = storesResponse.data;
-  return <SignupForm userRole="cashier" stores={stores} />;
+  return (
+
+    <div className="flex items-center justify-center p-5">
+      <SignupForm userRole="cashier" stores={stores} />
+    </div>
+
+  )
 };
 
 export default page;
