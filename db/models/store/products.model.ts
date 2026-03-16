@@ -108,6 +108,11 @@ const productSchema = new Schema(
       ref: "ProductInvoice",
       required: false,
     },
+
+    primaryUPC: {
+      type: Number,
+      required: true,
+    },
   },
   { timestamps: true },
 );
