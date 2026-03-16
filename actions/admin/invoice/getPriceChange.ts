@@ -196,8 +196,8 @@ export async function resolvePriceChange(
     }
 
     await ProductInvoice.findOneAndUpdate(
-      { _id: invoiceId, "product._id": logId },
-      { $set: { "product.$.status": status } },
+      { _id: invoiceId, "products._id": logId },
+      { $set: { "products.$.status": status } },
     );
     revalidatePath(`/admin/store/${invoice.storeId}/products/price-changes`);
 

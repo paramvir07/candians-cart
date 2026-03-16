@@ -131,7 +131,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
         <button
           type="button"
           onClick={() => setDialogOpen(true)}
-          className="relative aspect-[4/3] bg-muted overflow-hidden w-full shrink-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="relative aspect-4/3 bg-muted overflow-hidden w-full shrink-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={`View details for ${product.name}`}
         >
           {!product.stock && (
@@ -217,7 +217,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
           </h3>
 
           {/* Fixed-height description so all cards are the same height */}
-          <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed min-h-[2.5rem]">
+          <p className="text-muted-foreground text-sm line-clamp-2 leading-relaxed min-h-10">
             {product.description || ""}
           </p>
 
@@ -234,7 +234,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
             <div className="flex flex-col items-end gap-1">
               {product.tax > 0 && (
                 <span className="text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md">
-                  +{product.tax * 100}% tax
+                  +{(product.tax * 100).toFixed(2)}% tax
                 </span>
               )}
               {role !== "customer" && product.markup > 0 && (

@@ -12,7 +12,7 @@ const StoreProductsPage = async () => {
     return <div>Error: {storeDataResponse.error || "Could not load store data"}</div>;
   }
   const storeData: StoreDocument = storeDataResponse.data;
-  const storeId = storeData._id;
+  const storeId = storeData._id.toString();
   const stats = await getProductStats(storeId);
 
   return (

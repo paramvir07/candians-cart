@@ -63,7 +63,7 @@ export default async function getProducts(): Promise<ProductActionResponse> {
       .sort({ createdAt: -1 })
       .lean();
 
-    const serializedProducts: IProduct[] = products.map(serializeProduct);
+    const serializedProducts: IProduct[] = JSON.parse(JSON.stringify(products));
 
     return {
       success: true,
