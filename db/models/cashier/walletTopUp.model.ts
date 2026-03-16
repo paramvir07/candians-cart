@@ -4,7 +4,7 @@ export interface IWalletTopUp {
   customerId: Types.ObjectId;
   userId: string;
   value: number; // in  cents
-  paymentMode: "cash" | "card";
+  paymentMode: "cash" | "card" | "gift"
 }
 
 const walletTopUpSchema = new Schema<IWalletTopUp>(
