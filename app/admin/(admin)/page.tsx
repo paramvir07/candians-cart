@@ -9,7 +9,7 @@ const AdminDashboardPage = async() => {
     await allStoreDataAction();
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
+      <div className="max-w-400 mx-auto p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
         {/* Page Heading */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>

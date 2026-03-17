@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Added import
 import { Receipt } from "lucide-react";
 import { StoreRecentPayout } from "@/actions/store/getStoreDashboard.actions";
 
@@ -19,6 +20,8 @@ function formatCents(cents: number) {
 }
 
 export default function StoreDashRecentPayouts({ payouts }: StoreDashRecentPayoutsProps) {
+  const router = useRouter(); // Initialize the router
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col">
       {/* Header */}
@@ -28,7 +31,7 @@ export default function StoreDashRecentPayouts({ payouts }: StoreDashRecentPayou
           <h2 className="text-base sm:text-lg font-bold text-gray-900">Recent Payouts</h2>
         </div>
         <Link
-          href="/store/payout-reciepts"
+          href="/store/payouts"
           className="text-xs sm:text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
         >
           View all
@@ -36,7 +39,7 @@ export default function StoreDashRecentPayouts({ payouts }: StoreDashRecentPayou
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[360px]">
+        <table className="w-full text-sm min-w-90">
           <thead>
             <tr className="border-b border-gray-50 bg-gray-50/40">
               <th className="px-5 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -63,7 +66,8 @@ export default function StoreDashRecentPayouts({ payouts }: StoreDashRecentPayou
                 return (
                   <tr
                     key={payout.payoutId}
-                    className="hover:bg-gray-50/50 transition-colors"
+                    onClick={() => router.push(`/store/payouts/${payout.payoutId}`)} // Added onClick navigation
+                    className="hover:bg-gray-50/50 transition-colors cursor-pointer" // Added cursor-pointer
                   >
                     <td className="px-5 sm:px-6 py-3.5 font-medium text-gray-700">
                       {payout.weekLabel}

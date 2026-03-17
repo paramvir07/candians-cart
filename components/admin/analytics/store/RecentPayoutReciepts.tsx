@@ -3,6 +3,7 @@
 import { RecentPayoutReceipt } from "@/actions/admin/analytics/store/allStoresData.action";
 import { Receipt } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Changed from "next/router"
 
 interface RecentPayoutReceiptsProps {
   recentPayoutReceipts: RecentPayoutReceipt[];
@@ -32,6 +33,7 @@ function getReceiptBadge(status: string) {
 export default function RecentPayoutReceipts({
   recentPayoutReceipts,
 }: RecentPayoutReceiptsProps) {
+  const router = useRouter();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col">
@@ -55,7 +57,7 @@ export default function RecentPayoutReceipts({
 
       {/* Table */}
       <div className="overflow-x-auto flex-1">
-        <table className="w-full text-sm min-w-[400px]">
+        <table className="w-full text-sm min-w-100">
           <thead>
             <tr className="border-b border-gray-50 bg-gray-50/50">
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -88,17 +90,21 @@ export default function RecentPayoutReceipts({
                 return (
                   <tr
                     key={receipt.payoutId}
-                    className="hover:bg-gray-50/60 transition-colors"
+                    // Updated to the correct Admin route and added cursor-pointer
+                    onClick={() =>
+                      router.push(
+                        `/admin/store/${receipt.storeId}/payout-reciepts/${receipt.payoutId}`
+                      )
+                    }
+                    className="hover:bg-gray-50/60 transition-colors cursor-pointer"
                   >
                     <td className="px-5 py-3.5">
-                      <Link
-                        href={`/admin/store/${receipt.storeId}/payout-reciepts`}
-                        className="font-mono text-xs font-semibold text-gray-400 bg-gray-100 hover:bg-emerald-100 hover:text-emerald-700 px-2 py-1 rounded-md transition-colors"
-                      >
+                      {/* Changed from <Link> to <span> to prevent nested link click issues */}
+                      <span className="font-mono text-xs font-semibold text-gray-400 bg-gray-100 hover:bg-emerald-100 hover:text-emerald-700 px-2 py-1 rounded-md transition-colors inline-block">
                         {receipt.receiptNo}
-                      </Link>
+                      </span>
                     </td>
-                    <td className="px-3 py-3.5 text-gray-700 font-medium max-w-[130px] truncate">
+                    <td className="px-3 py-3.5 text-gray-700 font-medium max-w-32.5 truncate">
                       {receipt.storeName}
                     </td>
                     <td className="px-3 py-3.5 text-gray-600 font-medium tabular-nums">

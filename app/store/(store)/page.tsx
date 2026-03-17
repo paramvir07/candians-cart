@@ -10,7 +10,7 @@ export default async function StoreDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
+      <div className="max-w-350 mx-auto p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
         {/* Page heading */}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
