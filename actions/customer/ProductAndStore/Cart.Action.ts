@@ -271,7 +271,6 @@ export const PlaceCustomerOrder = async ({
     await dbConnect();
     session.startTransaction();
 
-    // Use your actual customer model here
     const User = await Customer.findById((await getUser())?._id).session(
       session,
     );
@@ -416,7 +415,7 @@ export const PlaceOrder = async ({
       await session.abortTransaction();
       return { success: false, message: "User not found" };
     }
-
+    console.log(TotalCart)
     const customerCart = await CartModel.findOne({ customerId: User._id })
       .populate("items.productId")
       .populate("subsidyItems.productId")

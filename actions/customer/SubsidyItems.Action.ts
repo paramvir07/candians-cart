@@ -311,13 +311,14 @@ export const RemoveSubsidyItem = async (
 export const ClearAllSubsidyItems = async (customerId?: string) => {
   try {
     await dbConnect();
-
+ 
     const user = await getUser(customerId);
     if (!user) return { success: false, message: "User not found" };
+ 
     const cart = await CartModel.findOne({ customerId: user._id }).lean();
-
     if (!cart) return { success: false, message: "Cart not found" };
-    if (cart.items.length + cart.subsidyItems.length < 1) {
+ 
+    if (cart.items.length === 0) {
       await CartModel.findOneAndDelete({ customerId: user._id });
     } else {
       await CartModel.findOneAndUpdate(
@@ -325,12 +326,7 @@ export const ClearAllSubsidyItems = async (customerId?: string) => {
         { $set: { subsidyItems: [], cartSubsidy: 0 } },
       );
     }
-
-    await CartModel.findOneAndUpdate(
-      { customerId: user._id },
-      { $set: { subsidyItems: [], cartSubsidy: 0 } },
-    );
-
+ 
     revalidatePath("/customer/cart");
     return { success: true, message: "Subsidy Items cleared successfully" };
   } catch (err) {
@@ -338,6 +334,7 @@ export const ClearAllSubsidyItems = async (customerId?: string) => {
     return { success: false, message: "Error while clearing SubsidyItems" };
   }
 };
+
 
 export const updateCartSubsidy = async (
   subsidy: number,
@@ -372,7 +369,6 @@ export const movetoSubsidy = async (
     const User = await getUser(receivedcustomerId);
     if (!User) return { message: "User not found", success: false };
     const customerId = User._id;
-    console.log({ customerId });
 
     const [cart, totalSubsidy] = await Promise.all([
       CartModel.findOne({ customerId })

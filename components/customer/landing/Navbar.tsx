@@ -14,7 +14,6 @@ const Navbar = async () => {
     getCartItemsCount(),
   ]);
 
-  console.log(customerDataResponse)
   const customerData: Customer = customerDataResponse.customerData;
   const initials = customerData.name
     .split(" ")
