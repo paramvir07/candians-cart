@@ -119,7 +119,7 @@ export function SearchResultsClient({
           {hasSearched && allResults.length > 0 && !customerId && (
             <aside className="hidden lg:flex flex-col w-64 shrink-0">
               <div
-                className="sticky top-[4.5rem] rounded-2xl border border-border/60 bg-card overflow-hidden flex flex-col"
+                className="sticky top-18 rounded-2xl border border-border/60 bg-card overflow-hidden flex flex-col"
                 style={{ maxHeight: "calc(100vh - 5rem)" }}
               >
                 {/* Sidebar header */}
@@ -295,7 +295,7 @@ export function SearchResultsClient({
       <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
         <SheetContent
           side="right"
-          className="w-full max-w-[85%] sm:max-w-[360px] p-0 flex flex-col overflow-hidden rounded-l-3xl"
+          className="w-full max-w-[85%] sm:max-w-90 p-0 flex flex-col overflow-hidden rounded-l-3xl"
         >
           <SheetHeader className="px-5 pt-5 pb-3.5 border-b border-border/40 shrink-0">
             <SheetTitle className="flex items-center gap-2 text-base text-foreground">

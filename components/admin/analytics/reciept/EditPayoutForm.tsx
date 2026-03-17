@@ -150,7 +150,7 @@ export default function EditPayoutForm({
 
             <div className="col-span-2 border-t my-2" />
 
-            <span className="text-muted-foreground">Store Profit:</span>
+            <span className="text-muted-foreground">Store Payout:</span>
             <span className="font-medium text-right text-primary">
               {formatCurrency(initialData.storePayout)}
             </span>

@@ -5,12 +5,27 @@ import { format } from "date-fns";
 import Link from "next/link";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Download, ExternalLink, FileText, CalendarDays, DollarSign, Wallet, Loader2, Landmark } from "lucide-react";
+import {
+  Download,
+  ExternalLink,
+  FileText,
+  CalendarDays,
+  Wallet,
+  Loader2,
+  Landmark,
+} from "lucide-react";
 import { SerializedStorePayout } from "@/actions/store/payouts/getStorePayouts";
 
-const formatCurrency = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+const formatCurrency = (cents: number | undefined) =>
+  `$${((cents || 0) / 100).toFixed(2)}`;
 
 // --- Brand Colors for PDF ---
 const GREEN_PRIMARY = rgb(0.38, 0.67, 0.35);
@@ -19,21 +34,26 @@ const GREEN_DARK = rgb(0.18, 0.35, 0.22);
 const GRAY_LINE = rgb(0.88, 0.93, 0.88);
 const MUTED = rgb(0.52, 0.6, 0.54);
 const WHITE = rgb(1, 1, 1);
+const BLUE_LINK = rgb(0.14, 0.38, 0.88); // Added brand link color
 
-export default function StorePayoutDetailClient({ payout }: { payout: SerializedStorePayout }) {
+export default function StorePayoutDetailClient({
+  payout,
+}: {
+  payout: SerializedStorePayout;
+}) {
   const [isGenerating, setIsGenerating] = useState(false);
 
-// PDF Generation Logic using pdf-lib
+  // PDF Generation Logic using pdf-lib
   const handleDownloadPDF = async () => {
     try {
       setIsGenerating(true);
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([595, 842]); // A4 Size
-      
+
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       const { width, height } = page.getSize();
-      
+
       const margin = 48;
       const contentWidth = width - margin * 2;
 
@@ -76,22 +96,63 @@ export default function StorePayoutDetailClient({ payout }: { payout: Serialized
 
       // --- Helper Functions ---
       const drawLabel = (label: string, value: string, yPos: number) => {
-        page.drawText(label, { x: margin, y: yPos, font, size: 9, color: MUTED });
-        page.drawText(value, { x: margin, y: yPos - 14, font: boldFont, size: 11, color: GREEN_DARK });
+        page.drawText(label, {
+          x: margin,
+          y: yPos,
+          font,
+          size: 9,
+          color: MUTED,
+        });
+        page.drawText(value, {
+          x: margin,
+          y: yPos - 14,
+          font: boldFont,
+          size: 11,
+          color: GREEN_DARK,
+        });
       };
 
       const drawLabelRight = (label: string, value: string, yPos: number) => {
         const valW = boldFont.widthOfTextAtSize(value, 11);
         const lblW = font.widthOfTextAtSize(label, 9);
-        page.drawText(label, { x: width - margin - lblW, y: yPos, font, size: 9, color: MUTED });
-        page.drawText(value, { x: width - margin - valW, y: yPos - 14, font: boldFont, size: 11, color: GREEN_DARK });
+        page.drawText(label, {
+          x: width - margin - lblW,
+          y: yPos,
+          font,
+          size: 9,
+          color: MUTED,
+        });
+        page.drawText(value, {
+          x: width - margin - valW,
+          y: yPos - 14,
+          font: boldFont,
+          size: 11,
+          color: GREEN_DARK,
+        });
       };
 
-      const drawRow = (label: string, value: string, yPos: number, isBold: boolean = false) => {
+      const drawRow = (
+        label: string,
+        value: string,
+        yPos: number,
+        isBold: boolean = false,
+      ) => {
         const activeFont = isBold ? boldFont : font;
-        page.drawText(label, { x: margin + 8, y: yPos, font: activeFont, size: 10, color: GREEN_DARK });
+        page.drawText(label, {
+          x: margin + 8,
+          y: yPos,
+          font: activeFont,
+          size: 10,
+          color: GREEN_DARK,
+        });
         const valW = activeFont.widthOfTextAtSize(value, 10);
-        page.drawText(value, { x: width - margin - valW - 8, y: yPos, font: activeFont, size: 10, color: GREEN_DARK });
+        page.drawText(value, {
+          x: width - margin - valW - 8,
+          y: yPos,
+          font: activeFont,
+          size: 10,
+          color: GREEN_DARK,
+        });
       };
 
       // --- Meta Information ---
@@ -100,27 +161,87 @@ export default function StorePayoutDetailClient({ payout }: { payout: Serialized
       drawLabelRight("PERIOD", periodStr, y);
 
       y -= 44;
-      drawLabel("DATE GENERATED", format(new Date(payout.createdAt), "MMM dd, yyyy"), y);
+      drawLabel(
+        "DATE GENERATED",
+        format(new Date(payout.createdAt), "MMM dd, yyyy"),
+        y,
+      );
       drawLabelRight("STATUS", payout.status.toUpperCase(), y);
 
       y -= 32;
-      page.drawRectangle({ x: margin, y, width: contentWidth, height: 1, color: GRAY_LINE });
+      page.drawRectangle({
+        x: margin,
+        y,
+        width: contentWidth,
+        height: 1,
+        color: GRAY_LINE,
+      });
       y -= 20;
 
       // --- Financial Breakdown Section ---
-      page.drawRectangle({ x: margin, y: y - 4, width: contentWidth, height: 22, color: GREEN_LIGHT });
-      page.drawText("FINANCIAL BREAKDOWN", { x: margin + 8, y: y + 4, font: boldFont, size: 8, color: GREEN_PRIMARY });
+      page.drawRectangle({
+        x: margin,
+        y: y - 4,
+        width: contentWidth,
+        height: 22,
+        color: GREEN_LIGHT,
+      });
+      page.drawText("FINANCIAL BREAKDOWN", {
+        x: margin + 8,
+        y: y + 4,
+        font: boldFont,
+        size: 8,
+        color: GREEN_PRIMARY,
+      });
       y -= 20;
 
       const breakdownItems = [
-        { label: "Total Customer Paid", value: formatCurrency(payout.totalCustomerPaid), bold: false },
-        { label: "Platform Profit / Fee", value: `-${formatCurrency(payout.platformProfit)}`, bold: false },
-        { label: "Net Store Payout", value: formatCurrency(payout.storePayout), bold: true },
+        {
+          label: "Total Customer Paid",
+          value: formatCurrency(payout.totalCustomerPaid),
+          bold: false,
+        },
+        {
+          label: "Total GST Collected",
+          value: formatCurrency(payout.totalGST),
+          bold: false,
+        },
+        {
+          label: "Total PST Collected",
+          value: formatCurrency(payout.totalPST),
+          bold: false,
+        },
+        {
+          label: "Store Profit",
+          value: formatCurrency(payout.storeProfit),
+          bold: false,
+        },
+        {
+          label: "Cash Collected By Store",
+          value: `-${formatCurrency(payout.totalCashCollected)}`,
+          bold: false,
+        },
+        {
+          label: "Platform Profit / Fee",
+          value: `-${formatCurrency(payout.platformProfit)}`,
+          bold: false,
+        },
+        {
+          label: "Net Store Payout",
+          value: formatCurrency(payout.storePayout),
+          bold: true,
+        },
       ];
 
       breakdownItems.forEach((item, index) => {
         if (index % 2 === 0) {
-          page.drawRectangle({ x: margin, y: y - 6, width: contentWidth, height: 22, color: rgb(0.98, 1, 0.98) });
+          page.drawRectangle({
+            x: margin,
+            y: y - 6,
+            width: contentWidth,
+            height: 22,
+            color: rgb(0.98, 1, 0.98),
+          });
         }
         drawRow(item.label, item.value, y, item.bold);
         y -= 24;
@@ -137,81 +258,145 @@ export default function StorePayoutDetailClient({ payout }: { payout: Serialized
         height: 30,
         color: GREEN_PRIMARY,
       });
-      
-      page.drawText("TOTAL PAYOUT", { x: totalLabelX, y: y + 2, font: boldFont, size: 11, color: WHITE });
+
+      page.drawText("TOTAL PAYOUT", {
+        x: totalLabelX,
+        y: y + 2,
+        font: boldFont,
+        size: 11,
+        color: WHITE,
+      });
       const storePayoutStr = formatCurrency(payout.storePayout);
       const storePayoutStrW = boldFont.widthOfTextAtSize(storePayoutStr, 13);
-      page.drawText(storePayoutStr, { x: width - margin - storePayoutStrW, y: y + 2, font: boldFont, size: 13, color: WHITE });
+      page.drawText(storePayoutStr, {
+        x: width - margin - storePayoutStrW,
+        y: y + 2,
+        font: boldFont,
+        size: 13,
+        color: WHITE,
+      });
 
       y -= 40;
 
       // --- Notes Section ---
       if (payout.additionalNote) {
-        page.drawText("Additional Notes:", { x: margin, y, font: boldFont, size: 10, color: GREEN_DARK });
+        page.drawText("Additional Notes:", {
+          x: margin,
+          y,
+          font: boldFont,
+          size: 10,
+          color: GREEN_DARK,
+        });
         y -= 16;
-        
-        const words = payout.additionalNote.split(' ');
-        let line = '';
-        words.forEach(word => {
-          const testLine = line + word + ' ';
+
+        const words = payout.additionalNote.split(" ");
+        let line = "";
+        words.forEach((word) => {
+          const testLine = line + word + " ";
           if (font.widthOfTextAtSize(testLine, 9) > contentWidth) {
             page.drawText(line, { x: margin, y, font, size: 9, color: MUTED });
-            line = word + ' ';
+            line = word + " ";
             y -= 14;
           } else {
             line = testLine;
           }
         });
         page.drawText(line, { x: margin, y, font, size: 9, color: MUTED });
+
+        y -= 8; // Extra padding for the next section if needed
       }
 
-      // --- Attachments Section (ImageKit Link) ---
+      // --- Payment Receipt URL Section ---
       if (payout.paymentReciept?.url) {
-        y -= 24; // Add some spacing after notes
-        page.drawText("Attachments:", { x: margin, y, font: boldFont, size: 10, color: GREEN_DARK });
-        y -= 16;
-        
-        page.drawText("Proof of Payment:", { x: margin, y, font: boldFont, size: 9, color: MUTED });
+        y -= 24;
+        page.drawText("Bank Transfer Document:", {
+          x: margin,
+          y,
+          font: boldFont,
+          size: 10,
+          color: GREEN_DARK,
+        });
         y -= 14;
 
-        // Draw URL in a link-like blue color.
-        const linkColor = rgb(0.1, 0.4, 0.8);
-        
-        // Wrap the URL by characters if it is exceptionally long
-        const urlChars = payout.paymentReciept.url.split('');
-        let urlLine = '';
-        urlChars.forEach(char => {
-          const testLine = urlLine + char;
+        const urlStr = payout.paymentReciept.url;
+        let line = "";
+
+        // Break URL by characters to prevent overflow on very long string links
+        for (let i = 0; i < urlStr.length; i++) {
+          const char = urlStr[i];
+          const testLine = line + char;
           if (font.widthOfTextAtSize(testLine, 9) > contentWidth) {
-            page.drawText(urlLine, { x: margin, y, font, size: 9, color: linkColor });
-            urlLine = char;
+            page.drawText(line, {
+              x: margin,
+              y,
+              font,
+              size: 9,
+              color: BLUE_LINK,
+            });
+            line = char;
             y -= 14;
           } else {
-            urlLine = testLine;
+            line = testLine;
           }
-        });
-        page.drawText(urlLine, { x: margin, y, font, size: 9, color: linkColor });
+        }
+        if (line) {
+          page.drawText(line, {
+            x: margin,
+            y,
+            font,
+            size: 9,
+            color: BLUE_LINK,
+          });
+        }
       }
 
       // --- Footer ---
       const footerY = 52;
-      page.drawRectangle({ x: 0, y: 0, width, height: footerY, color: GREEN_LIGHT });
-      page.drawRectangle({ x: 0, y: footerY, width, height: 1, color: GRAY_LINE });
+      page.drawRectangle({
+        x: 0,
+        y: 0,
+        width,
+        height: footerY,
+        color: GREEN_LIGHT,
+      });
+      page.drawRectangle({
+        x: 0,
+        y: footerY,
+        width,
+        height: 1,
+        color: GRAY_LINE,
+      });
 
-      page.drawText("Thank you for partnering with CandianCart!", { x: margin, y: footerY - 18, font, size: 9, color: MUTED });
+      page.drawText("Thank you for partnering with CandianCart!", {
+        x: margin,
+        y: footerY - 18,
+        font,
+        size: 9,
+        color: MUTED,
+      });
       const supportText = "support@candiancart.ca";
       const supportW = font.widthOfTextAtSize(supportText, 9);
-      page.drawText(supportText, { x: width - margin - supportW, y: footerY - 18, font, size: 9, color: GREEN_PRIMARY });
+      page.drawText(supportText, {
+        x: width - margin - supportW,
+        y: footerY - 18,
+        font,
+        size: 9,
+        color: GREEN_PRIMARY,
+      });
 
       // Save and Download
       const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes as any], { type: "application/pdf" }); // bypassed TS strict error
+
+      // Cast safely to BlobPart to satisfy TS 5.4+ ArrayBuffer changes
+      const blob = new Blob([pdfBytes as BlobPart], {
+        type: "application/pdf",
+      });
+
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = `Payout_${format(new Date(payout.createdAt), "MMM-dd-yyyy")}.pdf`;
       link.click();
       URL.revokeObjectURL(link.href);
-
     } catch (error) {
       console.error("Error generating PDF:", error);
     } finally {
@@ -221,7 +406,6 @@ export default function StorePayoutDetailClient({ payout }: { payout: Serialized
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
       {/* Main Details Card */}
       <Card className="lg:col-span-2 shadow-sm border-slate-200">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b bg-slate-50/50 pb-6">
@@ -231,76 +415,139 @@ export default function StorePayoutDetailClient({ payout }: { payout: Serialized
               Payout Summary
             </CardTitle>
             <CardDescription>
-              Receipt ID: <span className="font-mono text-xs">{payout._id.toUpperCase()}</span>
+              Receipt ID:{" "}
+              <span className="font-mono text-xs">
+                {payout._id.toUpperCase()}
+              </span>
             </CardDescription>
           </div>
-          <Badge 
-            variant={payout.status === "paid" ? "default" : "secondary"} 
+          <Badge
+            variant={payout.status === "paid" ? "default" : "secondary"}
             className={`px-3 py-1 text-sm ${payout.status === "paid" ? "bg-green-600 hover:bg-green-700" : "bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-200"}`}
           >
             {payout.status.toUpperCase()}
           </Badge>
         </CardHeader>
-        
+
         <CardContent className="p-6 space-y-8">
           {/* Highlight Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <div className="bg-white border rounded-xl p-4 shadow-sm flex items-start gap-4">
-                <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                   <CalendarDays className="w-6 h-6" />
-                </div>
-                <div>
-                   <p className="text-sm font-medium text-muted-foreground mb-1">Settlement Period</p>
-                   <p className="font-semibold text-slate-900">
-                      {format(new Date(payout.startDate), "MMM dd, yyyy")}
-                   </p>
-                   <p className="font-semibold text-slate-900">
-                      {format(new Date(payout.endDate), "MMM dd, yyyy")}
-                   </p>
-                </div>
-             </div>
-             
-             <div className="bg-white border rounded-xl p-4 shadow-sm flex items-start gap-4">
-                <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-                   <Wallet className="w-6 h-6" />
-                </div>
-                <div>
-                   <p className="text-sm font-medium text-muted-foreground mb-1">Total Payout Amount</p>
-                   <p className="font-bold text-2xl text-green-700 tracking-tight">
-                      {formatCurrency(payout.storePayout)}
-                   </p>
-                </div>
-             </div>
+            <div className="bg-white border rounded-xl p-4 shadow-sm flex items-start gap-4">
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                <CalendarDays className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">
+                  Settlement Period
+                </p>
+                <p className="font-semibold text-slate-900">
+                  {format(new Date(payout.startDate), "MMM dd, yyyy")}
+                </p>
+                <p className="font-semibold text-slate-900">
+                  {format(new Date(payout.endDate), "MMM dd, yyyy")}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white border rounded-xl p-4 shadow-sm flex items-start gap-4">
+              <div className="p-3 bg-green-50 text-green-600 rounded-lg">
+                <Wallet className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">
+                  Total Payout Amount
+                </p>
+                <p className="font-bold text-2xl text-green-700 tracking-tight">
+                  {formatCurrency(payout.storePayout)}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Breakdown Table */}
           <div className="rounded-xl border overflow-hidden">
             <div className="bg-slate-50 px-4 py-3 border-b">
-               <h4 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">Financial Breakdown</h4>
+              <h4 className="font-semibold text-sm text-slate-700 uppercase tracking-wider">
+                Financial Breakdown
+              </h4>
             </div>
             <div className="divide-y bg-white">
-               <div className="flex justify-between items-center px-4 py-3 text-sm">
-                  <span className="text-muted-foreground font-medium">Total Customer Payments</span>
-                  <span className="font-medium text-slate-900">{formatCurrency(payout.totalCustomerPaid)}</span>
-               </div>
-               <div className="flex justify-between items-center px-4 py-3 text-sm">
-                  <span className="text-muted-foreground font-medium">Platform Profit / Fees</span>
-                  <span className="font-medium text-red-600">-{formatCurrency(payout.platformProfit)}</span>
-               </div>
-               <div className="flex justify-between items-center px-4 py-4 bg-green-50/30">
-                  <span className="font-bold text-slate-900">Net Store Payout</span>
-                  <span className="font-bold text-lg text-primary">{formatCurrency(payout.storePayout)}</span>
-               </div>
+              <div className="flex justify-between items-center px-4 py-3 text-sm">
+                <span className="text-muted-foreground font-medium">
+                  Total Customer Payments
+                </span>
+                <span className="font-medium text-slate-900">
+                  {formatCurrency(payout.totalCustomerPaid)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3 text-sm">
+                <span className="text-muted-foreground font-medium">
+                  Total GST Collected
+                </span>
+                <span className="font-medium text-slate-700">
+                  {formatCurrency(payout.totalGST)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3 text-sm">
+                <span className="text-muted-foreground font-medium">
+                  Total PST/HST Collected
+                </span>
+                <span className="font-medium text-slate-700">
+                  {formatCurrency(payout.totalPST)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3 text-sm">
+                <span className="text-muted-foreground font-medium">
+                  Store Profit
+                </span>
+                <span className="font-medium text-slate-700">
+                  {formatCurrency(payout.storeProfit)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3 text-sm bg-orange-50/50">
+                <span className="text-muted-foreground font-medium">
+                  Cash Collected By Store
+                </span>
+                <span className="font-medium text-orange-600">
+                  -{formatCurrency(payout.totalCashCollected)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3 text-sm bg-red-50/50">
+                <span className="text-muted-foreground font-medium">
+                  Platform Profit / Fees
+                </span>
+                <span className="font-medium text-red-600">
+                  -{formatCurrency(payout.platformProfit)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-4 bg-green-50/50">
+                <span className="font-bold text-slate-900">
+                  Net Store Payout
+                </span>
+                <span className="font-bold text-lg text-primary">
+                  {formatCurrency(payout.storePayout)}
+                </span>
+              </div>
             </div>
           </div>
 
           {payout.additionalNote && (
             <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl flex items-start gap-3">
-               <FileText className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-               <div>
-                  <h4 className="text-sm font-semibold text-blue-900 mb-1">Message from Admin</h4>
-                  <p className="text-sm text-blue-800/90 whitespace-pre-wrap leading-relaxed">{payout.additionalNote}</p>
-               </div>
+              <FileText className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-semibold text-blue-900 mb-1">
+                  Message from Admin
+                </h4>
+                <p className="text-sm text-blue-800/90 whitespace-pre-wrap leading-relaxed">
+                  {payout.additionalNote}
+                </p>
+              </div>
             </div>
           )}
         </CardContent>
@@ -308,7 +555,6 @@ export default function StorePayoutDetailClient({ payout }: { payout: Serialized
 
       {/* Side Actions Column */}
       <div className="space-y-6">
-        
         {/* PDF Generator */}
         <Card className="shadow-sm border-slate-200">
           <CardHeader>
@@ -316,17 +562,23 @@ export default function StorePayoutDetailClient({ payout }: { payout: Serialized
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-5">
-              Download a formally formatted PDF copy of this payout summary for your accounting records.
+              Download a formally formatted PDF copy of this payout summary for
+              your accounting records.
             </p>
-            <Button 
-               className="w-full bg-slate-900 hover:bg-slate-800" 
-               onClick={handleDownloadPDF}
-               disabled={isGenerating}
+            <Button
+              className="w-full bg-slate-900 hover:bg-slate-800"
+              onClick={handleDownloadPDF}
+              disabled={isGenerating}
             >
               {isGenerating ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating PDF...</>
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating
+                  PDF...
+                </>
               ) : (
-                <><Download className="w-4 h-4 mr-2" /> Download PDF</>
+                <>
+                  <Download className="w-4 h-4 mr-2" /> Download PDF
+                </>
               )}
             </Button>
           </CardContent>
@@ -340,27 +592,35 @@ export default function StorePayoutDetailClient({ payout }: { payout: Serialized
           <CardContent>
             {payout.paymentReciept ? (
               <div className="space-y-4">
-                 <p className="text-sm text-muted-foreground">
-                   An official transfer receipt or proof of payment was uploaded by the platform.
-                 </p>
-                 <Button asChild variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/5">
-                    <Link href={payout.paymentReciept.url} target="_blank" rel="noopener noreferrer">
-                      View Document <ExternalLink className="w-4 h-4 ml-2" />
-                    </Link>
-                 </Button>
+                <p className="text-sm text-muted-foreground">
+                  An official transfer receipt or proof of payment was uploaded
+                  by the platform.
+                </p>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full border-primary/20 text-primary hover:bg-primary/5"
+                >
+                  <Link
+                    href={payout.paymentReciept.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View Document <ExternalLink className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-6 px-4 bg-slate-50 rounded-xl border border-dashed">
-                 <FileText className="w-8 h-8 text-slate-300 mb-2" />
-                 <p className="text-sm text-muted-foreground italic text-center">
-                    No external bank document attached.
-                 </p>
+                <FileText className="w-8 h-8 text-slate-300 mb-2" />
+                <p className="text-sm text-muted-foreground italic text-center">
+                  No external bank document attached.
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
-
     </div>
   );
 }

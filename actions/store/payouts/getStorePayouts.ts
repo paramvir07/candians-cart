@@ -20,6 +20,10 @@ export interface SerializedStorePayout {
   createdAt: string;
   additionalNote: string;
   paymentReciept: { url: string; fileId: string } | null;
+  totalGST?: number;
+  totalPST?: number;
+  totalCashCollected?: number;
+  storeProfit?: number;
 }
 
 type LeanPayout = IStorePayout & {

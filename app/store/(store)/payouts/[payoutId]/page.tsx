@@ -12,7 +12,7 @@ export default async function PayoutDetailsPage({
   params: Promise<{ payoutId: string }>;
 }) {
   const { payoutId } = await params;
-  
+
   const session = await getUserSession();
   const sessionUserId = session?.user?.id;
 
@@ -21,20 +21,28 @@ export default async function PayoutDetailsPage({
   }
 
   await dbConnect();
-  const store = await Store.findOne({ userId: sessionUserId }).select("_id").lean();
+  const store = await Store.findOne({ userId: sessionUserId })
+    .select("_id")
+    .lean();
 
   if (!store) {
     return <div className="p-8 text-center">Store not found.</div>;
   }
 
   const storeId = store._id.toString();
-  const { data: payout, success, message } = await getSingleVendorPayoutAction(payoutId, storeId);
+  const {
+    data: payout,
+    success,
+    message,
+  } = await getSingleVendorPayoutAction(payoutId, storeId);
 
   if (!success || !payout) {
     return (
       <div className="p-8 text-center text-red-500 space-y-4">
         <h2>{message || "Payout not found"}</h2>
-        <Link href="/store/payouts" className="text-blue-500 hover:underline">Return to Payouts</Link>
+        <Link href="/store/payouts" className="text-blue-500 hover:underline">
+          Return to Payouts
+        </Link>
       </div>
     );
   }
@@ -51,7 +59,9 @@ export default async function PayoutDetailsPage({
 
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Payout Receipt</h1>
-        <p className="text-muted-foreground">View your detailed payment information.</p>
+        <p className="text-muted-foreground">
+          View your detailed payment information.
+        </p>
       </div>
 
       <StorePayoutDetailClient payout={payout} />
