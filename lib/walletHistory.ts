@@ -1,4 +1,4 @@
-import { ICashierTopUp, IStripeTopUp, UnifiedTransaction } from "@/types/customer/WalletHistory";
+import { IStripeTopUp, IWalletTopUp, UnifiedTransaction } from "@/types/customer/WalletHistory";
 
 
 export function formatCurrency(
@@ -43,7 +43,7 @@ export function formatFullDateTime(dateString: string): string {
 
 export function unifyTransactions(
   stripeTopUps: IStripeTopUp[],
-  cashierTopUps: ICashierTopUp[],
+  cashierTopUps: IWalletTopUp[],
 ): UnifiedTransaction[] {
   const stripe: UnifiedTransaction[] = stripeTopUps.map((t) => ({
     id: t._id,

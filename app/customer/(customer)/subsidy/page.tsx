@@ -8,7 +8,7 @@ const page = async() => {
   return (
     <div>
       <Navbar/>
-      <ProductsSection products={products}/>
+      <ProductsSection products={products} subsidized={true}/>
     </div>
   )
 }

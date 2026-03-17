@@ -44,10 +44,12 @@ export function CustomerProductCard({
   customerId,
   product,
   cartQuantity = 0,
+  subsidyPage,
 }: {
   customerId?: string;
   product: IProduct;
   cartQuantity?: number;
+  subsidyPage: boolean
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imgError, setImgError] = useState(false);

@@ -13,19 +13,19 @@ export interface IStripeTopUp {
   updatedAt: string;
 }
 
-export interface ICashierTopUp {
+export interface IWalletTopUp {
   _id: string;
   customerId: string;
   cashierId: string;
   value: number;
-  paymentMode: "cash" | "card";
+  paymentMode: "cash" | "card" | "gift";
   createdAt: string;
   updatedAt: string;
 }
 
 export interface WalletTopUpHistory {
   stripeTopUps: IStripeTopUp[];
-  cashierTopUps: ICashierTopUp[];
+  cashierTopUps: IWalletTopUp[];
 }
 
 export type UnifiedTransaction = {
@@ -34,7 +34,7 @@ export type UnifiedTransaction = {
   amount: number;
   currency: string;
   status: PaymentStatus | "completed";
-  paymentMode?: "cash" | "card" | "online";
+  paymentMode?: "cash" | "card" | "gift" | "online";
   createdAt: string;
   label: string;
   sublabel: string;
