@@ -8,6 +8,7 @@ import {
 } from "@/actions/customer/SubsidyItems.Action";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -124,9 +125,38 @@ export const AddtoSubsidyBtn = ({
   ProductId: string;
   customerId?: string;
 }) => {
+
+
+const handleBtnClick = async () => {
+  try {
+    const res = await movetoSubsidy(ProductId, customerId);
+
+    if (!res.success) {
+      if (res.message === "insufficient gift Wallet Balance") {
+        toast.error("Insufficient gift wallet balance");
+      } else if (res.message === "User not found") {
+        toast.error("User session expired. Please login again.");
+      } else if (res.message === "Item not found") {
+        toast.error("Item no longer exists in cart.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+
+      return;
+    }
+
+    toast.success("Item moved to subsidy");
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Server error. Please try again later.");
+  }
+};
+
+
   return (
     <button
-      onClick={() => movetoSubsidy(ProductId, customerId)}
+      onClick={handleBtnClick}
       className="cursor-pointer shrink-0 flex items-center gap-1 text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 active:scale-95 transition-all px-2 py-0.5 rounded-md"
     >
       Use Subsidy

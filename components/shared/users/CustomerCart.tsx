@@ -106,15 +106,13 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const subsidyTotals = subItems.reduce(
     (acc, item) => {
       const afterSubsidy = Math.max(
-        item.TotalPrice * item.quantity - item.subsidy,
+        (item.TotalPrice * item.quantity) - item.subsidy,
         0,
       );
       const taxRate = item.productId.tax ?? 0;
       const disposable = (item.productId.disposableFee ?? 0) * item.quantity;
-
       // Always apply tax and disposable on whatever the effective price is
       const effectiveBase = afterSubsidy > 0 ? afterSubsidy : 0;
-
       let gst = 0;
       let pst = 0;
       if (taxRate === 0.05) gst = Math.round(effectiveBase * 0.05);
@@ -331,7 +329,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </div>
           </div>
           <div>
-            <TopUpDialog component="checkout" customerId={customerId} />
+            <TopUpDialog customerId={customerId} />
           </div>
         </div>
 
@@ -545,7 +543,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 </div>
               </div>
               <div>
-                <TopUpDialog component="checkout" customerId={customerId} />
+                <TopUpDialog customerId={customerId} />
               </div>
             </div>
           </div>

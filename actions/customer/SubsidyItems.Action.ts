@@ -7,6 +7,7 @@ import { IProduct } from "@/types/store/products.types";
 import { getUser } from "./User.action";
 import { revalidatePath } from "next/cache";
 import { Types } from "mongoose";
+import productsModel from "@/db/models/store/products.model";
 
 type PlainSubsidyItem = {
   _id: Types.ObjectId;
@@ -316,7 +317,7 @@ export const ClearAllSubsidyItems = async (customerId?: string) => {
     const cart = await CartModel.findOne({ customerId: user._id }).lean();
 
     if (!cart) return { success: false, message: "Cart not found" };
-    if (cart.items.length < 1) {
+    if (cart.items.length + cart.subsidyItems.length < 1) {
       await CartModel.findOneAndDelete({ customerId: user._id });
     } else {
       await CartModel.findOneAndUpdate(
@@ -387,11 +388,17 @@ export const movetoSubsidy = async (
     );
 
     if (index === -1) return { success: false, message: "Item not found" };
+    
+
 
     const [item] = cart.items.splice(index, 1);
     const product = item.productId as unknown as IProduct;
     const TotalPrice =
       product.price + Math.round(product.price * (product.markup / 100));
+
+      if(User.giftWalletBalance === 0 && cart.cartSubsidy === 0){
+        return {success:false, message: "insufficient gift Wallet Balance"}
+      }
 
     const alreadyInSubsidy = cart.subsidyItems.find(
       (s) =>
@@ -434,9 +441,85 @@ export const movetoSubsidy = async (
     );
 
     revalidatePath("/customer/cart");
-    return { success: true };
+    return { success: true, message: "Item moved successfully" };
   } catch (err) {
     console.log(err);
     return { success: false, message: "Failed to move item" };
+  }
+};
+
+
+export const AddToSubsidyCart = async (
+  ItemId: string,
+  customerId?: string,
+) => {
+  try {
+    await dbConnect();
+
+    const user = await getUser(customerId);
+    if (!user) return { success: false, message: "User not found" };
+
+    const [cart, totalSubsidy] = await Promise.all([
+      CartModel.findOne({ customerId: user._id }),
+      getTotalSubsidy(user._id),
+    ]);
+
+    // Fetch product for price calculation
+    const product = await productsModel.findById(ItemId).lean();
+    if (!product) return { success: false, message: "Product not found" };
+
+    // Check user has subsidy available
+    if (user.giftWalletBalance === 0 && (cart?.cartSubsidy ?? 0) === 0) {
+      return { success: false, message: "Insufficient gift wallet balance" };
+    }
+
+    const TotalPrice =
+      product.price + Math.round(product.price * (product.markup / 100));
+
+    const existingPlain: PlainSubsidyItem[] = (cart?.subsidyItems ?? []).map(
+      (s) =>
+        (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject(),
+    );
+
+    const existingIdx = existingPlain.findIndex(
+      (s) => s.productId.toString() === ItemId,
+    );
+
+    let allItems: PlainSubsidyItem[];
+
+    if (existingIdx > -1) {
+      // Already in subsidy cart — increment quantity
+      allItems = existingPlain.map((s, i) =>
+        i === existingIdx ? { ...s, quantity: s.quantity + 1 } : s,
+      );
+    } else {
+      // New item — add it
+      allItems = [
+        ...existingPlain,
+        {
+          _id: new Types.ObjectId(),
+          productId: new Types.ObjectId(ItemId),
+          storeId: user.associatedStoreId as unknown as Types.ObjectId,
+          quantity: 1,
+          TotalPrice,
+          subsidy: 0,
+          afterSubsidy: TotalPrice,
+        },
+      ];
+    }
+
+    const distributed = distributeSubsidy(allItems, totalSubsidy);
+
+    await CartModel.findOneAndUpdate(
+      { customerId: user._id },
+      { $set: { subsidyItems: distributed } },
+      { upsert: true },
+    );
+
+    revalidatePath("/customer/cart");
+    return { success: true, message: "Added to subsidy cart" };
+  } catch (error) {
+    console.log(error);
+    return { success: false, message: "Failed to add to subsidy cart" };
   }
 };

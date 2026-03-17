@@ -34,9 +34,10 @@ const ITEMS_PER_PAGE = 16;
 
 interface ProductsSectionProps {
   products: IProduct[];
+  subsidized?:boolean
 }
 
-export function ProductsSection({ products }: ProductsSectionProps) {
+export function ProductsSection({ products,subsidized }: ProductsSectionProps) {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
@@ -278,6 +279,7 @@ export function ProductsSection({ products }: ProductsSectionProps) {
                         style={{ animationDelay: `${i * 30}ms` }}
                       >
                         <CustomerProductCard
+                          subsidyPage={subsidized ?? false}
                           product={product}
                           cartQuantity={cartMap[product._id as string] || 0}
                         />
