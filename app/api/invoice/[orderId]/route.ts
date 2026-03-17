@@ -3,6 +3,9 @@ import { NextResponse } from "next/server"
 import { dbConnect } from "@/db/dbConnect"
 import OrderModel from "@/db/models/customer/Orders.Model"
 
+
+export const runtime = "nodejs";
+
 const GREEN_PRIMARY = rgb(0.38, 0.67, 0.35)
 const GREEN_LIGHT   = rgb(0.91, 0.97, 0.91)
 const GREEN_DARK    = rgb(0.18, 0.35, 0.22)

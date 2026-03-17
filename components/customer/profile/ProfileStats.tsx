@@ -3,9 +3,11 @@
 import { getMemberSince, getMemberYear } from "@/lib/memberSince";
 import { Customer } from "@/types/customer/customer";
 import { DollarSign, ShoppingBag, CalendarDays, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
 type Props = {
   customer: Pick<Customer, "monthlyBudget" | "createdAt">;
+  OrderCount: number
 };
 
 function fmtBudget(cents: number): string {
@@ -23,7 +25,7 @@ const GRID_LIGHT = `
   linear-gradient(90deg, var(--border) 1px, transparent 1px)
 `;
 
-export default function ProfileStats({ customer }: Props) {
+export default function ProfileStats({ customer,OrderCount }: Props) {
 
   return (
     <div className="grid grid-cols-2 gap-2.5">
@@ -63,14 +65,14 @@ export default function ProfileStats({ customer }: Props) {
         <div className="relative z-10 w-9 h-9 rounded-2xl bg-primary/10 flex items-center justify-center">
           <ShoppingBag className="h-4 w-4 text-primary" strokeWidth={1.5} />
         </div>
-        <div className="relative z-10">
+        <Link href="/customer/orders" className="relative z-10">
           <p className="font-black tracking-tighter leading-none text-foreground" style={{ fontSize: "clamp(2rem, 5vw, 2.8rem)" }}>
-            0
+            {OrderCount}
           </p>
           <p className="text-[11px] mt-2 font-medium text-muted-foreground leading-snug">
             Orders placed
           </p>
-        </div>
+        </Link>
       </div>
 
       {/* ── Member since ── */}

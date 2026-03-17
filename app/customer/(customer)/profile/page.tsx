@@ -9,9 +9,16 @@ import { Edit, Package, Wallet, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { getOrderCount } from "@/actions/customer/ProductAndStore/Order.Action";
 
 export default async function ProfilePage() {
-  const { customerData } = await getCustomerAndStoreDataAction();
+  const [customerRes, orderRes] = await Promise.all([
+    getCustomerAndStoreDataAction(),
+    getOrderCount(),
+  ]);
+
+  const { customerData } = customerRes;
+  const { orderCount } = orderRes;
 
   const quickLinks = [
     {
@@ -103,7 +110,7 @@ export default async function ProfilePage() {
               <ProfileHero customer={customerData} />
             </BlurFade>
             <BlurFade delay={0.18} inView>
-              <ProfileStats customer={customerData} />
+              <ProfileStats customer={customerData} OrderCount={orderCount ?? 0} />
             </BlurFade>
             <BlurFade delay={0.26} inView>
               <ProfileContact customer={customerData} />
@@ -135,7 +142,7 @@ export default async function ProfilePage() {
             {/* Right col */}
             <div className="flex flex-col gap-4">
               <BlurFade delay={0.16} inView>
-                <ProfileStats customer={customerData} />
+                <ProfileStats customer={customerData} OrderCount={orderCount ?? 0} />
               </BlurFade>
               <BlurFade delay={0.28} inView>
                 <ProfileContact customer={customerData} />

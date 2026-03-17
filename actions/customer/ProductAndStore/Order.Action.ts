@@ -326,3 +326,24 @@ export const cancelPendingOrder = async (
     return { success: false, message: "Something went wrong" };
   }
 };
+
+
+export const getOrderCount = async () => {
+  try {
+    await dbConnect();
+    const user = await getUser();
+
+    if (!user) {
+      return { success: false, message: "User not found" };
+    }
+
+    const orderCount = await OrderModel.countDocuments({
+      userId: user._id,
+    });
+
+    return { success: true, orderCount };
+  } catch (err) {
+    console.log(err);
+    return { success: false, message: "Something went wrong" };
+  }
+};
