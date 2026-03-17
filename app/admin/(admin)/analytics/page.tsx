@@ -5,7 +5,6 @@ import MainOverview from "@/components/admin/analytics/MainOverview"
 import { ChartPieSimple } from "@/components/admin/analytics/PieChart"
 import { TopProducts } from "@/components/admin/analytics/TopProducts"
 import { TopSpenders } from "@/components/admin/analytics/TopSpenders"
-import ReceiptPage from "@/components/admin/analytics/reciept/RecieptComponent"
 import { Skeleton } from "@/components/ui/skeleton"
 import { 
   getOverviewStats, getPieChartData, getAreaChartData, getTopProductsData, getTopSpendersData 
@@ -78,7 +77,6 @@ export default function AnalyticsPage() {
         </div>
       </div>
       
-      <ReceiptPage />
     </div>
   )
 }

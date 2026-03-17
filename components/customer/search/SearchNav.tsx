@@ -132,8 +132,8 @@ export function SearchNav({
 
           <Link href="/customer/wallet" className="hidden sm:block">
             <Button variant="default" className="flex items-center gap-1 px-3">
-              <Wallet className="w-5 h-5" />
-              {fmtShort(customerData.walletBalance)}
+              <Wallet className="w-5 h-5" />$
+              {(customerData.walletBalance / 100).toFixed(2)}
             </Button>
           </Link>
 

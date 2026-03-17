@@ -5,26 +5,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
-  Search,
-  ShoppingCart,
-  Store,
-  User,
-  Eye,
-  Calendar,
-  Filter,
-  CalendarDays,
-  CheckCircle2,
-  Clock,
+  Search, ShoppingCart, Store, User, Eye,
+  Calendar, Filter, CalendarDays, CheckCircle2, Clock,
 } from "lucide-react";
 import Link from "next/link";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
+  Pagination, PaginationContent, PaginationEllipsis,
+  PaginationItem, PaginationLink, PaginationNext, PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
   AdminOrder,
@@ -61,9 +48,7 @@ function StatusBadge({ status }: { status: string }) {
     completed: "bg-green-100 text-green-700",
   };
   return (
-    <span
-      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold capitalize whitespace-nowrap ${map[status] ?? "bg-gray-100 text-gray-600"}`}
-    >
+    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold capitalize whitespace-nowrap ${map[status] ?? "bg-gray-100 text-gray-600"}`}>
       {status}
     </span>
   );
@@ -77,48 +62,25 @@ function PaymentBadge({ mode }: { mode: string }) {
     pending: "bg-red-100 text-red-600",
   };
   return (
-    <span
-      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold capitalize whitespace-nowrap ${map[mode] ?? "bg-gray-100 text-gray-600"}`}
-    >
+    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold capitalize whitespace-nowrap ${map[mode] ?? "bg-gray-100 text-gray-600"}`}>
       {mode}
     </span>
   );
 }
 
 function formatCents(cents: number) {
-  return (
-    "$" +
-    (cents / 100).toLocaleString("en-CA", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    })
-  );
+  return "$" + (cents / 100).toLocaleString("en-CA", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
 function formatDate(date: Date) {
-  return new Date(date).toLocaleDateString("en-CA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  return new Date(date).toLocaleDateString("en-CA", { year: "numeric", month: "short", day: "numeric" });
 }
 
 // ─── Stat card ──────────────────────────────────────────────────────────────────
 
-function OrderStatCard({
-  label,
-  value,
-  sub,
-  icon: Icon,
-  bg,
-  border,
-}: {
-  label: string;
-  value: string | number;
-  sub: string;
-  icon: React.ElementType;
-  bg: string;
-  border: string;
+function OrderStatCard({ label, value, sub, icon: Icon, bg, border }: {
+  label: string; value: string | number; sub: string;
+  icon: React.ElementType; bg: string; border: string;
 }) {
   return (
     <div className={`${bg} border ${border} rounded-2xl p-4 sm:p-5`}>
@@ -136,13 +98,7 @@ function OrderStatCard({
 // role="admin"  → links to /admin/customers/[customerId]
 // role="store"  → plain text, no link (add your own href later)
 
-function CustomerCell({
-  order,
-  role,
-}: {
-  order: AdminOrder;
-  role: "admin" | "store";
-}) {
+function CustomerCell({ order, role }: { order: AdminOrder; role: "admin" | "store" }) {
   const name = (
     <span className="text-sm font-medium text-gray-700 truncate max-w-[120px]">
       {order.customerName}
@@ -187,11 +143,7 @@ interface OrdersListProps {
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-export function OrdersList({
-  storeId,
-  stats,
-  role = "admin",
-}: OrdersListProps) {
+export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -206,13 +158,7 @@ export function OrdersList({
 
   const load = async (page = currentPage) => {
     setIsLoading(true);
-    const result = await getOrdersPaginated(
-      storeId,
-      page,
-      15,
-      statusFilter,
-      dateFilter,
-    );
+    const result = await getOrdersPaginated(storeId, page, 15, statusFilter, dateFilter);
     if (result.success) {
       setOrders(result.data);
       setTotalPages(result.totalPages);
@@ -228,23 +174,16 @@ export function OrdersList({
     load(currentPage);
   }, [storeId, currentPage, isSearchMode, statusFilter, dateFilter]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, dateFilter]);
+  useEffect(() => { setCurrentPage(1); }, [statusFilter, dateFilter]);
 
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setIsSearchMode(false);
-      return;
-    }
+    if (!searchQuery.trim()) { setIsSearchMode(false); return; }
     const timer = setTimeout(async () => {
       setIsSearchMode(true);
       setIsLoading(true);
       const res = await searchOrders(searchQuery, storeId, statusFilter);
-      if (res.success) {
-        setOrders(res.data);
-        setTotalCount(res.totalCount);
-      } else toast.error(res.error || "Search failed");
+      if (res.success) { setOrders(res.data); setTotalCount(res.totalCount); }
+      else toast.error(res.error || "Search failed");
       setIsLoading(false);
     }, 350);
     return () => clearTimeout(timer);
@@ -252,28 +191,10 @@ export function OrdersList({
 
   const getPageNumbers = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else if (currentPage <= 3) pages.push(1, 2, 3, 4, "ellipsis", totalPages);
-    else if (currentPage >= totalPages - 2)
-      pages.push(
-        1,
-        "ellipsis",
-        totalPages - 3,
-        totalPages - 2,
-        totalPages - 1,
-        totalPages,
-      );
-    else
-      pages.push(
-        1,
-        "ellipsis",
-        currentPage - 1,
-        currentPage,
-        currentPage + 1,
-        "ellipsis",
-        totalPages,
-      );
+    if (totalPages <= 5) { for (let i = 1; i <= totalPages; i++) pages.push(i); }
+    else if (currentPage <= 3) pages.push(1, 2, 3, 4, "ellipsis", totalPages);
+    else if (currentPage >= totalPages - 2) pages.push(1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    else pages.push(1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages);
     return pages;
   };
 
@@ -298,65 +219,22 @@ export function OrdersList({
       {/* ── Stat cards ───────────────────────────────────────────────────────── */}
       {stats ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <OrderStatCard
-            label="Daily Orders"
-            value={stats.dailyOrders}
-            sub="Today"
-            icon={CalendarDays}
-            bg="bg-blue-50/60"
-            border="border-blue-100"
-          />
-          <OrderStatCard
-            label="Monthly Orders"
-            value={stats.monthlyOrders}
-            sub="This month"
-            icon={Calendar}
-            bg="bg-emerald-50/60"
-            border="border-emerald-100"
-          />
-          <OrderStatCard
-            label="Total Orders"
-            value={stats.totalOrders.toLocaleString()}
-            sub="All time"
-            icon={ShoppingCart}
-            bg="bg-amber-50/60"
-            border="border-amber-100"
-          />
-          <OrderStatCard
-            label="Pending"
-            value={stats.pendingOrders}
-            sub="Awaiting"
-            icon={Clock}
-            bg="bg-rose-50/60"
-            border="border-rose-100"
-          />
-          <OrderStatCard
-            label="Completed"
-            value={stats.completedOrders.toLocaleString()}
-            sub="All time"
-            icon={CheckCircle2}
-            bg="bg-green-50/60"
-            border="border-green-100"
-          />
-          <OrderStatCard
-            label="Total Revenue"
-            value={formatCents(stats.totalRevenue)}
-            sub="From orders"
-            icon={ShoppingCart}
-            bg="bg-violet-50/60"
-            border="border-violet-100"
-          />
+          <OrderStatCard label="Daily Orders"   value={stats.dailyOrders}                  sub="Today"      icon={CalendarDays}  bg="bg-blue-50/60"    border="border-blue-100"   />
+          <OrderStatCard label="Monthly Orders" value={stats.monthlyOrders}                sub="This month" icon={Calendar}       bg="bg-emerald-50/60" border="border-emerald-100"/>
+          <OrderStatCard label="Total Orders"   value={stats.totalOrders.toLocaleString()} sub="All time"   icon={ShoppingCart}   bg="bg-amber-50/60"   border="border-amber-100"  />
+          <OrderStatCard label="Pending"        value={stats.pendingOrders}                sub="Awaiting"   icon={Clock}          bg="bg-rose-50/60"    border="border-rose-100"   />
+          <OrderStatCard label="Completed"      value={stats.completedOrders.toLocaleString()} sub="All time" icon={CheckCircle2} bg="bg-green-50/60"   border="border-green-100"  />
+          <OrderStatCard label="Total Revenue"  value={formatCents(stats.totalRevenue)}    sub="From orders" icon={ShoppingCart}  bg="bg-violet-50/60"  border="border-violet-100" />
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <StatSkeleton key={i} />
-          ))}
+          {Array.from({ length: 6 }).map((_, i) => <StatSkeleton key={i} />)}
         </div>
       )}
 
       {/* ── Table card ───────────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+
         {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 pt-5 pb-4 border-b border-gray-50">
           <div>
@@ -374,9 +252,7 @@ export function OrdersList({
               )}
             </div>
             <p className="text-xs text-gray-400 mt-0.5 ml-8">
-              {isAllStores
-                ? "View and manage all incoming orders"
-                : "View and manage orders for this store"}
+              {isAllStores ? "View and manage all incoming orders" : "View and manage orders for this store"}
             </p>
           </div>
           <div className="relative w-full sm:w-64">
@@ -395,9 +271,7 @@ export function OrdersList({
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-5 py-3 border-b border-gray-50 bg-gray-50/40">
           <div className="flex items-center gap-1.5 flex-wrap">
             <Filter className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <span className="text-xs text-gray-400 font-medium mr-1">
-              Status:
-            </span>
+            <span className="text-xs text-gray-400 font-medium mr-1">Status:</span>
             {STATUS_FILTERS.map((f) => (
               <button
                 key={f.value}
@@ -415,9 +289,7 @@ export function OrdersList({
           <div className="w-px h-4 bg-gray-200 hidden sm:block" />
           <div className="flex items-center gap-1.5 flex-wrap">
             <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <span className="text-xs text-gray-400 font-medium mr-1">
-              Period:
-            </span>
+            <span className="text-xs text-gray-400 font-medium mr-1">Period:</span>
             {DATE_FILTERS.map((f) => (
               <button
                 key={f.value}
@@ -439,54 +311,30 @@ export function OrdersList({
           <table className="w-full text-sm min-w-[680px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/30">
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Order ID
-                </th>
+                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Order ID</th>
                 {isAllStores && (
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Store
-                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Store</th>
                 )}
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Customer
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Payment
-                </th>
-                <th className="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Details
-                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Customer</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Amount</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Payment</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {isLoading ? (
-                Array.from({ length: 8 }).map((_, i) => (
-                  <OrderRowSkeleton key={i} />
-                ))
+                Array.from({ length: 8 }).map((_, i) => <OrderRowSkeleton key={i} />)
               ) : orders.length === 0 ? (
                 <tr>
                   <td colSpan={colCount} className="py-16 text-center">
                     <div className="flex flex-col items-center gap-2 text-gray-400">
                       <ShoppingCart className="w-10 h-10 opacity-20" />
                       <p className="text-sm font-medium">
-                        {isSearchMode
-                          ? "No orders matched your search"
-                          : "No orders found"}
+                        {isSearchMode ? "No orders matched your search" : "No orders found"}
                       </p>
                       {isSearchMode && (
-                        <button
-                          onClick={() => setSearchQuery("")}
-                          className="text-xs text-emerald-600 underline underline-offset-2"
-                        >
+                        <button onClick={() => setSearchQuery("")} className="text-xs text-emerald-600 underline underline-offset-2">
                           Clear search
                         </button>
                       )}
@@ -495,10 +343,7 @@ export function OrdersList({
                 </tr>
               ) : (
                 orders.map((order) => (
-                  <tr
-                    key={order.orderId}
-                    className="hover:bg-gray-50/50 transition-colors group"
-                  >
+                  <tr key={order.orderId} className="hover:bg-gray-50/50 transition-colors group">
                     {/* Order ID */}
                     <td className="px-5 py-3.5">
                       <span className="font-mono text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
@@ -530,23 +375,11 @@ export function OrdersList({
                       <CustomerCell order={order} role={role} />
                     </td>
 
-                    <td className="px-4 py-3.5 text-xs text-gray-400">
-                      {formatDate(order.createdAt)}
-                    </td>
-                    <td className="px-4 py-3.5 font-semibold text-gray-700 tabular-nums">
-                      {formatCents(order.amount)}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <StatusBadge status={order.status} />
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <PaymentBadge mode={order.paymentMode} />
-                    </td>
-                    <td className="px-5 py-3.5 text-center">
-                      <button className="p-1.5 rounded-lg text-gray-300 hover:text-emerald-500 hover:bg-emerald-50 transition-colors opacity-0 group-hover:opacity-100">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    </td>
+                    <td className="px-4 py-3.5 text-xs text-gray-400">{formatDate(order.createdAt)}</td>
+                    <td className="px-4 py-3.5 font-semibold text-gray-700 tabular-nums">{formatCents(order.amount)}</td>
+                    <td className="px-4 py-3.5"><StatusBadge status={order.status} /></td>
+                    <td className="px-4 py-3.5"><PaymentBadge mode={order.paymentMode} /></td>
+                    
                   </tr>
                 ))
               )}
@@ -560,58 +393,25 @@ export function OrdersList({
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (currentPage > 1 && !isLoading)
-                        setCurrentPage((p) => p - 1);
-                    }}
-                    className={
-                      currentPage === 1 || isLoading
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
-                    }
-                  />
+                  <PaginationPrevious href="#"
+                    onClick={(e) => { e.preventDefault(); if (currentPage > 1 && !isLoading) setCurrentPage((p) => p - 1); }}
+                    className={currentPage === 1 || isLoading ? "pointer-events-none opacity-50" : "cursor-pointer"} />
                 </PaginationItem>
                 {getPageNumbers().map((page, i) => (
                   <PaginationItem key={i}>
-                    {page === "ellipsis" ? (
-                      <PaginationEllipsis />
-                    ) : (
-                      <PaginationLink
-                        href="#"
-                        isActive={currentPage === page}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (currentPage !== page && !isLoading)
-                            setCurrentPage(page as number);
-                        }}
-                        className={
-                          isLoading
-                            ? "pointer-events-none opacity-50"
-                            : "cursor-pointer"
-                        }
-                      >
+                    {page === "ellipsis" ? <PaginationEllipsis /> : (
+                      <PaginationLink href="#" isActive={currentPage === page}
+                        onClick={(e) => { e.preventDefault(); if (currentPage !== page && !isLoading) setCurrentPage(page as number); }}
+                        className={isLoading ? "pointer-events-none opacity-50" : "cursor-pointer"}>
                         {page}
                       </PaginationLink>
                     )}
                   </PaginationItem>
                 ))}
                 <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (currentPage < totalPages && !isLoading)
-                        setCurrentPage((p) => p + 1);
-                    }}
-                    className={
-                      currentPage === totalPages || isLoading
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
-                    }
-                  />
+                  <PaginationNext href="#"
+                    onClick={(e) => { e.preventDefault(); if (currentPage < totalPages && !isLoading) setCurrentPage((p) => p + 1); }}
+                    className={currentPage === totalPages || isLoading ? "pointer-events-none opacity-50" : "cursor-pointer"} />
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
