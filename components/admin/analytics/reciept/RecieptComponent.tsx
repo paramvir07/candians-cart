@@ -379,14 +379,6 @@ export default function RecieptComponent({
                           <div className="space-y-2.5 text-sm">
                             <div className="flex justify-between items-center">
                               <span className="text-muted-foreground">
-                                Total Markup
-                              </span>
-                              <span className="font-medium">
-                                {fmt(r.totalMarkup)}
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-muted-foreground">
                                 Gross Margin
                               </span>
                               <span className="font-medium">
