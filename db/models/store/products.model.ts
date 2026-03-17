@@ -109,9 +109,17 @@ const productSchema = new Schema(
       required: false,
     },
 
+    // this is the bar code, required false as of now
     primaryUPC: {
       type: Number,
-      required: true,
+      required: false,
+    },
+
+    vendorId: {
+      //Refer to the _id store model
+      type: Schema.Types.ObjectId,
+      ref: "Vendor",
+      required: false,
     },
   },
   { timestamps: true },

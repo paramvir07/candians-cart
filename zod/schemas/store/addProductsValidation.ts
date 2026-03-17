@@ -86,6 +86,27 @@ export const BaseProductFormSchema = z.object({
     .number()
     .min(30, "Markup must be between 30% and 35%")
     .max(35, "Markup must be between 30% and 35%"),
+
+  primaryUPC: z
+    .number()
+    .int("UPC must be a whole number")
+    .positive("UPC must be a positive number")
+    .optional()
+    .refine(
+      (val) => {
+        const length = String(val).length;
+        return length >= 10 && length <= 12;
+      },
+      { message: "UPC must be between 10 and 12 digits" },
+    ),
+
+  vendorId: z
+    .string()
+    .trim()
+    .regex(/^[0-9a-fA-F]{24}$/, {
+      message: "Invalid Vendor ID format",
+    })
+    .optional(),
 });
 
 export const createProductFormSchema = (role: "admin" | "store") => {
