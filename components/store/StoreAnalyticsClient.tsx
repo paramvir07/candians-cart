@@ -173,7 +173,7 @@ export default function StoreAnalyticsClient({ data }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="max-w-350 mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         {/* Back + heading */}
         <div>
           <Link
@@ -334,7 +334,7 @@ export default function StoreAnalyticsClient({ data }: Props) {
           {/* Category breakdown (pie) */}
           <Section title="Products by category">
             {data.categoryBreakdown.length === 0 ? (
-              <div className="h-[220px] flex items-center justify-center text-gray-400 text-sm">
+              <div className="h-55 flex items-center justify-center text-gray-400 text-sm">
                 No products yet
               </div>
             ) : (
@@ -401,7 +401,7 @@ export default function StoreAnalyticsClient({ data }: Props) {
           {/* Payment methods (horizontal bar) */}
           <Section title="Payment methods">
             {data.paymentMethods.length === 0 ? (
-              <div className="h-[200px] flex items-center justify-center text-gray-400 text-sm">
+              <div className="h-50 flex items-center justify-center text-gray-400 text-sm">
                 No orders yet
               </div>
             ) : (
@@ -434,7 +434,7 @@ export default function StoreAnalyticsClient({ data }: Props) {
           {/* Top products */}
           <Section title="Top products by sales">
             {data.topProducts.length === 0 ? (
-              <div className="h-[200px] flex items-center justify-center text-gray-400 text-sm">
+              <div className="h-50 flex items-center justify-center text-gray-400 text-sm">
                 No sales yet
               </div>
             ) : (

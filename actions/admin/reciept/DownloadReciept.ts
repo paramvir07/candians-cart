@@ -100,13 +100,18 @@ async function generateReceiptPDF(
       color: GREEN_DARK,
     });
   };
-
+  interface ReceiptRowData {
+    label: string;
+    value: string;
+    bold?: boolean;
+    color?: ReturnType<typeof rgb>; // Types the color properly without `any`
+  }
   const drawRow = (
     label: string,
     value: string,
     yPos: number,
     isBold: boolean = false,
-    highlightColor?: any,
+    highlightColor?: ReturnType<typeof rgb>,
   ) => {
     const activeFont = isBold ? boldFont : font;
     const color = highlightColor || GREEN_DARK;
@@ -175,9 +180,9 @@ async function generateReceiptPDF(
   y -= 20;
 
   let rowIndex = 0;
-  
+
   // Added Subsidies exactly like UI
-  const breakdownItems = [
+  const breakdownItems: ReceiptRowData[] = [
     {
       label: "Total Customer Paid",
       value: formatMoney(data.totalCustomerPaid),
@@ -194,8 +199,8 @@ async function generateReceiptPDF(
       label: "Subsidies Applied",
       value: `-${formatMoney(data.totalSubsidy)}`,
       bold: false,
-      color: RED_ALERT // Highlights in red just like the UI
-    } as any);
+      color: RED_ALERT,
+    }); // Removed `as any` here
   }
 
   breakdownItems.push({
@@ -214,7 +219,8 @@ async function generateReceiptPDF(
         color: rgb(0.98, 1, 0.98),
       });
     }
-    drawRow(item.label, item.value, y, item.bold, (item as any).color);
+    // Removed `(item as any).color`
+    drawRow(item.label, item.value, y, item.bold, item.color);
     y -= 24;
     rowIndex++;
   }
@@ -247,10 +253,10 @@ async function generateReceiptPDF(
   y -= 20;
 
   rowIndex = 0;
-  
+
   // Added Total Markup and Platform Commission exactly like UI
-  const marginItems = [
-    { label: "Total Markup", value: formatMoney(data.totalMarkup) },
+  // Added typing and removed Total Markup
+  const marginItems: ReceiptRowData[] = [
     {
       label: "Gross Margin",
       value: formatMoney(data.grossMargin),
@@ -276,7 +282,7 @@ async function generateReceiptPDF(
         color: rgb(0.98, 1, 0.98),
       });
     }
-    drawRow(item.label, item.value, y, item.bold);
+    drawRow(item.label, item.value, y, item.bold, item.color);
     y -= 24;
     rowIndex++;
   }
@@ -402,5 +408,191 @@ export async function downloadReceiptPdfAction(
   // Pass dates down to display nicely in the PDF
   const pdfBytes = await generateReceiptPDF(data, startDateIso, endDateIso);
 
+  return Buffer.from(pdfBytes).toString("base64");
+}
+
+
+// Download saved payouts
+
+
+export interface SavedPayoutData {
+  _id: string;
+  storeId: string | { _id: string }; // Depending on how it's populated
+  startDate: string | Date;
+  endDate: string | Date;
+  totalCustomerPaid: number;
+  totalGST: number;
+  totalPST: number;
+  totalSubsidy: number;
+  totalDisposableFee: number;
+  storeFixedValue: number;
+  storeProfit: number;
+  totalCashCollected: number;
+  storePayout: number;
+  platformProfit: number;
+  platformCommision: number;
+  status: "pending" | "paid";
+  additionalNote?: string;
+  paymentReciept?: {
+    url: string;
+    fileId: string;
+  };
+}
+
+export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([595, 842]);
+
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const { width, height } = page.getSize();
+  const margin = 48;
+  const contentWidth = width - margin * 2;
+
+  // --- Header Background ---
+  page.drawRectangle({ x: 0, y: height - 100, width, height: 100, color: GREEN_PRIMARY });
+
+  // --- Header Text ---
+  page.drawText("CandianCart", { x: margin, y: height - 44, font: boldFont, size: 22, color: WHITE });
+  page.drawText("Store Payout Details", { x: margin, y: height - 62, font, size: 9, color: rgb(0.8, 0.95, 0.8) });
+
+  const invoiceLabel = data.status === "paid" ? "PAID RECEIPT" : "SETTLEMENT";
+  const invoiceLabelW = boldFont.widthOfTextAtSize(invoiceLabel, 22);
+  page.drawText(invoiceLabel, { x: width - margin - invoiceLabelW, y: height - 48, font: boldFont, size: 22, color: WHITE });
+
+  let y = height - 130;
+
+  // --- Helper Functions ---
+  const drawLabel = (label: string, value: string, yPos: number) => {
+    page.drawText(label, { x: margin, y: yPos, font, size: 9, color: MUTED });
+    page.drawText(value, { x: margin, y: yPos - 14, font: boldFont, size: 11, color: GREEN_DARK });
+  };
+
+  const drawLabelRight = (label: string, value: string, yPos: number) => {
+    const valW = boldFont.widthOfTextAtSize(value, 11);
+    const lblW = font.widthOfTextAtSize(label, 9);
+    page.drawText(label, { x: width - margin - lblW, y: yPos, font, size: 9, color: MUTED });
+    page.drawText(value, { x: width - margin - valW, y: yPos - 14, font: boldFont, size: 11, color: GREEN_DARK });
+  };
+
+  const drawRow = (label: string, value: string, yPos: number, isBold: boolean = false, customColor?: any) => {
+    const activeFont = isBold ? boldFont : font;
+    const color = customColor || GREEN_DARK;
+    page.drawText(label, { x: margin + 8, y: yPos, font: activeFont, size: 10, color });
+    const valW = activeFont.widthOfTextAtSize(value, 10);
+    page.drawText(value, { x: width - margin - valW - 8, y: yPos, font: activeFont, size: 10, color });
+  };
+
+  // --- Meta Information ---
+  const storeIdStr = typeof data.storeId === 'object' && data.storeId !== null ? String(data.storeId._id) : String(data.storeId);
+  drawLabel("PAYMENT ID", String(data._id), y);
+
+  const formattedStart = new Date(data.startDate).toLocaleDateString("en-CA", { year: "numeric", month: "short", day: "numeric" });
+  const formattedEnd = new Date(data.endDate).toLocaleDateString("en-CA", { year: "numeric", month: "short", day: "numeric" });
+  drawLabelRight("PERIOD", `${formattedStart} - ${formattedEnd}`, y);
+
+  y -= 44;
+  drawLabel("STORE ID", storeIdStr, y);
+  drawLabelRight("PAYMENT STATUS", data.status.toUpperCase(), y);
+
+  y -= 32;
+  page.drawRectangle({ x: margin, y, width: contentWidth, height: 1, color: GRAY_LINE });
+  y -= 20;
+
+  // --- Section 1: Financial Breakdown ---
+  page.drawRectangle({ x: margin, y: y - 4, width: contentWidth, height: 22, color: GREEN_LIGHT });
+  page.drawText("ORDER BREAKDOWN", { x: margin + 8, y: y + 4, font: boldFont, size: 8, color: GREEN_PRIMARY });
+  y -= 20;
+
+  const breakdownItems: Array<{label: string, value: string, bold?: boolean, color?: any}> = [
+    { label: "Total Customer Paid", value: formatMoney(data.totalCustomerPaid), bold: true },
+    { label: "Total GST", value: formatMoney(data.totalGST) },
+    { label: "Total PST", value: formatMoney(data.totalPST) },
+    { label: "Disposable Fees", value: formatMoney(data.totalDisposableFee) },
+  ];
+
+  if (data.totalSubsidy > 0) {
+    breakdownItems.push({ label: "Subsidies Applied", value: `-${formatMoney(data.totalSubsidy)}`, color: RED_ALERT });
+  }
+  breakdownItems.push({ label: "Store Fixed Value (Cost)", value: formatMoney(data.storeFixedValue), bold: true });
+
+  let rowIndex = 0;
+  for (const item of breakdownItems) {
+    if (rowIndex % 2 === 0) {
+      page.drawRectangle({ x: margin, y: y - 6, width: contentWidth, height: 22, color: rgb(0.98, 1, 0.98) });
+    }
+    drawRow(item.label, item.value, y, item.bold, item.color);
+    y -= 24; rowIndex++;
+  }
+
+  // --- Section 2: Margin & Adjustments ---
+  y -= 8;
+  page.drawRectangle({ x: margin, y: y - 4, width: contentWidth, height: 22, color: GREEN_LIGHT });
+  page.drawText("MARGINS & ADJUSTMENTS", { x: margin + 8, y: y + 4, font: boldFont, size: 8, color: GREEN_PRIMARY });
+  y -= 20;
+
+  const marginItems = [
+    { label: "Store Profit (30%)", value: formatMoney(data.storeProfit) },
+    { label: "Total Cash Collected by Store", value: `-${formatMoney(data.totalCashCollected || 0)}`, bold: true, color: RED_ALERT },
+    { label: "Platform Commission", value: formatMoney(data.platformCommision) },
+  ];
+
+  rowIndex = 0;
+  for (const item of marginItems) {
+    if (rowIndex % 2 === 0) {
+      page.drawRectangle({ x: margin, y: y - 6, width: contentWidth, height: 22, color: rgb(0.98, 1, 0.98) });
+    }
+    drawRow(item.label, item.value, y, item.bold, item.color);
+    y -= 24; rowIndex++;
+  }
+
+  // --- Section 3: Payment Details & Notes ---
+  y -= 8;
+  page.drawRectangle({ x: margin, y: y - 4, width: contentWidth, height: 22, color: GREEN_LIGHT });
+  page.drawText("PAYMENT DETAILS", { x: margin + 8, y: y + 4, font: boldFont, size: 8, color: GREEN_PRIMARY });
+  y -= 24;
+
+  if (data.additionalNote) {
+    page.drawText("Notes:", { x: margin + 8, y, font: boldFont, size: 10, color: GREEN_DARK });
+    // Truncating notes slightly to fit line safely, or it will overflow.
+    page.drawText(data.additionalNote.slice(0, 85) + (data.additionalNote.length > 85 ? "..." : ""), { x: margin + 50, y, font, size: 10, color: GREEN_DARK });
+    y -= 24;
+  }
+
+  if (data.paymentReciept?.url) {
+    page.drawText("Receipt Document:", { x: margin + 8, y, font: boldFont, size: 10, color: GREEN_DARK });
+    page.drawText(data.paymentReciept.url, { x: margin + 100, y, font, size: 9, color: rgb(0.1, 0.4, 0.8) });
+    y -= 24;
+  }
+
+  // --- Final Payouts Block ---
+  y -= 12;
+  const totalLabelX = width - margin - 220;
+
+  page.drawRectangle({ x: totalLabelX - 12, y: y - 8, width: width - margin - totalLabelX + 12, height: 30, color: GREEN_PRIMARY });
+  page.drawText("TOTAL STORE PAYOUT", { x: totalLabelX, y: y + 2, font: boldFont, size: 11, color: WHITE });
+  const storePayoutStr = formatMoney(data.storePayout);
+  const storePayoutStrW = boldFont.widthOfTextAtSize(storePayoutStr, 13);
+  page.drawText(storePayoutStr, { x: width - margin - storePayoutStrW, y: y + 2, font: boldFont, size: 13, color: WHITE });
+
+  y -= 36;
+  page.drawRectangle({ x: totalLabelX - 12, y: y - 8, width: width - margin - totalLabelX + 12, height: 30, color: GREEN_DARK });
+  page.drawText("PLATFORM PROFIT", { x: totalLabelX, y: y + 2, font: boldFont, size: 11, color: WHITE });
+  const platformProfitStr = formatMoney(data.platformProfit);
+  const platformProfitStrW = boldFont.widthOfTextAtSize(platformProfitStr, 13);
+  page.drawText(platformProfitStr, { x: width - margin - platformProfitStrW, y: y + 2, font: boldFont, size: 13, color: WHITE });
+
+  // --- Footer ---
+  const footerY = 52;
+  page.drawRectangle({ x: 0, y: 0, width, height: footerY, color: GREEN_LIGHT });
+  page.drawRectangle({ x: 0, y: footerY, width, height: 1, color: GRAY_LINE });
+
+  page.drawText("Thank you for partnering with CandianCart!", { x: margin, y: footerY - 18, font, size: 9, color: MUTED });
+
+  page.drawText(`Receipt generated on ${new Date().toLocaleDateString("en-CA")}`, {
+    x: margin, y: footerY - 32, font, size: 8, color: rgb(0.72, 0.78, 0.72),
+  });
+
+  const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes).toString("base64");
 }

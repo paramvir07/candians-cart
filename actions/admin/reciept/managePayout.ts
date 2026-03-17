@@ -19,13 +19,26 @@ export async function getStorePayoutByIdAction(payoutId: string) {
       return { success: false, message: "Payout not found", data: null };
     }
     const serializedPayout = {
-      _id: payout._id.toString(),
+   _id: payout._id.toString(),
       storeId: payout.storeId.toString(),
       startDate: payout.startDate.toISOString(),
       endDate: payout.endDate.toISOString(),
-      storePayout: payout.storePayout,
+      
+      // Financial breakdown fields
       totalCustomerPaid: payout.totalCustomerPaid,
+      totalGST: payout.totalGST,
+      totalPST: payout.totalPST,
+      totalTax: payout.totalTax,
+      totalSubsidy: payout.totalSubsidy || 0,
+      totalDisposableFee: payout.totalDisposableFee,
+      storeFixedValue: payout.storeFixedValue,
+      storeProfit: payout.storeProfit,
+      storePayout: payout.storePayout,
+      totalCashCollected: payout.totalCashCollected || 0,
       platformProfit: payout.platformProfit,
+      platformCommision: payout.platformCommision,
+      
+      // Status and metadata
       status: payout.status,
       additionalNote: payout.additionalNote || "",
       paymentReciept: payout.paymentReciept
@@ -34,7 +47,8 @@ export async function getStorePayoutByIdAction(payoutId: string) {
             fileId: payout.paymentReciept.fileId,
           }
         : null,
-      createdAt: payout.createdAt.toISOString(),
+      createdAt: payout.createdAt?.toISOString(),
+      updatedAt: payout.updatedAt?.toISOString(),
     };
 
     return { success: true, data: serializedPayout };

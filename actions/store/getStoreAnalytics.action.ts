@@ -217,7 +217,9 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
       { $match: { storeId, createdAt: { $gte: sevenDaysAgo } } },
       {
         $group: {
-          _id: { $dayOfWeek: "$createdAt" },
+          _id: {
+            $dayOfWeek: { date: "$createdAt", timezone: "America/Vancouver" },
+          },
           orders: { $sum: 1 },
           revenue: { $sum: "$cartTotal" },
         },
