@@ -237,22 +237,28 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
       {/* Footer */}
       <div className="mt-6 flex flex-col gap-1.5">
         {customer && (
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link
-              href="/customer/login"
-              className="text-primary hover:underline"
-            >
-              Log in
-            </Link>
-          </p>
+          <>
+            <p className="text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link
+                href="/customer/login"
+                className="text-primary hover:underline"
+              >
+                Log in
+              </Link>
+            </p>
+
+            <p className="text-sm text-muted-foreground">
+              Are you a partner?{" "}
+              <Link
+                href="/partner-access"
+                className="text-primary hover:underline"
+              >
+                Login here
+              </Link>
+            </p>
+          </>
         )}
-        <p className="text-sm text-muted-foreground">
-          Are you a partner?{" "}
-          <Link href="/partner-access" className="text-primary hover:underline">
-            Login here
-          </Link>
-        </p>
       </div>
     </>
   );

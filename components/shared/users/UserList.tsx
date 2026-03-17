@@ -243,7 +243,7 @@ const UserList = (props: UserListProps) => {
           {filtered.map((customer) => (
             <div
               key={customer._id.toString()}
-              className={`flex flex-col gap-0 ${cashierRole ? "hover:cursor-pointer" : ""}`}
+              className={`flex flex-col gap-0 ${cashierRole || isAdminMode ? "hover:cursor-pointer" : ""}`}
               onClick={() => {
                 if (cashierRole)
                   router.push(`/cashier/customer/${customer._id}`);

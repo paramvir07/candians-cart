@@ -12,7 +12,6 @@ import {
   Eye,
   Calendar,
   Filter,
-  Download,
   CalendarDays,
   CheckCircle2,
   Clock,
@@ -27,10 +26,15 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { AdminOrder, getOrdersPaginated, searchOrders } from "@/actions/admin/orders/getOrders.action";
+import {
+  AdminOrder,
+  getOrdersPaginated,
+  searchOrders,
+} from "@/actions/admin/orders/getOrders.action";
 import { OrderStats } from "@/actions/admin/orders/getOrderStats.action";
 
-// ─── Skeleton rows ──────────────────────────────────────────────────────────────
+// ─── Skeletons ──────────────────────────────────────────────────────────────────
+
 const OrderRowSkeleton = () => (
   <tr className="border-b border-gray-50">
     {[24, 28, 28, 16, 20, 16, 24].map((w, i) => (
@@ -49,7 +53,8 @@ const StatSkeleton = () => (
   </div>
 );
 
-// ─── Badge helpers ──────────────────────────────────────────────────────────────
+// ─── Badges ─────────────────────────────────────────────────────────────────────
+
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     pending: "bg-amber-100 text-amber-700",
@@ -99,6 +104,7 @@ function formatDate(date: Date) {
 }
 
 // ─── Stat card ──────────────────────────────────────────────────────────────────
+
 function OrderStatCard({
   label,
   value,
@@ -118,30 +124,74 @@ function OrderStatCard({
     <div className={`${bg} border ${border} rounded-2xl p-4 sm:p-5`}>
       <div className="flex items-start justify-between mb-2">
         <p className="text-xs sm:text-sm text-gray-500 font-medium">{label}</p>
-        <Icon className={`w-4 h-4 shrink-0`} />
+        <Icon className="w-4 h-4 shrink-0 text-gray-400" />
       </div>
-      <p
-        className={`text-2xl sm:text-3xl font-bold tracking-tight`}
-      >
-        {value}
-      </p>
+      <p className="text-2xl sm:text-3xl font-bold tracking-tight">{value}</p>
       <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
   );
 }
 
+// ─── Customer cell ──────────────────────────────────────────────────────────────
+// role="admin"  → links to /admin/customers/[customerId]
+// role="store"  → plain text, no link (add your own href later)
+
+function CustomerCell({
+  order,
+  role,
+}: {
+  order: AdminOrder;
+  role: "admin" | "store";
+}) {
+  const name = (
+    <span className="text-sm font-medium text-gray-700 truncate max-w-[120px]">
+      {order.customerName}
+    </span>
+  );
+
+  if (role === "admin" && order.customerId) {
+    return (
+      <Link
+        href={`/admin/customers/${order.customerId}`}
+        className="group/c inline-flex items-center gap-1.5 hover:text-blue-700 transition-colors"
+      >
+        <User className="w-3.5 h-3.5 text-gray-300 group-hover/c:text-blue-500 shrink-0" />
+        <span className="text-sm font-medium text-gray-700 truncate max-w-[120px] group-hover/c:underline underline-offset-2">
+          {order.customerName}
+        </span>
+      </Link>
+    );
+  }
+
+  // store role — no link for now, add href here when ready
+  return (
+    <div className="inline-flex items-center gap-1.5">
+      <User className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+      {name}
+    </div>
+  );
+}
+
 // ─── Types ──────────────────────────────────────────────────────────────────────
+
 type StatusFilter = "all" | "pending" | "completed";
 type DateFilter = "all" | "today" | "week" | "month";
 
 interface OrdersListProps {
   storeId?: string;
-  /** Pre-loaded stats from server (passed from page.tsx) */
   stats?: OrderStats;
+  /** "admin" shows store column + links to /admin/customers/[id]
+   *  "store" hides store column, customer is plain text (no link yet) */
+  role?: "admin" | "store";
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────────
-export function OrdersList({ storeId, stats }: OrdersListProps) {
+
+export function OrdersList({
+  storeId,
+  stats,
+  role = "admin",
+}: OrdersListProps) {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -178,7 +228,6 @@ export function OrdersList({ storeId, stats }: OrdersListProps) {
     load(currentPage);
   }, [storeId, currentPage, isSearchMode, statusFilter, dateFilter]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [statusFilter, dateFilter]);
@@ -241,9 +290,12 @@ export function OrdersList({ storeId, stats }: OrdersListProps) {
     { label: "This month", value: "month" },
   ];
 
+  // How many columns total (for empty state colspan)
+  const colCount = (isAllStores ? 1 : 0) + 7;
+
   return (
     <div className="space-y-5">
-      {/* ── Stat Cards ───────────────────────────────────────────────────────── */}
+      {/* ── Stat cards ───────────────────────────────────────────────────────── */}
       {stats ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <OrderStatCard
@@ -303,9 +355,9 @@ export function OrdersList({ storeId, stats }: OrdersListProps) {
         </div>
       )}
 
-      {/* ── Header + Search + Filters ─────────────────────────────────────────── */}
+      {/* ── Table card ───────────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-        {/* Top bar */}
+        {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 pt-5 pb-4 border-b border-gray-50">
           <div>
             <div className="flex items-center gap-2.5">
@@ -324,7 +376,7 @@ export function OrdersList({ storeId, stats }: OrdersListProps) {
             <p className="text-xs text-gray-400 mt-0.5 ml-8">
               {isAllStores
                 ? "View and manage all incoming orders"
-                : "View and manage all incoming orders for in-store pickup"}
+                : "View and manage orders for this store"}
             </p>
           </div>
           <div className="relative w-full sm:w-64">
@@ -341,8 +393,7 @@ export function OrdersList({ storeId, stats }: OrdersListProps) {
 
         {/* Filter bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-5 py-3 border-b border-gray-50 bg-gray-50/40">
-          {/* Status filter */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <Filter className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             <span className="text-xs text-gray-400 font-medium mr-1">
               Status:
@@ -361,11 +412,8 @@ export function OrdersList({ storeId, stats }: OrdersListProps) {
               </button>
             ))}
           </div>
-
           <div className="w-px h-4 bg-gray-200 hidden sm:block" />
-
-          {/* Date filter */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             <span className="text-xs text-gray-400 font-medium mr-1">
               Period:
@@ -426,10 +474,7 @@ export function OrdersList({ storeId, stats }: OrdersListProps) {
                 ))
               ) : orders.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={isAllStores ? 8 : 7}
-                    className="py-16 text-center"
-                  >
+                  <td colSpan={colCount} className="py-16 text-center">
                     <div className="flex flex-col items-center gap-2 text-gray-400">
                       <ShoppingCart className="w-10 h-10 opacity-20" />
                       <p className="text-sm font-medium">
@@ -461,7 +506,7 @@ export function OrdersList({ storeId, stats }: OrdersListProps) {
                       </span>
                     </td>
 
-                    {/* Store — all-stores view only */}
+                    {/* Store — all-stores / admin only */}
                     {isAllStores && (
                       <td className="px-4 py-3.5">
                         {order.storeId ? (
@@ -480,23 +525,9 @@ export function OrdersList({ storeId, stats }: OrdersListProps) {
                       </td>
                     )}
 
-                    {/* Customer */}
+                    {/* Customer — link on admin, plain on store */}
                     <td className="px-4 py-3.5">
-                      {order.storeId && order.customerId ? (
-                        <Link
-                          href={`/admin/store/${order.storeId}/users`}
-                          className="group/c inline-flex items-center gap-1.5 hover:text-blue-700 transition-colors"
-                        >
-                          <User className="w-3.5 h-3.5 text-gray-300 group-hover/c:text-blue-500 shrink-0" />
-                          <span className="text-sm font-medium text-gray-700 truncate max-w-[120px] group-hover/c:underline underline-offset-2">
-                            {order.customerName}
-                          </span>
-                        </Link>
-                      ) : (
-                        <span className="text-sm text-gray-500">
-                          {order.customerName}
-                        </span>
-                      )}
+                      <CustomerCell order={order} role={role} />
                     </td>
 
                     <td className="px-4 py-3.5 text-xs text-gray-400">
@@ -523,7 +554,7 @@ export function OrdersList({ storeId, stats }: OrdersListProps) {
           </table>
         </div>
 
-        {/* Pagination footer */}
+        {/* Pagination */}
         {!isSearchMode && totalPages > 1 && (
           <div className="px-5 py-4 border-t border-gray-50">
             <Pagination>

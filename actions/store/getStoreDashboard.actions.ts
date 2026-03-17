@@ -161,7 +161,7 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
         $lookup: {
           from: "customers",
           localField: "userId",
-          foreignField: "userId",
+          foreignField: "_id",
           as: "customer",
         },
       },
