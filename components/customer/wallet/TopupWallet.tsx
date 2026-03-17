@@ -8,8 +8,9 @@ type TopupWalletProps = {
     memberSince: string;
   };
   customerId?: string;
+  userRole?: string;
 };
-const TopupWallet = ({ topupWalletData, customerId }: TopupWalletProps) => {
+const TopupWallet = ({ topupWalletData, customerId, userRole }: TopupWalletProps) => {
   return (
     <div>
       <div className="p-4 text-white">
@@ -91,11 +92,11 @@ const TopupWallet = ({ topupWalletData, customerId }: TopupWalletProps) => {
           </div>
         </div>
       </div>
-      <div className="w-full px-4 relative z-50 flex justify-center gap-1">
-        <TopUpDialog customerId={customerId} userRole="admin"/>
+      <div className="w-full px-4 relative flex justify-center gap-1">
+        <TopUpDialog customerId={customerId} userRole={userRole}/>
         {!customerId && (
           <Link href="/customer/wallet/history">
-            <Button variant="default" className="rounded-full p-5 w-full">
+            <Button variant="default" className="rounded-full w-full">
               Wallet History
             </Button>
           </Link>

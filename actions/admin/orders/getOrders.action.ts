@@ -9,8 +9,8 @@ export interface AdminOrder {
   orderRef: string;
   storeId: string;
   storeName: string;
-  customerId: string;
-  customerName: string;
+  customerId: string;   // Customer._id — used for the /admin/customers/[customerId] link
+  customerName: string; // Customer.name
   amount: number;
   status: "pending" | "completed";
   paymentMode: "wallet" | "cash" | "card" | "pending";
@@ -27,6 +27,7 @@ export interface GetOrdersResult {
 
 function buildLookupStages() {
   return [
+    // Join Store
     {
       $lookup: {
         from: "stores",
@@ -36,21 +37,25 @@ function buildLookupStages() {
       },
     },
     { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
+
+    // Join Customer — Order.userId matches Customer._id (both ref the Auth user)
     {
       $lookup: {
         from: "customers",
         localField: "userId",
-        foreignField: "userId",
+        foreignField: "_id",
         as: "customer",
       },
     },
     { $unwind: { path: "$customer", preserveNullAndEmptyArrays: true } },
+
     {
       $project: {
         _id: 1,
         storeId: 1,
         storeName: "$store.name",
         userId: 1,
+        // Customer._id is what we use for the detail page link
         customerId: "$customer._id",
         customerName: "$customer.name",
         amount: "$cartTotal",
@@ -68,6 +73,7 @@ function mapDoc(o: any): AdminOrder {
     orderRef: `LPO/${o._id.toString().slice(-6).toUpperCase()}`,
     storeId: o.storeId?.toString() ?? "",
     storeName: o.storeName ?? "Unknown Store",
+    // customerId = Customer._id, fallback to userId so link still points somewhere
     customerId: o.customerId?.toString() ?? o.userId?.toString() ?? "",
     customerName: o.customerName ?? "—",
     amount: o.amount ?? 0,
@@ -94,17 +100,11 @@ export async function getOrdersPaginated(
     if (dateFilter && dateFilter !== "all") {
       const now = new Date();
       if (dateFilter === "today") {
-        match.createdAt = {
-          $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-        };
+        match.createdAt = { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) };
       } else if (dateFilter === "week") {
-        match.createdAt = {
-          $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
-        };
+        match.createdAt = { $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) };
       } else if (dateFilter === "month") {
-        match.createdAt = {
-          $gte: new Date(now.getFullYear(), now.getMonth(), 1),
-        };
+        match.createdAt = { $gte: new Date(now.getFullYear(), now.getMonth(), 1) };
       }
     }
 
@@ -128,13 +128,7 @@ export async function getOrdersPaginated(
       totalCount,
     };
   } catch (error: any) {
-    return {
-      success: false,
-      data: [],
-      totalPages: 0,
-      totalCount: 0,
-      error: error.message,
-    };
+    return { success: false, data: [], totalPages: 0, totalCount: 0, error: error.message };
   }
 }
 
@@ -168,19 +162,8 @@ export async function searchOrders(
           o.status.includes(q),
       );
 
-    return {
-      success: true,
-      data: filtered,
-      totalPages: 1,
-      totalCount: filtered.length,
-    };
+    return { success: true, data: filtered, totalPages: 1, totalCount: filtered.length };
   } catch (error: any) {
-    return {
-      success: false,
-      data: [],
-      totalPages: 0,
-      totalCount: 0,
-      error: error.message,
-    };
+    return { success: false, data: [], totalPages: 0, totalCount: 0, error: error.message };
   }
 }

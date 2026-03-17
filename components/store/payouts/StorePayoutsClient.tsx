@@ -99,7 +99,7 @@ export default function StorePayoutsClient({ storeId }: { storeId: string }) {
               <TableHead>Period</TableHead>
               <TableHead>Total Earned</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              <TableHead className="text-right">Payment Proof</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

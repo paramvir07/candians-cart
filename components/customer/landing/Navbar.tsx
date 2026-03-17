@@ -25,14 +25,16 @@ const Navbar = async () => {
   return (
     <nav className="sticky top-0 z-50 w-full bg-background border-b border-border">
       <div className="flex items-center justify-between px-5 h-14 gap-4">
-
         {/* Logo */}
         <div className="shrink-0">
           <Logo />
         </div>
 
         {/* Search — tablet+ */}
-        <Link href="/customer/search" className="hidden md:block flex-1 max-w-full mx-4">
+        <Link
+          href="/customer/search"
+          className="hidden md:block flex-1 max-w-full mx-4"
+        >
           <SearchBar />
         </Link>
 
@@ -41,18 +43,17 @@ const Navbar = async () => {
 
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
-
-      {/* Cart */}
-      <Link href="/customer/cart">
-        <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary/80 active:scale-[0.97] transition-all">
-          <ShoppingCartIcon className="w-[16px] h-[16px] text-primary" />
-          {(cartCount ?? 0) > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-primary-foreground border-2 border-background">
-              {(cartCount ?? 0) > 99 ? "99+" : cartCount}
-            </span>
-          )}
-        </div>
-      </Link>
+          {/* Cart */}
+          <Link href="/customer/cart">
+            <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary/80 active:scale-[0.97] transition-all">
+              <ShoppingCartIcon className="w-[16px] h-[16px] text-primary" />
+              {(cartCount ?? 0) > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-primary-foreground border-2 border-background">
+                  {(cartCount ?? 0) > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </div>
+          </Link>
 
           {/* Wallet pill */}
           <Link href="/customer/wallet">
@@ -61,9 +62,11 @@ const Navbar = async () => {
                 <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
               <div className="flex flex-col leading-none">
-                <span className="text-[9px] text-primary font-semibold uppercase tracking-wide">Balance</span>
+                <span className="text-[9px] text-primary font-semibold uppercase tracking-wide">
+                  Balance
+                </span>
                 <span className="text-sm font-black text-foreground tracking-tight mt-0.5">
-                  {fmtShort(customerData.walletBalance)}
+                  ${(customerData.walletBalance / 100).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -75,7 +78,6 @@ const Navbar = async () => {
           {/* Avatar dropdown */}
           <NavAvatarMenu name={customerData.name} initials={initials} />
         </div>
-
       </div>
     </nav>
   );
