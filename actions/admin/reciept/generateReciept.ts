@@ -117,7 +117,6 @@ export interface AggregatedReciept {
   totalPST: number;
   totalTax: number; // totalGST + totalPST
   totalSubsidy: number;
-  totalMarkup: number;
   storeFixedValue: number;
   grossMargin: number; // Customer Paid - SFV
   storeProfit: number;
@@ -201,23 +200,6 @@ export async function getRecieptDataByDateRange(
         $addFields: {
           grossMargin: {
             $subtract: ["$totalCustomerPaid", "$storeFixedValue"],
-          },
-          totalMarkup: {
-            $add: [
-              {
-                $subtract: [
-                  "$totalCustomerPaid",
-                  {
-                    $add: [
-                      "$totalBasePrice",
-                      "$totalTax",
-                      "$totalDisposableFee",
-                    ],
-                  },
-                ],
-              },
-              "$totalSubsidy",
-            ],
           },
         },
       },

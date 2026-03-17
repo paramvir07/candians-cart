@@ -8,6 +8,7 @@ export interface IStorePayout {
   totalGST: number;
   totalPST: number;
   totalTax: number;
+  totalSubsidy: number;
   totalDisposableFee: number;
   storeFixedValue: number;
   storeProfit: number;
@@ -58,6 +59,11 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
     totalTax: {
       type: Number,
       required: true,
+    },
+    totalSubsidy: {
+      type:Number,
+      default: 0,
+      required: true
     },
     totalDisposableFee: {
       type: Number,

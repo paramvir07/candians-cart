@@ -18,6 +18,7 @@ import {
   FileText,
 } from "lucide-react";
 import { updateStorePayoutAction } from "@/actions/admin/reciept/managePayout";
+import { downloadSavedPayoutPdfAction } from "@/actions/admin/reciept/DownloadReciept";
 
 type SerializedPayoutDetail = any;
 
@@ -52,7 +53,6 @@ export default function EditPayoutForm({
     setSelectedFile(file);
     setReceipt(null); // Clear existing DB receipt if the user selects a new file
 
-    // Reset input so the same file can be re-selected if removed
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -67,7 +67,6 @@ export default function EditPayoutForm({
     setIsSaving(true);
     let finalReceiptUrl = receipt;
 
-    // 1. If a new file is queued, upload it to ImageKit FIRST
     if (selectedFile) {
       const formData = new FormData();
       formData.append("file", selectedFile);
@@ -85,17 +84,16 @@ export default function EditPayoutForm({
         } else {
           toast.error(data.error || "Failed to upload document.");
           setIsSaving(false);
-          return; // Abort save if upload fails
+          return;
         }
       } catch (error) {
         console.error("Upload error:", error);
         toast.error("An unexpected error occurred during upload.");
         setIsSaving(false);
-        return; // Abort save
+        return;
       }
     }
 
-    // 2. Once the upload is successful (or if there's no new file), update the DB
     startTransition(async () => {
       const result = await updateStorePayoutAction(initialData._id, {
         status,
@@ -105,9 +103,13 @@ export default function EditPayoutForm({
 
       if (result.success) {
         toast.success(result.message);
-        // Sync local state to reflect the confirmed saved data
         setReceipt(finalReceiptUrl);
         setSelectedFile(null);
+
+        // Update local initialData references so the PDF has the newest save state
+        initialData.status = status;
+        initialData.additionalNote = note;
+        initialData.paymentReciept = finalReceiptUrl;
       } else {
         toast.error(result.message);
       }
@@ -115,8 +117,36 @@ export default function EditPayoutForm({
     });
   };
 
-  const handleDownloadSystemPDF = () => {
-    toast.info("Downloading System PDF...");
+  const handleDownloadSystemPDF = async () => {
+    try {
+      const toastId = toast.loading("Generating comprehensive PDF...");
+
+      const base64Pdf = await downloadSavedPayoutPdfAction(initialData);
+
+      const binaryString = window.atob(base64Pdf);
+      const binaryLen = binaryString.length;
+      const bytes = new Uint8Array(binaryLen);
+      for (let i = 0; i < binaryLen; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Settlement_${initialData._id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("PDF Downloaded successfully!", { id: toastId });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to generate PDF.");
+    }
   };
 
   return (
@@ -136,29 +166,106 @@ export default function EditPayoutForm({
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Timeline */}
           <div className="grid grid-cols-2 gap-2 text-sm">
             <span className="text-muted-foreground">Period Start:</span>
             <span className="font-medium text-right">
               {format(new Date(initialData.startDate), "MMM dd, yyyy")}
             </span>
-
             <span className="text-muted-foreground">Period End:</span>
             <span className="font-medium text-right">
               {format(new Date(initialData.endDate), "MMM dd, yyyy")}
             </span>
+          </div>
 
-            <div className="col-span-2 border-t my-2" />
+          {/* Order Breakdown */}
+          <div>
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              Order Breakdown
+            </h4>
+            <div className="grid grid-cols-2 gap-2 text-sm bg-muted/30 p-3 rounded-lg border">
+              <span className="text-muted-foreground">Customer Paid:</span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.totalCustomerPaid)}
+              </span>
 
-            <span className="text-muted-foreground">Store Profit:</span>
-            <span className="font-medium text-right text-primary">
-              {formatCurrency(initialData.storePayout)}
-            </span>
+              <span className="text-muted-foreground">Total GST:</span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.totalGST)}
+              </span>
 
-            <span className="text-muted-foreground">Platform Profit:</span>
-            <span className="font-medium text-right">
-              {formatCurrency(initialData.platformProfit)}
-            </span>
+              <span className="text-muted-foreground">Total PST:</span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.totalPST)}
+              </span>
+
+              <span className="text-muted-foreground">Disposable Fees:</span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.totalDisposableFee)}
+              </span>
+
+              {initialData.totalSubsidy > 0 && (
+                <>
+                  <span className="text-muted-foreground">
+                    Subsidies Applied:
+                  </span>
+                  <span className="font-medium text-right text-red-500">
+                    -{formatCurrency(initialData.totalSubsidy)}
+                  </span>
+                </>
+              )}
+
+              <div className="col-span-2 border-t my-1" />
+
+              <span className="font-medium">Store Fixed Value (Cost):</span>
+              <span className="font-bold text-right">
+                {formatCurrency(initialData.storeFixedValue)}
+              </span>
+            </div>
+          </div>
+
+          {/* Margins & Adjustments */}
+          <div>
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              Margins & Adjustments
+            </h4>
+            <div className="grid grid-cols-2 gap-2 text-sm bg-muted/30 p-3 rounded-lg border">
+              <span className="text-muted-foreground">Store Profit (30%):</span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.storeProfit)}
+              </span>
+
+              <span className="text-muted-foreground">Cash Collected:</span>
+              <span className="font-medium text-right text-red-500">
+                -{formatCurrency(initialData.totalCashCollected || 0)}
+              </span>
+
+              <span className="text-muted-foreground">Platform Comm.:</span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.platformCommision)}
+              </span>
+            </div>
+          </div>
+
+          {/* Final Totals */}
+          <div>
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              Final Totals
+            </h4>
+            <div className="grid grid-cols-2 gap-2 text-sm bg-green-50/50 p-3 rounded-lg border border-green-100">
+              <span className="font-medium text-green-900">Store Payout:</span>
+              <span className="font-bold text-right text-green-700 text-base">
+                {formatCurrency(initialData.storePayout)}
+              </span>
+
+              <span className="font-medium text-green-900">
+                Platform Profit:
+              </span>
+              <span className="font-bold text-right text-green-700">
+                {formatCurrency(initialData.platformProfit)}
+              </span>
+            </div>
           </div>
 
           <Button
@@ -218,7 +325,6 @@ export default function EditPayoutForm({
             </label>
 
             {receipt ? (
-              // State 1: A receipt is already saved in the database
               <div className="relative border rounded-lg p-4 bg-muted/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 relative rounded overflow-hidden border shrink-0 bg-white flex items-center justify-center">
@@ -257,7 +363,6 @@ export default function EditPayoutForm({
                 </Button>
               </div>
             ) : selectedFile ? (
-              // State 2: A file is selected but NOT saved/uploaded yet
               <div className="relative border rounded-lg p-4 bg-yellow-50/50 border-yellow-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded border bg-white flex items-center justify-center shrink-0">
@@ -283,7 +388,6 @@ export default function EditPayoutForm({
                 </Button>
               </div>
             ) : (
-              // State 3: Empty state, ready to select a file
               <div
                 className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${isSaving ? "bg-muted/10 cursor-not-allowed opacity-50" : "bg-muted/20 hover:bg-muted/40 cursor-pointer"}`}
                 onClick={() => !isSaving && fileInputRef.current?.click()}

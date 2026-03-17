@@ -1,4 +1,5 @@
 import AllStorePayoutsHistory from "@/components/admin/analytics/reciept/AllStorePayoutsHistory";
+import ReceiptPage from "@/components/admin/analytics/reciept/RecieptComponent"
 
 export default function GlobalStorePayoutsPage() {
   return (
@@ -9,6 +10,8 @@ export default function GlobalStorePayoutsPage() {
           View, filter, and manage payouts across all vendors on the platform.
         </p>
       </div>
+
+            <ReceiptPage />
 
       {/* Render the global history table */}
       <AllStorePayoutsHistory />
