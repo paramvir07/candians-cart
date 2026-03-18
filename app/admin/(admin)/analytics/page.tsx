@@ -1,82 +1,132 @@
-import { Suspense } from "react"
-import { ChartAreaStacked } from "@/components/admin/analytics/AreaChart"
-import FilterOptions from "@/components/admin/analytics/FilterOptions"
-import MainOverview from "@/components/admin/analytics/MainOverview"
-import { ChartPieSimple } from "@/components/admin/analytics/PieChart"
-import { TopProducts } from "@/components/admin/analytics/TopProducts"
-import { TopSpenders } from "@/components/admin/analytics/TopSpenders"
-import { Skeleton } from "@/components/ui/skeleton"
-import { 
-  getOverviewStats, getPieChartData, getAreaChartData, getTopProductsData, getTopSpendersData 
-} from "@/actions/admin/analytics/analytics.action"
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ChartAreaStacked } from "@/components/admin/analytics/AreaChart";
+import { ChartPieSimple } from "@/components/admin/analytics/PieChart";
+import { TopProducts } from "@/components/admin/analytics/TopProducts";
+import { TopSpenders } from "@/components/admin/analytics/TopSpenders";
+import { RevenueTrendChart } from "@/components/admin/analytics/RevenueTrendChart";
+import { PaymentBreakdownChart } from "@/components/admin/analytics/PaymentBreakdownChart";
+import MainOverview from "@/components/admin/analytics/MainOverview";
+import {
+  getOverviewStats,
+  getPieChartData,
+  getAreaChartData,
+  getTopProductsData,
+  getTopSpendersData,
+  getPaymentBreakdown,
+  getRevenueTrend,
+} from "@/actions/admin/analytics/analytics.action";
+
+// ─── Suspense wrappers ─────────────────────────────────────────────────────────
 
 async function OverviewWrapper() {
-  const data = await getOverviewStats()
-  return <MainOverview data={data} />
+  const data = await getOverviewStats();
+  return <MainOverview data={data} />;
+}
+
+async function RevenueTrendWrapper() {
+  const data = await getRevenueTrend();
+  return <RevenueTrendChart data={data} />;
 }
 
 async function PieChartWrapper() {
-  const data = await getPieChartData()
-  return <ChartPieSimple data={data} />
+  const data = await getPieChartData();
+  return <ChartPieSimple data={data} />;
 }
 
 async function AreaChartWrapper() {
-  const { data, keys } = await getAreaChartData()
-  return <ChartAreaStacked data={data} keys={keys} />
+  const { data, keys } = await getAreaChartData();
+  return <ChartAreaStacked data={data} keys={keys} />;
 }
 
 async function TopProductsWrapper() {
-  const { data, keys } = await getTopProductsData()
-  // Cast keys to string[] here to satisfy TypeScript
-  return <TopProducts data={data} keys={keys as string[]} fullHeight />
+  const { data, keys } = await getTopProductsData();
+  return <TopProducts data={data} keys={keys as string[]} fullHeight />;
 }
 
 async function TopSpendersWrapper() {
-  const { data, keys } = await getTopSpendersData()
-  // Cast keys to string[] here to satisfy TypeScript
-  return <TopSpenders data={data} keys={keys as string[]} fullHeight />
+  const { data, keys } = await getTopSpendersData();
+  return <TopSpenders data={data} keys={keys as string[]} fullHeight />;
 }
+
+async function PaymentBreakdownWrapper() {
+  const data = await getPaymentBreakdown();
+  return <PaymentBreakdownChart data={data} />;
+}
+
+// ─── Skeleton helpers ──────────────────────────────────────────────────────────
+
+const CardSkeleton = ({ className = "h-40" }: { className?: string }) => (
+  <Skeleton className={`w-full rounded-2xl ${className}`} />
+);
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AnalyticsPage() {
   return (
-    <div className="flex flex-col gap-5">
-      <h1 className="text-2xl mt-5 font-semibold">Analytics</h1>
-      <p className="text-sm text-muted-foreground">Track sales, revenue, and user activity across your platform.</p>
+    <div className="flex flex-col gap-6 p-4 sm:p-6 pb-24 md:pb-6 max-w-[1600px] mx-auto">
+      {/* Heading */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          Analytics
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Track sales, revenue, and user activity across the platform.
+        </p>
+      </div>
 
-      <FilterOptions />
-      
-      <Suspense fallback={<Skeleton className="h-32 w-full" />}>
+      {/* ── KPI overview grid ─────────────────────────────────────────────── */}
+      <Suspense
+        fallback={
+          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <CardSkeleton key={i} className="h-32" />
+            ))}
+          </div>
+        }
+      >
         <OverviewWrapper />
       </Suspense>
 
-      <div className="flex flex-col gap-5 lg:flex-row lg:h-105 pb-20 md:pb-0">
-        <div className="w-full lg:w-105 lg:h-full">
-          <Suspense fallback={<Skeleton className="h-full w-full" />}>
+      {/* ── Revenue trend — full width ──────────────────────────────────── */}
+      <Suspense fallback={<CardSkeleton className="h-80" />}>
+        <RevenueTrendWrapper />
+      </Suspense>
+
+      {/* ── Pie + Area side by side ─────────────────────────────────────── */}
+      <div className="flex flex-col gap-5 lg:flex-row lg:h-[420px]">
+        <div className="w-full lg:w-[340px] lg:h-full shrink-0">
+          <Suspense fallback={<CardSkeleton className="h-full" />}>
             <PieChartWrapper />
           </Suspense>
         </div>
-
-        <div className="lg:w-150 lg:flex-1 lg:h-full">
-          <Suspense fallback={<Skeleton className="h-full w-full" />}>
+        <div className="flex-1 lg:h-full">
+          <Suspense fallback={<CardSkeleton className="h-full" />}>
             <AreaChartWrapper />
           </Suspense>
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 lg:flex-row lg:h-105 pb-20 md:pb-0">
-        <div className="w-full lg:flex-1 lg:h-full">
-          <Suspense fallback={<Skeleton className="h-full w-full" />}>
+      {/* ── Top Products + Payment breakdown ────────────────────────────── */}
+      <div className="flex flex-col gap-5 lg:flex-row lg:h-[420px]">
+        <div className="flex-1 lg:h-full">
+          <Suspense fallback={<CardSkeleton className="h-full" />}>
             <TopProductsWrapper />
           </Suspense>
         </div>
-
-        <div className="w-full lg:w-105 lg:h-full">
-          <Suspense fallback={<Skeleton className="h-full w-full" />}>
-            <TopSpendersWrapper />
+        <div className="w-full lg:w-[340px] lg:h-full shrink-0">
+          <Suspense fallback={<CardSkeleton className="h-full" />}>
+            <PaymentBreakdownWrapper />
           </Suspense>
         </div>
       </div>
-      
+
+      {/* ── Top Spenders — full width ───────────────────────────────────── */}
+      <div className="lg:h-[380px]">
+        <Suspense fallback={<CardSkeleton className="h-full" />}>
+          <TopSpendersWrapper />
+        </Suspense>
+      </div>
     </div>
-  )
+  );
 }

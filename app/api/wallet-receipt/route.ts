@@ -3,15 +3,22 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-const BLUE_PRIMARY = rgb(0.23, 0.51, 0.96);
-const BLUE_LIGHT = rgb(0.94, 0.96, 1.0);
-const BLUE_DARK = rgb(0.06, 0.09, 0.16);
-const GRAY_LINE = rgb(0.88, 0.91, 0.95);
-const MUTED = rgb(0.39, 0.45, 0.55);
+// ─── Brand colors (from globals.css light mode oklch values → RGB approximation)
+// --primary: oklch(0.6271 0.1699 149.2138) ≈ rgb(70, 162, 91)  — main green
+// --secondary: oklch(0.9669 0.0287 158.06) ≈ rgb(236, 246, 238) — light green tint
+// --foreground: oklch(0.2661 0.0625 153.04) ≈ rgb(38, 72, 46)   — dark green text
+// --muted-foreground: oklch(0.5252 0.0315)  ≈ rgb(110, 130, 114) — muted
+
+const GREEN_PRIMARY = rgb(0.27, 0.635, 0.357); // #46A25B  — header / accents
+const GREEN_DARK = rgb(0.149, 0.282, 0.18); // #264824  — body text
+const GREEN_LIGHT = rgb(0.925, 0.965, 0.933); // #ECFAEE  — section bg / summary bg
+const GREEN_MUTED = rgb(0.431, 0.51, 0.447); // #6E8272  — muted labels
+const GREEN_BORDER = rgb(0.863, 0.929, 0.875); // #DCEDDF  — divider lines
 const WHITE = rgb(1, 1, 1);
-const GREEN = rgb(0.06, 0.73, 0.51);
+const SUCCESS_GREEN = rgb(0.1, 0.72, 0.42);
 const AMBER = rgb(0.96, 0.62, 0.04);
-const RED = rgb(0.94, 0.27, 0.27);
+const RED = rgb(0.85, 0.2, 0.2);
+const GIFT_AMBER = rgb(0.96, 0.62, 0.04);
 
 interface ReceiptPayload {
   id: string;
@@ -84,9 +91,10 @@ export async function POST(req: Request) {
       );
     }
 
+    const isGift = t.paymentMode === "gift";
     const isSuccess = t.status === "paid" || t.status === "completed";
     const statusColor = isSuccess
-      ? GREEN
+      ? SUCCESS_GREEN
       : t.status === "pending"
         ? AMBER
         : RED;
@@ -99,129 +107,167 @@ export async function POST(req: Request) {
         ? "Online via Stripe"
         : t.paymentMode === "cash"
           ? "Cash at Counter"
-          : "Card at Counter";
+          : t.paymentMode === "card"
+            ? "Card at Counter"
+            : t.paymentMode === "gift"
+              ? "Special Bonus Added"
+              : "Unknown";
 
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]);
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const { width, height } = page.getSize();
-
     const margin = 48;
     const contentWidth = width - margin * 2;
 
+    // ── Header bar (green) ──────────────────────────────────────────────────
     page.drawRectangle({
       x: 0,
       y: height - 90,
       width,
       height: 90,
-      color: BLUE_PRIMARY,
+      color: GREEN_PRIMARY,
     });
 
-    page.drawText("Wallet Receipt", {
+    // Left accent strip (slightly darker)
+    page.drawRectangle({
+      x: 0,
+      y: height - 90,
+      width: 5,
+      height: 90,
+      color: rgb(0.18, 0.5, 0.27),
+    });
+
+    page.drawText("Canadian's Cart", {
       x: margin,
-      y: height - 40,
+      y: height - 36,
       font: boldFont,
-      size: 22,
+      size: 18,
       color: WHITE,
     });
-
-    page.drawText("Top-Up Confirmation", {
+    page.drawText("Wallet Receipt", {
       x: margin,
-      y: height - 58,
+      y: height - 53,
       font,
       size: 9,
-      color: rgb(0.8, 0.88, 1),
+      color: rgb(0.82, 0.95, 0.86),
     });
-
     page.drawText(`Generated: ${safeFull(new Date().toISOString())}`, {
       x: margin,
-      y: height - 72,
+      y: height - 68,
       font,
-      size: 8,
-      color: rgb(0.7, 0.8, 1),
+      size: 7.5,
+      color: rgb(0.72, 0.9, 0.76),
     });
 
-    const badgeW = 62;
+    // Status badge
+    const badgeW = 70;
     const badgeX = width - margin - badgeW;
-
     page.drawRectangle({
       x: badgeX,
-      y: height - 52,
+      y: height - 54,
       width: badgeW,
-      height: 18,
+      height: 20,
       color: statusColor,
     });
-
     const lblW = boldFont.widthOfTextAtSize(statusLabel, 8);
     page.drawText(statusLabel, {
       x: badgeX + (badgeW - lblW) / 2,
-      y: height - 44,
+      y: height - 45,
       font: boldFont,
       size: 8,
       color: WHITE,
     });
 
-    const summaryBoxY = height - 140;
-    const summaryBoxH = 50;
-    const summaryPaddingTop = 4; // adjust this
-    const summaryGap = 3; // space between label and amount
+    // Gift badge (if applicable)
+    if (isGift) {
+      page.drawRectangle({
+        x: badgeX,
+        y: height - 78,
+        width: badgeW,
+        height: 18,
+        color: GIFT_AMBER,
+      });
+      const giftLbl = "GIFT";
+      const giftLblW = boldFont.widthOfTextAtSize(giftLbl, 8);
+      page.drawText(giftLbl, {
+        x: badgeX + (badgeW - giftLblW) / 2,
+        y: height - 70,
+        font: boldFont,
+        size: 8,
+        color: WHITE,
+      });
+    }
 
+    // ── Amount summary box ──────────────────────────────────────────────────
+    const summaryY = height - 150;
     page.drawRectangle({
       x: 0,
-      y: summaryBoxY,
+      y: summaryY,
       width,
-      height: summaryBoxH,
-      color: BLUE_LIGHT,
+      height: 55,
+      color: GREEN_LIGHT,
     });
 
-    const amtLabel = "AMOUNT TOPPED UP";
+    // Left green stripe on summary too
+    page.drawRectangle({
+      x: 0,
+      y: summaryY,
+      width: 5,
+      height: 55,
+      color: GREEN_PRIMARY,
+    });
+
+    const amtLabel = isGift ? "GIFT AMOUNT RECEIVED" : "AMOUNT TOPPED UP";
     const amtLabelSize = 8;
     const amtLabelW = font.widthOfTextAtSize(amtLabel, amtLabelSize);
-    const amtLabelY =
-      summaryBoxY + summaryBoxH - summaryPaddingTop - amtLabelSize;
-
     page.drawText(amtLabel, {
       x: (width - amtLabelW) / 2,
-      y: amtLabelY,
+      y: summaryY + 40,
       font,
       size: amtLabelSize,
-      color: MUTED,
+      color: GREEN_MUTED,
     });
 
     const amtStr = fmtCurrency(t.amount, t.currency);
     const amtStrSize = 26;
     const amtStrW = boldFont.widthOfTextAtSize(amtStr, amtStrSize);
-    const amtStrY = amtLabelY - summaryGap - amtStrSize;
-
     page.drawText(amtStr, {
       x: (width - amtStrW) / 2,
-      y: amtStrY,
+      y: summaryY + 10,
       font: boldFont,
       size: amtStrSize,
-      color: BLUE_DARK,
+      color: GREEN_PRIMARY,
     });
 
-    let y = height - 162;
+    // ── Section helper ──────────────────────────────────────────────────────
+    let y = height - 175;
 
     const drawSectionHeader = (title: string) => {
       page.drawRectangle({
         x: margin,
         y: y - 4,
         width: contentWidth,
-        height: 16,
-        color: BLUE_LIGHT,
+        height: 18,
+        color: GREEN_LIGHT,
       });
-
+      // Green left nub on section headers
+      page.drawRectangle({
+        x: margin,
+        y: y - 4,
+        width: 3,
+        height: 18,
+        color: GREEN_PRIMARY,
+      });
       page.drawText(title.toUpperCase(), {
-        x: margin + 8,
-        y: y + 2,
+        x: margin + 10,
+        y: y + 3,
         font: boldFont,
         size: 7.5,
-        color: BLUE_PRIMARY,
+        color: GREEN_PRIMARY,
       });
-
-      y -= 18;
+      y -= 22;
     };
 
     const drawRow = (label: string, value: string, highlight = false) => {
@@ -229,21 +275,18 @@ export async function POST(req: Request) {
         start: { x: margin, y: y - 2 },
         end: { x: width - margin, y: y - 2 },
         thickness: 0.5,
-        color: GRAY_LINE,
+        color: GREEN_BORDER,
       });
-
       page.drawText(label, {
         x: margin + 8,
         y,
         font,
         size: 9,
-        color: MUTED,
+        color: GREEN_MUTED,
       });
-
-      const valColor = highlight ? GREEN : BLUE_DARK;
+      const valColor = highlight ? GREEN_PRIMARY : GREEN_DARK;
       const valFont = highlight ? boldFont : font;
       const valW = valFont.widthOfTextAtSize(value, 9);
-
       page.drawText(value, {
         x: width - margin - valW,
         y,
@@ -251,83 +294,85 @@ export async function POST(req: Request) {
         size: 9,
         color: valColor,
       });
-
-      y -= 16;
+      y -= 18;
     };
 
     drawSectionHeader("Transaction Details");
     drawRow("Transaction ID", String(t.id));
     drawRow("Type", String(t.label ?? "N/A"));
     drawRow("Payment Method", methodLabel);
-    drawRow("Description", String(t.sublabel ?? "N/A"));
+    if (!isGift) drawRow("Description", String(t.sublabel ?? "N/A"));
 
-    y -= 6;
+    y -= 4;
     drawSectionHeader("Amount Breakdown");
-    drawRow("Top-Up Amount", fmtCurrency(t.amount, t.currency), true);
+    drawRow(
+      isGift ? "Gift Amount" : "Top-Up Amount",
+      fmtCurrency(t.amount, t.currency),
+      true,
+    );
     drawRow("Currency", String(t.currency).toUpperCase());
 
-    y -= 6;
+    y -= 4;
     drawSectionHeader("Date & Time");
     drawRow("Date", safeDate(t.createdAt));
     drawRow("Time", safeTime(t.createdAt));
     drawRow("Full Timestamp", safeFull(t.createdAt));
 
-    y -= 6;
+    y -= 4;
     drawSectionHeader("Reference");
     drawRow("Reference ID", String(t.referenceId ?? "N/A"));
     drawRow(
       "Source",
-      t.type === "stripe" ? "Stripe Payment Gateway" : "In-Store Cashier",
+      t.type === "stripe"
+        ? "Stripe Payment Gateway"
+        : isGift
+          ? "Gift"
+          : "In-Store Cashier",
     );
 
-    const footerH = 48;
+    // ── Footer ──────────────────────────────────────────────────────────────
+    const footerH = 52;
     page.drawRectangle({
       x: 0,
       y: 0,
       width,
       height: footerH,
-      color: BLUE_LIGHT,
+      color: GREEN_LIGHT,
     });
+    page.drawRectangle({ x: 0, y: 0, width, height: 3, color: GREEN_PRIMARY });
     page.drawLine({
       start: { x: 0, y: footerH },
       end: { x: width, y: footerH },
       thickness: 0.5,
-      color: GRAY_LINE,
+      color: GREEN_BORDER,
     });
 
     page.drawText(
       "This is an automatically generated receipt. Please retain for your records.",
-      {
-        x: margin,
-        y: footerH - 18,
-        font,
-        size: 8,
-        color: MUTED,
-      },
+      { x: margin, y: footerH - 18, font, size: 8, color: GREEN_MUTED },
     );
-
-    const genText = `Invoice generated on ${new Date().toLocaleDateString("en-CA")}`;
+    const genText = `Generated on ${new Date().toLocaleDateString("en-CA")}`;
     const genTextW = font.widthOfTextAtSize(genText, 7.5);
     page.drawText(genText, {
       x: width - margin - genTextW,
       y: footerH - 18,
       font,
       size: 7.5,
-      color: BLUE_PRIMARY,
+      color: GREEN_PRIMARY,
     });
-
-    page.drawText("Your wallet activity is encrypted and securely stored.", {
-      x: margin,
-      y: footerH - 32,
-      font,
-      size: 7.5,
-      color: rgb(0.65, 0.7, 0.78),
-    });
+    page.drawText(
+      "Canadian's Cart — Your wallet activity is encrypted and securely stored.",
+      {
+        x: margin,
+        y: footerH - 34,
+        font,
+        size: 7.5,
+        color: rgb(0.6, 0.72, 0.62),
+      },
+    );
 
     const pdfBytes = await pdfDoc.save();
-
     const filename = `receipt-${String(t.id).slice(-8).toUpperCase()}-${safeDate(t.createdAt).replace(/\s/g, "-")}.pdf`;
-
     const pdfBuffer = new ArrayBuffer(pdfBytes.byteLength);
     new Uint8Array(pdfBuffer).set(pdfBytes);
 
@@ -340,7 +385,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("wallet-receipt POST failed:", error);
-
     return NextResponse.json(
       {
         error:

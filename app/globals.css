@@ -70,13 +70,14 @@ button,
   --tracking-wide: calc(var(--tracking-normal) + 0.025em);
   --tracking-wider: calc(var(--tracking-normal) + 0.05em);
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+  --breakpoint-xs: 30rem;
 }
 
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.2661 0.0625 153.0394);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2661 0.0625 153.0394);
+  --card-foreground: oklch(54.598% 0.11155 154.422);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2661 0.0625 153.0394);
   --primary: oklch(0.6271 0.1699 149.2138);

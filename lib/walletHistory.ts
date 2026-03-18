@@ -1,5 +1,8 @@
-import { IStripeTopUp, IWalletTopUp, UnifiedTransaction } from "@/types/customer/WalletHistory";
-
+import {
+  IStripeTopUp,
+  IWalletTopUp,
+  UnifiedTransaction,
+} from "@/types/customer/WalletHistory";
 
 export function formatCurrency(
   amountInCents: number,
@@ -41,6 +44,33 @@ export function formatFullDateTime(dateString: string): string {
   }).format(new Date(dateString));
 }
 
+// ─── Label helpers per paymentMode ─────────────────────────────────────────────
+
+function cashierLabel(paymentMode: "cash" | "card" | "gift"): {
+  label: string;
+  sublabel: string;
+} {
+  switch (paymentMode) {
+    case "gift":
+      return {
+        label: "Gift Top-Up",
+        sublabel: "Special Bonus Added 🎉",
+      };
+    case "cash":
+      return {
+        label: "In-Store Top Up",
+        sublabel: "Paid with cash at counter",
+      };
+    case "card":
+      return {
+        label: "In-Store Top Up",
+        sublabel: "Paid by card at counter",
+      };
+  }
+}
+
+// ─── Unify ─────────────────────────────────────────────────────────────────────
+
 export function unifyTransactions(
   stripeTopUps: IStripeTopUp[],
   cashierTopUps: IWalletTopUp[],
@@ -58,26 +88,28 @@ export function unifyTransactions(
     referenceId: t.checkoutSessionId,
   }));
 
-  const cashier: UnifiedTransaction[] = cashierTopUps.map((t) => ({
-    id: t._id,
-    type: "cashier",
-    amount: t.value,
-    currency: "cad",
-    status: "completed",
-    paymentMode: t.paymentMode,
-    createdAt: t.createdAt,
-    label: "In-Store Top Up",
-    sublabel:
-      t.paymentMode === "cash"
-        ? "Paid with cash at counter"
-        : "Paid by card at counter",
-    referenceId: t._id,
-  }));
+  const cashier: UnifiedTransaction[] = cashierTopUps.map((t) => {
+    const { label, sublabel } = cashierLabel(t.paymentMode);
+    return {
+      id: t._id,
+      type: "cashier",
+      amount: t.value,
+      currency: "cad",
+      status: "completed",
+      paymentMode: t.paymentMode,
+      createdAt: t.createdAt,
+      label,
+      sublabel,
+      referenceId: t._id,
+    };
+  });
 
   return [...stripe, ...cashier].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 }
+
+// ─── Analytics ─────────────────────────────────────────────────────────────────
 
 export function getAnalytics(transactions: UnifiedTransaction[]) {
   const total = transactions.reduce((sum, t) => sum + t.amount, 0);
@@ -85,11 +117,15 @@ export function getAnalytics(transactions: UnifiedTransaction[]) {
     .filter((t) => t.type === "stripe")
     .reduce((sum, t) => sum + t.amount, 0);
   const inStore = transactions
-    .filter((t) => t.type === "cashier")
+    .filter((t) => t.type === "cashier" && t.paymentMode !== "gift")
+    .reduce((sum, t) => sum + t.amount, 0);
+  const gift = transactions
+    .filter((t) => t.paymentMode === "gift")
     .reduce((sum, t) => sum + t.amount, 0);
 
   const onlinePct = total > 0 ? Math.round((online / total) * 100) : 0;
-  const inStorePct = total > 0 ? 100 - onlinePct : 0;
+  const inStorePct = total > 0 ? Math.round((inStore / total) * 100) : 0;
+  const giftPct = total > 0 ? 100 - onlinePct - inStorePct : 0;
 
   const now = new Date();
   const months = Array.from({ length: 6 }, (_, i) => {
@@ -110,5 +146,14 @@ export function getAnalytics(transactions: UnifiedTransaction[]) {
     if (m) m.amount += t.amount;
   });
 
-  return { total, online, inStore, onlinePct, inStorePct, months };
+  return {
+    total,
+    online,
+    inStore,
+    gift,
+    onlinePct,
+    inStorePct,
+    giftPct,
+    months,
+  };
 }

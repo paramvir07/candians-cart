@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Banknote,
   BarChart,
   HandCoins,
   HomeIcon,
@@ -39,6 +40,7 @@ const NAV_GROUPS = [
     label: "Finance",
     items: [
       { href: "/store/payouts", label: "Payouts", icon: HandCoins },
+      { href: "/store/cash-collection", label: "Cash Collection", icon: Banknote },
       { href: "/store/invoice", label: "Invoices", icon: Receipt },
     ],
   },

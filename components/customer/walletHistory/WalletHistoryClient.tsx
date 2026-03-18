@@ -6,7 +6,7 @@ import { TransactionDetailModal } from "./TransactionDetailModal";
 import { AnalyticsPanel } from "./AnalyticsPanel";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, SlidersHorizontal, Inbox } from "lucide-react";
+import { Search, Inbox } from "lucide-react";
 import { UnifiedTransaction } from "@/types/customer/WalletHistory";
 
 interface WalletHistoryClientProps {

@@ -7,6 +7,8 @@ import StoreProfileHeader from "@/components/admin/analytics/store/StoreProfileH
 import StoreRecentOrders from "@/components/admin/analytics/store/StoreRecentOrders";
 import StorePayoutReceipts from "@/components/admin/analytics/store/StorePayoutReciepts";
 import StoreStatCards from "@/components/admin/analytics/store/StoreStatsCards";
+import CashActivityWidget from "@/components/shared/cash-collection/CashActivityWidget";
+import { getRecentCashActivities } from "@/actions/common/getCashActivities.action";
 
 const StoreDetailPage = async ({
   params,
@@ -16,6 +18,8 @@ const StoreDetailPage = async ({
   const { storeId } = await params;
   const { profile, stats, recentOrders, recentPayoutReceipts } =
     await getStoreDetailAction(storeId);
+
+  const cashActivities = await getRecentCashActivities(storeId, 6);
   return (
     <>
       <div className="min-h-screen bg-gray-50">
@@ -37,6 +41,11 @@ const StoreDetailPage = async ({
             <StorePayoutReceipts
               receipts={recentPayoutReceipts}
               storeId={storeId}
+            />
+            <CashActivityWidget
+              activities={cashActivities}
+              viewAllHref={`/admin/store/${storeId}/cash-collection`}
+              showStore={false}
             />
           </div>
         </div>

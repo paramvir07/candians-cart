@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Banknote,
   BarChart,
   HandCoins,
   HomeIcon,
@@ -33,6 +34,7 @@ const NAV_GROUPS = [
   {
     label: "Management",
     items: [
+      // { href: "/admin/store", label: "Stores", icon: Store },
       { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
       { href: "/admin/products", label: "Products", icon: Package },
       { href: "/admin/customers", label: "Customers", icon: Users2 },
@@ -42,6 +44,11 @@ const NAV_GROUPS = [
     label: "Finance",
     items: [
       { href: "/admin/store-payouts", label: "Payouts", icon: HandCoins },
+      {
+        href: "/admin/cash-collection",
+        label: "Cash Collection",
+        icon: Banknote,
+      },
       { href: "/admin/price-invoices", label: "Invoices", icon: Receipt },
     ],
   },

@@ -93,7 +93,7 @@ export default function StoreInfo() {
             size="sm"
             className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 rounded-xl"
           >
-            <Link href="/admin/new-store">
+            <Link href="/admin/new-user/store">
               <PlusCircle className="h-3.5 w-3.5" />
               <span className="hidden sm:inline text-xs font-semibold">
                 Add Store

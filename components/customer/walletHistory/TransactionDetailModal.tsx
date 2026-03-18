@@ -122,9 +122,11 @@ export function TransactionDetailModal({
   const methodLabel =
     transaction.paymentMode === "online"
       ? "Online via Stripe"
-      : transaction.paymentMode === "cash"
-        ? "Cash at Counter"
-        : "Card at Counter";
+      : transaction.paymentMode === "gift"
+        ? "Special Bonus Added 🎉"
+        : transaction.paymentMode === "cash"
+          ? "Cash at Counter"
+          : "Card at Counter";
 
   const handleDownload = async () => {
     setDownloading(true);

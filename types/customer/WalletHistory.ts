@@ -13,11 +13,13 @@ export interface IStripeTopUp {
   updatedAt: string;
 }
 
+// Matches actual WalletTopUp Mongoose schema:
+// userId = Cashier._id stored as String (NOT cashierId)
 export interface IWalletTopUp {
   _id: string;
   customerId: string;
-  cashierId: string;
-  value: number;
+  userId: string; // Cashier._id as String
+  value: number; // in cents
   paymentMode: "cash" | "card" | "gift";
   createdAt: string;
   updatedAt: string;

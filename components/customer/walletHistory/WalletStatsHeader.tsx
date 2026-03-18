@@ -1,20 +1,26 @@
-
 import { formatCurrency } from "@/lib/walletHistory";
 import { UnifiedTransaction } from "@/types/customer/WalletHistory";
-import { Wallet, TrendingUp, ArrowUpRight } from "lucide-react";
+import { Wallet, TrendingUp, ArrowUpRight, Gift } from "lucide-react";
 
 interface WalletStatsHeaderProps {
   transactions: UnifiedTransaction[];
 }
 
 export function WalletStatsHeader({ transactions }: WalletStatsHeaderProps) {
-  const totalBalance = transactions.reduce((sum, t) => {
-    if (t.status === "paid" || t.status === "completed") return sum + t.amount;
-    return sum;
-  }, 0);
+  const completed = transactions.filter(
+    (t) => t.status === "paid" || t.status === "completed",
+  );
 
+  // Total includes gifts
+  const totalBalance = completed.reduce((sum, t) => sum + t.amount, 0);
+
+  // Gifts
+  const giftTransactions = completed.filter((t) => t.paymentMode === "gift");
+  const giftTotal = giftTransactions.reduce((sum, t) => sum + t.amount, 0);
+
+  // This month — includes gifts
   const now = new Date();
-  const thisMonth = transactions.filter((t) => {
+  const thisMonth = completed.filter((t) => {
     const d = new Date(t.createdAt);
     return (
       d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
@@ -22,7 +28,7 @@ export function WalletStatsHeader({ transactions }: WalletStatsHeaderProps) {
   });
   const thisMonthTotal = thisMonth.reduce((sum, t) => sum + t.amount, 0);
 
-  const lastMonth = transactions.filter((t) => {
+  const lastMonth = completed.filter((t) => {
     const d = new Date(t.createdAt);
     const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     return (
@@ -35,6 +41,14 @@ export function WalletStatsHeader({ transactions }: WalletStatsHeaderProps) {
       ? Math.round(((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100)
       : null;
 
+  // Online / in-store counts (gifts excluded from this split)
+  const onlineCount = completed.filter(
+    (t) => t.paymentMode === "online",
+  ).length;
+  const inStoreCount = completed.filter(
+    (t) => t.paymentMode === "cash" || t.paymentMode === "card",
+  ).length;
+
   return (
     <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/70 rounded-2xl p-5 text-primary-foreground">
       {/* Top row */}
@@ -43,13 +57,23 @@ export function WalletStatsHeader({ transactions }: WalletStatsHeaderProps) {
           <div className="flex items-center gap-1.5 mb-1">
             <Wallet size={13} className="opacity-75" />
             <span className="text-xs font-medium opacity-75">
-              Total Topped Up
+              Total Added to Wallet
             </span>
           </div>
           <p className="text-2xl sm:text-3xl font-bold tracking-tight">
             {formatCurrency(totalBalance, "cad")}
           </p>
+          {/* Gift sub-label */}
+          {giftTotal > 0 && (
+            <div className="flex items-center gap-1 mt-1">
+              <Gift size={10} className="opacity-60" />
+              <span className="text-xs opacity-60">
+                incl. {formatCurrency(giftTotal, "cad")} in gifts
+              </span>
+            </div>
+          )}
         </div>
+
         {/* This month box */}
         <div className="bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2 text-right shrink-0">
           <p className="text-[10px] opacity-70 mb-0.5">This month</p>
@@ -70,18 +94,19 @@ export function WalletStatsHeader({ transactions }: WalletStatsHeaderProps) {
         </div>
       </div>
 
-      {/* Bottom row — stats strip */}
+      {/* Bottom row */}
       <div className="mt-4 flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-1.5">
           <TrendingUp size={11} className="opacity-60" />
           <span className="text-xs opacity-70">
-            {transactions.length} total • {thisMonth.length} this month
+            {transactions.length} total · {thisMonth.length} this month
           </span>
         </div>
         <div className="h-3 w-px bg-white/20 hidden sm:block" />
         <span className="text-xs opacity-70 hidden sm:block">
-          {transactions.filter((t) => t.type === "stripe").length} online ·{" "}
-          {transactions.filter((t) => t.type === "cashier").length} in-store
+          {onlineCount} online · {inStoreCount} in-store
+          {giftTransactions.length > 0 &&
+            ` · ${giftTransactions.length} gift${giftTransactions.length !== 1 ? "s" : ""}`}
         </span>
       </div>
     </div>

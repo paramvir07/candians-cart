@@ -1,12 +1,14 @@
+import { getRecentCashActivities } from "@/actions/common/getCashActivities.action";
 import { getStoreDashboardData } from "@/actions/store/getStoreDashboard.actions";
+import CashActivityWidget from "@/components/shared/cash-collection/CashActivityWidget";
 import StoreDashRecentOrders from "@/components/store/dashboard/StoreDashRecentOrders";
 import StoreDashRecentPayouts from "@/components/store/dashboard/StoreDashRecentPayouts";
 import StoreDashStatCards from "@/components/store/dashboard/StoreDashStatsCards";
 
-
 export default async function StoreDashboardPage() {
   const { stats, recentOrders, recentPayouts, storeId } =
     await getStoreDashboardData();
+  const cashActivities = await getRecentCashActivities(storeId, 6);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -28,6 +30,11 @@ export default async function StoreDashboardPage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
           <StoreDashRecentOrders orders={recentOrders} />
           <StoreDashRecentPayouts payouts={recentPayouts} />
+          <CashActivityWidget
+            activities={cashActivities}
+            viewAllHref="/store/cash-collection"
+            showStore={false}
+          />
         </div>
       </div>
     </div>
