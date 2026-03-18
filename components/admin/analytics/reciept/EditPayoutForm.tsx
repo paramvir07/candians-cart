@@ -236,6 +236,16 @@ export default function EditPayoutForm({
                 {formatCurrency(initialData.storeProfit)}
               </span>
 
+
+              <span className="text-muted-foreground">Total Cash Collected (From Orders):</span>
+              <span className="font-medium text-right text-red-500">
+                -{formatCurrency(initialData.totalOrderCashCollected || 0)}
+              </span>
+                            <span className="text-muted-foreground">Total Cash Collected (From Wallet Topups):</span>
+              <span className="font-medium text-right text-red-500">
+                -{formatCurrency(initialData.totalWalletTopUpCashCollected || 0)}
+              </span>
+
               <span className="text-muted-foreground">Cash Collected:</span>
               <span className="font-medium text-right text-red-500">
                 -{formatCurrency(initialData.totalCashCollected || 0)}

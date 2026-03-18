@@ -22,6 +22,8 @@ export interface SerializedStorePayout {
   paymentReciept: { url: string; fileId: string } | null;
   totalGST?: number;
   totalPST?: number;
+    totalWalletTopUpCashCollected?: number;
+  totalOrderCashCollected?: number;
   totalCashCollected?: number;
   storeProfit?: number;
 }

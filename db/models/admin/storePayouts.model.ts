@@ -13,6 +13,8 @@ export interface IStorePayout {
   storeFixedValue: number;
   storeProfit: number;
   storePayout: number;
+  totalWalletTopUpCashCollected: number;
+  totalOrderCashCollected: number;
   totalCashCollected: number;
   platformProfit: number;
   platformCommision: number;
@@ -61,9 +63,9 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       required: true,
     },
     totalSubsidy: {
-      type:Number,
+      type: Number,
       default: 0,
-      required: true
+      required: true,
     },
     totalDisposableFee: {
       type: Number,
@@ -81,9 +83,17 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       type: Number,
       required: true,
     },
-    totalCashCollected: {
+    totalWalletTopUpCashCollected: {
       type: Number,
       default: 0
+    },
+    totalOrderCashCollected: {
+      type: Number,
+      default: 0
+    },
+    totalCashCollected: {
+      type: Number,
+      default: 0,
     },
     platformProfit: {
       type: Number,

@@ -74,7 +74,9 @@ grossMargin = CP - SFV = 285 (Our cost)
 the 0.30 or 30% Value can be changed in future.
 Store Profit = (grossMargin + [subsidy] )) * 0.30 = 85 cents
 
-Store Payout = (Store Profit + SFV) - Cash Collected = 2157
+totalCashCollected = Topup Cash Collectedv(If any) + Order Cash Collected
+
+Store Payout = (Store Profit + SFV) - totalCashCollected = 2157
 
 Our Profit = CP - SP(store payout) = 200 (platformProfit)
 
@@ -88,6 +90,10 @@ Our Profit + Store Payout = Customer Paid
 
 import mongoose, { PipelineStage, Types } from "mongoose";
 import OrderModel, { PlaceOrderI } from "@/db/models/customer/Orders.Model";
+import {
+  WalletTopUp,
+  IWalletTopUp,
+} from "@/db/models/cashier/walletTopUp.model";
 import { dbConnect } from "@/db/dbConnect";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 
@@ -123,8 +129,19 @@ export interface AggregatedReciept {
   storePayout: number;
   platformProfit: number; // Our profit
   platformCommision: number;
+  totalWalletTopUpCashCollected: number;
+  totalOrderCashCollected: number;
   totalCashCollected: number;
 }
+
+type OrderAggregateResult = Omit<
+  AggregatedReciept,
+  | "storePayout"
+  | "platformProfit"
+  | "platformCommision"
+  | "totalWalletTopUpCashCollected"
+  | "totalCashCollected"
+>;
 
 export async function getRecieptDataByDateRange(
   params: GetRecieptParams,
@@ -153,14 +170,17 @@ export async function getRecieptDataByDateRange(
       },
     };
 
-    if (storeId) {
-      matchStage.$match.storeId =
-        typeof storeId === "string"
-          ? new mongoose.Types.ObjectId(storeId)
-          : storeId;
+    const parsedStoreId = storeId
+      ? typeof storeId === "string"
+        ? new mongoose.Types.ObjectId(storeId)
+        : storeId
+      : undefined;
+
+    if (parsedStoreId) {
+      matchStage.$match.storeId = parsedStoreId;
     }
 
-    const pipeline: PipelineStage[] = [
+    const orderPipeline: PipelineStage[] = [
       matchStage,
       // Adding up raw totals
       {
@@ -173,7 +193,7 @@ export async function getRecieptDataByDateRange(
           totalGST: { $sum: "$TotalGST" },
           totalPST: { $sum: "$TotalPST" },
           totalSubsidy: { $sum: "$subsidy" },
-          totalCashCollected: {
+          totalOrderCashCollected: {
             $sum: {
               $cond: [{ $eq: ["$paymentMode", "cash"] }, "$cartTotal", 0],
             },
@@ -216,51 +236,99 @@ export async function getRecieptDataByDateRange(
           },
         },
       },
-      // Final payout
-      {
-        $addFields: {
-          storePayout: {
-            $subtract: [
-              { $add: ["$storeFixedValue", "$storeProfit"] },
-              "$totalCashCollected",
-            ],
-          },
-        },
-      },
-      {
-        $addFields: {
-          // platform Profit = (Cart Total - Store Payout)
-          platformProfit: {
-            $subtract: ["$totalCustomerPaid", "$storePayout"],
-          },
-        },
-      },
-      {
-        $addFields: {
-          // [platform commission = platform Profit  + subsidy (for store reciept) ]
-          platformCommision: {
-            $add: ["$platformProfit", "$totalSubsidy"],
-          },
-        },
-      },
-
-      // Sort if multiple stores
       {
         $sort: { _id: 1 },
       },
     ];
 
-    const receipts =
-      await OrderModel.aggregate<AggregatedReciept>(pipeline).exec();
+    // Also adding wallet topup cash collected in the total cash collected
+    const topUpPipeline: PipelineStage[] = [
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate },
+          paymentMode: "cash",
+        },
+      },
+      {
+        $addFields: {
+          cashierObjectId: { $toObjectId: "$userId" },
+        },
+      },
+      {
+        $lookup: {
+          from: "cashiers",
+          localField: "cashierObjectId",
+          foreignField: "_id",
+          as: "cashierDoc",
+        },
+      },
+      {
+        $unwind: { path: "$cashierDoc", preserveNullAndEmptyArrays: false },
+      },
+    ];
 
-    if (!receipts || receipts.length === 0) {
+    if (parsedStoreId) {
+      topUpPipeline.push({
+        $match: {
+          "cashierDoc.storeId": parsedStoreId,
+        },
+      });
+    }
+
+    topUpPipeline.push({
+      $group: {
+        _id: parsedStoreId ? "$cashierDoc.storeId" : null,
+        totalWalletTopUpCashCollected: { $sum: "$value" },
+      },
+    });
+
+    // BEST PRACTICE: Run completely independent operations concurrently
+    const [receiptsRaw, topUpsRaw] = await Promise.all([
+      OrderModel.aggregate<OrderAggregateResult>(orderPipeline).exec(),
+      WalletTopUp.aggregate<{
+        _id: Types.ObjectId | null;
+        totalWalletTopUpCashCollected: number;
+      }>(topUpPipeline).exec(),
+    ]);
+
+    if (!receiptsRaw || receiptsRaw.length === 0) {
       throw new Error("No completed orders found for this date range.");
     }
 
-    return receipts.map((receipt) => ({
-      ...receipt,
-      _id: receipt._id ? receipt._id.toString() : null,
-    })) as AggregatedReciept[];
+    // BEST PRACTICE: O(1) Map Lookup for merging results (instead of `.find()` in a loop)
+    const topUpMap = new Map(
+      topUpsRaw.map((topUp) => [
+        topUp._id ? topUp._id.toString() : "global",
+        topUp.totalWalletTopUpCashCollected,
+      ]),
+    );
+
+    return receiptsRaw.map((receipt) => {
+      const storeKey = receipt._id ? receipt._id.toString() : "global";
+      const totalWalletTopUpCashCollected = topUpMap.get(storeKey) || 0;
+
+      // 1. Calculate Combined Total Cash
+      const totalCashCollected =
+        receipt.totalOrderCashCollected + totalWalletTopUpCashCollected;
+
+      // 2. Calculate Final Store Payout
+      const storePayout =
+        receipt.storeFixedValue + receipt.storeProfit - totalCashCollected;
+
+      // 3. Calculate Platform Profit & Commisions
+      const platformProfit = receipt.totalCustomerPaid - storePayout;
+      const platformCommision = platformProfit + receipt.totalSubsidy;
+
+      return {
+        ...receipt,
+        _id: receipt._id ? receipt._id.toString() : null,
+        totalWalletTopUpCashCollected,
+        totalCashCollected,
+        storePayout,
+        platformProfit,
+        platformCommision,
+      };
+    }) as AggregatedReciept[];
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("[getReceiptDataByDateRange] Database error:", errorMessage);

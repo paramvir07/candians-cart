@@ -34,7 +34,7 @@ const GREEN_DARK = rgb(0.18, 0.35, 0.22);
 const GRAY_LINE = rgb(0.88, 0.93, 0.88);
 const MUTED = rgb(0.52, 0.6, 0.54);
 const WHITE = rgb(1, 1, 1);
-const BLUE_LINK = rgb(0.14, 0.38, 0.88); // Added brand link color
+const BLUE_LINK = rgb(0.14, 0.38, 0.88); 
 
 export default function StorePayoutDetailClient({
   payout,
@@ -217,9 +217,19 @@ export default function StorePayoutDetailClient({
           bold: false,
         },
         {
-          label: "Cash Collected By Store",
-          value: `-${formatCurrency(payout.totalCashCollected)}`,
+          label: "Cash Collected (From Orders)",
+          value: `-${formatCurrency(payout.totalOrderCashCollected)}`,
           bold: false,
+        },
+        {
+          label: "Cash Collected (From Topups)",
+          value: `-${formatCurrency(payout.totalWalletTopUpCashCollected)}`,
+          bold: false,
+        },
+        {
+          label: "Total Cash Collected",
+          value: `-${formatCurrency(payout.totalCashCollected)}`,
+          bold: true,
         },
         {
           label: "Platform Profit / Fee",
@@ -303,7 +313,7 @@ export default function StorePayoutDetailClient({
         });
         page.drawText(line, { x: margin, y, font, size: 9, color: MUTED });
 
-        y -= 8; // Extra padding for the next section if needed
+        y -= 8; 
       }
 
       // --- Payment Receipt URL Section ---
@@ -321,7 +331,6 @@ export default function StorePayoutDetailClient({
         const urlStr = payout.paymentReciept.url;
         let line = "";
 
-        // Break URL by characters to prevent overflow on very long string links
         for (let i = 0; i < urlStr.length; i++) {
           const char = urlStr[i];
           const testLine = line + char;
@@ -387,7 +396,6 @@ export default function StorePayoutDetailClient({
       // Save and Download
       const pdfBytes = await pdfDoc.save();
 
-      // Cast safely to BlobPart to satisfy TS 5.4+ ArrayBuffer changes
       const blob = new Blob([pdfBytes as BlobPart], {
         type: "application/pdf",
       });
@@ -510,9 +518,27 @@ export default function StorePayoutDetailClient({
 
               <div className="flex justify-between items-center px-4 py-3 text-sm bg-orange-50/50">
                 <span className="text-muted-foreground font-medium">
-                  Cash Collected By Store
+                  Cash Collected (From Orders)
                 </span>
                 <span className="font-medium text-orange-600">
+                  -{formatCurrency(payout.totalOrderCashCollected)}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center px-4 py-3 text-sm bg-orange-50/50">
+                <span className="text-muted-foreground font-medium">
+                  Cash Collected (From Topups)
+                </span>
+                <span className="font-medium text-orange-600">
+                  -{formatCurrency(payout.totalWalletTopUpCashCollected)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3 text-sm bg-orange-100/50">
+                <span className="font-semibold text-slate-800">
+                  Total Cash Collected
+                </span>
+                <span className="font-bold text-orange-700">
                   -{formatCurrency(payout.totalCashCollected)}
                 </span>
               </div>

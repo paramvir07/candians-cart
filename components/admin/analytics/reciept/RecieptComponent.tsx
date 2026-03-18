@@ -120,7 +120,7 @@ export default function RecieptComponent({
     fetchData();
   }, [date, storeId]);
 
- const handleSavePayout = async (receipt: AggregatedReciept) => {
+  const handleSavePayout = async (receipt: AggregatedReciept) => {
     if (!receipt._id || !date?.from || !date?.to) return;
 
     // Set loading state for this specific store's button
@@ -362,6 +362,19 @@ export default function RecieptComponent({
                                 <span>-{fmt(r.totalSubsidy)}</span>
                               </div>
                             )}
+
+                            <div className="flex justify-between items-center font-medium text-emerald-600">
+                              <span>Total Cash Collected (From Orders)</span>
+                              <span>{fmt(r.totalOrderCashCollected)}</span>
+                            </div>
+                            <div className="flex justify-between items-center font-medium text-emerald-600">
+                              <span>
+                                Total Cash Collected (From Wallet Topups)
+                              </span>
+                              <span>
+                                {fmt(r.totalWalletTopUpCashCollected)}
+                              </span>
+                            </div>
                             <Separator className="my-2" />
                             <div className="flex justify-between items-center font-semibold">
                               <span>Store Fixed Value</span>
@@ -387,9 +400,14 @@ export default function RecieptComponent({
                             </div>
                             <Separator className="my-2" />
                             <div className="flex justify-between items-center font-medium text-emerald-600">
-                              <span>Store Profit (From Markup)</span>
+                              <span>Store Profit</span>
                               <span>{fmt(r.storeProfit)}</span>
                             </div>
+                            <div className="flex justify-between items-center font-medium text-emerald-600">
+                              <span>Total Cash Collected</span>
+                              <span>{fmt(r.totalCashCollected)}</span>
+                            </div>
+
                             <div className="flex justify-between items-center font-medium text-blue-600">
                               <span>Total Store Payout</span>
                               <span>{fmt(r.storePayout)}</span>

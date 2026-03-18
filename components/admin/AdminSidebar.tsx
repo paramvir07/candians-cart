@@ -20,6 +20,7 @@ import LogoutButton from "../shared/LogoutButton";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { getPendingPriceChangesCount } from "@/actions/admin/invoice/getPriceChange";
 
 const NAV_GROUPS = [
   {
@@ -64,12 +65,14 @@ function NavItem({
   label,
   icon: Icon,
   exact,
+  badge,
   onClick,
 }: {
   href: string;
   label: string;
   icon: React.ElementType;
   exact?: boolean;
+  badge?: number;
   onClick?: () => void;
 }) {
   const active = useIsActive(href, exact);
@@ -100,14 +103,26 @@ function NavItem({
       >
         {label}
       </span>
-      {active && (
+
+      {/* Render the red badge if there is a count > 0, otherwise show the active dot */}
+      {badge !== undefined && badge > 0 ? (
+        <div className="ml-auto flex h-5 min-w-[20px] px-1.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shrink-0">
+          {badge}
+        </div>
+      ) : active ? (
         <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-      )}
+      ) : null}
     </Link>
   );
 }
 
-function SidebarContent({ onNav }: { onNav?: () => void }) {
+function SidebarContent({
+  onNav,
+  pendingInvoicesCount,
+}: {
+  onNav?: () => void;
+  pendingInvoicesCount: number;
+}) {
   return (
     <div className="flex flex-col h-full">
       {/* Brand — only shown inside mobile drawer (desktop brand is in the aside header area) */}
@@ -124,7 +139,12 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
             </p>
             <div className="space-y-0.5">
               {group.items.map((item) => (
-                <NavItem key={item.href} {...item} onClick={onNav} />
+                <NavItem
+                  key={item.href}
+                  {...item}
+                  badge={item.label === "Invoices" ? pendingInvoicesCount : undefined}
+                  onClick={onNav}
+                />
               ))}
             </div>
           </div>
@@ -135,7 +155,7 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
       <div className="shrink-0 border-t border-gray-100 pt-3 mt-3 space-y-1">
         <div
           onClick={onNav}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full cursor-pointer"
         >
           <Avatar className="h-8 w-8 shrink-0">
             <AvatarImage src="https://github.com/shadcn.png" />
@@ -160,11 +180,19 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
 
 const AdminSidebar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [pendingInvoicesCount, setPendingInvoicesCount] = useState(0);
   const pathname = usePathname();
 
-  // Close on route change
+  // Close on route change and refetch the pending invoices count
   useEffect(() => {
     setMobileOpen(false);
+
+    const fetchPendingCount = async () => {
+      const count = await getPendingPriceChangesCount();
+      setPendingInvoicesCount(count);
+    };
+
+    fetchPendingCount();
   }, [pathname]);
 
   // Lock body scroll when drawer open
@@ -191,7 +219,7 @@ const AdminSidebar = () => {
 
         {/* Nav content — fills remaining height */}
         <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0">
-          <SidebarContent />
+          <SidebarContent pendingInvoicesCount={pendingInvoicesCount} />
         </div>
       </aside>
 
@@ -251,7 +279,10 @@ const AdminSidebar = () => {
 
         {/* Drawer scrollable content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0">
-          <SidebarContent onNav={() => setMobileOpen(false)} />
+          <SidebarContent 
+            onNav={() => setMobileOpen(false)} 
+            pendingInvoicesCount={pendingInvoicesCount} 
+          />
         </div>
       </div>
     </>

@@ -1,7 +1,9 @@
 import { getStorePayoutByIdAction } from "@/actions/admin/reciept/managePayout";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import EditPayoutForm from "@/components/admin/analytics/reciept/EditPayoutForm"; // We will create this next
+import EditPayoutForm from "@/components/admin/analytics/reciept/EditPayoutForm";
+import { DownloadSavedPayoutButton } from "@/components/admin/analytics/reciept/DownloadSavedPayoutButton";
+import { SavedPayoutData } from "@/actions/admin/reciept/DownloadReciept";
 
 export default async function PayoutDetailsPage({
   params,
@@ -20,6 +22,9 @@ export default async function PayoutDetailsPage({
     );
   }
 
+  // Ensure type alignment for the client component
+  const payoutData = payout as unknown as SavedPayoutData;
+
   return (
     <div className="max-w-300 mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
       <Link
@@ -30,9 +35,14 @@ export default async function PayoutDetailsPage({
         Back to Payouts
       </Link>
 
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Payout Details</h1>
-        <p className="text-muted-foreground">Manage payment status, notes, and receipts for this period.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Payout Details</h1>
+          <p className="text-muted-foreground">Manage payment status, notes, and receipts for this period.</p>
+        </div>
+        
+        {/* Render the Download PDF Button */}
+        <DownloadSavedPayoutButton payout={payoutData} />
       </div>
 
       <EditPayoutForm initialData={payout} />
