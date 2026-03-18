@@ -143,20 +143,25 @@ export function AnalyticsPanel({ transactions }: AnalyticsPanelProps) {
 
       {/* Gift row — only when gifts exist */}
       {analytics.giftCount > 0 && (
-        <div className="flex items-center justify-between bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800/30 rounded-xl px-4 py-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
-              <Gift size={13} className="text-amber-600" />
+        <div className="flex items-center justify-between bg-amber-100/10 border border-amber-200/40 rounded-2xl px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100/50 flex items-center justify-center">
+              <Gift size={16} className="text-amber-600" />
             </div>
+
             <div>
-              <p className="text-sm font-medium leading-tight">Admin Gifts</p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-sm font-semibold text-foreground">
+                Gifts Received
+              </p>
+
+              <p className="text-xs text-muted-foreground">
                 {analytics.giftCount} gift{analytics.giftCount !== 1 ? "s" : ""}{" "}
                 received
               </p>
             </div>
           </div>
-          <span className="text-sm font-bold text-amber-600">
+
+          <span className="text-lg font-bold text-amber-600/90">
             {formatCurrency(analytics.gifts, "cad")}
           </span>
         </div>

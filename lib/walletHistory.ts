@@ -54,7 +54,7 @@ function cashierLabel(paymentMode: "cash" | "card" | "gift"): {
     case "gift":
       return {
         label: "Gift Top-Up",
-        sublabel: "Special Bonus Added 🎉",
+        sublabel: "Special Bonus Recieved 🎉",
       };
     case "cash":
       return {
@@ -119,9 +119,9 @@ export function getAnalytics(transactions: UnifiedTransaction[]) {
   const inStore = transactions
     .filter((t) => t.type === "cashier" && t.paymentMode !== "gift")
     .reduce((sum, t) => sum + t.amount, 0);
-  const gift = transactions
-    .filter((t) => t.paymentMode === "gift")
-    .reduce((sum, t) => sum + t.amount, 0);
+  const giftTransactions = transactions.filter((t) => t.paymentMode === "gift");
+  const gift = giftTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const giftCount = giftTransactions.length;
 
   const onlinePct = total > 0 ? Math.round((online / total) * 100) : 0;
   const inStorePct = total > 0 ? Math.round((inStore / total) * 100) : 0;
@@ -150,7 +150,8 @@ export function getAnalytics(transactions: UnifiedTransaction[]) {
     total,
     online,
     inStore,
-    gift,
+    gifts: gift,
+    giftCount,
     onlinePct,
     inStorePct,
     giftPct,

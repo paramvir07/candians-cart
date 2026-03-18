@@ -1,5 +1,5 @@
 
-import { CreditCard, Smartphone, Store, Clock } from "lucide-react";
+import { CreditCard, Smartphone, Store, Clock, Trophy, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { UnifiedTransaction } from "@/types/customer/WalletHistory";
@@ -12,6 +12,7 @@ interface TransactionItemProps {
 function getIcon(transaction: UnifiedTransaction) {
   if (transaction.type === "stripe") return Smartphone;
   if (transaction.paymentMode === "cash") return Store;
+  if (transaction.paymentMode === "gift") return Gift;
   return CreditCard;
 }
 
@@ -32,6 +33,8 @@ function getIconStyle(transaction: UnifiedTransaction) {
     return "bg-blue-100 text-blue-600";
   if (transaction.paymentMode === "cash")
     return "bg-violet-100 text-violet-600";
+  if (transaction.paymentMode === "gift")
+    return "bg-amber-100/50 text-amber-600";
   return "bg-indigo-100 text-indigo-600";
 }
 
