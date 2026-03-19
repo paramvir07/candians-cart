@@ -349,8 +349,8 @@ export const PlaceCustomerOrder = async ({
         markup: product.markup,
         tax,
         disposableFee,
-        subsidy: item.subsidy,
-        total: afterSubsidy + gst + pst + disposableFee,
+        subsidy: Number((item.subsidy.toFixed(2))),
+        total: Number((afterSubsidy + gst + pst + disposableFee).toFixed(2)),
       };
     });
 
