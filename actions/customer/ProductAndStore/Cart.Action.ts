@@ -364,7 +364,7 @@ export const PlaceCustomerOrder = async ({
       TotalDisposableFee: TotalCart.disposable,
       BaseTotal: baseTotal,
       cartTotal,
-      subsidy: customerCart.cartSubsidy,
+      subsidy: Number(customerCart.cartSubsidy.toFixed(2)),
       susbsidyUsed: Number((TotalUsedSubsidy / 100).toFixed(2)) * 100,
       userId: User._id,
       storeId: User.associatedStoreId,
