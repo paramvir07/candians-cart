@@ -78,7 +78,8 @@ totalCashCollected = Topup Cash Collectedv(If any) + Order Cash Collected
 
 Store Payout = (Store Profit + SFV) - totalCashCollected = 2157
 
-Our Profit = CP - SP(store payout) = 200 (platformProfit)
+--- New, PlatformProfit, Not taking totalCashCollected
+Our Profit = CP - (Store Profit + SFV)
 
 [platform commission = our profit  + subsidy (for store reciept) ]
 
@@ -316,7 +317,9 @@ export async function getRecieptDataByDateRange(
         receipt.storeFixedValue + receipt.storeProfit - totalCashCollected;
 
       // 3. Calculate Platform Profit & Commisions
-      const platformProfit = receipt.totalCustomerPaid - storePayout;
+      const platformProfit =
+        receipt.totalCustomerPaid -
+        (receipt.storeProfit + receipt.storeFixedValue);
       const platformCommision = platformProfit + receipt.totalSubsidy;
 
       return {
