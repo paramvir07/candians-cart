@@ -2,9 +2,10 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { dbConnect } from "@/db/dbConnect";
 import StorePayoutsClient from "@/components/store/payouts/StorePayoutsClient";
+import PayoutStatsCards, { PayoutStatsCardsSkeleton } from "@/components/store/payouts/PayoutStatsCards";
+import { Suspense } from "react";
 
 export default async function StorePayoutsPage() {
-  // 1. Get the authenticated user's session
   const session = await getUserSession();
   const sessionUserId = session?.user?.id;
 
@@ -16,7 +17,6 @@ export default async function StorePayoutsPage() {
     );
   }
 
-  // 2. Fetch the store ID from the database using the Auth ID
   await dbConnect();
   const store = await Store.findOne({ userId: sessionUserId })
     .select("_id")
@@ -32,7 +32,6 @@ export default async function StorePayoutsPage() {
 
   const storeId = store._id.toString();
 
-  // 3. Render the client component with the strictly typed string
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-400 mx-auto">
       <div>
@@ -41,6 +40,11 @@ export default async function StorePayoutsPage() {
           View your past payouts, download receipts, and track your store earnings.
         </p>
       </div>
+
+      {/* Analytics Stats Section */}
+      <Suspense fallback={<PayoutStatsCardsSkeleton />}>
+         <PayoutStatsCards storeId={storeId} />
+      </Suspense>
 
       <StorePayoutsClient storeId={storeId} />
     </div>

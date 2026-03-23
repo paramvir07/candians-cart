@@ -33,6 +33,14 @@ type LeanPayout = IStorePayout & {
   createdAt: Date;
 };
 
+export interface PayoutAnalyticsStats {
+  totalPayouts: number;
+  totalEarnings: number;
+  currentMonthEarnings: number;
+  monthlyEarningsIncrease: number; 
+  newPayoutsThisMonth: number;
+}
+
 export async function getVendorPayoutsAction(
   storeId: string,
   filters?: { status?: PayoutStatus | "all"; from?: Date; to?: Date },
@@ -127,5 +135,67 @@ export async function getSingleVendorPayoutAction(payoutId: string, storeId: str
   } catch (error) {
     console.error(`[getSingleVendorPayoutAction] Error:`, error);
     return { success: false, message: "Failed to fetch payout details", data: null };
+  }
+}
+
+export async function getPayoutAnalyticsAction(storeId: string) {
+  try {
+    const session = await getUserSession();
+    if (!session?.user?.id || session.user.role === "Customer") {
+      return { success: false, message: "Unauthorized", data: null };
+    }
+    
+    await dbConnect();
+
+    // Calculate dates for current vs previous month comparisons
+    const now = new Date();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    // Only count 'paid' status for revenue numbers
+    const payouts = await StorePayoutModel.find({
+      storeId: new mongoose.Types.ObjectId(storeId),
+      status: "paid"
+    }).lean<LeanPayout[]>();
+
+    const totalPayouts = payouts.length;
+    let totalEarnings = 0;
+    let currentMonthEarnings = 0;
+    let lastMonthEarnings = 0;
+    let newPayoutsThisMonth = 0;
+
+    for (const p of payouts) {
+      const payoutAmount = p.storePayout || 0;
+      totalEarnings += payoutAmount;
+      
+      const pDate = new Date(p.createdAt);
+      if (pDate >= startOfCurrentMonth && pDate < startOfNextMonth) {
+        currentMonthEarnings += payoutAmount;
+        newPayoutsThisMonth++;
+      } else if (pDate >= startOfLastMonth && pDate < startOfCurrentMonth) {
+        lastMonthEarnings += payoutAmount;
+      }
+    }
+
+    let monthlyEarningsIncrease = 0;
+    if (lastMonthEarnings > 0) {
+      monthlyEarningsIncrease = Math.round(((currentMonthEarnings - lastMonthEarnings) / lastMonthEarnings) * 100);
+    } else if (currentMonthEarnings > 0) {
+      monthlyEarningsIncrease = 100;
+    }
+
+    const data: PayoutAnalyticsStats = {
+      totalPayouts,
+      totalEarnings,
+      currentMonthEarnings,
+      monthlyEarningsIncrease,
+      newPayoutsThisMonth,
+    };
+
+    return { success: true, data };
+  } catch (error) {
+    console.error(`[getPayoutAnalyticsAction] Error:`, error);
+    return { success: false, message: "Failed to fetch payout analytics", data: null };
   }
 }

@@ -64,15 +64,15 @@ Our Profit + Store Payout = Customer Paid
 .........................................................new logic ..................................................
 
 Customer paid = [Cart total]
-Customer Paid = 2357
+Customer Paid (CP) = 2357
 
-SFV = BP + Total Disposable Fee + Total tax
+Store Fixed Value (SFV) = Total Base Price + Total Disposable Fee + Total tax
 SFV = 2072
 
-grossMargin = CP - SFV = 285 (Our cost)
+grossMargin = Customer Paid - SFV = 285 (Our cost)
 
 the 0.30 or 30% Value can be changed in future.
-Store Profit = (grossMargin + [subsidy] )) * 0.30 = 85 cents
+Store Profit = (grossMargin + [subsidy]) * 0.30 = 85 cents
 
 totalCashCollected = Topup Cash Collectedv(If any) + Order Cash Collected
 

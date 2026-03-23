@@ -17,7 +17,9 @@ export interface StoreOverviewMetrics {
   pendingPayouts: number;
 }
 
-export async function getStoreMetricsAction(storeId: string): Promise<StoreOverviewMetrics> {
+export async function getStoreMetricsAction(
+  storeId: string,
+): Promise<StoreOverviewMetrics> {
   try {
     await dbConnect();
 
@@ -34,22 +36,22 @@ export async function getStoreMetricsAction(storeId: string): Promise<StoreOverv
     ] = await Promise.all([
       // 1. Get Store Name
       StoreModel.findById(objectId).select("name").lean(),
-      
+
       // 2. Get Total Orders for this store
       OrderModel.countDocuments({ storeId: objectId }),
-      
+
       // 3. Get Total Products belonging to this store
       ProductsModel.countDocuments({ storeId: objectId }),
-      
+
       // 4. FIX: Count customers whose associatedStoreId matches this store
       CustomerModel.countDocuments({ associatedStoreId: objectId }),
-      
+
       // 5. Get the most recent paid payout
       StorePayoutModel.findOne({ storeId: objectId, status: "paid" })
         .sort({ createdAt: -1 })
         .select("storePayout")
         .lean(),
-        
+
       // 6. Aggregate the sum of all currently pending payouts
       StorePayoutModel.aggregate([
         { $match: { storeId: objectId, status: "pending" } },
@@ -62,7 +64,8 @@ export async function getStoreMetricsAction(storeId: string): Promise<StoreOverv
     }
 
     const recentPayout = recentPayoutDoc?.storePayout || 0;
-    const pendingPayouts = pendingPayoutsAgg.length > 0 ? pendingPayoutsAgg[0].total : 0;
+    const pendingPayouts =
+      pendingPayoutsAgg.length > 0 ? pendingPayoutsAgg[0].total : 0;
 
     return {
       // @ts-ignore
