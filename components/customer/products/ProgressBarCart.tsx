@@ -7,26 +7,28 @@ import { SubsidyValue } from "@/atoms/customer/CartAtom"
 import { Wallet, Tag, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ClearAllSubsidyItems, updateCartSubsidy } from "@/actions/customer/SubsidyItems.Action"
+import { getFibBracketFrom21 } from "@/lib/FibBracket"
  
-const getFibBracketFrom21 = (value: number) => {
-  let a = 13, b = 21
-  while (b < value) { const next = a + b; a = b; b = next }
-  return { prev: a, current: b }
-}
+
+
  
-const ProgressBarCart = ({ total, customerId, giftWalletBalance }: {
+const ProgressBarCart = ({ total, customerId, giftWalletBalance,totalMarkup }: {
+  totalMarkup:number
   total: number
   customerId?: string
   giftWalletBalance?: number
 }) => {
+
   const [dialogOpen, setDialogOpen] = useState(false)
   const [showBtn, setShowBtn] = useState(false)
   const [SubsidyVal, setSubsidyVal] = useAtom(SubsidyValue)
  
   const amount = total / 100
   const giftBalance = (giftWalletBalance ?? 0) / 100
-  const { prev, current } = getFibBracketFrom21(amount)
-  const subsidy = amount >= 21 ? prev * 0.15 : 0
+  const { prev, current, mid } = getFibBracketFrom21(amount)
+  // console.log("MidPoints : ",mid)
+  const subsidy = amount >= 21 ? totalMarkup * 0.60 : 0
+    console.log("subsidy given : ",subsidy)
   const progressValue = current === prev ? 100 : Math.min(((amount - prev) / (current - prev)) * 100, 100)
  
   const lastMilestoneRef  = useRef<number | null>(null)

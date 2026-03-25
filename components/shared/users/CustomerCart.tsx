@@ -29,12 +29,13 @@ import { SubsidyItemsSection } from "@/components/customer/products/SubsidyItems
 import { ISubsidyItems } from "@/db/models/customer/cart.model";
 import { AddtoSubsidyBtn } from "@/components/customer/products/CartActionBtns";
 import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
+import { getFibBracketFrom21 } from "@/lib/FibBracket";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
-
 const calcLine = (item: ICartItem) => {
   const base = item.productId.price * item.quantity;
   const markup = Math.round(base * (item.productId.markup / 100));
+  const markupPercentage = item.productId.markup
   const afterMarkup = base + markup;
   const tax = item.productId.tax;
 
@@ -53,7 +54,7 @@ const calcLine = (item: ICartItem) => {
   const disposable = (item.productId.disposableFee ?? 0) * item.quantity;
   const lineTotal = afterMarkup + totalTax + disposable;
 
-  return { base, markup, afterMarkup, gst, pst, totalTax, disposable, lineTotal };
+  return { base, markup, markupPercentage, afterMarkup, gst, pst, totalTax, disposable, lineTotal };
 };
 
 const CustomerCart = async ({ customerId }: { customerId?: string }) => {
@@ -84,11 +85,60 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
   );
 
-  const progressTotal = items.reduce((acc, item) => {
-    if (item.productId.subsidised) return acc;
-    const { lineTotal } = calcLine(item);
-    return acc + lineTotal;
-  }, 0);
+// console.log("Total Markup : ",totalMarkup)
+
+const progressTotal = items.reduce((acc, item) => {
+  if (item.productId.subsidised) return acc;
+  const { markupPercentage, afterMarkup } = calcLine(item);
+  return {
+    total: acc.total + afterMarkup,
+    totalMarkup: acc.totalMarkup + markupPercentage,
+    productCount: acc.productCount + 1
+  };
+}, { total: 0, totalMarkup: 0, productCount: 0 });
+
+const totalInDollars = progressTotal.total / 100;
+const { prev, current, mid } = getFibBracketFrom21(totalInDollars);
+const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
+
+const activeMarkup = (() => {
+  if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!) return avgMarkup;
+  else if (mid && totalInDollars >= mid && totalInDollars <= current) return 30;
+  return null;
+})();
+
+const calculateTotalMarkup = (item: ICartItem) => {
+  if (activeMarkup === null || item.productId.subsidised) return null;
+  const base = item.productId.price * item.quantity;
+  return Math.round(base * (activeMarkup / 100));
+};
+
+const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarkup(item) ?? 0), 0);
+
+// ── DEBUG LOGS ──────────────────────────────
+// console.log("📦 progressTotal:", progressTotal);
+// console.log("💰 totalInDollars:", totalInDollars);
+// console.log("🔢 Fib bracket — prev:", prev, "| mid:", mid, "| current:", current);
+// console.log("📊 avgMarkup:", avgMarkup, "(totalMarkup:", progressTotal.totalMarkup, "/ productCount:", progressTotal.productCount, ")");
+// console.log("🎯 activeMarkup:", activeMarkup);
+// console.log("🛒 Per-item calculateTotalMarkup breakdown:");
+// items.forEach((item) => {
+//   const result = calculateTotalMarkup(item);
+//   console.log(
+//     `  ${item.productId.subsidised ? "🔒 [subsidised]" : "📦"} ${item.productId.name}`,
+//     `| qty: ${item.quantity}`,
+//     `| price: ${item.productId.price}`,
+//     `| originalMarkup: ${item.productId.markup}%`,
+//     `| activeMarkup: ${activeMarkup}%`,
+//     `| calculateTotalMarkup: ${result ?? "null (skipped)"}`,
+//   );
+// });
+// console.log("💵 totalActiveMarkup (all items):", totalActiveMarkup);
+// console.log("💵 Subsidy to be given:", totalActiveMarkup * (60 / 100));
+// console.log("💵 TotalMarkup (original calcLine):", TotalMarkup);
+// console.log("📉 Markup difference (original - active):", TotalMarkup - totalActiveMarkup);
+// ─────────────────────────────────────────────────────────────────────────
+
 
   // ── Subsidy item totals
   // TotalPrice already includes disposableFee (baked in by the subsidy action).
@@ -213,7 +263,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
         </div>
 
         <div className="mb-4">
-          <ProgressBarCart total={progressTotal} customerId={customerId} giftWalletBalance={giftWalletBalance} />
+          <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} />
         </div>
 
         <div className="flex flex-col gap-3 mb-4">
@@ -338,7 +388,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
         </div>
 
         <div className="mb-6">
-          <ProgressBarCart total={progressTotal} customerId={customerId} giftWalletBalance={giftWalletBalance} />
+          <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} />
         </div>
 
         <div className="flex gap-6 items-start">
