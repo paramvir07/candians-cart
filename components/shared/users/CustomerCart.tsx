@@ -14,6 +14,7 @@ import {
   Minus,
   Plus,
   Trash2,
+  Gift,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,7 +36,7 @@ const fmt = (cents: number) => (cents / 100).toFixed(2);
 const calcLine = (item: ICartItem) => {
   const base = item.productId.price * item.quantity;
   const markup = Math.round(base * (item.productId.markup / 100));
-  const markupPercentage = item.productId.markup
+  const markupPercentage = item.productId.markup;
   const afterMarkup = base + markup;
   const tax = item.productId.tax;
 
@@ -70,7 +71,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   if (!items || (items.length === 0 && !subItems))
     return <EmptyCart customerId={customerId} />;
 
-  // ── Regular item totals
   const itemTotals = items.reduce(
     (acc, item) => {
       const { afterMarkup, gst, pst, totalTax, disposable, lineTotal } = calcLine(item);
@@ -85,65 +85,36 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
   );
 
-// console.log("Total Markup : ",totalMarkup)
+  const progressTotal = items.reduce((acc, item) => {
+    if (item.productId.subsidised) return acc;
+    const { markupPercentage, afterMarkup } = calcLine(item);
+    return {
+      total: acc.total + afterMarkup,
+      totalMarkup: acc.totalMarkup + markupPercentage,
+      productCount: acc.productCount + 1
+    };
+  }, { total: 0, totalMarkup: 0, productCount: 0 });
 
-const progressTotal = items.reduce((acc, item) => {
-  if (item.productId.subsidised) return acc;
-  const { markupPercentage, afterMarkup } = calcLine(item);
-  return {
-    total: acc.total + afterMarkup,
-    totalMarkup: acc.totalMarkup + markupPercentage,
-    productCount: acc.productCount + 1
+  const totalInDollars = progressTotal.total / 100;
+  const { prev, current, mid } = getFibBracketFrom21(totalInDollars);
+  const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
+
+  const activeMarkup = (() => {
+    if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!) return avgMarkup;
+    else if (mid && totalInDollars >= mid && totalInDollars <= current) return 30;
+    return null;
+  })();
+
+  const calculateTotalMarkup = (item: ICartItem) => {
+    if (activeMarkup === null || item.productId.subsidised) return null;
+    const base = item.productId.price * item.quantity;
+    return Math.round(base * (activeMarkup / 100));
   };
-}, { total: 0, totalMarkup: 0, productCount: 0 });
 
-const totalInDollars = progressTotal.total / 100;
-const { prev, current, mid } = getFibBracketFrom21(totalInDollars);
-const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
+  const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarkup(item) ?? 0), 0);
+  const subsidyOnOrder = totalActiveMarkup * 0.60;
+  const TotalSubsidy = Number(((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2));
 
-const activeMarkup = (() => {
-  if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!) return avgMarkup;
-  else if (mid && totalInDollars >= mid && totalInDollars <= current) return 30;
-  return null;
-})();
-
-const calculateTotalMarkup = (item: ICartItem) => {
-  if (activeMarkup === null || item.productId.subsidised) return null;
-  const base = item.productId.price * item.quantity;
-  return Math.round(base * (activeMarkup / 100));
-};
-
-const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarkup(item) ?? 0), 0);
-
-// ── DEBUG LOGS ──────────────────────────────
-// console.log("📦 progressTotal:", progressTotal);
-// console.log("💰 totalInDollars:", totalInDollars);
-// console.log("🔢 Fib bracket — prev:", prev, "| mid:", mid, "| current:", current);
-// console.log("📊 avgMarkup:", avgMarkup, "(totalMarkup:", progressTotal.totalMarkup, "/ productCount:", progressTotal.productCount, ")");
-// console.log("🎯 activeMarkup:", activeMarkup);
-// console.log("🛒 Per-item calculateTotalMarkup breakdown:");
-// items.forEach((item) => {
-//   const result = calculateTotalMarkup(item);
-//   console.log(
-//     `  ${item.productId.subsidised ? "🔒 [subsidised]" : "📦"} ${item.productId.name}`,
-//     `| qty: ${item.quantity}`,
-//     `| price: ${item.productId.price}`,
-//     `| originalMarkup: ${item.productId.markup}%`,
-//     `| activeMarkup: ${activeMarkup}%`,
-//     `| calculateTotalMarkup: ${result ?? "null (skipped)"}`,
-//   );
-// });
-// console.log("💵 totalActiveMarkup (all items):", totalActiveMarkup);
-// console.log("💵 Subsidy to be given:", totalActiveMarkup * (60 / 100));
-// console.log("💵 TotalMarkup (original calcLine):", TotalMarkup);
-// console.log("📉 Markup difference (original - active):", TotalMarkup - totalActiveMarkup);
-// ─────────────────────────────────────────────────────────────────────────
-
-
-  // ── Subsidy item totals
-  // TotalPrice already includes disposableFee (baked in by the subsidy action).
-  // afterSubsidy = what user actually owes — disposableFee already accounted for inside.
-  // We track disposable separately for DISPLAY only — NOT added to acc.total.
   const subsidyTotals = subItems.reduce(
     (acc, item) => {
       const afterSubsidy = Math.max(
@@ -164,12 +135,12 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
 
       const totalTax = gst + pst;
 
-      acc.disposable += (item.productId.disposableFee ?? 0) * item.quantity; 
+      acc.disposable += (item.productId.disposableFee ?? 0) * item.quantity;
       acc.subtotal   += effectiveBase;
       acc.gst        += gst;
       acc.pst        += pst;
       acc.totalTax   += totalTax;
-      acc.total      += effectiveBase + totalTax; 
+      acc.total      += effectiveBase + totalTax;
 
       return acc;
     },
@@ -211,8 +182,6 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
     </>
   );
 
-  // Disposable row — shows regular items' fee normally,
-  // and subsidy items' fee as covered (strikethrough + badge), not added to total
   const DisposableRow = () => (
     <>
       {itemTotals.disposable > 0 && (
@@ -239,6 +208,58 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
     </>
   );
 
+  // ── Shared wallet cards (used in both mobile + desktop)
+  const WalletCards = () => (
+    <div className="grid grid-cols-2 gap-3">
+      {/* Main Wallet */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_6px_rgba(0,0,0,0.06)] overflow-hidden">
+        {/* top accent bar */}
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-400 to-emerald-600" />
+        <div className="px-4 py-3.5">
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-[0_2px_6px_rgba(16,185,129,0.3)] shrink-0">
+              <Wallet className="w-3.5 h-3.5 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-gray-800 leading-tight">Main Wallet</p>
+              <p className="text-[10px] text-gray-400 leading-none mt-0.5">Available</p>
+            </div>
+          </div>
+          <p className="text-[18px] font-extrabold text-gray-900 tabular-nums leading-tight">
+            CA${fmt(UserData?.walletBalance ?? 0)}
+          </p>
+          <div className="mt-2.5">
+            <TopUpDialog customerId={customerId} />
+          </div>
+        </div>
+      </div>
+
+      {/* Gift Wallet */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_6px_rgba(0,0,0,0.06)] overflow-hidden">
+        {/* top accent bar */}
+        <div className="h-1 w-full bg-gradient-to-r from-amber-400 to-orange-500" />
+        <div className="px-4 py-3.5">
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-[0_2px_6px_rgba(251,191,36,0.3)] shrink-0">
+              <Gift className="w-3.5 h-3.5 text-white" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-gray-800 leading-tight">Gift Wallet</p>
+              <p className="text-[10px] text-gray-400 leading-none mt-0.5">Subsidies</p>
+            </div>
+          </div>
+          <p className={`text-[18px] font-extrabold tabular-nums leading-tight ${
+            (UserData?.giftWalletBalance ?? 0) > 0 ? "text-emerald-600" : "text-gray-400"
+          }`}>
+            CA${fmt(UserData?.giftWalletBalance ?? 0)}
+          </p>
+          {/* spacer to match height of TopUpDialog button */}
+          <div className="mt-2.5 h-9" />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className={`min-h-screen ${!customerId ? "bg-[#F7F6F3]" : ""}`}>
       {!customerId && <Navbar />}
@@ -263,7 +284,7 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
         </div>
 
         <div className="mb-4">
-          <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} />
+          <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} Totalsubsidy={TotalSubsidy} />
         </div>
 
         <div className="flex flex-col gap-3 mb-4">
@@ -319,20 +340,9 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
 
         <SubsidyItemsSection subItems={subItems} customerId={customerId} />
 
-        {/* Wallet */}
-        <div className="bg-white rounded-2xl border border-gray-100 px-4 py-3.5 flex items-center justify-between shadow-[0_1px_4px_rgba(0,0,0,0.05)] mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <Wallet className="w-4 h-4 text-emerald-500" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-gray-900">{customerId ? "Pay with Wallet" : "Wallet"}</p>
-              <p className="text-xs text-gray-400">Balance: CA${fmt(UserData?.walletBalance ?? 0)}</p>
-            </div>
-          </div>
-          <div>
-          <TopUpDialog customerId={customerId} />
-          </div>
+        {/* Wallet Cards — side by side on mobile too */}
+        <div className="mb-3">
+          <WalletCards />
         </div>
 
         {/* Bill */}
@@ -345,7 +355,7 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
             </div>
             <TaxRows />
             <DisposableRow />
-            <SubsidyCart subsidy={totalActiveMarkup*0.60} />
+            <SubsidyCart subsidy={totalActiveMarkup * 0.60} />
             <div className="h-px bg-gray-100" />
             <div className="flex justify-between">
               <span className="font-bold text-gray-900">Total</span>
@@ -388,7 +398,7 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
         </div>
 
         <div className="mb-6">
-          <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} />
+          <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} Totalsubsidy={TotalSubsidy} />
         </div>
 
         <div className="flex gap-6 items-start">
@@ -452,21 +462,8 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
 
             <SubsidyItemsSection subItems={subItems} customerId={customerId} />
 
-            {/* Wallet */}
-            <div className="bg-white rounded-2xl border border-gray-100 px-6 py-5 flex items-center justify-between shadow-[0_1px_6px_rgba(0,0,0,0.05)]">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                  <Wallet className="w-4 h-4 text-emerald-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">{customerId ? "Pay with Wallet" : "Wallet"}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Current balance: CA${fmt(UserData?.walletBalance ?? 0)}</p>
-                </div>
-              </div>
-              <div>
-              <TopUpDialog customerId={customerId} />
-              </div>
-            </div>
+            {/* Wallet Cards — side by side */}
+            <WalletCards />
           </div>
 
           {/* Order Summary */}
@@ -480,7 +477,7 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
                 </div>
                 <TaxRows />
                 <DisposableRow />
-                <SubsidyCart subsidy={totalActiveMarkup*0.60} />
+                <SubsidyCart subsidy={totalActiveMarkup * 0.60} />
                 <div className="h-px bg-gray-100" />
                 <div className="flex justify-between">
                   <span className="font-bold text-gray-900">Total</span>

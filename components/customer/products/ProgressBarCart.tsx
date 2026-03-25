@@ -13,6 +13,7 @@ import { getFibBracketFrom21 } from "@/lib/FibBracket"
 
  
 const ProgressBarCart = ({ total, customerId, giftWalletBalance,totalMarkup }: {
+  Totalsubsidy:number
   totalMarkup:number
   total: number
   customerId?: string
@@ -28,16 +29,14 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance,totalMarkup }: {
   const { prev, current, mid } = getFibBracketFrom21(amount)
   // console.log("MidPoints : ",mid)
   const subsidy = amount >= 21 ? totalMarkup * 0.60 : 0
-    console.log("subsidy given : ",subsidy)
   const progressValue = current === prev ? 100 : Math.min(((amount - prev) / (current - prev)) * 100, 100)
  
   const lastMilestoneRef  = useRef<number | null>(null)
   const lastSubsidyRef    = useRef<number | null>(null)
   const prevAmountRef     = useRef<number | null>(null)
- 
   useEffect(() => {
-    setSubsidyVal(subsidy + giftBalance)
- 
+    setSubsidyVal((subsidy/100)+giftBalance)
+
     const prevAmount = prevAmountRef.current
  
     if (amount < 21 && prevAmount !== null && prevAmount >= 21) {
@@ -55,14 +54,20 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance,totalMarkup }: {
     if (lastSubsidyRef.current === subsidy) return
     lastSubsidyRef.current = subsidy
  
-    updateCartSubsidy((subsidy * 100), customerId)
+    updateCartSubsidy((subsidy), customerId)
  
     if (lastMilestoneRef.current !== prev) {
       lastMilestoneRef.current = prev
       setShowBtn(true)
     }
+    return () => {
+    prevAmountRef.current = null
+    lastSubsidyRef.current = null
+    lastMilestoneRef.current = null
+  }
   }, [subsidy, amount, prev, giftBalance])
- 
+
+
   return (
     <>
       <div className="flex items-center w-full gap-4">
