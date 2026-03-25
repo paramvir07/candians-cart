@@ -345,7 +345,7 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
             </div>
             <TaxRows />
             <DisposableRow />
-            <SubsidyCart />
+            <SubsidyCart subsidy={totalActiveMarkup*0.60} />
             <div className="h-px bg-gray-100" />
             <div className="flex justify-between">
               <span className="font-bold text-gray-900">Total</span>
@@ -480,7 +480,7 @@ const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarku
                 </div>
                 <TaxRows />
                 <DisposableRow />
-                <SubsidyCart />
+                <SubsidyCart subsidy={totalActiveMarkup*0.60} />
                 <div className="h-px bg-gray-100" />
                 <div className="flex justify-between">
                   <span className="font-bold text-gray-900">Total</span>

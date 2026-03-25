@@ -103,20 +103,22 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance,totalMarkup }: {
  
 export default ProgressBarCart
  
-export const SubsidyCart = () => {
-  const [SubsidyVal] = useAtom(SubsidyValue)
-  if (SubsidyVal <= 0) return null
+export const SubsidyCart = ({ subsidy }: { subsidy: number }) => {
+  if (!subsidy || subsidy <= 0) return null;
+
   return (
-    <div className="flex items-center justify-between text-sm">
-      <div className="flex items-center gap-1.5">
-        <Wallet className="w-3.5 h-3.5 text-emerald-500" />
+    <div className="flex items-center justify-between text-sm rounded-xl bg-emerald-50/60 border border-emerald-100 px-3 py-2.5">
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+          <Wallet className="w-3.5 h-3.5 text-emerald-600" />
+        </div>
         <div>
-          <span className="text-gray-500">Gift Wallet</span>
-          <p className="text-[10px] text-emerald-500 leading-none mt-0.5">Subsidy included</p>
+          <span className="font-medium text-emerald-800 text-xs">Order Subsidy</span>
+          <p className="text-[10px] text-emerald-500 leading-none mt-0.5">Applied to your total</p>
         </div>
       </div>
-      <span className="font-medium text-emerald-600 tabular-nums">
-        CA${SubsidyVal.toFixed(2)}
+      <span className="font-semibold text-emerald-600 tabular-nums">
+        CA${(subsidy / 100).toFixed(2)}
       </span>
     </div>
   )
