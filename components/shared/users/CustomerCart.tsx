@@ -183,11 +183,11 @@ const subsidyTotals = subItems.reduce(
   const subsidyOnOrder = Math.floor(MarkupSub * 0.60);
   const TotalSubsidy = Number(((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2));
 
-    console.log("SubTotal Cart : ",totals.subtotal)
-    console.log("Active Markup : ",active)
-    console.log("Total Markup : ",totals.subtotal*(active/100))
-    console.log("Subsidy to be given : ",MarkupSub*0.60)
-    console.log("Active Margin : ",activeMarkup)
+    // console.log("SubTotal Cart : ",totals.subtotal)
+    // console.log("Active Markup : ",active)
+    // console.log("Total Markup : ",totals.subtotal*(active/100))
+    // console.log("Subsidy to be given : ",MarkupSub*0.60)
+    // console.log("Active Margin : ",activeMarkup)
 
   const TaxRows = () => (
     <>
@@ -239,56 +239,109 @@ const subsidyTotals = subItems.reduce(
   );
 
   // ── Shared wallet cards (used in both mobile + desktop)
-  const WalletCards = () => (
-    <div className="grid grid-cols-2 gap-3">
-      {/* Main Wallet */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_6px_rgba(0,0,0,0.06)] overflow-hidden">
-        {/* top accent bar */}
-        <div className="h-1 w-full bg-gradient-to-r from-emerald-400 to-emerald-600" />
-        <div className="px-4 py-3.5">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-[0_2px_6px_rgba(16,185,129,0.3)] shrink-0">
-              <Wallet className="w-3.5 h-3.5 text-white" />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-gray-800 leading-tight">Main Wallet</p>
-              <p className="text-[10px] text-gray-400 leading-none mt-0.5">Available</p>
-            </div>
+const WalletCards = () => (
+  <div className="grid grid-cols-2 gap-3">
+    {/* Main Wallet */}
+    <div className="relative rounded-2xl overflow-hidden border border-gray-100"
+      style={{ background: "var(--card)", boxShadow: "0 2px 12px oklch(0.6271 0.1699 149.2138 / 0.08)" }}
+    >
+      {/* BG orb */}
+      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.07]"
+        style={{ background: "var(--primary)" }} />
+
+      {/* Vertical accent bar */}
+      <div className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full"
+        style={{ background: "linear-gradient(to bottom, transparent, var(--primary), transparent)" }} />
+
+      <div className="px-4 pt-4 pb-4 pl-5">
+        {/* Icon + label */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: "oklch(0.6271 0.1699 149.2138 / 0.12)" }}
+          >
+            <Wallet className="w-3.5 h-3.5" style={{ color: "var(--primary)" }} />
           </div>
-          <p className="text-[18px] font-extrabold text-gray-900 tabular-nums leading-tight">
-            CA${fmt(UserData?.walletBalance ?? 0)}
-          </p>
-          <div className="mt-2.5">
-            <TopUpDialog customerId={customerId} />
+          <div>
+            <p className="text-[11px] font-bold leading-tight" style={{ color: "var(--foreground)" }}>Main Wallet</p>
+            <p className="text-[10px] leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Available balance</p>
           </div>
         </div>
-      </div>
 
-      {/* Gift Wallet */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_6px_rgba(0,0,0,0.06)] overflow-hidden">
-        {/* top accent bar */}
-        <div className="h-1 w-full bg-gradient-to-r from-amber-400 to-orange-500" />
-        <div className="px-4 py-3.5">
-          <div className="flex items-center gap-2.5 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-[0_2px_6px_rgba(251,191,36,0.3)] shrink-0">
-              <Gift className="w-3.5 h-3.5 text-white" />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold text-gray-800 leading-tight">Gift Wallet</p>
-              <p className="text-[10px] text-gray-400 leading-none mt-0.5">Subsidies</p>
-            </div>
+        {/* Balance */}
+        <p className="text-[20px] font-black tabular-nums leading-tight tracking-tight mb-3"
+          style={{ color: "var(--foreground)" }}>
+          <span className="text-[12px] font-semibold mr-0.5" style={{ color: "var(--muted-foreground)" }}>CA$</span>
+          {fmt(UserData?.walletBalance ?? 0)}
+        </p>
+
+        <TopUpDialog customerId={customerId} />
+      </div>
+    </div>
+
+    {/* Gift Wallet */}
+    <div className="relative rounded-2xl overflow-hidden border border-gray-100"
+      style={{ background: "var(--card)", boxShadow: "0 2px 12px oklch(0.6271 0.1699 149.2138 / 0.08)" }}
+    >
+      {/* BG orb */}
+      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.06]"
+        style={{ background: "oklch(0.7858 0.1598 85.3091)" }} />
+
+      {/* Vertical accent bar — amber when empty, primary when has balance */}
+      <div className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full"
+        style={{
+          background: (UserData?.giftWalletBalance ?? 0) > 0
+            ? `linear-gradient(to bottom, transparent, var(--primary), transparent)`
+            : `linear-gradient(to bottom, transparent, var(--muted-foreground), transparent)`
+        }} />
+
+      <div className="px-4 pt-4 pb-4 pl-5">
+        {/* Icon + label */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
+            style={{
+              background: (UserData?.giftWalletBalance ?? 0) > 0
+                ? "oklch(0.6271 0.1699 149.2138 / 0.12)"
+                : "oklch(0.5252 0.0315 157.3462 / 0.1)"
+            }}
+          >
+            <Gift className="w-3.5 h-3.5"
+              style={{ color: (UserData?.giftWalletBalance ?? 0) > 0 ? "var(--primary)" : "var(--muted-foreground)" }} />
           </div>
-          <p className={`text-[18px] font-extrabold tabular-nums leading-tight ${
-            (UserData?.giftWalletBalance ?? 0) > 0 ? "text-emerald-600" : "text-gray-400"
-          }`}>
-            CA${fmt(UserData?.giftWalletBalance ?? 0)}
-          </p>
-          {/* spacer to match height of TopUpDialog button */}
-          <div className="mt-2.5 h-9" />
+          <div>
+            <p className="text-[11px] font-bold leading-tight" style={{ color: "var(--foreground)" }}>Gift Wallet</p>
+            <p className="text-[10px] leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Subsidies earned</p>
+          </div>
+        </div>
+
+        {/* Balance */}
+        <p className="text-[20px] font-black tabular-nums leading-tight tracking-tight mb-3"
+          style={{ color: (UserData?.giftWalletBalance ?? 0) > 0 ? "var(--primary)" : "var(--muted-foreground)" }}>
+          <span className="text-[12px] font-semibold mr-0.5" style={{ color: "var(--muted-foreground)" }}>CA$</span>
+          {fmt(UserData?.giftWalletBalance ?? 0)}
+        </p>
+
+        {/* Status pill */}
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+          style={{
+            background: (UserData?.giftWalletBalance ?? 0) > 0
+              ? "oklch(0.6271 0.1699 149.2138 / 0.1)"
+              : "oklch(0.5252 0.0315 157.3462 / 0.08)",
+            border: `1px solid ${(UserData?.giftWalletBalance ?? 0) > 0 ? "oklch(0.6271 0.1699 149.2138 / 0.2)" : "var(--border)"}`,
+          }}>
+          <div className="w-1.5 h-1.5 rounded-full"
+            style={{
+              background: (UserData?.giftWalletBalance ?? 0) > 0 ? "var(--primary)" : "var(--muted-foreground)",
+              ...(UserData?.giftWalletBalance ?? 0) > 0 ? { animation: "pulse 2s infinite" } : {}
+            }} />
+          <span className="text-[10px] font-semibold"
+            style={{ color: (UserData?.giftWalletBalance ?? 0) > 0 ? "var(--primary)" : "var(--muted-foreground)" }}>
+            {(UserData?.giftWalletBalance ?? 0) > 0 ? "Active" : "No subsidies yet"}
+          </span>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 
   return (
     <div className={`min-h-screen ${!customerId ? "bg-[#F7F6F3]" : ""}`}>

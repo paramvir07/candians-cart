@@ -70,11 +70,100 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance,totalMarkup }: {
 
   return (
     <>
-      <div className="flex items-center w-full gap-4">
-        <Progress value={progressValue} className="w-full" />
-        <p className="text-sm font-semibold tabular-nums whitespace-nowrap text-gray-900">
-          ${current}
-        </p>
+      <div className="relative w-full">
+        {/* Labels row — prev and current only in flex, mid is absolute */}
+        <div className="relative flex justify-between items-end mb-2.5 px-0.5">
+          <span className="text-[11px] font-semibold tracking-widest uppercase text-muted-foreground">
+            ${prev}
+          </span>
+
+          {mid && (
+            <div
+              className="absolute bottom-0 flex flex-col items-center gap-0.5 -translate-x-1/2"
+              style={{ left: `${((mid - prev) / (current - prev)) * 100}%` }}
+            >
+              <span className="text-[12px] font-bold text-primary">${mid}</span>
+            </div>
+          )}
+
+          <span className="text-[11px] font-semibold tracking-widest uppercase text-muted-foreground">
+            ${current}
+          </span>
+        </div>
+
+        {/* Track */}
+        <div className="relative h-3.5 w-full rounded-full overflow-hidden"
+          style={{ background: "var(--secondary)", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.08)" }}
+        >
+          {/* Tick texture on track */}
+          <div className="absolute inset-0 opacity-30"
+            style={{ backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 11px, oklch(0.6271 0.1699 149.2138 / 0.15) 11px, oklch(0.6271 0.1699 149.2138 / 0.15) 12px)" }}
+          />
+
+          {/* Fill */}
+          <div
+            className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out"
+            style={{
+              width: `${progressValue}%`,
+              background: "linear-gradient(90deg, oklch(0.5271 0.1699 149.2138), oklch(0.6271 0.1699 149.2138) 60%, oklch(0.7227 0.192 149.5793))",
+              boxShadow: "0 0 14px oklch(0.6271 0.1699 149.2138 / 0.5), inset 0 1px 0 rgba(255,255,255,0.25)",
+            }}
+          >
+            {/* Gloss */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
+            {/* Shimmer sweep */}
+            <div className="absolute top-0 bottom-0 w-10 opacity-0"
+              style={{
+                right: 0,
+                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)",
+                animation: "cartShimmer 2.4s ease-in-out infinite",
+              }}
+            />
+          </div>
+
+          {/* Mid divider */}
+          {mid && (
+            <div
+              className="absolute top-0 bottom-0 w-px z-10"
+              style={{
+                left: `${((mid - prev) / (current - prev)) * 100}%`,
+                background: "oklch(0.6271 0.1699 149.2138 / 0.5)",
+              }}
+            >
+              {/* Top gem */}
+              <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full border-2 border-white"
+                style={{ background: "var(--primary)" }} />
+              {/* Bottom gem */}
+              <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full border-2 border-white"
+                style={{ background: "var(--primary)" }} />
+            </div>
+          )}
+        </div>
+
+        {/* Subsidy nudge pill */}
+        {progressValue > 0 && progressValue < 100 && (
+          <div className="mt-2 flex justify-end">
+            <span
+              className="inline-flex items-center gap-1.5 text-[10px] font-semibold rounded-full px-2.5 py-0.5 tracking-wide"
+              style={{
+                color: "var(--primary)",
+                background: "var(--secondary)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--primary)" }} />
+              {progressValue < 50 ? "Add more to unlock subsidy" : "Almost at next milestone!"}
+            </span>
+          </div>
+        )}
+
+        <style>{`
+          @keyframes cartShimmer {
+            0%   { opacity: 0; transform: translateX(-20px); }
+            40%  { opacity: 1; }
+            100% { opacity: 0; transform: translateX(10px); }
+          }
+        `}</style>
       </div>
  
       {showBtn && (
