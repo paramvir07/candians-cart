@@ -450,24 +450,19 @@ export async function GET(
       },
     );
 
-    // ── Serialize — correct approach for Vercel ────────────────────────────
-    // pdfDoc.save() returns Uint8Array.
-    // We must NOT use Buffer.from(pdfBytes) with spread — it can truncate.
-    // Use Buffer.from(pdfBytes.buffer, pdfBytes.byteOffset, pdfBytes.byteLength).
+    // ── Serialize ─────────────────────────────────────────────────────────────
     const pdfBytes = await pdfDoc.save();
-    const buffer = Buffer.from(
-      pdfBytes.buffer,
-      pdfBytes.byteOffset,
-      pdfBytes.byteLength,
-    );
 
-    return new NextResponse(buffer, {
+    // TS 5.9+ can complain about Uint8Array<ArrayBufferLike> not matching BodyInit.
+    // Re-wrap into a fresh Uint8Array so the body is backed by a plain ArrayBuffer.
+    const body = new Uint8Array(pdfBytes).buffer;
+
+    return new Response(body, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename=invoice-${order._id}.pdf`,
-        "Content-Length": buffer.byteLength.toString(),
-        // Prevent any middleware from buffering/transforming the response
+        "Content-Length": pdfBytes.byteLength.toString(),
         "Cache-Control": "no-store",
       },
     });
