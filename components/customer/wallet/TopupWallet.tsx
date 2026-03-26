@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { TopUpDialog } from "./TopupDialog";
 import { WalletInfo } from "./WalletInfo";
 import Link from "next/link";
+
 type TopupWalletProps = {
   topupWalletData: {
     balance: number;
@@ -10,6 +11,7 @@ type TopupWalletProps = {
   customerId?: string;
   userRole?: string;
 };
+
 const TopupWallet = ({ topupWalletData, customerId, userRole }: TopupWalletProps) => {
   return (
     <div>

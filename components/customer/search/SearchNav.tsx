@@ -44,7 +44,7 @@ export function SearchNav({
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     onQueryChange(query);
   };

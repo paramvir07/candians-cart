@@ -44,7 +44,6 @@ export function CustomerProductCard({
   customerId,
   product,
   cartQuantity = 0,
-  subsidyPage,
 }: {
   customerId?: string;
   product: IProduct;
@@ -295,7 +294,7 @@ export function CustomerProductCard({
             <div className="flex items-center text-white/90 text-xs font-medium">
               <span className="flex items-center gap-1">
                 <span className="font-black text-white">
-                  {fmt(product.price + product.markup)}
+                  {fmt(product.price + (product.price*(product.markup/100)))}
                 </span>
               </span>
             </div>

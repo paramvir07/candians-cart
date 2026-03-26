@@ -60,13 +60,15 @@ const customerSchema = new Schema<ICustomer>(
       type: String,
       required: true,
     },
-    walletBalance: { // Stored in cents
+    walletBalance: {
+      // Stored in cents
       type: Number,
       required: true,
       default: 0,
       min: 0,
     },
     giftWalletBalance: {
+      // Stored in cents
       type: Number,
       required: true,
       default: 0,

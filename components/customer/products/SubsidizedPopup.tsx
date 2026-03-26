@@ -60,8 +60,6 @@ export function SubsidizedPopup({
   const youPay = Math.max(0, totalActual - subsidy);
   const allSelected = selected.size === products.length && products.length > 0;
 
-
-  
   const handleAddSubsidyItems = async () =>{
     AddSubsidyItem(selectedProducts,(subsidy*100), customerId)
     onOpenChange(false)
