@@ -115,37 +115,34 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const subsidyOnOrder = totalActiveMarkup * 0.60;
   const TotalSubsidy = Number(((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2));
 
-  const subsidyTotals = subItems.reduce(
-    (acc, item) => {
-      const afterSubsidy = Math.max(
-        item.TotalPrice * item.quantity - item.subsidy,
-        0,
-      );
-      const taxRate = item.productId.tax ?? 0;
-      const effectiveBase = afterSubsidy;
+const subsidyTotals = subItems.reduce(
+  (acc, item) => {
+    const fullPrice = item.TotalPrice * item.quantity;
+    const afterSubsidy = Math.max(fullPrice - item.subsidy, 0);
+    const taxRate = item.productId.tax ?? 0;
+    const taxBase = fullPrice;
 
-      let gst = 0;
-      let pst = 0;
-      if (taxRate === 0.05) gst = Math.round(effectiveBase * 0.05);
-      else if (taxRate === 0.07) pst = Math.round(effectiveBase * 0.07);
-      else if (taxRate === 0.12) {
-        gst = Math.round(effectiveBase * 0.05);
-        pst = Math.round(effectiveBase * 0.07);
-      }
+    let gst = 0;
+    let pst = 0;
+    if (taxRate === 0.05) gst = Math.round(taxBase * 0.05);
+    else if (taxRate === 0.07) pst = Math.round(taxBase * 0.07);
+    else if (taxRate === 0.12) {
+      gst = Math.round(taxBase * 0.05);
+      pst = Math.round(taxBase * 0.07);
+    }
 
-      const totalTax = gst + pst;
+    const totalTax = gst + pst;
 
-      acc.disposable += (item.productId.disposableFee ?? 0) * item.quantity;
-      acc.subtotal   += effectiveBase;
-      acc.gst        += gst;
-      acc.pst        += pst;
-      acc.totalTax   += totalTax;
-      acc.total      += effectiveBase + totalTax;
-
-      return acc;
-    },
-    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
-  );
+    acc.disposable += (item.productId.disposableFee ?? 0) * item.quantity;
+    acc.subtotal   += afterSubsidy;
+    acc.gst        += gst;
+    acc.pst        += pst;
+    acc.totalTax   += totalTax;
+    acc.total      += afterSubsidy + totalTax; 
+    return acc;
+  },
+  { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
+);
 
   const totals = {
     subtotal:   itemTotals.subtotal   + subsidyTotals.subtotal,
