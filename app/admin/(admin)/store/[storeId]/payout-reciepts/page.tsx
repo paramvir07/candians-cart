@@ -14,7 +14,6 @@ const StorePayoutReciepts = async ({
 
   return (
     <div className="space-y-8 p-4 sm:p-6 lg:p-8 max-w-400 mx-auto">
-
       {/* Analytics Stats */}
       <Suspense fallback={<PayoutStatsCardsSkeleton />}>
         <PayoutStatsCards storeId={storeId} />
@@ -35,7 +34,10 @@ const StorePayoutReciepts = async ({
           <ManualPayoutTrigger />
         </div>
       </div>
-
+      {/* History & Filters */}
+      <div className="space-y-4">
+        <StorePayoutHistory storeId={storeId} />
+      </div>
       {/* Generate Receipt */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">
@@ -43,12 +45,6 @@ const StorePayoutReciepts = async ({
         </h2>
         <ReceiptPage initialStoreId={storeId} />
       </div>
-
-      {/* History & Filters */}
-      <div className="space-y-4">
-        <StorePayoutHistory storeId={storeId} />
-      </div>
-
     </div>
   );
 };

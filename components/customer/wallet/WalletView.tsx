@@ -1,7 +1,6 @@
 "use client";
 import { useAtom } from "jotai";
 import GiftWallet from "./GiftWallet";
-
 import { WalletSwitcherAtom, WalletViewEnum } from "@/atoms/customer/Wallet";
 import { Separator } from "@/components/ui/separator";
 import { Customer } from "@/types/customer/customer";
@@ -13,6 +12,7 @@ type WalletViewProps = {
   customerId?: string;
   userRole?: string;
 };
+
 const WalletView = ({
   customerData,
   customerId,
@@ -32,7 +32,11 @@ const WalletView = ({
     <div>
       <div className={`md:hidden`}>
         {activeWallet === WalletViewEnum.WALLET ? (
-          <TopupWallet topupWalletData={topupWalletData} />
+          <TopupWallet
+            topupWalletData={topupWalletData}
+            customerId={customerId}
+            userRole={userRole}
+          />
         ) : (
           <GiftWallet giftWalletData={giftWalletData} />
         )}
