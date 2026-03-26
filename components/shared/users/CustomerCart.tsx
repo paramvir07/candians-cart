@@ -180,14 +180,14 @@ const subsidyTotals = subItems.reduce(
     const active = activeMarkup ?? 0;
     const MarkupSub = totals.subtotal*(active/100);
 
-  const subsidyOnOrder = MarkupSub * 0.60;
+  const subsidyOnOrder = Math.floor(MarkupSub * 0.60);
   const TotalSubsidy = Number(((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2));
 
-    // console.log("SubTotal Cart : ",totals.subtotal)
-    // console.log("Active Markup : ",active)
-    // console.log("Total Markup : ",totals.subtotal*(active/100))
-    // console.log("Subsidy to be given : ",MarkupSub*0.60)
-    // console.log("Active Margin : ",activeMarkup)
+    console.log("SubTotal Cart : ",totals.subtotal)
+    console.log("Active Markup : ",active)
+    console.log("Total Markup : ",totals.subtotal*(active/100))
+    console.log("Subsidy to be given : ",MarkupSub*0.60)
+    console.log("Active Margin : ",activeMarkup)
 
   const TaxRows = () => (
     <>
@@ -507,7 +507,7 @@ const subsidyTotals = subItems.reduce(
                 </div>
                 <TaxRows />
                 <DisposableRow />
-                <SubsidyCart subsidy={totalActiveMarkup * 0.60} />
+                <SubsidyCart subsidy={subsidyOnOrder} />
                 <div className="h-px bg-gray-100" />
                 <div className="flex justify-between">
                   <span className="font-bold text-gray-900">Total</span>
