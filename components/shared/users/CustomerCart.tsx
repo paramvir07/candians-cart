@@ -115,6 +115,27 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const subsidyOnOrder = totalActiveMarkup * 0.60;
   const TotalSubsidy = Number(((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2));
 
+// console.log("📦 progressTotal:", progressTotal);
+// console.log("💰 totalInDollars:", totalInDollars);
+// console.log("🔢 Fib bracket — prev:", prev, "| mid:", mid, "| current:", current);
+// console.log("📊 avgMarkup:", avgMarkup, "(totalMarkup:", progressTotal.totalMarkup, "/ productCount:", progressTotal.productCount, ")");
+// console.log("🎯 activeMarkup:", activeMarkup);
+// console.log("🛒 Per-item calculateTotalMarkup breakdown:");
+// items.forEach((item) => {
+//   const result = calculateTotalMarkup(item);
+//   console.log(
+//     `  ${item.productId.subsidised ? "🔒 [subsidised]" : "📦"} ${item.productId.name}`,
+//     `| qty: ${item.quantity}`,
+//     `| price: ${item.productId.price}`,
+//     `| originalMarkup: ${item.productId.markup}%`,
+//     `| activeMarkup: ${activeMarkup}%`,
+//     `| calculateTotalMarkup: ${result ?? "null (skipped)"}`,
+//   );
+// });
+// console.log("💵 totalActiveMarkup (all items):", totalActiveMarkup);
+// console.log("💵 Subsidy to be given:", totalActiveMarkup * (60 / 100));
+
+
 const subsidyTotals = subItems.reduce(
   (acc, item) => {
     const fullPrice = item.TotalPrice * item.quantity;

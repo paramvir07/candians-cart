@@ -35,7 +35,7 @@ export function SubsidizedPopup({
     getSubsidizedProducts(customerId)
       .then((data) => {
         setProducts(data);
-        setSelected(new Set(data.map((p: IProduct) => p._id)));
+        setSelected(new Set());
       })
       .finally(() => setLoading(false));
   }, []);
