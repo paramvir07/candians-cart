@@ -112,8 +112,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   };
 
   const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarkup(item) ?? 0), 0);
-  const subsidyOnOrder = totalActiveMarkup * 0.60;
-  const TotalSubsidy = Number(((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2));
+
+
 
 // console.log("📦 progressTotal:", progressTotal);
 // console.log("💰 totalInDollars:", totalInDollars);
@@ -176,6 +176,18 @@ const subsidyTotals = subItems.reduce(
 
   const showGST = totals.gst > 0;
   const showPST = totals.pst > 0;
+
+    const active = activeMarkup ?? 0;
+    const MarkupSub = totals.subtotal*(active/100);
+
+  const subsidyOnOrder = MarkupSub * 0.60;
+  const TotalSubsidy = Number(((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2));
+
+    // console.log("SubTotal Cart : ",totals.subtotal)
+    // console.log("Active Markup : ",active)
+    // console.log("Total Markup : ",totals.subtotal*(active/100))
+    // console.log("Subsidy to be given : ",MarkupSub*0.60)
+    // console.log("Active Margin : ",activeMarkup)
 
   const TaxRows = () => (
     <>
