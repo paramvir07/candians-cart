@@ -17,16 +17,22 @@ const AMBER_BG = rgb(1.0, 0.97, 0.88);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmt = (cents: number) => `CA$${(cents / 100).toFixed(2)}`;
+
+type WidthFont = {
+  widthOfTextAtSize: (text: string, size: number) => number;
+};
+
 const truncate = (
-  font: any,
+  font: WidthFont,
   text: string,
   size: number,
   maxW: number,
 ): string => {
   let t = text;
-  while (t.length > 4 && font.widthOfTextAtSize(t, size) > maxW)
+  while (t.length > 4 && font.widthOfTextAtSize(t, size) > maxW) {
     t = t.slice(0, -1);
-  return t !== text ? t + "…" : t;
+  }
+  return t !== text ? `${t}...` : t;
 };
 
 export async function GET(
@@ -45,15 +51,25 @@ export async function GET(
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
+    const itemsSubtotal = order.products.reduce(
+      (s: number, p: any) => s + (p.total ?? 0),
+      0,
+    );
+    const totalGST = order.TotalGST ?? 0;
+    const totalPST = order.TotalPST ?? 0;
+    const totalFee = order.TotalDisposableFee ?? 0;
+    const subsidyUsed = order.susbsidyUsed ?? 0;
+    const cartTotal = order.cartTotal ?? 0;
+
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]);
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const { width, height } = page.getSize();
     const margin = 44;
-    const cw = width - margin * 2; // content width
+    const cw = width - margin * 2;
 
-    // ── Header banner ──────────────────────────────────────────────────────
+    // ── Header ────────────────────────────────────────────────────────────────
     page.drawRectangle({
       x: 0,
       y: height - 90,
@@ -86,6 +102,7 @@ export async function GET(
       size: 24,
       color: WHITE,
     });
+
     const orderRef = `#${order._id.toString().slice(-8).toUpperCase()}`;
     const refW = font.widthOfTextAtSize(orderRef, 10);
     page.drawText(orderRef, {
@@ -98,7 +115,7 @@ export async function GET(
 
     let y = height - 115;
 
-    // ── Order meta row ─────────────────────────────────────────────────────
+    // ── Meta row ──────────────────────────────────────────────────────────────
     const metaItems = [
       {
         label: "ORDER ID",
@@ -112,13 +129,13 @@ export async function GET(
           day: "numeric",
         }),
       },
-      { label: "STATUS", value: order.status?.toUpperCase() ?? "COMPLETED" },
+      { label: "STATUS", value: order.status?.toUpperCase() ?? "PENDING" },
       {
         label: "PAYMENT",
         value: order.paymentMode
           ? order.paymentMode.charAt(0).toUpperCase() +
             order.paymentMode.slice(1)
-          : "—",
+          : "-",
       },
     ];
 
@@ -145,7 +162,7 @@ export async function GET(
     });
     y -= 18;
 
-    // ── Products table header ──────────────────────────────────────────────
+    // ── Products table header ─────────────────────────────────────────────────
     page.drawRectangle({
       x: margin,
       y: y - 5,
@@ -162,38 +179,37 @@ export async function GET(
       total: margin + cw * 0.89,
     };
 
-    const hdrY = y + 1;
     page.drawText("ITEM", {
       x: col.name,
-      y: hdrY,
+      y: y + 1,
       font: bold,
       size: 7.5,
       color: GREEN_PRIMARY,
     });
     page.drawText("QTY", {
       x: col.qty,
-      y: hdrY,
+      y: y + 1,
       font: bold,
       size: 7.5,
       color: GREEN_PRIMARY,
     });
     page.drawText("UNIT PRICE", {
       x: col.unit,
-      y: hdrY,
+      y: y + 1,
       font: bold,
       size: 7.5,
       color: GREEN_PRIMARY,
     });
     page.drawText("SUBSIDY", {
       x: col.subsidy,
-      y: hdrY,
+      y: y + 1,
       font: bold,
       size: 7.5,
       color: GREEN_PRIMARY,
     });
     page.drawText("TOTAL", {
       x: col.total,
-      y: hdrY,
+      y: y + 1,
       font: bold,
       size: 7.5,
       color: GREEN_PRIMARY,
@@ -201,13 +217,16 @@ export async function GET(
 
     y -= 22;
 
-    // ── Product rows ───────────────────────────────────────────────────────
+    // ── Product rows ──────────────────────────────────────────────────────────
     let hasAnySubsidy = false;
     for (let i = 0; i < order.products.length; i++) {
       const item = order.products[i] as any;
       const prod = item.productId as any;
+      const itemSub = item.subsidy ?? 0;
+      const unitBase = (prod?.price ?? 0) + (item.markup ?? 0);
 
-      // Alternate row bg
+      if (itemSub > 0) hasAnySubsidy = true;
+
       if (i % 2 === 0) {
         page.drawRectangle({
           x: margin,
@@ -218,16 +237,7 @@ export async function GET(
         });
       }
 
-      const name = truncate(
-        font,
-        prod?.name ?? "Unknown Product",
-        10,
-        cw * 0.47,
-      );
-      const qty = item.quantity.toString();
-      const unitCents = (prod?.price ?? 0) + (item.markup ?? 0);
-      const subsidyCents = item.subsidy ?? 0;
-      if (subsidyCents > 0) hasAnySubsidy = true;
+      const name = truncate(font, prod?.name ?? "Unknown Product", 10, cw * 0.47);
 
       page.drawText(name, {
         x: col.name,
@@ -236,27 +246,27 @@ export async function GET(
         size: 10,
         color: GREEN_DARK,
       });
-      page.drawText(qty, { x: col.qty, y, font, size: 10, color: GREEN_DARK });
-      page.drawText(fmt(unitCents), {
+      page.drawText(String(item.quantity ?? 0), {
+        x: col.qty,
+        y,
+        font,
+        size: 10,
+        color: GREEN_DARK,
+      });
+      page.drawText(fmt(unitBase), {
         x: col.unit,
         y,
         font,
         size: 10,
         color: GREEN_DARK,
       });
-
-      if (subsidyCents > 0) {
-        page.drawText(`-${fmt(subsidyCents)}`, {
-          x: col.subsidy,
-          y,
-          font,
-          size: 10,
-          color: AMBER,
-        });
-      } else {
-        page.drawText("—", { x: col.subsidy, y, font, size: 10, color: MUTED });
-      }
-
+      page.drawText(itemSub > 0 ? `-${fmt(itemSub)}` : "-", {
+        x: col.subsidy,
+        y,
+        font,
+        size: 10,
+        color: itemSub > 0 ? AMBER : MUTED,
+      });
       page.drawText(fmt(item.total ?? 0), {
         x: col.total,
         y,
@@ -268,7 +278,7 @@ export async function GET(
       y -= 22;
     }
 
-    // ── Divider ────────────────────────────────────────────────────────────
+    // ── Divider ───────────────────────────────────────────────────────────────
     y -= 4;
     page.drawRectangle({
       x: margin,
@@ -279,49 +289,52 @@ export async function GET(
     });
     y -= 20;
 
-    // ── Totals block ───────────────────────────────────────────────────────
+    // ── Totals ────────────────────────────────────────────────────────────────
     const totLabelX = width - margin - 200;
-    const totValueX = width - margin - 70;
 
     const drawTotRow = (
       label: string,
       value: string,
       yPos: number,
-      labelColor = MUTED,
-      valueColor = GREEN_DARK,
-      valueFont = font,
+      lc = MUTED,
+      vc = GREEN_DARK,
+      vf = font,
     ) => {
       page.drawText(label, {
         x: totLabelX,
         y: yPos,
         font,
         size: 10,
-        color: labelColor,
+        color: lc,
       });
-      const vw = valueFont.widthOfTextAtSize(value, 10);
+
+      const vw = vf.widthOfTextAtSize(value, 10);
       page.drawText(value, {
         x: width - margin - vw,
         y: yPos,
-        font: valueFont,
+        font: vf,
         size: 10,
-        color: valueColor,
+        color: vc,
       });
     };
 
-    drawTotRow("Base Total", fmt(order.BaseTotal ?? 0), y);
-    y -= 18;
-    drawTotRow("GST (5%)", fmt(order.TotalGST ?? 0), y);
-    y -= 18;
-    drawTotRow("PST", fmt(order.TotalPST ?? 0), y);
+    drawTotRow(`Items (${order.products.length})`, fmt(itemsSubtotal), y);
     y -= 18;
 
-    if ((order.TotalDisposableFee ?? 0) > 0) {
-      drawTotRow("Disposable Fee", fmt(order.TotalDisposableFee), y);
+    if (totalGST > 0) {
+      drawTotRow("GST (5%)", fmt(totalGST), y);
+      y -= 18;
+    }
+    if (totalPST > 0) {
+      drawTotRow("PST", fmt(totalPST), y);
+      y -= 18;
+    }
+    if (totalFee > 0) {
+      drawTotRow("Disposable Fee", fmt(totalFee), y);
       y -= 18;
     }
 
-    if ((order.susbsidyUsed ?? 0) > 0) {
-      // Subsidy banner
+    if (subsidyUsed > 0) {
       page.drawRectangle({
         x: totLabelX - 8,
         y: y - 6,
@@ -329,9 +342,10 @@ export async function GET(
         height: 22,
         color: AMBER_BG,
       });
+
       drawTotRow(
-        "Subsidy Applied",
-        `-${fmt(order.susbsidyUsed)}`,
+        "Subsidy (applied to items)",
+        `-${fmt(subsidyUsed)}`,
         y,
         AMBER,
         AMBER,
@@ -340,7 +354,6 @@ export async function GET(
       y -= 26;
     }
 
-    // Total divider
     page.drawRectangle({
       x: totLabelX - 8,
       y,
@@ -350,7 +363,6 @@ export async function GET(
     });
     y -= 22;
 
-    // Grand total banner
     page.drawRectangle({
       x: totLabelX - 12,
       y: y - 8,
@@ -365,7 +377,8 @@ export async function GET(
       size: 11,
       color: WHITE,
     });
-    const totalStr = fmt(order.cartTotal);
+
+    const totalStr = fmt(cartTotal);
     const totalW = bold.widthOfTextAtSize(totalStr, 13);
     page.drawText(totalStr, {
       x: width - margin - totalW,
@@ -376,8 +389,8 @@ export async function GET(
     });
     y -= 40;
 
-    // ── Subsidy note (if any) ───────────────────────────────────────────────
-    if (hasAnySubsidy || (order.susbsidyUsed ?? 0) > 0) {
+    // ── Subsidy banner ────────────────────────────────────────────────────────
+    if (hasAnySubsidy || subsidyUsed > 0) {
       page.drawRectangle({
         x: margin,
         y: y - 8,
@@ -400,13 +413,19 @@ export async function GET(
         color: AMBER,
       });
       page.drawText(
-        `CA$${((order.susbsidyUsed ?? 0) / 100).toFixed(2)} subsidy was applied to this order by your store.`,
-        { x: margin + 10, y: y - 5, font, size: 8, color: rgb(0.6, 0.45, 0.1) },
+        `${fmt(subsidyUsed)} subsidy was applied to this order by your store.`,
+        {
+          x: margin + 10,
+          y: y - 5,
+          font,
+          size: 8,
+          color: rgb(0.6, 0.45, 0.1),
+        },
       );
       y -= 38;
     }
 
-    // ── Footer ─────────────────────────────────────────────────────────────
+    // ── Footer ────────────────────────────────────────────────────────────────
     const footerH = 48;
     page.drawRectangle({
       x: 0,
@@ -430,6 +449,7 @@ export async function GET(
       size: 9,
       color: MUTED,
     });
+
     const supportText = "support@canadianscart.ca";
     const supportW = font.widthOfTextAtSize(supportText, 9);
     page.drawText(supportText, {
@@ -439,37 +459,37 @@ export async function GET(
       size: 9,
       color: GREEN_PRIMARY,
     });
-    page.drawText(
-      `Invoice generated ${new Date().toLocaleDateString("en-CA")}`,
-      {
-        x: margin,
-        y: footerH - 32,
-        font,
-        size: 8,
-        color: rgb(0.7, 0.76, 0.7),
-      },
-    );
 
-    // ── Serialize ─────────────────────────────────────────────────────────────
+    page.drawText(`Invoice generated ${new Date().toLocaleDateString("en-CA")}`, {
+      x: margin,
+      y: footerH - 32,
+      font,
+      size: 8,
+      color: rgb(0.7, 0.76, 0.7),
+    });
+
+    // ── Serialize — same safe pattern as your working route ──────────────────
     const pdfBytes = await pdfDoc.save();
+    const filename = `invoice-${order._id}.pdf`;
 
-    // TS 5.9+ can complain about Uint8Array<ArrayBufferLike> not matching BodyInit.
-    // Re-wrap into a fresh Uint8Array so the body is backed by a plain ArrayBuffer.
-    const body = new Uint8Array(pdfBytes).buffer;
+    const pdfBuffer = new ArrayBuffer(pdfBytes.byteLength);
+    new Uint8Array(pdfBuffer).set(pdfBytes);
 
-    return new Response(body, {
+    return new Response(pdfBuffer, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=invoice-${order._id}.pdf`,
-        "Content-Length": pdfBytes.byteLength.toString(),
+        "Content-Disposition": `attachment; filename="${filename}"`,
         "Cache-Control": "no-store",
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[invoice] error:", err);
+
     return NextResponse.json(
-      { error: err.message ?? "Failed to generate invoice" },
+      {
+        error: err instanceof Error ? err.message : "Failed to generate invoice",
+      },
       { status: 500 },
     );
   }

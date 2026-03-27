@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { SubsidizedPopup } from "./SubsidizedPopup"
 import { useAtom } from "jotai"
 import { SubsidyValue } from "@/atoms/customer/CartAtom"
-import { Wallet, Tag, ChevronRight } from "lucide-react"
+import { Wallet, Tag, ChevronRight, Gift } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ClearAllSubsidyItems, updateCartSubsidy } from "@/actions/customer/SubsidyItems.Action"
 import { getFibBracketFrom21 } from "@/lib/FibBracket"
@@ -201,20 +201,22 @@ export const SubsidyCart = ({ subsidy }: { subsidy: number }) => {
   if (!subsidy || subsidy <= 0) return null;
 
   return (
-    <div className="flex items-center justify-between text-sm rounded-xl bg-emerald-50/60 border border-emerald-100 px-3 py-2.5">
+    <div className="flex items-center justify-between text-sm rounded-xl bg-emerald-50/60 border border-primary/10 px-3 py-2.5">
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-          <Wallet className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+          <Gift className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <span className="font-medium text-emerald-800 text-xs">Order Subsidy</span>
-          <p className="text-[10px] text-emerald-500 leading-none mt-0.5">Applied to your total</p>
+          <span className="font-bold text-secondary-foreground/80 text-[13px]">Subsidy</span>
+          <p className="text-[10px] text-primary leading-none mt-0.5">
+            Applied to your total
+          </p>
         </div>
       </div>
-      <span className="font-semibold text-emerald-600 tabular-nums">
+      <span className="font-semibold text-primary tabular-nums">
         CA${(subsidy / 100).toFixed(2)}
       </span>
     </div>
-  )
+  );
 }
  

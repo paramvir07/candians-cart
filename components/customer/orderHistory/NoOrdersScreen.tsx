@@ -4,15 +4,21 @@ import { Button } from "@/components/ui/button";
 
 export default function NoOrdersScreen({
   customerId,
+  allOrders
 }: {
   customerId?: string;
+  allOrders?: boolean;
 }) {
   return (
     <>
       <div className="flex items-center justify-center gap-2 m-4">
         <Link
           href={
-            customerId ? `/cashier/customer/${customerId}` : "/customer/profile"
+            customerId
+              ? `/cashier/customer/${customerId}`
+              : allOrders
+                ? "/cashier"
+                : "/customer/profile"
           }
         >
           <Button className="rounded-full" variant="outline" size="icon">
