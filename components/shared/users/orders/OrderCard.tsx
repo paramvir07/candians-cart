@@ -15,7 +15,12 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
 import OrderDetail from "./OrderDetail";
-import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const fmt = (cents: number) => `CA$${(cents / 100).toFixed(2)}`;
 
@@ -142,7 +147,7 @@ export default function OrderCard({
                   )}
                 </div>
 
-                {/* Meta */}
+                {/* Content */}
                 <div className="flex-1 min-w-0">
                   {/* Mobile */}
                   <div className="flex items-start justify-between gap-2 sm:hidden">
@@ -177,6 +182,7 @@ export default function OrderCard({
                       </div>
                     </div>
 
+                    {/* Total (mobile safe) */}
                     <div className="text-right ml-2 shrink-0">
                       <p className="text-base font-bold text-primary tabular-nums">
                         {fmt(order.cartTotal)}
@@ -187,55 +193,61 @@ export default function OrderCard({
                     </div>
                   </div>
 
-                  {/* Desktop */}
-                  <div className="hidden sm:flex items-center gap-6 xl:gap-8 w-full">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                        Order
-                      </p>
-                      <p className="text-sm font-bold font-mono">#{orderId}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                        Date
-                      </p>
-                      <p className="text-sm font-semibold">{date}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                        Items
-                      </p>
-                      <p className="text-sm font-semibold">{totalItems}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                        Payment
-                      </p>
-                      <PaymentBadge mode={order.paymentMode} />
-                    </div>
-
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                        Status
-                      </p>
-                      <StatusBadge status={order.status} />
-                    </div>
-
-                    {hasSubsidyGenerated && (
+                  {/* Desktop (FIXED RESPONSIVE) */}
+                  <div className="hidden sm:flex items-center w-full">
+                    {/* LEFT SIDE */}
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 flex-1 min-w-0">
                       <div>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                          Subsidy Generated
+                          Order
                         </p>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-xs font-bold text-amber-700">
-                          $ {(subsidyGenerated / 100).toFixed(2)}
-                        </span>
+                        <p className="text-sm font-bold font-mono">
+                          #{orderId}
+                        </p>
                       </div>
-                    )}
 
-                    <div className="ml-auto">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                          Date
+                        </p>
+                        <p className="text-sm font-semibold">{date}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                          Items
+                        </p>
+                        <p className="text-sm font-semibold">{totalItems}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                          Payment
+                        </p>
+                        <PaymentBadge mode={order.paymentMode} />
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                          Status
+                        </p>
+                        <StatusBadge status={order.status} />
+                      </div>
+
+                      {hasSubsidyGenerated && (
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                            Subsidy Generated
+                          </p>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-xs font-bold text-amber-700">
+                            ${(subsidyGenerated / 100).toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* RIGHT SIDE (ALWAYS VISIBLE) */}
+                    <div className="ml-auto shrink-0 text-right">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                         Total
                       </p>
@@ -251,10 +263,10 @@ export default function OrderCard({
         </Card>
       </DialogTrigger>
 
+      {/* Dialog */}
       <DialogContent className="w-[95vw] max-w-[760px] p-0 gap-0 overflow-hidden rounded-2xl">
-        {/* Close button */}
         <DialogClose asChild>
-          <button className="absolute right-1 top-3 z-50 rounded-full p-1.5 bg-background/80 backdrop-blur border border-border hover:bg-muted transition">
+          <button className="absolute right-3 top-3 z-50 rounded-full p-1.5 bg-background/80 backdrop-blur border border-border hover:bg-muted transition">
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </DialogClose>
