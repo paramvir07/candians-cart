@@ -18,7 +18,7 @@ export default function NoOrdersScreen({
               ? `/cashier/customer/${customerId}`
               : allOrders
                 ? "/cashier"
-                : "/customer/profile"
+                : "/customer"
           }
         >
           <Button className="rounded-full" variant="outline" size="icon">
@@ -50,7 +50,7 @@ export default function NoOrdersScreen({
         {/* CTA */}
         <Button asChild>
           <Link
-            href={customerId ? `/cashier/customer/${customerId}/products` : "/"}
+            href={customerId ? `/cashier/customer/${customerId}/products` : "/customer/search"}
           >
             Browse products
           </Link>

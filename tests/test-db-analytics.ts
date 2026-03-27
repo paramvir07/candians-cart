@@ -48,7 +48,7 @@ async function main() {
     cartTotal: cartTotal,
     subsidy: subsidy,
     subsidyLeft: 0,
-    susbsidyUsed: subsidy,
+    subsidyUsed: subsidy,
     status: "completed", // Set to completed so it shows up in getOverviewStats()
     paymentMode: "wallet"
   };

@@ -17,10 +17,16 @@ export const getOrders = async (customerId?: string) => {
 
   try {
     const prevOrders = await OrderModel.find({ userId: user._id })
-      .populate({
-        path: "products.productId",
-        model: "Product",
-      })
+      .populate([
+        {
+          path: "products.productId",
+          model: "Product",
+        },
+        {
+          path: "subsidyItems.productId",
+          model: "Product",
+        },
+      ])
       .sort({ createdAt: -1 })
       .lean();
 
@@ -50,10 +56,16 @@ export const getAllOrders = async () => {
     }
 
     const prevOrders = await OrderModel.find({ storeId: cashier.storeId })
-      .populate({
-        path: "products.productId",
-        model: "Product",
-      })
+      .populate([
+        {
+          path: "products.productId",
+          model: "Product",
+        },
+        {
+          path: "subsidyItems.productId",
+          model: "Product",
+        },
+      ])
       .sort({ createdAt: -1 })
       .lean();
 
@@ -168,7 +180,7 @@ export const completePendingOrder = async (
 
       const cartTotal = Number(order.cartTotal ?? 0);
       const subsidy = Number(order.subsidy ?? 0);
-      const subsidyUsed = Number(order.susbsidyUsed ?? 0);
+      const subsidyUsed = Number(order.subsidyUsed ?? 0);
 
       const customer = await Customer.findById(customerId)
         .select("giftWalletBalance")

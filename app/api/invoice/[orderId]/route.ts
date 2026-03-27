@@ -58,7 +58,7 @@ export async function GET(
     const totalGST = order.TotalGST ?? 0;
     const totalPST = order.TotalPST ?? 0;
     const totalFee = order.TotalDisposableFee ?? 0;
-    const subsidyUsed = order.susbsidyUsed ?? 0;
+    const subsidyUsed = order.subsidyUsed ?? 0;
     const cartTotal = order.cartTotal ?? 0;
 
     const pdfDoc = await PDFDocument.create();

@@ -61,7 +61,7 @@ export default function OrdersHistoryClient({
     ? `/cashier/customer/${customerId}`
     : allOrders
       ? "/cashier"
-      : "/customer/profile";
+      : "/customer";
 
   const pageTitle = customerId
     ? "Customer Orders"
@@ -127,7 +127,7 @@ export default function OrdersHistoryClient({
         <div className="flex items-center gap-2 w-full sm:w-auto">
           {(customerId || allOrders) && (
             <div className="shrink-0">
-              <QrScannerButton onScan={handleScanResult} />
+              <QrScannerButton onScan={handleScanResult} usedFor="orders"/>
             </div>
           )}
           <div className="relative flex-1 sm:w-60">

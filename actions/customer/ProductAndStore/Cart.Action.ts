@@ -365,7 +365,7 @@ export const PlaceCustomerOrder = async ({
       BaseTotal: baseTotal,
       cartTotal,
       subsidy: Number(customerCart.cartSubsidy.toFixed(2)),
-      susbsidyUsed: Number((TotalUsedSubsidy / 100).toFixed(2)) * 100,
+      subsidyUsed: Number((TotalUsedSubsidy / 100).toFixed(2)) * 100,
       userId: User._id,
       storeId: User.associatedStoreId,
       paymentMode: "pending",
@@ -521,7 +521,7 @@ export const PlaceOrder = async ({
             100
           ).toFixed(2),
         ) * 100,
-      susbsidyUsed: Number((TotalUsedSubsidy / 100).toFixed(2)) * 100,
+      subsidyUsed: Number((TotalUsedSubsidy / 100).toFixed(2)) * 100,
       userId: User._id,
       storeId: User.associatedStoreId,
       paymentMode,
