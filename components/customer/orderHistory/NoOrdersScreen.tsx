@@ -4,15 +4,21 @@ import { Button } from "@/components/ui/button";
 
 export default function NoOrdersScreen({
   customerId,
+  allOrders
 }: {
   customerId?: string;
+  allOrders?: boolean;
 }) {
   return (
     <>
       <div className="flex items-center justify-center gap-2 m-4">
         <Link
           href={
-            customerId ? `/cashier/customer/${customerId}` : "/customer/profile"
+            customerId
+              ? `/cashier/customer/${customerId}`
+              : allOrders
+                ? "/cashier"
+                : "/customer"
           }
         >
           <Button className="rounded-full" variant="outline" size="icon">
@@ -44,7 +50,7 @@ export default function NoOrdersScreen({
         {/* CTA */}
         <Button asChild>
           <Link
-            href={customerId ? `/cashier/customer/${customerId}/products` : "/"}
+            href={customerId ? `/cashier/customer/${customerId}/products` : "/customer/search"}
           >
             Browse products
           </Link>

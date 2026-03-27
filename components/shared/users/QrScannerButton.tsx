@@ -16,7 +16,7 @@ const Scanner = dynamic(
   { ssr: false },
 );
 
-type UsedFor = "qr" | "barcode";
+type UsedFor = "qr" | "barcode" | "orders";
 
 type QrScannerButtonProps = {
   onScan: (value: string) => void;
@@ -33,11 +33,19 @@ export default function QrScannerButton({
   const [open, setOpen] = useState(false);
 
   const isBarcode = usedFor === "barcode";
+  const scanOrders = usedFor === "orders";
 
   const label = isBarcode ? "Scan Barcode" : "Scan QR";
-  const dialogTitle = isBarcode ? "Scan Product Barcode" : "Scan Customer QR";
-  const hint = isBarcode
-    ? "Point the camera at the product barcode — detects automatically."
+const dialogTitle = isBarcode
+  ? "Scan Product Barcode"
+  : scanOrders
+    ? "Scan Customer Order QR"
+    : "Scan Customer QR";
+
+const hint = isBarcode
+  ? "Point the camera at the product barcode — detects automatically."
+  : scanOrders
+    ? "Align the customer's order QR code inside the frame — detects automatically."
     : "Align the customer's QR code inside the frame — detects automatically.";
 
   function handleClose() {

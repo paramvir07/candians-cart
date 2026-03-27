@@ -18,7 +18,7 @@ const CustomerOrders = async ({
     return (
       <>
         {!customerId && !allOrders && <Navbar />}
-        <NoOrdersScreen customerId={customerId} />
+        <NoOrdersScreen customerId={customerId} allOrders={allOrders} />
       </>
     );
   }

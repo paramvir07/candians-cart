@@ -129,7 +129,7 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     Store.countDocuments(),
     productsModel.countDocuments(),
     OrderModel.aggregate([
-      { $group: { _id: null, total: { $sum: "$susbsidyUsed" } } },
+      { $group: { _id: null, total: { $sum: "$subsidyUsed" } } },
     ]),
     storePayoutsModel.aggregate([
       { $group: { _id: null, total: { $sum: "$platformProfit" } } },

@@ -1,5 +1,6 @@
 "use client";
 
+import { downloadOrderInvoicePDF } from "./DownloadOrderInvoice";
 import {
   cancelPendingOrder,
   completePendingOrder,
@@ -48,6 +49,7 @@ interface ReorderBtnProps {
   orderStatus?: "pending" | "completed" | "cancelled";
   allOrders?: boolean;
   orderCustomerId?: string;
+  order?: any;
 }
 
 // ─── Payment method display helper ─────────────────────────────────────────────
@@ -81,6 +83,7 @@ const ReorderBtn = ({
   orderStatus,
   allOrders,
   orderCustomerId,
+  order,
 }: ReorderBtnProps) => {
   const router = useRouter();
 
@@ -164,14 +167,23 @@ const ReorderBtn = ({
   };
 
   const handleDownloadInvoice = async () => {
-    const res = await fetch(`/api/invoice/${OrderId}`);
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `invoice-${OrderId}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (!order) {
+      toast.error("Order data is not available for invoice download.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await downloadOrderInvoicePDF(order);
+      toast.success("Invoice downloaded successfully.");
+    } catch (error) {
+      console.error("Invoice generation failed", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to download invoice.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -380,9 +392,16 @@ const ReorderBtn = ({
           size="icon"
           className="sm:w-auto sm:px-3 sm:gap-1.5 shrink-0"
           onClick={handleDownloadInvoice}
+          disabled={loading}
         >
-          <Download size={14} />
-          <span className="hidden sm:inline text-sm">Invoice</span>
+          {loading ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <Download size={14} />
+          )}
+          <span className="hidden sm:inline text-sm">
+            {loading ? "Generating..." : "Invoice"}
+          </span>
         </Button>
 
         <Button

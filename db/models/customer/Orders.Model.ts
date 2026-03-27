@@ -25,7 +25,7 @@ export interface PlaceOrderI {
   status?: "pending" | "completed";
   subsidy?: number;
   subsidyLeft:number;
-  susbsidyUsed:number;
+  subsidyUsed:number;
   paymentMode?: "wallet" | "cash" | "card" | "pending";
   cashierId?: Types.ObjectId;
 }
@@ -118,7 +118,7 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       type: Number,
       min: 0,
     },
-    susbsidyUsed:{
+    subsidyUsed:{
       type: Number,
       required: true,
       default: 0,
