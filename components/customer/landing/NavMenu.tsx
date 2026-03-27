@@ -12,10 +12,9 @@ import {
   User,
   Users,
   CreditCard,
-  Settings,
   HelpCircle,
   LogOut,
-  Zap,
+  ChartSpline,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { logoutAction } from "@/actions/auth/login-logout.actions";
@@ -81,13 +80,21 @@ export function NavAvatarMenu({ name, initials }: NavAvatarMenuProps) {
           Orders
         </DropdownMenuItem>
 
-        {/* Settings */}
+        {/* Settings
         <DropdownMenuItem
           onClick={() => router.push("/customer/settings")}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-sm font-medium text-foreground hover:bg-secondary focus:bg-secondary"
         >
           <Settings size={15} className="text-muted-foreground shrink-0" />
           Settings
+        </DropdownMenuItem> */}
+
+        <DropdownMenuItem
+          onClick={() => router.push("/customer/analytics")}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-sm font-medium text-foreground hover:bg-secondary focus:bg-secondary"
+        >
+          <ChartSpline size={15} className="text-muted-foreground shrink-0" />
+          Analytics
         </DropdownMenuItem>
 
         <DropdownMenuSeparator className="my-1.5 bg-border/60" />

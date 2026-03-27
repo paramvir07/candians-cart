@@ -61,7 +61,7 @@ export default function OrdersHistoryClient({
     ? `/cashier/customer/${customerId}`
     : allOrders
       ? "/cashier"
-      : "/customer";
+      : "/";
 
   const pageTitle = customerId
     ? "Customer Orders"
