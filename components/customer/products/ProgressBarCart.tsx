@@ -12,7 +12,8 @@ import { getFibBracketFrom21 } from "@/lib/FibBracket"
 
 
  
-const ProgressBarCart = ({ total, customerId, giftWalletBalance,totalMarkup }: {
+const ProgressBarCart = ({ total, customerId, giftWalletBalance,SubsidyonOrder }: {
+  SubsidyonOrder:number
   Totalsubsidy:number
   totalMarkup:number
   total: number
@@ -27,15 +28,13 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance,totalMarkup }: {
   const amount = total / 100
   const giftBalance = (giftWalletBalance ?? 0) / 100
   const { prev, current, mid } = getFibBracketFrom21(amount)
-  // console.log("MidPoints : ",mid)
-  const subsidy = amount >= 21 ? totalMarkup * 0.60 : 0
   const progressValue = current === prev ? 100 : Math.min(((amount - prev) / (current - prev)) * 100, 100)
  
   const lastMilestoneRef  = useRef<number | null>(null)
   const lastSubsidyRef    = useRef<number | null>(null)
   const prevAmountRef     = useRef<number | null>(null)
   useEffect(() => {
-    setSubsidyVal((subsidy/100)+giftBalance)
+    setSubsidyVal((SubsidyonOrder/100)+giftBalance)
 
     const prevAmount = prevAmountRef.current
  
@@ -51,10 +50,10 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance,totalMarkup }: {
  
     if (amount < 21) return
  
-    if (lastSubsidyRef.current === subsidy) return
-    lastSubsidyRef.current = subsidy
+    if (lastSubsidyRef.current === SubsidyonOrder) return
+    lastSubsidyRef.current = SubsidyonOrder
  
-    updateCartSubsidy((subsidy), customerId)
+    updateCartSubsidy((SubsidyonOrder), customerId)
  
     if (lastMilestoneRef.current !== prev) {
       lastMilestoneRef.current = prev
@@ -65,7 +64,7 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance,totalMarkup }: {
     lastSubsidyRef.current = null
     lastMilestoneRef.current = null
   }
-  }, [subsidy, amount, prev, giftBalance])
+  }, [SubsidyonOrder, amount, prev, giftBalance])
 
 
   return (

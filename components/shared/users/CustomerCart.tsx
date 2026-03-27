@@ -178,7 +178,13 @@ const subsidyTotals = subItems.reduce(
   const showPST = totals.pst > 0;
 
     const active = activeMarkup ?? 0;
-    const MarkupSub = totals.subtotal*(active/100);
+    const markupBase = (() => {
+      if (mid && totalInDollars >= mid && totalInDollars <= current) return mid * 100;
+      if (totalInDollars >= prev && totalInDollars < (mid ?? current)) return prev * 100;
+      return 0;
+    })();
+
+    const MarkupSub = markupBase * (active / 100);
 
   const subsidyOnOrder = Math.floor(MarkupSub * 0.60);
   const TotalSubsidy = Number(((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2));
@@ -376,7 +382,7 @@ return (
       {/* Progress */}
       <div className="mb-5 rounded-2xl px-4 py-3.5 border"
         style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-        <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} Totalsubsidy={TotalSubsidy} />
+        <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} Totalsubsidy={TotalSubsidy} SubsidyonOrder={subsidyOnOrder} />
       </div>
 
       {/* Items */}
@@ -546,7 +552,7 @@ return (
       {/* Progress */}
       <div className="mb-7 rounded-2xl px-5 py-4 border"
         style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-        <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} Totalsubsidy={TotalSubsidy} />
+        <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} Totalsubsidy={TotalSubsidy} SubsidyonOrder={subsidyOnOrder} />
       </div>
 
       <div className="flex gap-6 items-start">
