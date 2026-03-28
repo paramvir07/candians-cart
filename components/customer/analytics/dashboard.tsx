@@ -218,7 +218,7 @@ export default function AnalyticsDashboard({ orders, stripeTopUps, walletTopUps 
           <div className="px-5 pt-5 pb-4 flex items-start justify-between">
             <div>
               <p className="text-xs font-semibold mb-1" style={{ color: "var(--muted-foreground)" }}>
-                Total Profit
+                Total Spending
               </p>
               <p className="text-3xl font-black tabular-nums" style={{ color: "var(--foreground)" }}>
                 CA${fmt(totalSpent)}

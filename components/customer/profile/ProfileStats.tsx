@@ -1,8 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { getMemberSince, getMemberYear } from "@/lib/memberSince";
 import { Customer } from "@/types/customer/customer";
-import { DollarSign, ShoppingBag, CalendarDays, TrendingUp } from "lucide-react";
+import { DollarSign, ShoppingBag, CalendarDays, TrendingUp, ChartSpline } from "lucide-react";
 import Link from "next/link";
 
 type Props = {
@@ -92,6 +93,14 @@ export default function ProfileStats({ customer,OrderCount }: Props) {
           </p>
         </div>
       </div>
+
+      <Link href={'/customer/analytics'}
+        className="relative col-span-2 rounded-3xl overflow-hidden flex flex-col justify-between cursor-default"
+        style={{ background: "var(--primary)" }}
+      >
+          <Button>Analytics <ChartSpline/></Button>
+
+      </Link>
 
     </div>
   );
