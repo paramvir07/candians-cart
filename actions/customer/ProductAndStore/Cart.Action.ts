@@ -116,6 +116,7 @@ export const UpdateItemQuantity = async (
   await cart.save();
 
   revalidatePath("/customer/cart");
+  
 
   return { success: true, message: "Cart quantity updated" };
 };
