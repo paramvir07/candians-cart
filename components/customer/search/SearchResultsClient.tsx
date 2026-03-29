@@ -17,7 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Filter, Loader2, PackageOpen, Search, SlidersHorizontal, X } from "lucide-react";
+import { Loader2, PackageOpen, Search, SlidersHorizontal, X } from "lucide-react";
 import { Customer } from "@/types/customer/customer";
 
 interface SearchResultsClientProps {

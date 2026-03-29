@@ -7,6 +7,8 @@ export interface IReport {
   subject: string;
   message: string;
   category: ReportCategory;
+  accepted:boolean;
+  resolved:boolean;
 }
 
 const ReportSchema = new Schema<IReport>(
@@ -39,6 +41,16 @@ const ReportSchema = new Schema<IReport>(
       required: true,
       index: true,
     },
+    accepted:{
+      type:Boolean,
+      default:false,
+      required:true
+    },
+    resolved:{
+      type:Boolean,
+      default:false,
+      required:true
+    }
   },
   {
     timestamps: true,

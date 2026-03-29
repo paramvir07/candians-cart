@@ -1,13 +1,12 @@
-// components/customer/landing/Footer.tsx
 import Link from "next/link";
 import Logo from "@/components/shared/Logo";
 
 const LINKS = {
   Shop: [
     { label: "All Products", href: "/customer/search" },
-    { label: "Fresh Produce", href: "/customer/search?cat=Vegetables" },
-    { label: "Dairy & Eggs", href: "/customer/search?cat=Dairy" },
-    { label: "Bakery", href: "/customer/search?cat=Bakery" },
+    { label: "Fresh Produce", href: "/customer/search" },
+    { label: "Dairy & Eggs", href: "/customer/search" },
+    { label: "Bakery", href: "/customer/search" },
   ],
   Account: [
     { label: "My Profile", href: "/customer/profile" },

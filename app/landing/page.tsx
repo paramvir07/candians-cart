@@ -2,7 +2,7 @@ import FAQsThree from "@/components/landing/faqs-3"
 import FeaturesSection from "@/components/landing/features-8"
 import HeroSection from "@/components/landing/hero-section"
 
-const page = () => {
+const page = async() => {
   return (
     <div>
         <HeroSection/>
