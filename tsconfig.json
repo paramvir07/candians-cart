@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "actions/auth/getUserSession.actions.ts"  ],
+, "actions/auth/getUserSession.actions.ts", "tests/test-payout.js"  ],
   "exclude": ["node_modules"]
 }
