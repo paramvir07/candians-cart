@@ -5,7 +5,6 @@ import {
   Heading,
   Html,
   Preview,
-  Section,
   Text,
 } from "@react-email/components"
 import { Tailwind } from "@react-email/tailwind"
