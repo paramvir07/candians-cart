@@ -5,6 +5,7 @@ import { ReferralCodes } from "@/components/admin/referral-codes/ReferralCodes";
 const page = async () => {
   const result = await getReferalCodesAction();
   const data = result.referralCodes;
+
   return (
     <>
       <div className="flex flex-col gap-10 justify-center items-center py-4 max-w-screen">

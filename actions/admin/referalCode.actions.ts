@@ -15,7 +15,6 @@ export const createReferalCodeAction = async (
 ): Promise<IFormActionResponse> => {
   try {
     const session = await getUserSession();
-
     if (session.user.role !== "admin")
       return { success: false, message: "Unauthorized" };
     const rawData = formDataToObject(formData);
