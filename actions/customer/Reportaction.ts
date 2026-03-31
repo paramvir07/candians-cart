@@ -3,34 +3,45 @@
 import ReportModel from "@/db/models/customer/Report.model";
 import { reportSchema } from "@/zod/schemas/customer/report";
 import { HelpFormConfirmation } from "../resend/ResendActions";
+import { FormErrors, FormState } from "@/types/customer/helpForm";
 
-export const ReportSubmit = async(_prevState: unknown, formData: FormData) =>{
-  try{
-      const raw = {
-          email: formData.get("email"),
-          subject: formData.get("subject"),
-          message: formData.get("message"),
-          category: formData.get("category"),
-        };
 
-        const parsed = reportSchema.safeParse(raw);
+export const ReportSubmit = async (
+  _prevState: FormState,
+  formData: FormData
+): Promise<FormState> => {
+  try {
+    const raw = {
+      email: formData.get("email"),
+      subject: formData.get("subject"),
+      message: formData.get("message"),
+      category: formData.get("category"),
+    };
 
-        if (!parsed.success) {
-          return {
-            success: false,
-            errors: parsed.error.flatten().fieldErrors,
-          };
-        }
+    const parsed = reportSchema.safeParse(raw);
 
-        await ReportModel.create(parsed.data);
-        
-        await HelpFormConfirmation(parsed.data)
+    if (!parsed.success) {
+      return {
+        success: false,
+        errors: parsed.error.flatten().fieldErrors as FormErrors,
+      };
+    }
 
-        return {success: true, errors: null,};
+    await ReportModel.create(parsed.data);
+    await HelpFormConfirmation(parsed.data);
 
-  }catch(err){
-    console.log(err)
-    return {success:false, errors:err}
+    return {
+      success: true,
+      errors: {},
+    };
+  } catch (err) {
+    console.error(err);
+
+    return {
+      success: false,
+      errors: {
+        message: ["Something went wrong. Try again."],
+      },
+    };
   }
-
-}
+};
