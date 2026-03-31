@@ -16,7 +16,7 @@ interface HelpFormEmailData {
 export const HelpFormConfirmation = async (data: HelpFormEmailData) => {
   try {
     const response = await resend.emails.send({
-      from: "Candian Cart <onboarding@resend.dev>",
+      from: "Candian's Cart <onboarding@resend.dev>",
       to: [data.email],
       subject: `We received your ${data.subject}`,
       html: await render(

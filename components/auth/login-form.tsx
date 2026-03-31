@@ -12,8 +12,9 @@ import { Eye, EyeOff, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import Image from "next/image";
+import { IFormActionResponse } from "@/types/form";
 
-const initialState = {
+const initialState: IFormActionResponse = {
   success: false,
   message: "",
 };
@@ -30,24 +31,20 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
 
-  useEffect(() => {
-    if (state.message) {
-      if (state.success) {
-        toast.success(state.message);
-        customer
-          ? router.push("/")
-          : store
-            ? router.push("/store")
-            : admin
-              ? router.push("/admin")
-              : cashier
-                ? router.push("/cashier")
-                : router.push("/customer/login");
-      } else {
-        toast.error(state.message);
-      }
+useEffect(() => {
+  if (!state.message) return;
+
+  if (state.success) {
+    toast.success(state.message);
+    router.push(state.redirectTo || "/");
+  } else {
+    toast.error(state.message);
+    // Redirect to correct portal if provided (wrong role case)
+    if (state.redirectTo) {
+      setTimeout(() => router.push(state.redirectTo!), 2000);
     }
-  }, [state]);
+  }
+}, [state, router]);
 
   const title = store
     ? "Login to your store account"
@@ -74,6 +71,7 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
 
       {/* Form */}
       <form action={formAction} className="flex flex-col gap-3">
+        <input type="hidden" name="role" value={userRole} />
         <Input
           id="email"
           name="email"
@@ -112,19 +110,35 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
       {/* Footer links */}
       <div className="mt-6 flex flex-col gap-1.5">
         {customer && (
-            <p className="text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link href="/customer/signup" className="text-primary hover:underline">
-                Sign up
-              </Link>
-            </p>
-        )}
           <p className="text-sm text-muted-foreground">
-            Are you a partner?{" "}
-            <Link href="/partner-access" className="text-primary hover:underline">
-              Login here
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/customer/signup"
+              className="text-primary hover:underline"
+            >
+              Sign up
             </Link>
           </p>
+        )}
+        {!customer &&(
+            <p className="text-sm text-muted-foreground">
+              Are you a Customer?{" "}
+              <Link
+                href="/customer/login"
+                className="text-primary hover:underline"
+              >
+                Login here
+              </Link>
+            </p>
+          )
+        }
+
+        <p className="text-sm text-muted-foreground">
+          Are you a partner?{" "}
+          <Link href="/partner-access" className="text-primary hover:underline">
+            Login here
+          </Link>
+        </p>
       </div>
     </>
   );
