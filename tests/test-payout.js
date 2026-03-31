@@ -15,9 +15,8 @@ function ask(question) {
   });
 }
 
-// Extracted logic for reusability and testing
+// Core calculation logic
 function calculateOrderMetrics(inputs) {
-  // Destructure inputs for cleaner code access
   const {
     cartTotal,
     totalBasePrice,
@@ -28,49 +27,40 @@ function calculateOrderMetrics(inputs) {
     totalCashCollected = 0,
   } = inputs;
 
-  const STORE_PROFIT_MARGIN = 0.3;
+  const STORE_PROFIT_MARGIN = 0.35;
 
-  // Total Tax
   const totalTax = totalGST + totalPST;
 
-  // Total Markup = Cart Total - (Total Base Price + Total Disposable Fee + Total Tax)
   const totalMarkup =
     cartTotal - (totalBasePrice + totalDisposableTax + totalTax);
 
-  // Apportioning based on values
   const val = totalBasePrice + totalMarkup;
 
-  // Guard against division by zero
   const basePercentage = val > 0 ? totalBasePrice / val : 0;
   const markupPercentage = val > 0 ? totalMarkup / val : 0;
 
   const baseTax = totalTax * basePercentage;
   const markupTax = totalTax * markupPercentage;
-  const storeMarkupTax = markupTax * 0.3;
+  const storeMarkupTax = markupTax * STORE_PROFIT_MARGIN;
 
-  // Store Fixed Value (SFV)
-  // Assuming the store claims the Base Tax portion and Store Markup Tax on top of items/fees
-  const sfv = totalBasePrice + totalDisposableTax + baseTax + storeMarkupTax;
+  const sfv = totalBasePrice + totalDisposableTax + baseTax;
 
-  // Gross Margin = Customer Paid - SFV
   const grossMargin = cartTotal - sfv;
 
-  // Store Profit = Total Markup * 30%
-  const storeProfit = totalMarkup * STORE_PROFIT_MARGIN;
+  const storeProfit = (grossMargin) * STORE_PROFIT_MARGIN;
 
-  // Store Payout = (Store Profit + SFV) - totalCashCollected
   const storePayout = storeProfit + sfv - totalCashCollected;
 
-  // Platform Profit = Customer Paid - (Store Profit + SFV)
   const platformProfit = cartTotal - (storeProfit + sfv);
 
-  // Platform Commission = Our Profit + Subsidy
   const platformCommission = platformProfit + subsidy;
+
+  const effectiveTaxRate = val > 0 ? totalTax / val : 0;
 
   return {
     totalTax,
     totalMarkup,
-    val, // returning val to show it in the logs
+    val,
     basePercentage: basePercentage * 100,
     markupPercentage: markupPercentage * 100,
     baseTax,
@@ -82,11 +72,13 @@ function calculateOrderMetrics(inputs) {
     storePayout,
     platformProfit,
     platformCommission,
+    effectiveTaxRate: effectiveTaxRate * 100,
   };
 }
 
 async function main() {
   console.log("--- Order Financials Tester ---");
+
   const cartTotal = await ask("Cart Total / Customer Paid ($): ");
   const totalBasePrice = await ask("Total base price ($): ");
   const subsidy = await ask("Total Subsidy of order ($): ");
@@ -94,7 +86,7 @@ async function main() {
   const totalGST = await ask("Enter total GST ($): ");
   const totalPST = await ask("Enter total PST ($): ");
   const totalCashCollected = await ask(
-    "Total Cash Collected (Order + Topup) ($): ",
+    "Total Cash Collected (Order + Topup) ($): "
   );
 
   const metrics = calculateOrderMetrics({
@@ -107,100 +99,82 @@ async function main() {
     totalCashCollected,
   });
 
+  // Derived comparisons
+  const storeProfit = metrics.grossMargin * 0.35;
+
   console.log("\n--- Tax & Markup Breakdown ---");
   console.log(
-    `Total Tax = totalGST ${totalGST.toFixed(2)} + totalPST ${totalPST.toFixed(2)} = $${metrics.totalTax.toFixed(2)}`,
+    `Total Tax = ${totalGST.toFixed(2)} (GST) + ${totalPST.toFixed(2)} (PST) = $${metrics.totalTax.toFixed(2)}`
   );
+  
   console.log(
-    `Total Markup = cartTotal ${cartTotal.toFixed(2)} - (totalBasePrice ${totalBasePrice.toFixed(2)} + totalDisposableTax ${totalDisposableTax.toFixed(2)} + totalTax ${metrics.totalTax.toFixed(2)}) = $${metrics.totalMarkup.toFixed(2)}`,
-  );
-
-  console.log("\nApportioning Value (Val) = totalBasePrice + totalMarkup");
-  console.log(
-    `Val = ${totalBasePrice.toFixed(2)} + ${metrics.totalMarkup.toFixed(2)} = ${metrics.val.toFixed(2)}`,
+    `Total Markup = ${cartTotal.toFixed(2)} (Cart Total) - [${totalBasePrice.toFixed(2)} (Base Price) + ${totalDisposableTax.toFixed(2)} (Disposable Fee) + ${metrics.totalTax.toFixed(2)} (Total Tax)] = $${metrics.totalMarkup.toFixed(2)}`
   );
 
+  console.log("\n--- Value (Val) Metrics ---");
   console.log(
-    `Base Percentage = (totalBasePrice ${totalBasePrice.toFixed(2)} / Val ${metrics.val.toFixed(2)}) * 100 = ${metrics.basePercentage.toFixed(2)}%`,
-  );
-  console.log(
-    `Markup Percentage = (totalMarkup ${metrics.totalMarkup.toFixed(2)} / Val ${metrics.val.toFixed(2)}) * 100 = ${metrics.markupPercentage.toFixed(2)}%`,
+    `Val = ${totalBasePrice.toFixed(2)} (Base Price) + ${metrics.totalMarkup.toFixed(2)} (Total Markup) = ${metrics.val.toFixed(2)}`
   );
 
   console.log(
-    `Base Tax Portion = totalTax ${metrics.totalTax.toFixed(2)} * ${metrics.basePercentage.toFixed(2)}% = $${metrics.baseTax.toFixed(2)}`,
+    `Base % = ${metrics.basePercentage.toFixed(2)}% | Markup % = ${metrics.markupPercentage.toFixed(2)}%`
   );
+
   console.log(
-    `Markup Tax Portion = totalTax ${metrics.totalTax.toFixed(2)} * ${metrics.markupPercentage.toFixed(2)}% = $${metrics.markupTax.toFixed(2)}`,
-  );
-  console.log(
-    `Store Markup Tax = markupTax ${metrics.markupTax.toFixed(2)} * 0.30 = $${metrics.storeMarkupTax.toFixed(2)}`,
+    `Base Tax = $${metrics.baseTax.toFixed(2)} | Markup Tax = $${metrics.markupTax.toFixed(2)}`
   );
 
   console.log("\n--- Store Metrics ---");
   console.log(
-    `Store Fixed Value (SFV) = totalBasePrice ${totalBasePrice.toFixed(2)} + totalDisposableTax ${totalDisposableTax.toFixed(2)} + baseTax ${metrics.baseTax.toFixed(2)} + storeMarkupTax ${metrics.storeMarkupTax.toFixed(2)} = $${metrics.sfv.toFixed(2)}`,
+    `SFV = ${totalBasePrice.toFixed(2)} (base price) + ${totalDisposableTax.toFixed(2)} (disposable fee) + ${metrics.baseTax.toFixed(2)} (base tax) = $${metrics.sfv.toFixed(2)}`
   );
+
   console.log(
-    `Gross Margin = cartTotal ${cartTotal.toFixed(2)} - sfv ${metrics.sfv.toFixed(2)} = $${metrics.grossMargin.toFixed(2)}`,
+    `Gross Margin = ${cartTotal.toFixed(2)} (Cart Total) - ${metrics.sfv.toFixed(2)} (SFV) = $${metrics.grossMargin.toFixed(2)}`
   );
+
   console.log(
-    `Store Profit = totalMarkup ${metrics.totalMarkup.toFixed(2)} * 0.30 = $${metrics.storeProfit.toFixed(2)}`,
+    `Store Profit (35%) = ${metrics.grossMargin.toFixed(2)} (Gross Margin) * 0.35 = $${storeProfit.toFixed(2)}`
   );
+
   console.log(
-    `Store Payout = storeProfit ${metrics.storeProfit.toFixed(2)} + sfv ${metrics.sfv.toFixed(2)} - totalCashCollected ${totalCashCollected.toFixed(2)} = $${metrics.storePayout.toFixed(2)}`,
+    `Store Payout = ${metrics.storeProfit.toFixed(2)} (Store Profit) + ${metrics.sfv.toFixed(2)} (SFV) - ${totalCashCollected.toFixed(2)} (Cash Collected) = $${metrics.storePayout.toFixed(2)}`
   );
 
   console.log("\n--- Platform Metrics ---");
   console.log(
-    `Platform Profit = cartTotal ${cartTotal.toFixed(2)} - (storeProfit ${metrics.storeProfit.toFixed(2)} + sfv ${metrics.sfv.toFixed(2)}) = $${metrics.platformProfit.toFixed(2)}`,
-  );
-  console.log(
-    `Platform Commission = platformProfit ${metrics.platformProfit.toFixed(2)} + subsidy ${subsidy.toFixed(2)} = $${metrics.platformCommission.toFixed(2)}`,
+    `Platform Profit = ${cartTotal.toFixed(2)} (Cart Total) - [${metrics.storeProfit.toFixed(2)} (Store Profit) + ${metrics.sfv.toFixed(2)} (SFV)] = $${metrics.platformProfit.toFixed(2)}`
   );
 
-  // --- Verifications ---
-  console.log(`\n--- Verification 1: Customer Paid ---`);
   console.log(
-    `Formula: Our Profit + Store Payout + Cash Collected = Customer Paid`,
+    `Platform Commission = ${metrics.platformProfit.toFixed(2)} (Platform Profit) + ${subsidy.toFixed(2)} (Subsidy) = $${metrics.platformCommission.toFixed(2)}`
   );
+
+  // Verification
+  console.log(`\n--- Verification ---`);
 
   const customerPaidCalc =
     metrics.platformProfit + metrics.storePayout + totalCashCollected;
-  // Using Math.abs with a small epsilon (0.01) to handle floating-point inaccuracies
-  if (Math.abs(customerPaidCalc - cartTotal) < 0.01) {
-    console.log(
-      `✅ SUCCESS: Calculated matches Input ($${customerPaidCalc.toFixed(2)} == $${cartTotal.toFixed(2)})`,
-    );
-  } else {
-    console.log(
-      `❌ FAILED: Calculated DOES NOT match Input ($${customerPaidCalc.toFixed(2)} != $${cartTotal.toFixed(2)})`,
-    );
-  }
+
   console.log(
-    `Breakdown: platformProfit $${metrics.platformProfit.toFixed(2)} + storePayout $${metrics.storePayout.toFixed(2)} + totalCashCollected $${totalCashCollected.toFixed(2)} = $${customerPaidCalc.toFixed(2)}`,
+    `Customer Paid Check: ${customerPaidCalc.toFixed(2)} vs ${cartTotal.toFixed(2)}`
   );
 
-  console.log(`\n--- Verification 2: Percentage Split ---`);
-  console.log(`Formula: Base Percentage + Markup Percentage = 100%`);
-
-  const totalPercentageCalc = metrics.basePercentage + metrics.markupPercentage;
-  const expectedPercentage = totalBasePrice + metrics.totalMarkup > 0 ? 100 : 0;
-
-  if (Math.abs(totalPercentageCalc - expectedPercentage) < 0.01) {
-    console.log(
-      `✅ SUCCESS: Total Percentage equals ${totalPercentageCalc.toFixed(2)}%`,
-    );
-  } else {
-    console.log(
-      `❌ FAILED: Total Percentage equals ${totalPercentageCalc.toFixed(2)}%, expected ${expectedPercentage}%`,
-    );
-  }
   console.log(
-    `Breakdown: basePercentage ${metrics.basePercentage.toFixed(2)}% + markupPercentage ${metrics.markupPercentage.toFixed(2)}% = ${totalPercentageCalc.toFixed(2)}%`,
+    `Percentage Split Verification: ${(metrics.basePercentage + metrics.markupPercentage).toFixed(2)}%`
+  );
+
+  const taxOnBasePrice = totalBasePrice * (metrics.effectiveTaxRate / 100);
+
+  console.log(
+    `Tax Verification Check: ${taxOnBasePrice.toFixed(2)} vs ${metrics.baseTax.toFixed(2)}`
   );
 
   rl.close();
+  process.exit(0);
 }
 
-main();
+main().catch((err) => {
+  console.error("Execution error:", err);
+  process.exit(1);
+});

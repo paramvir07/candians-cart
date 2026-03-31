@@ -4,10 +4,17 @@ export interface IStorePayout {
   startDate: Date;
   endDate: Date;
   storeId: Types.ObjectId;
+  totalNumberofOrders: number;
+  orderIds: Types.ObjectId[];
   totalCustomerPaid: number;
   totalGST: number;
   totalPST: number;
   totalTax: number;
+  baseTax: number;
+  markupTax: number;
+  storebasetaxGST: number;
+  storebasetaxPST: number;
+  platformMarkuptax: number;
   totalSubsidy: number;
   totalDisposableFee: number;
   storeFixedValue: number;
@@ -40,6 +47,17 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       type: Date,
       required: true,
     },
+    totalNumberofOrders: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    orderIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Order",
+      },
+    ],
     storeId: {
       type: Schema.Types.ObjectId,
       ref: "Store",
@@ -59,6 +77,26 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       required: true,
     },
     totalTax: {
+      type: Number,
+      required: true,
+    },
+    baseTax: {
+      type: Number,
+      required: true,
+    },
+    markupTax: {
+      type: Number,
+      required: true,
+    },
+    storebasetaxGST: {
+      type: Number,
+      required: true,
+    },
+    storebasetaxPST: {
+      type: Number,
+      required: true,
+    },
+    platformMarkuptax: {
       type: Number,
       required: true,
     },
@@ -85,11 +123,11 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
     },
     totalWalletTopUpCashCollected: {
       type: Number,
-      default: 0
+      default: 0,
     },
     totalOrderCashCollected: {
       type: Number,
-      default: 0
+      default: 0,
     },
     totalCashCollected: {
       type: Number,

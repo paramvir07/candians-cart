@@ -33,14 +33,26 @@ export async function saveStorePayoutAction(
       );
     }
 
+    console.log(
+      receipt.orderCount,
+      receipt.orderIds.map((id) => new mongoose.Types.ObjectId(id)),
+    );
+
     const newPayout = await StorePayoutModel.create({
       startDate,
       endDate,
+      totalNumberofOrders: receipt.orderCount,
+      orderIds: receipt.orderIds.map((id) => new mongoose.Types.ObjectId(id)),
       storeId: new mongoose.Types.ObjectId(receipt._id),
       totalCustomerPaid: receipt.totalCustomerPaid,
       totalGST: receipt.totalGST,
       totalPST: receipt.totalPST,
       totalTax: receipt.totalTax,
+      baseTax: receipt.baseTax,
+      markupTax: receipt.markupTax,
+      storebasetaxGST: receipt.storebasetaxGST,
+      storebasetaxPST: receipt.storebasetaxPST,
+      platformMarkuptax: receipt.platformMarkuptax,
       totalDisposableFee: receipt.totalDisposableFee,
       storeFixedValue: receipt.storeFixedValue,
       storeProfit: receipt.storeProfit,
@@ -52,6 +64,8 @@ export async function saveStorePayoutAction(
       platformCommision: receipt.platformCommision,
       status: "pending",
     });
+
+    console.log("saved")
 
     return {
       success: true,
