@@ -3,6 +3,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Store Dashboard",
+    template: "%s | Store Panel - Candian Cart",
+  },
+  robots: {
+    index: false, // Prevents indexing of all store dashboard routes
+    follow: false,
+  },
+};
 
 export default async function RootLayout({
   children,

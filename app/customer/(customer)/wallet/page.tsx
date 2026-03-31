@@ -3,6 +3,11 @@ import Navbar from "@/components/customer/landing/Navbar";
 import WalletSwitcher from "@/components/customer/wallet/WalletSwitcher";
 import WalletView from "@/components/customer/wallet/WalletView";
 import { Customer } from "@/types/customer/customer";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Wallet",
+};
 
 const Page = async () => {
   const customerDataResponse = await getCustomerDataAction();

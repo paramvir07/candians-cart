@@ -10,6 +10,11 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { getOrderCount } from "@/actions/customer/ProductAndStore/Order.Action";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Profile", // This becomes "Orders | Store Panel - Candian Cart" in the browser tab
+};
 
 export default async function ProfilePage() {
   const [customerRes, orderRes] = await Promise.all([

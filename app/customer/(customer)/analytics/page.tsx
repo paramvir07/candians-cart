@@ -5,6 +5,11 @@ import Navbar from "@/components/customer/landing/Navbar";
 import { PlaceOrderProduct } from "@/db/models/customer/Orders.Model";
 import { IWalletPayment } from "@/db/models/customer/WalletPayment.model";
 import { PlaceOrderI } from "@/db/models/customer/Orders.Model";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Analytics",
+};
 
 export type SerializedProduct = Omit<PlaceOrderProduct, "productId"> & {
   productId: {

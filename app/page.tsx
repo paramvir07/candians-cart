@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import getStoreAndProduct from "@/actions/customer/ProductAndStore/getAssociatedStore";
 import Navbar from "@/components/customer/landing/Navbar";
@@ -7,12 +8,19 @@ import { redirect } from "next/navigation";
 import { IProduct } from "@/types/store/products.types";
 import { Footer } from "@/components/customer/landing/Footer";
 
+export const metadata: Metadata = {
+  title: "Home",
+  description:
+    "Browse our fresh selection of groceries, exclusive subsidized items, and everyday essentials.",
+};
+
 export default async function CustomerPage() {
   const session = await getUserSession();
   const role = session.user.role;
 
   if (role !== "customer") {
-    if (role === "store" || role === "admin" || role === "cashier") redirect(`/${role}`);
+    if (role === "store" || role === "admin" || role === "cashier")
+      redirect(`/${role}`);
     else redirect("/customer/login");
   }
 
@@ -42,11 +50,13 @@ export default async function CustomerPage() {
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <Navbar />
-      {/* Server component — static, no JS needed */}
-      <HeroBanner />
-      {/* Client component — receives all products, handles filters/pagination */}
-      <ProductsSection products={products} />
-      <Footer/>
+      <main>
+        {/* Server component — static, no JS needed */}
+        <HeroBanner />
+        {/* Client component — receives all products, handles filters/pagination */}
+        <ProductsSection products={products} />
+      </main>
+      <Footer />
     </div>
   );
 }

@@ -4,6 +4,11 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getOrderStats } from "@/actions/admin/orders/getOrderStats.action";
 import { OrdersList } from "@/components/admin/store/OrdersList";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Orders", // This becomes "Orders | Store Panel - Candian Cart" in the browser tab
+};
 
 const StoreOrdersPage = async () => {
   const storeDataResponse = await getMyStoreData();
