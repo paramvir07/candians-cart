@@ -20,6 +20,7 @@ export const HelpFormConfirmation = async (data: HelpFormEmailData) => {
       from: "Canadian Cart <onboarding@resend.dev>",
       to: [data.email],
       subject: `We received your ${data.subject}`,
+      // server action file should be in tsx to render react elements 
       html: await render(
         <HelpFormEmail
           userEmail={data.email}

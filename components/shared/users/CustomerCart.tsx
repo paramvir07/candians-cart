@@ -421,7 +421,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </div>
             <TaxRows />
             <DisposableRow />
-            <SubsidyCart subsidy={totalActiveMarkup * 0.60} />
+            <SubsidyCart subsidy={subsidyOnOrder} />
 
             <div className="flex items-center gap-1 py-1">
               <div className="flex-1 border-t border-dashed" style={{ borderColor: "var(--border)" }} />
