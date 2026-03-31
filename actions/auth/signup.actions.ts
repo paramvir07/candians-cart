@@ -128,6 +128,12 @@ export const signupAction = async (
       } finally {
         session.endSession();
       }
+    return {
+      success: true,
+      message:
+        "Your account has been created. We’ve sent a verification link to your email. Please verify your email and then log in.",
+    };
+
     } else if (userRole === "store") {
       const session = await getUserSession();
       const adminRole = session.user.role === "admin";
@@ -163,6 +169,12 @@ export const signupAction = async (
         mobile: data.mobile,
         address: data.address,
       });
+    return {
+      success: true,
+      message:
+        "Store account created successfully. The user can now verify their email and log in using the provided credentials.",
+    };
+
     } else if (userRole === "cashier") {
       const session = await getUserSession();
       const adminRole = session.user.role === "admin";
@@ -202,6 +214,11 @@ export const signupAction = async (
         address: data.address,
         storeId: data.associatedStore,
       });
+      return {
+        success: true,
+        message:
+          "Cashier account created successfully. The user can now verify their email and log in using the provided credentials.",
+      };
     } else if (userRole === "admin") {
       const session = await getUserSession();
       const adminRole = session.user.role === "admin";
@@ -222,14 +239,13 @@ export const signupAction = async (
           role: "admin",
         },
       });
+      return { success: true, message: "Admin account created successfully. The user can now verify their email and log in using the provided credentials." };
     } else {
       return {
         success: false,
         message: "Something went wrong while creating account",
       };
     }
-
-    return { success: true, message: "Account created successfully!!" };
   } catch (error) {
     console.log("Error while creating new account: ", error);
     return {

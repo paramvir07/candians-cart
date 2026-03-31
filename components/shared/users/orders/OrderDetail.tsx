@@ -132,7 +132,7 @@ export default function OrderDetail({
                   )}
 
                   <p className="text-sm font-bold text-foreground tabular-nums mt-1">
-                    {fmt(item.total ?? unitBase * item.quantity)}
+                    {fmt(unitBase * item.quantity)}
                   </p>
                 </div>
               </div>
@@ -146,7 +146,7 @@ export default function OrderDetail({
             <div className="px-4 py-4 space-y-2.5 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">
-                  Items ({allProducts.length})
+                  Subtotal
                 </span>
                 <span className="font-medium tabular-nums">
                   {fmt(cartTotal - totalGST - totalPST - totalFee)}
@@ -184,7 +184,7 @@ export default function OrderDetail({
                     {fmt(subsidyGenerated)}
                   </span>
                 </div>
-              )}
+              )} */}
 
               {hasSubsidyUsed && (
                 <div className="flex items-center justify-between">
@@ -196,7 +196,7 @@ export default function OrderDetail({
                     -{fmt(subsidyUsed)}
                   </span>
                 </div>
-              )} */}
+              )}
 
               <Separator className="my-1" />
 

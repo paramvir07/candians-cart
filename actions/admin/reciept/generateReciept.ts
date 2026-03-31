@@ -1,72 +1,32 @@
 "use server";
 /*
-Orders Model has the following data -:
-
-TotalGST, TotalPST We can get Total Tax (T.GST + T.PST) from here
-cartTotal is the total amount of money the customer paid (CP)
-subsidy (If any)
-
-TotalDisposableFee is total amt of fee (If any)
-BaseTotal is the sum of all product's base price
-
-Then we can calculate totalMarkup(in cents) with this formula
-
-Customer Paid = (Base Price + Total Markup + Tax + DisposableFee) - subsidy
-
-Then we calculate Store Fix Value (This is the store direct cost) per order or we can find a quick way to calc this
-
-SFV = Total Base Price + Total Disposable Fee + Total Tax
-
-then what we are left with will be
-grossMargin = Customer Paid - SFV
-
-then we will give the store its 30% profit from grossMargin, so Store Payout is
-Store Payout = SFV + 0.30(grossMargin) 
-
-and then we will be left with platformProfit, CP - SP
-
-For example (All in cents) -:
-
-Milk 1 bottle
-BP = 249
-markup = 30%
-disposableFee = 10
-total tax = 0
-
-So 8 Milk bottles becomes
-BP = 1992, Total markup = 600, Disposablefee = 80, total tax = 0
-Since the total Product price is now more than 2100 cents ($21) we give customer subsidy of 315 cents ($3.15) {Our business logic}
-
-(We might need ot calc Total Markup since we are not storing that in Orders model)
-
-Customer paid = (Base Price + Total Markup + Tax + DisposableFee) - subsidy
-Customer Paid = 2357
-
-SFV = BP + Total Disposable Fee + Total tax
-SFV = 2072
-
-grossMargin = CP - SFV = 285 (Our cost)
-
-Store Profit = grossMargin * 0.30 = 85 cents
-
-Store Payout = Store Profit + SFV = 2157
-
-Our Profit = CP - SP = 200 (platformProfit)
-
-Verify -:
-Our Profit + Store Payout = Customer Paid
-200 + 2157 = 2357
-
----
-
-
-
 .........................................................new logic ..................................................
 
 Customer paid = [Cart total]
 Customer Paid (CP) = 2357
 
-Store Fixed Value (SFV) = Total Base Price + Total Disposable Fee + Total tax
+--- Calculating Markup
+Total Markup = Cart Total - (Total Base Price + Total Disposable Fee + Total Tax)
+
+Now Note that the Total tax we are getting uptill this point is calc. based on the base price and the markup. So this isnt the real Tax.
+The tax the store gets has to be based on markup.
+
+Val = Total Base Price + Total Markup
+now from this Val we can calculate how much is % is Base Price and how much is Total Markup
+eg -: Base Price = 100 | Total Markup = 30, so Val becomes 130;
+So Base in percentage = (Total Base / Val) * 100 | Markup in percentage = (Total Markup / Val) * 100
+Base in percentage = 76.92%
+Markup in percentage = 23.07%
+
+Verify (Sum of both should be 100%)
+
+So total Tax 23.07% is Markup Tax
+
+now 30 % of Markup tax is gonna go to Store {$1.50}
+
+and tax on Base Price 76.92 will also go to Store
+
+Store Fixed Value (SFV) = Total Base Price + Total Disposable Fee + Markup tax + Base tax
 SFV = 2072
 
 grossMargin = Customer Paid - SFV = 285 (Our cost)
@@ -74,7 +34,7 @@ grossMargin = Customer Paid - SFV = 285 (Our cost)
 the 0.30 or 30% Value can be changed in future.
 Store Profit = (grossMargin + [subsidy]) * 0.30 = 85 cents
 
-totalCashCollected = Topup Cash Collectedv(If any) + Order Cash Collected
+totalCashCollected = Topup Cash Collected (If any) + Order Cash Collected
 
 Store Payout = (Store Profit + SFV) - totalCashCollected = 2157
 

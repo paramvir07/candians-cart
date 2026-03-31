@@ -4,7 +4,6 @@ import HelpFormEmail from "@/components/EmailTemplates/HelpFormEmail";
 import { render } from "@react-email/components";
 import { Resend } from "resend";
 
-
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface HelpFormEmailData {
@@ -17,7 +16,7 @@ interface HelpFormEmailData {
 export const HelpFormConfirmation = async (data: HelpFormEmailData) => {
   try {
     const response = await resend.emails.send({
-      from: "Canadian Cart <onboarding@resend.dev>",
+      from: "Candian's Cart <onboarding@resend.dev>",
       to: [data.email],
       subject: `We received your ${data.subject}`,
       // server action file should be in tsx to render react elements 

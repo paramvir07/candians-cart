@@ -308,21 +308,23 @@ export async function POST(req: Request) {
       const p = item.productId ?? {};
       const qty = item.quantity ?? 0;
       const subsidy = item.subsidy ?? 0;
-      const total = item.total ?? 0;
+      const unitBase =
+        (p?.price ?? 0) + (p?.price ?? 0) * ((item.markup ?? 0) / 100);
+      const total = unitBase * (item.quantity ?? 0);
 
       const itemName = p.name || `Item ${index + 1}`;
       const itemLine = `${itemName} × ${qty}`;
       drawRow(itemLine, fmtCurrency(total));
 
       if (subsidy > 0) {
-        drawRow("  Subsidy used", `-${fmtCurrency(subsidy)}`);
+        drawRow("Subsidy used", `-${fmtCurrency(subsidy)}`);
       }
     });
 
     y -= 4;
     drawSectionHeader("Amount Breakdown");
 
-    drawRow("Items", fmtCurrency(cartTotal - totalGST - totalPST - totalFee));
+    drawRow("Subtotal", fmtCurrency(cartTotal - totalGST - totalPST - totalFee));
     if (totalGST > 0) drawRow("GST", fmtCurrency(totalGST));
     if (totalPST > 0) drawRow("PST", fmtCurrency(totalPST));
     if (totalFee > 0) drawRow("Disposable fee", fmtCurrency(totalFee));
