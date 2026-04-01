@@ -28,6 +28,9 @@ export async function updateProduct(
   data: ProductFormValues,
 ): Promise<ActionResponse> {
   try {
+    // Automatically sets the subsidy to true, if product category = Fruits, Vegetables, Dairy
+    const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
+
     const session = await getUserSession();
     if (!session?.user?.id) {
       return { success: false, message: "Unauthorized" };
@@ -129,6 +132,10 @@ export async function updateProduct(
       });
     }
 
+    console.log("CATEGORY:", otherData.category);
+
+    const isSubsidized = subsidyCategories.includes(otherData.category);
+
     const dbPayload = {
       ...otherData,
       images: images || [], // Set the new images array
@@ -139,6 +146,7 @@ export async function updateProduct(
       // converting dollars to cents
       disposableFee: Math.round((disposableFee || 0) * 100),
       InvoiceId: InvoiceId || existingProduct.InvoiceId,
+      subsidised: isSubsidized,
     };
 
     let updatedProduct;

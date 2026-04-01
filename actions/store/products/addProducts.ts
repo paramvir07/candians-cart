@@ -71,6 +71,10 @@ export async function createProduct(
 
     const newPriceinCents = Math.round(price * 100);
 
+    // Automatically sets the subsidy to true, if product category = Fruits, Vegetables, Dairy
+    const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
+    const isSubsidized = subsidyCategories.includes(otherData.category); 
+
     const dbPayload = {
       ...otherData,
       storeId, // guaranteed defined now
@@ -79,6 +83,7 @@ export async function createProduct(
       price: newPriceinCents,
       disposableFee: Math.round((disposableFee ?? 0) * 100),
       InvoiceId: InvoiceId || undefined,
+      subsidised: isSubsidized,
     };
 
     const newProduct = await Product.create(dbPayload);
