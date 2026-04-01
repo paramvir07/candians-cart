@@ -13,7 +13,7 @@ import {
 import { StoreDocument } from "@/types/store/store";
 import { DownloadButton } from "./DownloadButton";
 import { DatePickerWithRange } from "./DatePickerWithRange";
-import { saveStorePayoutAction } from "@/actions/admin/reciept/saveStorePayout"; // Import the new action
+import { saveStorePayoutAction } from "@/actions/admin/reciept/saveStorePayout";
 import { toast } from "sonner";
 
 // Utility Imports
@@ -38,18 +38,15 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button"; // Added Button
+import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
-  FileJson,
   Store,
   ShoppingCart,
   TrendingUp,
-  DollarSign,
   Receipt,
-  Save, // Added Save Icon
+  Save,
 } from "lucide-react";
-// import { toast } from "sonner"; // Assuming you use Sonner for toasts, uncomment if available
 
 export default function RecieptComponent({
   initialStoreId,
@@ -136,10 +133,8 @@ export default function RecieptComponent({
       const res = await saveStorePayoutAction(receipt, startDate, endDate);
 
       if (res.success) {
-        // Show success toast
         toast.success("Payout saved successfully!");
       } else {
-        // Show error toast with the message from the server action
         toast.error(res.error || "Failed to save payout");
       }
     } catch (error) {
@@ -336,7 +331,7 @@ export default function RecieptComponent({
                               <span className="text-muted-foreground">
                                 Total GST
                               </span>
-                              <span className="font-medium">
+                              <span className="font-medium text-red-600">
                                 {fmt(r.totalGST)}
                               </span>
                             </div>
@@ -344,7 +339,7 @@ export default function RecieptComponent({
                               <span className="text-muted-foreground">
                                 Total PST
                               </span>
-                              <span className="font-medium">
+                              <span className="font-medium text-red-600">
                                 {fmt(r.totalPST)}
                               </span>
                             </div>
@@ -363,11 +358,11 @@ export default function RecieptComponent({
                               </div>
                             )}
 
-                            <div className="flex justify-between items-center font-medium text-emerald-600">
+                            <div className="flex justify-between items-center font-medium text-foreground">
                               <span>Total Cash Collected (From Orders)</span>
                               <span>{fmt(r.totalOrderCashCollected)}</span>
                             </div>
-                            <div className="flex justify-between items-center font-medium text-emerald-600">
+                            <div className="flex justify-between items-center font-medium text-foreground">
                               <span>
                                 Total Cash Collected (From Wallet Topups)
                               </span>
@@ -375,9 +370,27 @@ export default function RecieptComponent({
                                 {fmt(r.totalWalletTopUpCashCollected)}
                               </span>
                             </div>
+
+                            {/* --- FIXED: Base Tax UI Breakdown --- */}
                             <Separator className="my-2" />
-                            <div className="flex justify-between items-center font-semibold">
-                              <span>Store Fixed Value</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">
+                                Store Tax Portion (GST)
+                              </span>
+                              <span className="font-medium">
+                                {fmt(r.storebasetaxGST)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">
+                                Store Tax Portion (PST)
+                              </span>
+                              <span className="font-medium">
+                                {fmt(r.storebasetaxPST)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center font-semibold text-foreground mt-2">
+                              <span>Store Fixed Value (SFV)</span>
                               <span>{fmt(r.storeFixedValue)}</span>
                             </div>
                           </div>
@@ -403,20 +416,28 @@ export default function RecieptComponent({
                               <span>Store Profit</span>
                               <span>{fmt(r.storeProfit)}</span>
                             </div>
-                            <div className="flex justify-between items-center font-medium text-emerald-600">
+                            <div className="flex justify-between items-center font-medium text-red-600">
                               <span>Total Cash Collected</span>
-                              <span>{fmt(r.totalCashCollected)}</span>
+                              <span>-{fmt(r.totalCashCollected)}</span>
                             </div>
 
-                            <div className="flex justify-between items-center font-medium text-blue-600">
+                            <div className="flex justify-between items-center font-medium text-blue-600 mt-2">
                               <span>Total Store Payout</span>
                               <span>{fmt(r.storePayout)}</span>
                             </div>
+
+                            {/* --- FIXED: Platform Breakdown UI --- */}
                             <Separator className="my-2 bg-primary/20" />
-                            <div className="flex justify-between items-center font-bold text-base text-green-700">
+                            <div className="flex justify-between items-center text-sm font-medium text-slate-700">
+                              <span>Platform Markup Tax</span>
+                              <span>{fmt(r.platformMarkuptax)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm font-medium text-blue-700">
                               <span>Platform Profit</span>
                               <span>{fmt(r.platformProfit)}</span>
-                              <span>Platform Commision</span>
+                            </div>
+                            <div className="flex justify-between items-center font-bold text-base text-green-700 mt-2">
+                              <span>Platform Commission</span>
                               <span>{fmt(r.platformCommision)}</span>
                             </div>
                           </div>

@@ -238,11 +238,6 @@ export async function getRecieptDataByDateRange(
         totalCustomerPaid - (storeProfit + storeFixedValue);
       const platformCommision = platformProfit + totalSubsidy;
 
-      console.log(
-        receipt.orderCount,
-        receipt.orderIds.map((id) => id.toString()),
-      );
-
       return {
         _id: storeKey === "global" ? null : storeKey,
         orderCount: receipt.orderCount,
