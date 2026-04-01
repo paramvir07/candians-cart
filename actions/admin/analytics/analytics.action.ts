@@ -63,6 +63,18 @@ export interface OverviewStats {
   ordersMoM: number;
   customersMoM: number;
   profitMoM: number;
+
+  totalStorePayouts: number;
+  totalStoreProfits: number;
+  totalPlatformCommission: number;
+}
+
+interface PayoutAggResult {
+  _id: null;
+  platformProfit: number;
+  storePayout: number;
+  storeProfit: number;
+  platformCommision: number;
 }
 
 export async function getOverviewStats(): Promise<OverviewStats> {
@@ -85,7 +97,7 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     totalStores,
     totalProducts,
     subsidyAgg,
-    allProfitAgg,
+    payoutAgg,
     thisMonthProfitAgg,
     lastMonthProfitAgg,
   ] = await Promise.all([
@@ -131,13 +143,24 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     OrderModel.aggregate([
       { $group: { _id: null, total: { $sum: "$subsidyUsed" } } },
     ]),
-    storePayoutsModel.aggregate([
-      { $group: { _id: null, total: { $sum: "$platformProfit" } } },
+    // 1. The new combined payout aggregation
+    storePayoutsModel.aggregate<PayoutAggResult>([
+      {
+        $group: {
+          _id: null,
+          platformProfit: { $sum: "$platformProfit" },
+          storePayout: { $sum: "$storePayout" },
+          storeProfit: { $sum: "$storeProfit" },
+          platformCommision: { $sum: "$platformCommision" },
+        },
+      },
     ]),
+    // 2. MISSING: This month's profit aggregation
     storePayoutsModel.aggregate([
       { $match: { endDate: { $gte: thisMonthStart } } },
       { $group: { _id: null, total: { $sum: "$platformProfit" } } },
     ]),
+    // 3. MISSING: Last month's profit aggregation
     storePayoutsModel.aggregate([
       { $match: { endDate: { $gte: lastMonthStart, $lte: lastMonthEnd } } },
       { $group: { _id: null, total: { $sum: "$platformProfit" } } },
@@ -154,6 +177,7 @@ export async function getOverviewStats(): Promise<OverviewStats> {
   const profitLastMonth = lastMonthProfitAgg[0]?.total ?? 0;
 
   return {
+    platformProfit: payoutAgg[0]?.platformProfit ?? 0,
     totalRevenue,
     totalOrders,
     avgOrderValue:
@@ -164,7 +188,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     pendingOrders,
     completedOrders,
     totalSubsidyGiven: subsidyAgg[0]?.total ?? 0,
-    platformProfit: allProfitAgg[0]?.total ?? 0,
     completionRate:
       totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0,
 
@@ -181,6 +204,10 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     ordersMoM: pct(thisMonthOrders, lastMonthOrders),
     customersMoM: pct(newCustomersThisMonth, newCustomersLastMonth),
     profitMoM: pct(profitThisMonth, profitLastMonth),
+
+    totalStorePayouts: payoutAgg[0]?.storePayout ?? 0,
+    totalStoreProfits: payoutAgg[0]?.storeProfit ?? 0,
+    totalPlatformCommission: payoutAgg[0]?.platformCommision ?? 0,
   };
 }
 
