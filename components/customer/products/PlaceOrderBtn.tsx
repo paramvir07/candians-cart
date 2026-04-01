@@ -27,7 +27,7 @@ const PlaceOrderBtn = ({
   const handlePlaceOrder = async () => {
     if (!customerId) return;
     const placeOrder = await PlaceOrder({
-      customerId,
+      receivedCustomerId: customerId,
       paymentMode,
       TotalCart,
     });
@@ -41,7 +41,7 @@ const PlaceOrderBtn = ({
   };
 
   const handleCustomerOrder = async () => {
-    const res = await PlaceCustomerOrder({ TotalCart });
+    const res = await PlaceOrder({ TotalCart });
     if (res.success) {
       toast.success(res.message);
       router.push("/");

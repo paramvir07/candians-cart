@@ -116,7 +116,6 @@ export const UpdateItemQuantity = async (
   await cart.save();
 
   revalidatePath("/customer/cart");
-  
 
   return { success: true, message: "Cart quantity updated" };
 };
@@ -350,7 +349,7 @@ export const PlaceCustomerOrder = async ({
         markup: product.markup,
         tax,
         disposableFee,
-        subsidy: Number((item.subsidy.toFixed(2))),
+        subsidy: Number(item.subsidy.toFixed(2)),
         total: Number((afterSubsidy + gst + pst + disposableFee).toFixed(2)),
       };
     });
@@ -383,40 +382,73 @@ export const PlaceCustomerOrder = async ({
     console.error("Error while placing customer order:", error);
     return { success: false, message: "Something went wrong" };
   } finally {
-    session.endSession();
+    await session.endSession();
   }
 };
 
 export const PlaceOrder = async ({
-  customerId,
-  paymentMode,
+  receivedCustomerId,
+  paymentMode = "pending",
   TotalCart,
 }: {
-  customerId: string;
-  paymentMode: "card" | "cash" | "wallet";
+  receivedCustomerId?: string;
+  paymentMode?: "card" | "cash" | "wallet" | "pending";
   TotalCart: CartTotals;
 }) => {
+  await dbConnect();
   const session = await mongoose.startSession();
 
   try {
-    await dbConnect();
-
     const authSession = await getUserSession();
-    if (authSession.user.role !== "cashier") {
-      return { success: false, message: "Unauthorized" };
+    if (receivedCustomerId) {
+      if (authSession.user.role !== "cashier") {
+        return { success: false, message: "Unauthorized" };
+      }
+    } else {
+      if (authSession.user.role !== "customer") {
+        return { success: false, message: "Unauthorized" };
+      }
     }
 
-    const cashierId = authSession.user.id;
+    session.startTransaction();
+
+    let customer;
+    if (!receivedCustomerId) {
+      customer = await Customer.findOne({ userId: authSession.user.id })
+        .select("_id")
+        .lean()
+        .session(session);
+      if (!customer) {
+        await session.abortTransaction();
+        return { success: false, message: "User not found" };
+      }
+    }
+
+    const customerId = receivedCustomerId ? receivedCustomerId : customer?._id;
+
+    const cashierId = receivedCustomerId ? authSession.user.id : undefined;
     const walletPayment = paymentMode === "wallet";
 
-    session.startTransaction();
+    const pendingOrder = await OrderModel.findOne({
+      userId: customerId,
+      status: "pending",
+    }).session(session);
+
+    if (pendingOrder) {
+      await session.abortTransaction();
+      return {
+        success: false,
+        message: receivedCustomerId
+          ? "This customer already has a pending order. Complete or cancel it first to continue."
+          : "You already have a pending order. Complete or cancel it first to continue.",
+      };
+    }
 
     const User = await Customer.findById(customerId).session(session);
     if (!User) {
       await session.abortTransaction();
       return { success: false, message: "User not found" };
     }
-    console.log(TotalCart)
     const customerCart = await CartModel.findOne({ customerId: User._id })
       .populate("items.productId")
       .populate("subsidyItems.productId")
@@ -516,8 +548,8 @@ export const PlaceOrder = async ({
       subsidyLeft:
         Number(
           (
-            ((User.giftWalletBalance) +
-              (customerCart.cartSubsidy) -
+            (User.giftWalletBalance +
+              customerCart.cartSubsidy -
               TotalUsedSubsidy) /
             100
           ).toFixed(2),
@@ -526,8 +558,8 @@ export const PlaceOrder = async ({
       userId: User._id,
       storeId: User.associatedStoreId,
       paymentMode,
-      status: "completed",
-      cashierId,
+      status: receivedCustomerId ? "completed" : "pending",
+      ...(receivedCustomerId && { cashierId }),
     };
 
     await OrderModel.create([OrderData], { session });
@@ -545,7 +577,7 @@ export const PlaceOrder = async ({
         },
         { session },
       );
-    } else {
+    } else if (receivedCustomerId) {
       await Customer.findByIdAndUpdate(
         customerId,
         {
@@ -566,7 +598,7 @@ export const PlaceOrder = async ({
     console.error("Error while placing order:", error);
     return { success: false, error: "Something went wrong" };
   } finally {
-    session.endSession();
+    await session.endSession();
   }
 };
 

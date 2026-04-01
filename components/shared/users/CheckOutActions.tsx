@@ -1,4 +1,3 @@
-// /components/customer/checkout/CheckoutActions.tsx
 "use client";
 
 import { useState } from "react";

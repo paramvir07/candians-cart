@@ -81,46 +81,78 @@ export const ReOrder = async (orderId: string) => {
     await dbConnect();
 
     const userOrder = await OrderModel.findById(orderId).lean();
+
     if (!userOrder) {
       return { success: false, message: "Order not found" };
     }
 
-    for (const product of userOrder.products) {
-      const updatedCart = await CartModel.findOneAndUpdate(
-        {
-          customerId: userOrder.userId,
-          "items.productId": product.productId,
-          "items.storeId": userOrder.storeId,
-        },
-        {
-          $inc: {
-            "items.$.quantity": product.quantity,
-          },
-        },
-        {
-          returnDocument: "after",
-        },
+    const cart = await CartModel.findOne({ customerId: userOrder.userId });
+
+    // If no cart exists, create a fresh one
+    const cartItems = cart?.items ? [...cart.items] : [];
+    const cartSubsidyItems = cart?.subsidyItems ? [...cart.subsidyItems] : [];
+
+    // Helper to add/increment product in array
+    const upsertCartItem = (
+      arr: any[],
+      item: { productId: any; quantity: number; storeId: any },
+    ) => {
+      const existingIndex = arr.findIndex(
+        (cartItem) =>
+          cartItem.productId.toString() === item.productId.toString() &&
+          cartItem.storeId.toString() === item.storeId.toString(),
       );
 
-      if (!updatedCart) {
-        await CartModel.findOneAndUpdate(
-          { customerId: userOrder.userId },
-          {
-            $push: {
-              items: {
-                productId: product.productId,
-                quantity: product.quantity,
-                storeId: userOrder.storeId,
-              },
-            },
-          },
-          {
-            upsert: true,
-            returnDocument: "after",
-          },
-        );
+      if (existingIndex !== -1) {
+        arr[existingIndex].quantity += item.quantity;
+      } else {
+        arr.push({
+          productId: item.productId,
+          quantity: item.quantity,
+          storeId: item.storeId,
+        });
+      }
+    };
+
+    // Add normal products to cart.items
+    if (Array.isArray(userOrder.products)) {
+      for (const product of userOrder.products) {
+        upsertCartItem(cartItems, {
+          productId: product.productId,
+          quantity: product.quantity,
+          storeId: userOrder.storeId,
+        });
       }
     }
+
+    // Add subsidized products to cart.subsidyItems
+    if (
+      Array.isArray(userOrder.subsidyItems) &&
+      userOrder.subsidyItems.length > 0
+    ) {
+      for (const subsidyItem of userOrder.subsidyItems) {
+        upsertCartItem(cartSubsidyItems, {
+          productId: subsidyItem.productId,
+          quantity: subsidyItem.quantity,
+          storeId: userOrder.storeId,
+        });
+      }
+    }
+
+    await CartModel.findOneAndUpdate(
+      { customerId: userOrder.userId },
+      {
+        $set: {
+          customerId: userOrder.userId,
+          items: cartItems,
+          subsidyItems: cartSubsidyItems,
+        },
+      },
+      {
+        upsert: true,
+        new: true,
+      },
+    );
 
     return { success: true, message: "Items added to cart successfully" };
   } catch (error) {
@@ -170,7 +202,7 @@ export const completePendingOrder = async (
         _id: orderId,
         userId: customerId,
         status: "pending",
-      })
+      }).select("cartTotal subsidyLeft")
         .session(mongoSession)
         .lean();
 
@@ -179,8 +211,7 @@ export const completePendingOrder = async (
       }
 
       const cartTotal = Number(order.cartTotal ?? 0);
-      const subsidy = Number(order.subsidy ?? 0);
-      const subsidyUsed = Number(order.subsidyUsed ?? 0);
+      const subsidyLeft = Number(order.subsidyLeft ?? 0);
 
       const customer = await Customer.findById(customerId)
         .select("giftWalletBalance")
@@ -190,13 +221,6 @@ export const completePendingOrder = async (
       if (!customer) {
         throw new Error("Customer not found");
       }
-
-      const subsidyLeft =
-        Number(
-          ((customer.giftWalletBalance + subsidy - subsidyUsed) / 100).toFixed(
-            2,
-          ),
-        ) * 100;
 
       if (paymentMode === "wallet") {
         const walletDeduction = await Customer.findOneAndUpdate(
@@ -241,7 +265,6 @@ export const completePendingOrder = async (
           $set: {
             status: "completed",
             paymentMode,
-            subsidyLeft,
             cashierId: cashier._id,
           },
         },
@@ -338,7 +361,6 @@ export const cancelPendingOrder = async (
     return { success: false, message: "Something went wrong" };
   }
 };
-
 
 export const getOrderCount = async () => {
   try {
