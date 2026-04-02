@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   description: "Your favorite grocery app. Order fresh produce, dairy, and everyday essentials for easy pickup or in-store shopping.",
   keywords: ["grocery delivery", "fresh produce", "Candian's Cart", "online grocery", "food delivery"],
-  authors: [{ name: "Candian Cart Team" }],
+  authors: [{ name: "Candian's Cart Team" }],
   creator: "Candian's Cart",
   openGraph: {
     type: "website",

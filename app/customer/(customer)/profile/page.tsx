@@ -14,7 +14,7 @@ import { Metadata } from "next";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 
 export const metadata: Metadata = {
-  title: "Profile", // This becomes "Orders | Store Panel - Candian Cart" in the browser tab
+  title: "Profile", // This becomes "Orders | Store Panel - Candian's Cart" in the browser tab
 };
 
 

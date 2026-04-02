@@ -456,7 +456,7 @@ async function generateReceiptPDF(
     color: MUTED,
   });
 
-  const supportText = "support@candiancart.ca";
+  const supportText = "support@candianscart.ca";
   const supportW = font.widthOfTextAtSize(supportText, 9);
   page.drawText(supportText, {
     x: width - margin - supportW,

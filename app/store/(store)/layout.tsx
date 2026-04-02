@@ -8,7 +8,7 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: {
     default: "Store Dashboard",
-    template: "%s | Store Panel - Candian Cart",
+    template: "%s | Store Panel - Candian's Cart",
   },
   robots: {
     index: false, // Prevents indexing of all store dashboard routes

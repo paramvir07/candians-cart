@@ -7,7 +7,7 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: {
     default: "Admin Portal",
-    template: "%s | Admin - Candian Cart",
+    template: "%s | Admin - Candian's Cart",
   },
   robots: {
     index: false, // Prevents indexing of all admin routes

@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 export const metadata: Metadata = {
   title: {
     default: "Customer Area",
-    template: "%s | Candian Cart",
+    template: "%s | Candian's Cart",
   },
   robots: {
     index: false, // Prevents search engines from indexing the user dashboard
