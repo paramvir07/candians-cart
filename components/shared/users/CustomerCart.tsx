@@ -61,6 +61,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const giftWalletBalance = UserData?.giftWalletBalance ?? 0;
   const items = CartItems?.items as ICartItem[] | null;
   const subItems = (CartItems?.subItems as ISubsidyItems[]) ?? [];
+  const subItemProductIds = subItems.map((s) => s.productId._id.toString()); 
 
   if (!items || (items.length === 0 && !subItems))
     return <EmptyCart customerId={customerId} />;
@@ -98,6 +99,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     else if (mid && totalInDollars >= mid && totalInDollars <= current) return 30;
     return null;
   })();
+  
 
   const calculateTotalMarkup = (item: ICartItem) => {
     if (activeMarkup === null || item.productId.subsidised) return null;
@@ -346,7 +348,15 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
         <div className="mb-5 rounded-2xl px-4 py-3.5 border"
           style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-          <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} Totalsubsidy={TotalSubsidy} SubsidyonOrder={subsidyOnOrder} />
+        <ProgressBarCart
+          total={progressTotal.total}
+          customerId={customerId}
+          giftWalletBalance={giftWalletBalance}
+          totalMarkup={totalActiveMarkup}
+          Totalsubsidy={TotalSubsidy}
+          SubsidyonOrder={subsidyOnOrder}
+          subItemIds={subItemProductIds}
+        />
         </div>
 
         <div className="flex flex-col gap-2.5 mb-5">
@@ -482,7 +492,15 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
         <div className="mb-7 rounded-2xl px-5 py-4 border"
           style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-          <ProgressBarCart total={progressTotal.total} customerId={customerId} giftWalletBalance={giftWalletBalance} totalMarkup={totalActiveMarkup} Totalsubsidy={TotalSubsidy} SubsidyonOrder={subsidyOnOrder} />
+          <ProgressBarCart
+            total={progressTotal.total}
+            customerId={customerId}
+            giftWalletBalance={giftWalletBalance}
+            totalMarkup={totalActiveMarkup}
+            Totalsubsidy={TotalSubsidy}
+            SubsidyonOrder={subsidyOnOrder}
+            subItemIds={subItemProductIds}
+          />
         </div>
 
         <div className="flex gap-6 items-start">

@@ -3,6 +3,7 @@ import { Tag } from "lucide-react";
 import Image from "next/image";
 import CartActionBtns from "./CartActionBtns";
 import { CategoryIllustration } from "../shared/CategoryIllustration";
+import GetUsedSubsidy from "./getUsedSubsidy";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -39,8 +40,9 @@ export const SubsidyItemsSection = ({
               color: "var(--primary)",
               border: "1px solid oklch(0.6271 0.1699 149.2138 / 0.2)",
             }}>
-            −CA${fmt(totalSubsidy)} saved
+            CA${fmt(totalSubsidy)} saved
           </span>
+          <GetUsedSubsidy usedSubsidy={totalSubsidy}/>
         </div>
 
         <div className="flex flex-col gap-2.5">
@@ -135,7 +137,7 @@ export const SubsidyItemsSection = ({
               color: "var(--primary)",
               border: "1px solid oklch(0.6271 0.1699 149.2138 / 0.2)",
             }}>
-            −CA${fmt(leftOffSubsidy)} saved
+            CA${fmt(leftOffSubsidy)} saved
           </span>
         </div>
 
