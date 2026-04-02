@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { getUserSession } from "../auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { Cashier } from "@/db/models/cashier/cashier.model";
+import { unstable_cache } from "next/cache";
 
 export const getUser = async (customerId?: string) => {
   try {
@@ -38,33 +39,32 @@ export const GetUserfromSession = async (sessionId: string | null) => {
   }
 };
 
-export const getCustomerAndStoreDataAction = async () => {
-  const session = await getUserSession();
-  try {
+const getCachedCustomerAndStore = unstable_cache(
+  async (userId: string) => {
     await dbConnect();
-    const customerData = await Customer.findOne({
-      userId: session.user.id,
-    })
+    const customerData = await Customer.findOne({ userId })
       .populate("associatedStoreId")
       .lean();
-    if (!customerData)
-      return {
-        success: false,
-        message: "Unable to find customer data",
-      };
 
-    const serializedCustomerData = JSON.parse(JSON.stringify(customerData));
+    if (!customerData)
+      return { success: false, message: "Unable to find customer data" };
 
     return {
       success: true,
-      customerData: serializedCustomerData,
+      customerData: JSON.parse(JSON.stringify(customerData)),
     };
+  },
+  ["customer-and-store"],
+  { tags: ["customer-and-store"] } 
+);
+
+export const getCustomerAndStoreDataAction = async () => {
+  try {
+    const session = await getUserSession();
+    return getCachedCustomerAndStore(session.user.id);
   } catch (error) {
     console.log(`Unable to find customer and store data: ${error}`);
-    return {
-      success: false,
-      message: "Unable to find customer and store data",
-    };
+    return { success: false, message: "Unable to find customer and store data" };
   }
 };
 
@@ -159,4 +159,19 @@ export const getMyStoreCustomers = async () => {
       message: "Unable to find my store customers",
     };
   }
+};
+
+const getCachedCustomerProfile = unstable_cache(
+  async (userId: string) => {
+    await dbConnect();
+    const customerProfile = await Customer.findOne({ userId }).lean();
+    return JSON.parse(JSON.stringify(customerProfile));
+  },
+  ["customer-profile"],
+  { tags: ["customer"] }
+);
+
+export const getCustomerProfileAction = async () => {
+  const session = await getUserSession();
+  return getCachedCustomerProfile(session.user.id);
 };

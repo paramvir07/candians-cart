@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { editProfileSchema } from "@/zod/schemas/customer/customerSignup";
 import { z } from "zod";
 import { getUserSession } from "../auth/getUserSession.actions";
@@ -87,7 +87,9 @@ export async function editUserProfile(
 
     await session.endSession();
 
-    revalidatePath("/profile");
+    revalidatePath("/customer/profile");
+    revalidateTag("customer","max")
+    revalidateTag("customer-and-store","max")
 
     return {
       success: true,

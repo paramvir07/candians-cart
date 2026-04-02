@@ -158,10 +158,9 @@ export default function ProfileHero({ customer }: Props) {
           </Dialog>
 
           <Button
-            asChild
             className="flex-1 h-10 rounded-full text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all"
           >
-            <Link href="/customer/profile/edit">
+            <Link href="/customer/profile/edit" className="flex">
               <Edit className="h-4 w-4 mr-2" />
               Edit Profile
             </Link>

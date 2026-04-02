@@ -9,6 +9,7 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { Cashier } from "@/db/models/cashier/cashier.model";
 import mongoose from "mongoose";
 import Customer from "@/db/models/customer/customer.model";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 export const getOrders = async (customerId?: string) => {
   await dbConnect();
@@ -284,6 +285,9 @@ export const completePendingOrder = async (
       };
     });
 
+    if(result?.success){
+      revalidateTag("orders", "max")
+    }
     return result;
   } catch (error) {
     console.error("Error while completing pending order:", error);
@@ -362,22 +366,26 @@ export const cancelPendingOrder = async (
   }
 };
 
-export const getOrderCount = async () => {
-  try {
-    await dbConnect();
-    const user = await getUser();
+const getOrderCountCached = unstable_cache(
+  async (userId: string) => {          // ← userId passed in
+    try {
+      await dbConnect();
+      const user = await Customer.findOne({ userId }).lean();
 
-    if (!user) {
-      return { success: false, message: "User not found" };
+      if (!user) return { success: false, message: "User not found" };
+
+      const orderCount = await OrderModel.countDocuments({ userId: user._id });
+      return { success: true, orderCount };
+    } catch (err) {
+      console.log(err);
+      return { success: false, message: "Something went wrong" };
     }
+  },
+  ["order-count"],
+  { tags: ["orders"] }
+);
 
-    const orderCount = await OrderModel.countDocuments({
-      userId: user._id,
-    });
-
-    return { success: true, orderCount };
-  } catch (err) {
-    console.log(err);
-    return { success: false, message: "Something went wrong" };
-  }
+export const getOrderCount = async () => {
+  const session = await getUserSession();         // ← session outside
+  return getOrderCountCached(session.user.id);    // ← id into cache key
 };

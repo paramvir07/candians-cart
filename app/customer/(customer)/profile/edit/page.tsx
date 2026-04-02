@@ -1,20 +1,14 @@
-import { getUserSession } from "@/actions/auth/getUserSession.actions";
-import { dbConnect } from "@/db/dbConnect";
 import Navbar from "@/components/customer/landing/Navbar";
 import EditProfileForm from "@/components/customer/profile/EditProfileForm";
-import Customer from "@/db/models/customer/customer.model";
+import { getCustomerProfileAction } from "@/actions/customer/User.action";
 
 const EditProfilePage = async () => {
-  const session = await getUserSession();
+  const customerProfile = await getCustomerProfileAction()
 
-  await dbConnect();
-  const customerProfile = await Customer.findOne({
-    userId: session.user.id,
-  }).lean();
 
   const mergedUserData = {
-    name: session.user.name,
-    email: session.user.email,
+    name: customerProfile?.name || "",
+    email: customerProfile?.email || "",
     address: customerProfile?.address || "",
     city: customerProfile?.city || "",
     province: customerProfile?.province || "",

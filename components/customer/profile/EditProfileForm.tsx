@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Customer } from "@/types/customer/customer";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type FormUserData = Pick<
   Customer,
@@ -120,6 +121,8 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
     initialState,
   );
 
+  const router = useRouter()
+
   // Trim all incoming backend values once
   const trimmed: FormUserData = {
     name: user.name.trim(),
@@ -158,7 +161,10 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
 
   useEffect(() => {
     if (state.message) {
-      if (state.success) toast.success(state.message);
+      if (state.success){
+        toast.success(state.message);
+        router.push("/customer/profile")
+      } 
       else toast.error(state.message);
     }
   }, [state]);
