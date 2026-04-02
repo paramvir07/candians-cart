@@ -5,16 +5,18 @@ import ProfileStats from "@/components/customer/profile/ProfileStats";
 import ProfileStore from "@/components/customer/profile/ProfileStore";
 import ProfileContact from "@/components/customer/profile/ProfileContact";
 import LogoutButton from "@/components/customer/profile/LogoutButton";
-import { Edit, Package, Wallet, ChevronRight, ChevronLeft } from "lucide-react";
+import { Edit, Package, Wallet, ChevronRight, ChevronLeft, ChartSpline } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { getOrderCount } from "@/actions/customer/ProductAndStore/Order.Action";
 import { Metadata } from "next";
+import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 
 export const metadata: Metadata = {
   title: "Profile", // This becomes "Orders | Store Panel - Candian Cart" in the browser tab
 };
+
 
 export default async function ProfilePage() {
   const [customerRes, orderRes] = await Promise.all([
@@ -48,6 +50,14 @@ export default async function ProfilePage() {
       href: "/customer/wallet",
       icon: Wallet,
       iconBg: "bg-emerald-500/10",
+      iconColor: "text-emerald-600",
+    },
+    {
+      label: "Dashboard",
+      desc: "View dashboard",
+      href: "/customer/analytics",
+      icon: ChartSpline,
+      iconBg: "bg-blue-500/10",
       iconColor: "text-emerald-600",
     },
   ];
@@ -113,6 +123,7 @@ export default async function ProfilePage() {
           <div className="flex flex-col gap-4 lg:hidden">
             <BlurFade delay={0.10} inView>
               <ProfileHero customer={customerData} />
+              <CustomerAdvertisements />
             </BlurFade>
             <BlurFade delay={0.18} inView>
               <ProfileStats customer={customerData} OrderCount={orderCount ?? 0} />
@@ -138,7 +149,10 @@ export default async function ProfilePage() {
             <div className="flex flex-col gap-4">
               <BlurFade delay={0.10} inView>
                 <ProfileHero customer={customerData} />
+                
+
               </BlurFade>
+              <CustomerAdvertisements />
               <BlurFade delay={0.22} inView>
                 <ProfileStore store={customerData.associatedStoreId} />
               </BlurFade>

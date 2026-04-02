@@ -1,163 +1,597 @@
-import { Card, CardContent } from '@/components/ui/card'
-import { ShoppingBag, Wallet, Users, Tag } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { ShoppingBag, Wallet, TrendingUp, Store, ArrowRight, Sparkles, Calculator } from 'lucide-react'
 
 export default function FeaturesSection() {
-    return (
-    <section className="bg-gray-50 py-16 md:py-32 dark:bg-transparent">
-    <div className="mx-auto max-w-5xl px-6">
-        <div className="relative">
-            <div className="relative z-10 grid grid-cols-6 gap-3">
+  const storeItems = [
+    { emoji: "🌾", name: "Sher Atta 20lb",    price: "$12.49", was: "$18.99", tag: true  },
+    { emoji: "🍚", name: "Basmati Rice 10kg", price: "$15.99", was: "$24.99", tag: true  },
+    { emoji: "🫘", name: "Chana Dal 4lb",     price: "$4.99",  was: "$7.99",  tag: true  },
+    { emoji: "🥛", name: "Whole Milk 4L",     price: "$4.29",  was: "$6.49",  tag: false },
+  ]
 
-            {/* Card 1 — big stat */}
-            <Card className="relative col-span-full flex overflow-hidden lg:col-span-2">
-                            <CardContent className="relative m-auto size-fit pt-6">
-                                <div className="relative flex h-24 w-56 items-center">
-                                    <svg
-                                        className="text-muted absolute inset-0 size-full"
-                                        viewBox="0 0 254 104"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M112.891 97.7022C140.366 97.0802 171.004 94.6715 201.087 87.5116C210.43 85.2881 219.615 82.6412 228.284 78.2473C232.198 76.3179 235.905 73.9942 239.348 71.3124C241.85 69.2557 243.954 66.7571 245.555 63.9408C249.34 57.3235 248.281 50.5341 242.498 45.6109C239.033 42.7237 235.228 40.2703 231.169 38.3054C219.443 32.7209 207.141 28.4382 194.482 25.534C184.013 23.1927 173.358 21.7755 162.64 21.2989C161.376 21.3512 160.113 21.181 158.908 20.796C158.034 20.399 156.857 19.1682 156.962 18.4535C157.115 17.8927 157.381 17.3689 157.743 16.9139C158.104 16.4588 158.555 16.0821 159.067 15.8066C160.14 15.4683 161.274 15.3733 162.389 15.5286C179.805 15.3566 196.626 18.8373 212.998 24.462C220.978 27.2494 228.798 30.4747 236.423 34.1232C240.476 36.1159 244.202 38.7131 247.474 41.8258C254.342 48.2578 255.745 56.9397 251.841 65.4892C249.793 69.8582 246.736 73.6777 242.921 76.6327C236.224 82.0192 228.522 85.4602 220.502 88.2924C205.017 93.7847 188.964 96.9081 172.738 99.2109C153.442 101.949 133.993 103.478 114.506 103.79C91.1468 104.161 67.9334 102.97 45.1169 97.5831C36.0094 95.5616 27.2626 92.1655 19.1771 87.5116C13.839 84.5746 9.1557 80.5802 5.41318 75.7725C-0.54238 67.7259 -1.13794 59.1763 3.25594 50.2827C5.82447 45.3918 9.29572 41.0315 13.4863 37.4319C24.2989 27.5721 37.0438 20.9681 50.5431 15.7272C68.1451 8.8849 86.4883 5.1395 105.175 2.83669C129.045 0.0992292 153.151 0.134761 177.013 2.94256C197.672 5.23215 218.04 9.01724 237.588 16.3889C240.089 17.3418 242.498 18.5197 244.933 19.6446C246.627 20.4387 247.725 21.6695 246.997 23.615C246.455 25.1105 244.814 25.5605 242.63 24.5811C230.322 18.9961 217.233 16.1904 204.117 13.4376C188.761 10.3438 173.2 8.36665 157.558 7.52174C129.914 5.70776 102.154 8.06792 75.2124 14.5228C60.6177 17.8788 46.5758 23.2977 33.5102 30.6161C26.6595 34.3329 20.4123 39.0673 14.9818 44.658C12.9433 46.8071 11.1336 49.1622 9.58207 51.6855C4.87056 59.5336 5.61172 67.2494 11.9246 73.7608C15.2064 77.0494 18.8775 79.925 22.8564 82.3236C31.6176 87.7101 41.3848 90.5291 51.3902 92.5804C70.6068 96.5773 90.0219 97.7419 112.891 97.7022Z" fill="currentColor" />
-                                    </svg>
-                                    <span className="mx-auto block w-fit text-5xl font-semibold">30%</span>
-                                </div>
-                                <h2 className="mt-6 text-center text-3xl font-semibold">Average Savings</h2>
-                                <p className="mt-2 text-center text-sm text-muted-foreground">Families save on average 30% with subsidised pricing every month.</p>
-                            </CardContent>
-            </Card>
+  const [spend, setSpend] = useState(100)
 
-            {/* Card 2 — gift wallet */}
-            <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
-                            <CardContent className="pt-6">
-                                <div className="relative mx-auto flex aspect-square size-32 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-white/10 dark:before:border-white/5">
-                                    <Wallet className="m-auto size-10 text-primary" strokeWidth={1.25} />
-                                </div>
-                                <div className="relative z-10 mt-6 space-y-2 text-center">
-                                    <h2 className="text-lg font-medium transition">Gift Wallet Rewards</h2>
-                                    <p className="text-muted-foreground text-sm">Earn gift credits on every order. Your wallet grows with every shop spend it on anything in the store.</p>
-                                </div>
-                            </CardContent>
-            </Card>
+  const subsidised = spend * 0.40
+  const savings = subsidised * 0.60
+  const annual = savings * 12
 
-            {/* Card 3 — subsidy chart */}
-            <Card className="relative col-span-full overflow-hidden sm:col-span-3 lg:col-span-2">
-                            <CardContent className="pt-6">
-                                <div className="pt-6 lg:px-6">
-                                    <svg
-                                        className="dark:text-muted-foreground w-full"
-                                        viewBox="0 0 386 123"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="386" height="123" rx="10" />
-                                        <g clipPath="url(#clip0_0_106)">
-                                            <circle className="text-muted-foreground dark:text-muted" cx="29" cy="29" r="15" fill="currentColor" />
-                                            <path d="M29 23V35" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                            <path d="M35 29L29 35L23 29" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                            <path d="M55.2373 32H58.7988C61.7383 32 63.4404 30.1816 63.4404 27.0508V27.0371C63.4404 23.9404 61.7246 22.1357 58.7988 22.1357H55.2373V32ZM56.7686 30.6807V23.4551H58.6279C60.6719 23.4551 61.8818 24.7881 61.8818 27.0576V27.0713C61.8818 29.3613 60.6924 30.6807 58.6279 30.6807H56.7686ZM69.4922 32.1436C71.666 32.1436 72.999 30.6875 72.999 28.2949V28.2812C72.999 25.8887 71.6592 24.4326 69.4922 24.4326C67.3184 24.4326 65.9785 25.8955 65.9785 28.2812V28.2949C65.9785 30.6875 67.3115 32.1436 69.4922 32.1436ZM69.4922 30.9062C68.2139 30.9062 67.4961 29.9424 67.4961 28.2949V28.2812C67.4961 26.6338 68.2139 25.6699 69.4922 25.6699C70.7637 25.6699 71.4883 26.6338 71.4883 28.2812V28.2949C71.4883 29.9355 70.7637 30.9062 69.4922 30.9062Z" fill="currentColor" />
-                                        </g>
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M3 123C3 123 14.3298 94.153 35.1282 88.0957C55.9266 82.0384 65.9333 80.5508 65.9333 80.5508C65.9333 80.5508 80.699 80.5508 92.1777 80.5508C103.656 80.5508 100.887 63.5348 109.06 63.5348C117.233 63.5348 117.217 91.9728 124.78 91.9728C132.343 91.9728 142.264 78.03 153.831 80.5508C165.398 83.0716 186.825 91.9728 193.761 91.9728C200.697 91.9728 206.296 63.5348 214.07 63.5348C221.844 63.5348 238.653 93.7771 244.234 91.9728C249.814 90.1684 258.8 60 266.19 60C272.075 60 284.1 88.057 286.678 88.0957C294.762 88.2171 300.192 72.9284 305.423 72.9284C312.323 72.9284 323.377 65.2437 335.553 63.5348C347.729 61.8259 348.218 82.07 363.639 80.5508C367.875 80.1335 372.949 82.2017 376.437 87.1008C379.446 91.3274 381.054 97.4325 382.521 104.647C383.479 109.364 382.521 123 382.521 123" fill="url(#paint0_linear_0_106)" />
-                                        <path className="text-primary-600 dark:text-primary-500" d="M3 121.077C3 121.077 15.3041 93.6691 36.0195 87.756C56.7349 81.8429 66.6632 80.9723 66.6632 80.9723C66.6632 80.9723 80.0327 80.9723 91.4656 80.9723C102.898 80.9723 100.415 64.2824 108.556 64.2824C116.696 64.2824 117.693 92.1332 125.226 92.1332C132.759 92.1332 142.07 78.5115 153.591 80.9723C165.113 83.433 186.092 92.1332 193 92.1332C199.908 92.1332 205.274 64.2824 213.017 64.2824C220.76 64.2824 237.832 93.8946 243.39 92.1332C248.948 90.3718 257.923 60.5 265.284 60.5C271.145 60.5 283.204 87.7182 285.772 87.756C293.823 87.8746 299.2 73.0802 304.411 73.0802C311.283 73.0802 321.425 65.9506 333.552 64.2824C345.68 62.6141 346.91 82.4553 362.27 80.9723C377.629 79.4892 383 106.605 383 106.605" stroke="currentColor" strokeWidth="3" />
-                                        <defs>
-                                            <linearGradient id="paint0_linear_0_106" x1="3" y1="60" x2="3" y2="123" gradientUnits="userSpaceOnUse">
-                                                <stop className="text-primary/15 dark:text-primary/35" stopColor="currentColor" />
-                                                <stop className="text-transparent" offset="1" stopColor="currentColor" stopOpacity="0.103775" />
-                                            </linearGradient>
-                                            <clipPath id="clip0_0_106">
-                                                <rect width="358" height="30" fill="white" transform="translate(14 14)" />
-                                            </clipPath>
-                                        </defs>
-                                    </svg>
-                                </div>
-                                <div className="relative z-10 mt-14 space-y-2 text-center">
-                                    <h2 className="text-lg font-medium transition">Subsidy tracked in real-time</h2>
-                                    <p className="text-muted-foreground text-sm">Watch your monthly subsidy balance update as you add items no surprises at checkout.</p>
-                                </div>
-                            </CardContent>
-            </Card>
+  const fmt = (n: number) => '$' + n.toFixed(2)
+  const fmtInt = (n: number) => '$' + Math.round(n).toLocaleString()
 
-            {/* Card 4 — local store */}
-            <Card className="card variant-outlined relative col-span-full overflow-hidden lg:col-span-3">
-                            <CardContent className="grid pt-6 sm:grid-cols-2">
-                                <div className="relative z-10 flex flex-col justify-between space-y-12 lg:space-y-6">
-                                    <div className="relative flex aspect-square size-12 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-white/10 dark:before:border-white/5">
-                                        <ShoppingBag className="m-auto size-5" strokeWidth={1} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h2 className="text-lg font-medium text-zinc-800 transition dark:text-white">Your local store, online</h2>
-                                        <p className="text-muted-foreground text-sm">Every family is connected to a nearby store. Browse their live inventory, add to cart, and pick up all from your phone.</p>
-                                    </div>
-                                </div>
-                                <div className="rounded-tl-(--radius) relative -mb-6 -mr-6 mt-6 h-fit border-l border-t p-6 py-6 sm:ml-6">
-                                    <div className="absolute left-3 top-2 flex gap-1">
-                                        <span className="block size-2 rounded-full border dark:border-white/10 dark:bg-white/10"></span>
-                                        <span className="block size-2 rounded-full border dark:border-white/10 dark:bg-white/10"></span>
-                                        <span className="block size-2 rounded-full border dark:border-white/10 dark:bg-white/10"></span>
-                                    </div>
-                                    {/* Store inventory mini-UI */}
-                                    <div className="mt-4 space-y-2.5">
-                                        {[
-                                            { name: "Whole Milk 4L", price: "$3.50", tag: "Subsidised" },
-                                            { name: "Sourdough Bread", price: "$4.20", tag: null },
-                                            { name: "Cherry Tomatoes", price: "$2.80", tag: "Subsidised" },
-                                            { name: "Greek Yogurt", price: "$1.90", tag: null },
-                                        ].map((item) => (
-                                            <div key={item.name} className="flex items-center justify-between rounded-lg border border-border/60 bg-card px-3 py-2 text-xs">
-                                                <span className="font-medium text-foreground">{item.name}</span>
-                                                <div className="flex items-center gap-2">
-                                                    {item.tag && (
-                                                        <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
-                                                            {item.tag}
-                                                        </span>
-                                                    )}
-                                                    <span className="font-bold text-foreground tabular-nums">{item.price}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </CardContent>
-            </Card>
+  const handleInput = (val: string) => {
+    const v = Math.max(0, Math.min(5000, parseFloat(val) || 0))
+    setSpend(v)
+  }
 
-            {/* Card 5 — invite-only community */}
-            <Card className="card variant-outlined relative col-span-full overflow-hidden lg:col-span-3">
-                            <CardContent className="grid h-full pt-6 sm:grid-cols-2">
-                                <div className="relative z-10 flex flex-col justify-between space-y-12 lg:space-y-6">
-                                    <div className="relative flex aspect-square size-12 rounded-full border before:absolute before:-inset-2 before:rounded-full before:border dark:border-white/10 dark:before:border-white/5">
-                                        <Users className="m-auto size-6" strokeWidth={1} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h2 className="text-lg font-medium transition">Invite-only for families</h2>
-                                        <p className="text-muted-foreground text-sm">Candian&apos;s Cart is exclusive. Every member joins through an invite, keeping the platform quality-first and community-driven.</p>
-                                    </div>
-                                </div>
-                                <div className="before:bg-(--color-border) relative mt-6 before:absolute before:inset-0 before:mx-auto before:w-px sm:-my-6 sm:-mr-6">
-                                    <div className="relative flex h-full flex-col justify-center space-y-6 py-6">
-                                        <div className="relative flex w-[calc(50%+0.875rem)] items-center justify-end gap-2">
-                                            <span className="block h-fit rounded border px-2 py-1 text-xs shadow-sm">The Sharma family</span>
-                                            <div className="ring-background size-7 ring-4">
-                                                <img className="size-full rounded-full" src="https://api.dicebear.com/9.x/notionists-neutral/svg?seed=sharma" alt="Family member" />
-                                            </div>
-                                        </div>
-                                        <div className="relative ml-[calc(50%-1rem)] flex items-center gap-2">
-                                            <div className="ring-background size-8 ring-4">
-                                                <img className="size-full rounded-full" src="https://api.dicebear.com/9.x/notionists-neutral/svg?seed=johnson" alt="Family member" />
-                                            </div>
-                                            <span className="block h-fit rounded border px-2 py-1 text-xs shadow-sm">The Johnson family</span>
-                                        </div>
-                                        <div className="relative flex w-[calc(50%+0.875rem)] items-center justify-end gap-2">
-                                            <span className="block h-fit rounded border px-2 py-1 text-xs shadow-sm">The Nguyen family</span>
-                                            <div className="ring-background size-7 ring-4">
-                                                <img className="size-full rounded-full" src="https://api.dicebear.com/9.x/notionists-neutral/svg?seed=nguyen" alt="Family member" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-            </Card>
+  return (
+    <section
+      className="relative py-20 md:py-32 overflow-hidden"
+      style={{
+        background: "linear-gradient(180deg, #fff 0%, #fef5e4 60%, #fef5e4 100%)",
+        fontFamily: "'Sora', 'DM Sans', sans-serif",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');
 
-            </div>
+        .feat-section::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-image: radial-gradient(circle, #16a34a18 1px, transparent 1px);
+          background-size: 28px 28px;
+          pointer-events: none;
+        }
+
+        .feat-card {
+          background: #fff;
+          border: 1px solid rgba(22,101,52,0.10);
+          border-radius: 20px;
+          box-shadow: 0 2px 8px rgba(22,101,52,0.04), 0 8px 32px rgba(22,101,52,0.06);
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+          overflow: hidden;
+          position: relative;
+        }
+        .feat-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 4px 16px rgba(22,101,52,0.08), 0 16px 48px rgba(22,101,52,0.10);
+        }
+
+        .stat-blob {
+          position: absolute;
+          width: 220px;
+          height: 220px;
+          border-radius: 50%;
+          background: radial-gradient(circle, #bbf7d0 0%, #dcfce700 70%);
+          top: -40px;
+          right: -40px;
+          pointer-events: none;
+        }
+
+        .icon-ring {
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+          border: 1px solid #86efac;
+          flex-shrink: 0;
+        }
+
+        .chart-path {
+          stroke-dasharray: 600;
+          stroke-dashoffset: 600;
+          animation: drawLine 2s ease forwards 0.4s;
+        }
+        @keyframes drawLine {
+          to { stroke-dashoffset: 0; }
+        }
+
+        @keyframes softPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0.3); }
+          50%       { box-shadow: 0 0 0 8px rgba(22,163,74,0); }
+        }
+        .savings-badge { animation: softPulse 2.5s ease-in-out infinite; }
+
+        .store-row {
+          transition: background 0.15s ease, transform 0.15s ease;
+          border-radius: 10px;
+        }
+        .store-row:hover {
+          background: #f0fdf4;
+          transform: translateX(3px);
+        }
+
+        .bento {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          grid-template-rows: auto auto auto;
+          gap: 16px;
+        }
+
+        .card-stat   { grid-column: 1 / 2; grid-row: 1 / 2; }
+        .card-wallet { grid-column: 2 / 3; grid-row: 1 / 2; }
+        .card-chart  { grid-column: 3 / 4; grid-row: 1 / 2; }
+        .card-store  { grid-column: 1 / 3; grid-row: 2 / 3; }
+        .card-family { grid-column: 3 / 4; grid-row: 2 / 3; }
+        .card-calc   { grid-column: 1 / 4; grid-row: 3 / 4; }
+
+        @media (max-width: 900px) {
+          .bento {
+            grid-template-columns: 1fr 1fr;
+          }
+          .card-stat   { grid-column: 1 / 2; grid-row: auto; }
+          .card-wallet { grid-column: 2 / 3; grid-row: auto; }
+          .card-chart  { grid-column: 1 / 3; grid-row: auto; }
+          .card-store  { grid-column: 1 / 3; grid-row: auto; }
+          .card-family { grid-column: 1 / 3; grid-row: auto; }
+          .card-calc   { grid-column: 1 / 3; grid-row: auto; }
+        }
+
+        @media (max-width: 560px) {
+          .bento { grid-template-columns: 1fr; }
+          .card-stat, .card-wallet, .card-chart,
+          .card-store, .card-family, .card-calc { grid-column: 1 / 2; }
+        }
+
+        .section-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          color: #15803d;
+          font-size: 0.78rem;
+          font-weight: 700;
+          padding: 5px 14px;
+          border-radius: 99px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          margin-bottom: 16px;
+        }
+
+        /* ── Calculator styles ── */
+        .calc-input {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 10px 14px 10px 32px;
+          font-size: 1rem;
+          font-weight: 600;
+          font-family: 'Sora', sans-serif;
+          color: #1c1917;
+          background: #f9fafb;
+          border: 1.5px solid #d1d5db;
+          border-radius: 10px;
+          outline: none;
+          transition: border-color 0.2s;
+          -moz-appearance: textfield;
+        }
+        .calc-input::-webkit-outer-spin-button,
+        .calc-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .calc-input:focus { border-color: #16a34a; background: #fff; }
+
+        .calc-slider {
+          -webkit-appearance: none;
+          width: 100%;
+          height: 6px;
+          border-radius: 99px;
+          background: #e5e7eb;
+          outline: none;
+          cursor: pointer;
+        }
+        .calc-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: #16a34a;
+          border: 3px solid #fff;
+          box-shadow: 0 0 0 2px #86efac;
+          cursor: pointer;
+          transition: box-shadow 0.2s;
+        }
+        .calc-slider::-webkit-slider-thumb:hover {
+          box-shadow: 0 0 0 4px #bbf7d0;
+        }
+        .calc-slider::-moz-range-thumb {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: #16a34a;
+          border: 3px solid #fff;
+          box-shadow: 0 0 0 2px #86efac;
+          cursor: pointer;
+        }
+
+        .calc-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 11px 0;
+          border-bottom: 1px solid rgba(22,101,52,0.08);
+        }
+        .calc-row:last-child { border-bottom: none; }
+
+        @keyframes countUp {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .savings-num {
+          animation: countUp 0.25s ease;
+        }
+      `}</style>
+
+      <div className="feat-section relative max-w-5xl mx-auto px-5 sm:px-6">
+
+        {/* Section header */}
+        <div className="text-center mb-12">
+          <div className="section-pill">
+            <Sparkles size={13} />
+            Why families choose us
+          </div>
+          <h2
+            style={{
+              fontWeight: 800,
+              letterSpacing: "-1px",
+              lineHeight: 1.1,
+              color: "#1c1917",
+              fontSize: "clamp(2rem, 4vw, 3rem)",
+            }}
+            className="mb-4"
+          >
+            Everything your family needs,{" "}
+            <span style={{ color: "#16a34a" }}>for less</span>
+          </h2>
+          <p style={{ color: "#78716c", maxWidth: 480, margin: "0 auto", lineHeight: 1.7 }} className="text-sm sm:text-base">
+            From subsidised staples to real-time savings tracking — built exclusively for Canadian families in Abbotsford.
+          </p>
         </div>
-    </div>
+
+        {/* Bento grid */}
+        <div className="bento">
+
+          {/* ── Card 1: 30% Savings stat ── */}
+          <div className="feat-card card-stat p-7 flex flex-col justify-between min-h-[220px]">
+            <div className="stat-blob" />
+            <div
+              className="savings-badge w-fit rounded-2xl px-5 py-3 text-center"
+              style={{ background: "linear-gradient(135deg,#dcfce7,#bbf7d0)", border: "1px solid #86efac" }}
+            >
+              <p style={{ fontSize: "3.5rem", fontWeight: 800, lineHeight: 1, color: "#15803d" }}>30%</p>
+              <p style={{ fontSize: "0.7rem", fontWeight: 700, color: "#166534", letterSpacing: "0.06em", textTransform: "uppercase" }}>avg saved</p>
+            </div>
+            <div className="mt-5">
+              <h3 style={{ fontWeight: 700, fontSize: "1.05rem", color: "#1c1917" }}>Average Savings</h3>
+              <p style={{ fontSize: "0.82rem", color: "#78716c", lineHeight: 1.6, marginTop: 4 }}>
+                Families save on average 30% on subsidised pricing every month.
+              </p>
+            </div>
+          </div>
+
+          {/* ── Card 2: Gift Wallet ── */}
+          <div className="feat-card card-wallet p-7 flex flex-col justify-between min-h-[220px]">
+            <div className="icon-ring">
+              <Wallet size={22} color="#16a34a" strokeWidth={1.5} />
+            </div>
+            <div className="mt-5">
+              <h3 style={{ fontWeight: 700, fontSize: "1.05rem", color: "#1c1917" }}>Gift Wallet Rewards</h3>
+              <p style={{ fontSize: "0.82rem", color: "#78716c", lineHeight: 1.6, marginTop: 4 }}>
+                Earn gift credits on every order. Your wallet grows with every shop — spend it on anything in store.
+              </p>
+              <div className="mt-4 flex items-center gap-2" style={{ color: "#16a34a", fontSize: "0.8rem", fontWeight: 600 }}>
+                Learn more <ArrowRight size={14} />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Card 3: Subsidy chart ── */}
+          <div className="feat-card card-chart p-7 flex flex-col justify-between min-h-[220px]">
+            <div>
+              <div
+                className="rounded-xl overflow-hidden"
+                style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "12px 12px 4px" }}
+              >
+                <svg viewBox="0 0 260 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", display: "block" }}>
+                  {[20, 40, 60].map(y => (
+                    <line key={y} x1="0" y1={y} x2="260" y2={y} stroke="#d1fae5" strokeWidth="1" />
+                  ))}
+                  <path
+                    d="M0 65 C30 58, 55 50, 80 44 S120 30, 150 26 S200 18, 230 14 L260 10 L260 80 L0 80Z"
+                    fill="url(#chartGrad)"
+                    opacity="0.5"
+                  />
+                  <path
+                    className="chart-path"
+                    d="M0 65 C30 58, 55 50, 80 44 S120 30, 150 26 S200 18, 230 14 L260 10"
+                    stroke="#16a34a"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  />
+                  {[[0,65],[80,44],[150,26],[260,10]].map(([x,y], i) => (
+                    <circle key={i} cx={x} cy={y} r="3.5" fill="#16a34a" />
+                  ))}
+                  <defs>
+                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#16a34a" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#16a34a" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="flex justify-between px-1 pb-1" style={{ fontSize: "0.65rem", color: "#86efac", fontWeight: 600 }}>
+                  <span>Jan</span><span>Mar</span><span>Jun</span><span>Now</span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <h3 style={{ fontWeight: 700, fontSize: "1.05rem", color: "#1c1917" }}>Subsidy tracked live</h3>
+              <p style={{ fontSize: "0.82rem", color: "#78716c", lineHeight: 1.6, marginTop: 4 }}>
+                Watch your monthly subsidy balance update as you add items — no surprises at checkout.
+              </p>
+            </div>
+          </div>
+
+          {/* ── Card 4: Local store (wide) ── */}
+          <div className="feat-card card-store p-7">
+            <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 h-full">
+              <div className="flex flex-col justify-between sm:w-52 flex-shrink-0">
+                <div>
+                  <div className="icon-ring mb-5">
+                    <Store size={22} color="#16a34a" strokeWidth={1.5} />
+                  </div>
+                  <h3 style={{ fontWeight: 700, fontSize: "1.15rem", color: "#1c1917", lineHeight: 1.3 }}>
+                    Your local store, online
+                  </h3>
+                  <p style={{ fontSize: "0.82rem", color: "#78716c", lineHeight: 1.6, marginTop: 6 }}>
+                    Browse live inventory, add to cart, and pick up — all from your phone, anytime.
+                  </p>
+                </div>
+                <div className="mt-6 flex items-center gap-2" style={{ color: "#16a34a", fontSize: "0.8rem", fontWeight: 600 }}>
+                  Browse store <ArrowRight size={14} />
+                </div>
+              </div>
+
+              <div
+                className="flex-1 rounded-xl overflow-hidden"
+                style={{ border: "1px solid rgba(22,101,52,0.12)", background: "#fafaf9" }}
+              >
+                <div
+                  className="flex items-center gap-1.5 px-3 py-2.5 border-b"
+                  style={{ borderColor: "rgba(22,101,52,0.1)", background: "#f5f5f4" }}
+                >
+                  <span className="w-2 h-2 rounded-full bg-red-300" />
+                  <span className="w-2 h-2 rounded-full bg-yellow-300" />
+                  <span className="w-2 h-2 rounded-full bg-green-300" />
+                  <span
+                    className="ml-2 flex-1 rounded px-2 py-0.5 text-center"
+                    style={{ background: "#fff", fontSize: "0.65rem", color: "#a8a29e", border: "1px solid #e7e5e4" }}
+                  >
+                    candianscart.ca · store
+                  </span>
+                </div>
+                <div className="p-3 space-y-2">
+                  {storeItems.map((item) => (
+                    <div
+                      key={item.name}
+                      className="store-row flex items-center justify-between px-3 py-2.5"
+                      style={{ border: "1px solid rgba(22,101,52,0.08)", background: "#fff" }}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span style={{ fontSize: "1.2rem" }}>{item.emoji}</span>
+                        <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#1c1917" }}>{item.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {item.tag && (
+                          <span style={{ fontSize: "0.65rem", fontWeight: 700, background: "#dcfce7", color: "#15803d", border: "1px solid #86efac", borderRadius: 99, padding: "2px 8px" }}>
+                            Subsidised
+                          </span>
+                        )}
+                        <span style={{ fontSize: "0.7rem", color: "#a8a29e", textDecoration: "line-through" }}>{item.was}</span>
+                        <span style={{ fontSize: "0.88rem", fontWeight: 800, color: "#15803d" }}>{item.price}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Card 5: Family Plans ── */}
+          <div
+            className="feat-card card-family p-7 flex flex-col justify-between min-h-[200px]"
+            style={{ background: "linear-gradient(145deg, #166534 0%, #15803d 60%, #16a34a 100%)", border: "none" }}
+          >
+            <div style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.12)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", top: -15, right: -15, width: 100, height: 100, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.10)", pointerEvents: "none" }} />
+
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", zIndex: 1 }}>
+              <ShoppingBag size={22} color="#fff" strokeWidth={1.5} />
+            </div>
+
+            <div style={{ position: "relative", zIndex: 1, marginTop: 20 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 99, padding: "3px 10px", fontSize: "0.7rem", fontWeight: 700, color: "#fff", marginBottom: 10, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                🇨🇦 Canada-only
+              </div>
+              <h3 style={{ fontWeight: 800, fontSize: "1.15rem", color: "#fff", lineHeight: 1.3 }}>Family Plans</h3>
+              <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.75)", lineHeight: 1.6, marginTop: 6 }}>
+                Exclusive access for Canadian families. Apply once — your whole household benefits every week.
+              </p>
+              <div className="mt-5 inline-flex items-center gap-2" style={{ background: "#fff", color: "#15803d", fontWeight: 700, fontSize: "0.82rem", borderRadius: 10, padding: "8px 16px", cursor: "pointer" }}>
+                Apply now <ArrowRight size={14} />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Card 6: Savings Calculator (full width) ── */}
+          <div className="feat-card card-calc p-7 sm:p-8">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-7">
+              <div className="icon-ring">
+                <Calculator size={22} color="#16a34a" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 style={{ fontWeight: 700, fontSize: "1.15rem", color: "#1c1917", margin: 0 }}>Savings Calculator</h3>
+                <p style={{ fontSize: "0.82rem", color: "#78716c", margin: "3px 0 0" }}>
+                  Enter your monthly grocery spend to see how much you could save with us.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col lg:flex-row gap-8">
+
+              {/* Left: Input controls */}
+              <div style={{ flex: 1 }}>
+
+                {/* Dollar input */}
+                <div style={{ marginBottom: "1.25rem" }}>
+                  <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 700, color: "#57534e", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 8 }}>
+                    Monthly spend
+                  </label>
+                  <div style={{ position: "relative" }}>
+                    <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: "1rem", fontWeight: 600, color: "#78716c", pointerEvents: "none" }}>$</span>
+                    <input
+                      className="calc-input"
+                      type="number"
+                      min="0"
+                      max="5000"
+                      step="1"
+                      value={spend === 0 ? '' : spend}
+                      onChange={e => handleInput(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Slider */}
+                <div style={{ marginBottom: "1.5rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                    <span style={{ fontSize: "0.78rem", color: "#a8a29e", fontWeight: 600 }}>$10</span>
+                    <span style={{ fontSize: "0.78rem", color: "#a8a29e", fontWeight: 600 }}>$2,000</span>
+                  </div>
+                  <input
+                    className="calc-slider"
+                    type="range"
+                    min="10"
+                    max="2000"
+                    step="1"
+                    value={Math.min(2000, Math.max(10, spend))}
+                    onChange={e => handleInput(e.target.value)}
+                  />
+                </div>
+
+                {/* Quick picks */}
+                <div>
+                  <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#57534e", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 8 }}>Quick select</p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {[100, 200, 300, 500, 800].map(v => (
+                      <button
+                        key={v}
+                        onClick={() => setSpend(v)}
+                        style={{
+                          padding: "6px 14px",
+                          borderRadius: 8,
+                          fontSize: "0.8rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          border: spend === v ? "1.5px solid #16a34a" : "1.5px solid #e5e7eb",
+                          background: spend === v ? "#dcfce7" : "#f9fafb",
+                          color: spend === v ? "#15803d" : "#57534e",
+                          transition: "all 0.15s ease",
+                          fontFamily: "'Sora', sans-serif",
+                        }}
+                      >
+                        ${v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div style={{ width: 1, background: "rgba(22,101,52,0.10)", alignSelf: "stretch", display: "none" }} className="lg:block" />
+
+              {/* Right: Breakdown + result */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+
+                {/* Breakdown table */}
+                <div style={{ background: "#f9fafb", border: "1px solid rgba(22,101,52,0.09)", borderRadius: 14, padding: "16px 18px" }}>
+                  <p style={{ fontSize: "0.72rem", fontWeight: 700, color: "#a8a29e", letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>How it works</p>
+
+                  <div className="calc-row">
+                    <div>
+                      <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#1c1917", margin: 0 }}>Your total spend</p>
+                    </div>
+                    <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "#1c1917" }}>{fmt(spend)}</span>
+                  </div>
+
+                  <div className="calc-row">
+                    <div>
+                      <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#1c1917", margin: 0 }}>Subsidised portion</p>
+                      <p style={{ fontSize: "0.72rem", color: "#a8a29e", margin: "2px 0 0" }}>40% of your spend</p>
+                    </div>
+                    <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "#1c1917" }}>{fmt(subsidised)}</span>
+                  </div>
+
+                  <div className="calc-row">
+                    <div>
+                      <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#1c1917", margin: 0 }}>Discount applied</p>
+                      <p style={{ fontSize: "0.72rem", color: "#a8a29e", margin: "2px 0 0" }}>60% off the subsidised portion</p>
+                    </div>
+                    <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "#16a34a" }}>{fmt(savings)}</span>
+                  </div>
+                </div>
+
+                {/* Result banner */}
+                <div
+                  style={{
+                    background: "linear-gradient(135deg, #166534 0%, #16a34a 100%)",
+                    borderRadius: 14,
+                    padding: "18px 20px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div style={{ position: "absolute", top: -24, right: -24, width: 96, height: 96, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.12)" }} />
+                  <div style={{ position: "absolute", top: -8, right: -8, width: 56, height: 56, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.10)" }} />
+
+                  <div style={{ position: "relative", zIndex: 1 }}>
+                    <p style={{ fontSize: "0.7rem", fontWeight: 700, color: "rgba(255,255,255,0.65)", letterSpacing: "0.07em", textTransform: "uppercase", margin: "0 0 4px" }}>
+                      You save up to
+                    </p>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                      <span
+                        key={Math.round(savings)}
+                        className="savings-num"
+                        style={{ fontSize: "2.6rem", fontWeight: 800, color: "#fff", lineHeight: 1 }}
+                      >
+                        {fmtInt(savings)}
+                      </span>
+                      <span style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>/ month</span>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: "right", position: "relative", zIndex: 1 }}>
+                    <p style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.6)", margin: "0 0 3px", fontWeight: 600 }}>Annually</p>
+                    <span
+                      key={Math.round(annual)}
+                      className="savings-num"
+                      style={{ fontSize: "1.4rem", fontWeight: 800, color: "#fff" }}
+                    >
+                      {fmtInt(annual)}
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </section>
-    )
+  )
 }

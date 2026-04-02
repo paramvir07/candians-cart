@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { LoginCarousel } from "@/components/customer/login/LoginCarousel";
+import Logo from "@/components/shared/Logo";
 
 const PORTAL_OPTIONS = [
   {
@@ -39,8 +40,9 @@ function SelectorContent() {
     <>
       {/* Logo + heading */}
       <div className="mb-8">
-        <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-          <ShoppingCart className="text-primary-foreground" size={22} />
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+          {/* <ShoppingCart className="text-primary-foreground" size={22} /> */}
+          <Logo />
         </div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
           Partner Portal

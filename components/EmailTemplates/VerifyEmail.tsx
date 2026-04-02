@@ -31,6 +31,7 @@ export function VerifyEmail({
   websiteUrl = "https://candianscart.ca",
   loginUrl = "https://candianscart.ca/customer/login",
   helpUrl = "https://candianscart.ca",
+
 }: VerifyEmailProps) {
   return (
     <Html>

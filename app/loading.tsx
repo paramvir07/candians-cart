@@ -2,7 +2,8 @@
 
 import Lottie from "lottie-react";
 import cartAnimation from "@/public/animations/cart.json";
-import { ShoppingCart } from "lucide-react";
+// import { ShoppingCart } from "lucide-react";
+import Logo from "@/components/shared/Logo";
 
 const Loading = () => {
   return (
@@ -10,8 +11,9 @@ const Loading = () => {
 
       {/* Logo */}
       <div className="flex items-center gap-2.5 mb-4">
-        <div className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center shadow-sm">
-          <ShoppingCart className="w-4 h-4 text-primary-foreground" />
+        <div className="w-9 h-9 rounded-2xl flex items-center justify-center shadow-sm">
+          {/* <ShoppingCart className="w-4 h-4 text-primary-foreground" /> */}
+          <Logo />
         </div>
         <span className="text-base font-bold text-foreground tracking-tight">
           Candian&apos;s Cart

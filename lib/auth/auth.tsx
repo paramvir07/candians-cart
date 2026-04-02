@@ -24,12 +24,13 @@ export const auth = betterAuth({
     sendOnSignIn: true,
     sendVerificationEmail: async ({ user, url }) => {
       await sendEmail({
-       to: user.email,
+        to: user.email,
         subject: "Verify your email address",
         react: (
-          <VerifyEmail 
+          <VerifyEmail
             username={user.name}
             verifyUrl={url}
+            appName="Candian's Cart"
           />
         ),
       });

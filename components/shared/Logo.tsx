@@ -1,15 +1,24 @@
-import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
-const Logo = () => {
+type LogoProps = {
+  variant?: "icon" | "full";
+};
+
+export const Logo = ({ variant = "icon" }: LogoProps) => {
+  const src =
+    variant === "full"
+      ? "/CC-Logo_full.png"
+      : "/CC-Logo_cropped_icon.png";
+
   return (
-    <Link href="/" className="flex items-center gap-2">
-      <div className="bg-green-600 p-2 rounded">
-        <ShoppingCart
-          style={{ width: `24px`, height: `24px` }}
-          className="text-white"
-        />
-      </div>
+    <Link href="/" className="flex items-center">
+      <img
+        src={src}
+        alt="Logo"
+        className={`object-contain ${
+          variant === "full" ? "h-10 sm:h-12" : "h-10"
+        } w-auto`}
+      />
     </Link>
   );
 };

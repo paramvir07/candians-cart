@@ -25,8 +25,9 @@ const Navbar = async () => {
   return (
     <nav className="sticky top-0 z-50 w-full bg-background border-b border-border">
       <div className="flex items-center justify-between px-5 h-14 gap-4">
+        
         {/* Logo */}
-        <div className="shrink-0">
+        <div className="shrink-0 flex items-center h-full">
           <Logo />
         </div>
 
@@ -43,6 +44,7 @@ const Navbar = async () => {
 
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
+          
           {/* Cart */}
           <Link href="/customer/cart">
             <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary/80 active:scale-[0.97] transition-all">

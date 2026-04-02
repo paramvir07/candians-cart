@@ -21,35 +21,35 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  // Use your production URL here, fall back to localhost for dev
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://candiancart.com"),
+
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://candianscart.ca"),
   title: {
-    default: "Candian Cart | Fresh Groceries Delivered",
-    template: "%s | Candian Cart", // e.g., "Home | Candian Cart"
+    default: "Candian's Cart | Smart grocery shopping for families",
+    template: "%s | Candian's Cart",
   },
-  description: "Your favorite grocery app. Get fresh produce, dairy, and everyday essentials delivered right to your door.",
-  keywords: ["grocery delivery", "fresh produce", "Candian Cart", "online grocery", "food delivery"],
+  description: "Your favorite grocery app. Order fresh produce, dairy, and everyday essentials for easy pickup or in-store shopping.",
+  keywords: ["grocery delivery", "fresh produce", "Candian's Cart", "online grocery", "food delivery"],
   authors: [{ name: "Candian Cart Team" }],
-  creator: "Candian Cart",
+  creator: "Candian's Cart",
   openGraph: {
     type: "website",
     locale: "en_CA",
     url: "/",
-    title: "Candian Cart | Fresh Groceries Delivered",
-    description: "Your favorite grocery app. Get fresh produce, dairy, and everyday essentials delivered right to your door.",
-    siteName: "Candian Cart",
+    title: "Candian's Cart | Smart grocery shopping for families",
+    description: "Your favorite grocery app. Order fresh produce, dairy, and everyday essentials for easy pickup or in-store shopping.",
+    siteName: "Candian's Cart",
     images: [
       {
-        url: "/CC-Logo.png", // Utilizing your existing logo for social previews
+        url: "/CC-Logo.png",
         width: 1200,
         height: 630,
-        alt: "Candian Cart Logo",
+        alt: "Candian's Cart Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Candian Cart | Fresh Groceries Delivered",
+    title: "Candian's Cart | Smart grocery shopping for families",
     description: "Your favorite grocery app.",
     images: ["/CC-Logo.png"],
   },
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-};
+}; // <-- THIS was missing
 
 export default function RootLayout({
   children,
@@ -76,11 +76,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        
         {children}
-        <Toaster position="top-right" richColors/>
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );
 }
-

@@ -10,6 +10,7 @@ import {
 import Autoplay from "embla-carousel-autoplay"
 import { ShoppingCart } from "lucide-react"
 import Image from "next/image"
+import Logo from "@/components/shared/Logo"
 
 const slides = [
   {
@@ -65,8 +66,9 @@ export function LoginCarousel() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 z-[1]" />
 
                 <div className="relative z-10 flex items-center justify-between px-6 pt-6">
-                  <div className="w-12 h-12 bg-primary backdrop-blur-sm rounded-lg flex items-center justify-center shadow-2xl">
-                    <ShoppingCart size={22} className="text-white" />
+                  <div className="w-12 h-12 bg-white backdrop-blur-sm rounded-lg flex items-center justify-center shadow-2xl">
+                    {/* <ShoppingCart size={22} className="text-white" /> */}
+                    <Logo />
                   </div>
                 </div>
 

@@ -34,7 +34,7 @@ export function Footer() {
 
           {/* Left — brand */}
           <div className="md:max-w-[220px] shrink-0">
-            <Logo />
+            <Logo variant="full" />
             <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
               The exclusive family grocery platform fresh produce and pantry
               essentials for Canadian families.
@@ -90,7 +90,7 @@ export function Footer() {
         className="pointer-events-none select-none flex justify-center overflow-hidden h-24 md:h-44 lg:h-62 -mt-2"
       >
         <span className="text-[8rem] md:text-[15rem] lg:text-[22rem] font-black text-foreground/10 whitespace-nowrap leading-none tracking-tighter">
-          Candian
+          Candian's
         </span>
       </div>
 

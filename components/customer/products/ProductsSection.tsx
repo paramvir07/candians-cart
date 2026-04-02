@@ -129,8 +129,10 @@ export function ProductsSection({ products,subsidized }: ProductsSectionProps) {
         break;
     }
 
-    // Featured products always float to top, preserving relative order within each group
-    result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+    // Featured products float to top only when not sorting by price
+  if (filters.sortBy !== "price_asc" && filters.sortBy !== "price_desc") {
+  result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+}
 
     return result;
   }, [products, filters]);

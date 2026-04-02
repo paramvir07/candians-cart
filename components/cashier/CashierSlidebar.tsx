@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import LogoutButton from "../shared/LogoutButton";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-
+import Logo from "../shared/Logo";
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 type CustomerData = {
@@ -258,8 +258,8 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
       <aside className="hidden md:flex fixed top-4 bottom-4 left-3 w-56 flex-col bg-white rounded-2xl border border-gray-100 shadow-sm z-40 overflow-hidden">
         {/* Brand header */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
-            <ShoppingCartIcon className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <Logo />
           </div>
           <span className="text-[15px] font-bold text-gray-900 tracking-tight">
             Cashier
@@ -273,28 +273,27 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
       </aside>
 
       {/* ── Mobile top bar ─────────────────────────────────────────────────── */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 bg-white border-b border-gray-100">
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 h-14 bg-white border-b border-gray-100">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600 shrink-0"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
-            <ShoppingCartIcon className="w-3.5 h-3.5 text-white" />
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
+            <Logo />
           </div>
           <span className="text-sm font-bold text-gray-900">Cashier</span>
         </div>
 
         {/* Show customer name on mobile if selected */}
         {customerData?.id && (
-          <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 truncate max-w-[140px]">
+          <span className="ml-auto text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 truncate max-w-[140px]">
             {customerData.name ?? "Customer"}
           </span>
         )}
-
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600"
-          aria-label="Open menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
       </header>
 
       {/* ── Mobile backdrop ─────────────────────────────────────────────────── */}
@@ -318,8 +317,9 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
         {/* Drawer header */}
         <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center">
-              <ShoppingCartIcon className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center">
+              {/* <ShoppingCartIcon className="w-4 h-4 text-white" /> */}
+              <Logo />
             </div>
             <span className="text-[15px] font-bold text-gray-900">Cashier</span>
           </div>

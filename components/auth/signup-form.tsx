@@ -21,6 +21,7 @@ import { StoreDocument } from "@/types/store/store";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import Logo from "../shared/Logo";
 
 const initialState = { success: false, message: "" };
 
@@ -82,8 +83,9 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
     <>
       {/* Logo + heading */}
       <div className="mb-7">
-        <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-          <ShoppingCart className="text-primary-foreground" size={22} />
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+          {/* <ShoppingCart className="text-primary-foreground" size={22} /> */}
+          <Logo />
         </div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
           {heading}

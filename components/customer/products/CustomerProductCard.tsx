@@ -48,7 +48,7 @@ export function CustomerProductCard({
   customerId?: string;
   product: IProduct;
   cartQuantity?: number;
-  subsidyPage: boolean
+  subsidyPage: boolean;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -227,13 +227,19 @@ export function CustomerProductCard({
           <div className="flex flex-col gap-1">
             {product.subsidised && (
               <div className="flex items-center gap-1 bg-teal-500/90 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded-full leading-none whitespace-nowrap shadow-md shadow-teal-900/30">
-                <BadgeDollarSign className="h-2.5 w-2.5 shrink-0" strokeWidth={2.5} />
+                <BadgeDollarSign
+                  className="h-2.5 w-2.5 shrink-0"
+                  strokeWidth={2.5}
+                />
                 SUBSIDISED
               </div>
             )}
             {product.isFeatured && (
               <div className="flex items-center gap-1 bg-amber-400/90 backdrop-blur-sm text-amber-950 text-[9px] font-bold px-2 py-0.5 rounded-full leading-none whitespace-nowrap shadow-md shadow-amber-900/30">
-                <Star className="h-2.5 w-2.5 shrink-0 fill-amber-950" strokeWidth={2} />
+                <Star
+                  className="h-2.5 w-2.5 shrink-0 fill-amber-950"
+                  strokeWidth={2}
+                />
                 FEATURED
               </div>
             )}
@@ -273,7 +279,8 @@ export function CustomerProductCard({
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
               maskImage: "linear-gradient(to top, black 40%, transparent 100%)",
-              WebkitMaskImage: "linear-gradient(to top, black 40%, transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to top, black 40%, transparent 100%)",
             }}
           />
 
@@ -294,13 +301,16 @@ export function CustomerProductCard({
             <div className="flex items-center text-white/90 text-xs font-medium">
               <span className="flex items-center gap-1">
                 <span className="font-black text-white">
-                  {fmt(product.price + (product.price*(product.markup/100)))}
+                  {fmt(product.price + product.price * (product.markup / 100))}
                 </span>
               </span>
             </div>
 
             {/* ── Cart controls ── */}
-            <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="flex items-center"
+              onClick={(e) => e.stopPropagation()}
+            >
               {quantity > 0 ? (
                 <div className="flex items-center gap-1.5 w-full">
                   {/* Trash */}
@@ -318,17 +328,23 @@ export function CustomerProductCard({
                   </button>
 
                   {/* Stepper */}
-                  <div className="flex-1 flex items-center bg-white/15 backdrop-blur-sm border border-white/25 rounded-xl px-1.5 py-1 gap-1">
+                  <div className="flex-1 flex items-center justify-between bg-white/15 backdrop-blur-sm border border-white/25 rounded-3xl px-2 py-1">
+                    {/* DECREMENT */}
                     <button
                       type="button"
                       onClick={handleDecrement}
                       disabled={isPending}
                       className="w-6 h-6 rounded-full border border-white/30 bg-white/20 flex items-center justify-center hover:bg-white/35 transition-colors disabled:opacity-50 shrink-0"
                     >
-                      <Minus size={10} strokeWidth={2.5} className="text-white" />
+                      <Minus
+                        size={11}
+                        strokeWidth={2.5}
+                        className="text-white"
+                      />
                     </button>
 
-                    <div className="flex items-center justify-center flex-1 gap-1">
+                    {/* CENTER (INPUT + OPTIONAL CHECK) */}
+                    <div className="flex items-center justify-center gap-1 flex-1">
                       <input
                         type="number"
                         min={0}
@@ -347,10 +363,10 @@ export function CustomerProductCard({
                           if (e.key === "Enter") e.currentTarget.blur();
                         }}
                         disabled={isPending}
-                        className="w-8 h-6 rounded-md bg-white/20 border border-white/30 text-center text-xs font-bold text-white tabular-nums outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-10 h-6 rounded-md bg-white/20 border border-white/30 text-center text-sm font-bold text-white tabular-nums outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
 
-                      {showConfirm ? (
+                      {showConfirm && (
                         <button
                           type="button"
                           onMouseDown={(e) => e.preventDefault()}
@@ -361,19 +377,30 @@ export function CustomerProductCard({
                           disabled={isPending}
                           className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
                         >
-                          <Check size={10} strokeWidth={3} className="text-primary-foreground" />
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleIncrement}
-                          disabled={isPending || quantity >= 99}
-                          className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
-                        >
-                          <Plus size={10} strokeWidth={2.5} className="text-primary-foreground" />
+                          <Check
+                            size={11}
+                            strokeWidth={3}
+                            className="text-primary-foreground"
+                          />
                         </button>
                       )}
                     </div>
+
+                    {/* INCREMENT */}
+                    {!showConfirm && (
+                      <button
+                        type="button"
+                        onClick={handleIncrement}
+                        disabled={isPending || quantity >= 99}
+                        className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+                      >
+                        <Plus
+                          size={11}
+                          strokeWidth={2.5}
+                          className="text-primary-foreground"
+                        />
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (

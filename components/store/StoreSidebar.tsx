@@ -19,6 +19,7 @@ import LogoutButton from "../shared/LogoutButton";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import Logo from "../shared/Logo";
 
 const NAV_GROUPS = [
   {
@@ -40,7 +41,11 @@ const NAV_GROUPS = [
     label: "Finance",
     items: [
       { href: "/store/payouts", label: "Payouts", icon: HandCoins },
-      { href: "/store/cash-collection", label: "Cash Collection", icon: Banknote },
+      {
+        href: "/store/cash-collection",
+        label: "Cash Collection",
+        icon: Banknote,
+      },
       { href: "/store/invoice", label: "Invoices", icon: Receipt },
     ],
   },
@@ -174,8 +179,9 @@ const AdminSidebar = () => {
       <aside className="hidden md:flex fixed top-4 bottom-4 left-3 w-56 flex-col bg-white rounded-2xl border border-gray-100 shadow-sm z-40 overflow-hidden">
         {/* Brand header */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
-            <Store className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            {/* <Store className="w-4 h-4 text-white" /> */}
+            <Logo />
           </div>
           <span className="text-[15px] font-bold text-gray-900 tracking-tight">
             Store Panel
@@ -189,20 +195,20 @@ const AdminSidebar = () => {
       </aside>
 
       {/* ── Mobile Top Bar ────────────────────────────────────────────────────── */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 bg-white border-b border-gray-100">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
-            <Store className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="text-sm font-bold text-gray-900">Store Panel</span>
-        </div>
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 h-14 bg-white border-b border-gray-100">
         <button
           onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600"
+          className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600 shrink-0"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
         </button>
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
+            <Logo />
+          </div>
+          <span className="text-sm font-bold text-gray-900">Store Panel</span>
+        </div>
       </header>
 
       {/* ── Mobile Backdrop ───────────────────────────────────────────────────── */}
@@ -226,8 +232,9 @@ const AdminSidebar = () => {
         {/* Drawer top bar */}
         <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center">
-              <Store className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center">
+              {/* <Store className="w-4 h-4 text-white" /> */}
+              <Logo />
             </div>
             <span className="text-[15px] font-bold text-gray-900">
               Store Panel

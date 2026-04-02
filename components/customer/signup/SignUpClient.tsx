@@ -15,6 +15,7 @@ import { SignupForm } from "@/components/auth/signup-form";
 import { SignupCarousel } from "./SignupCarousel";
 import { ReferralCodeForm } from "./ReferralCodeForm";
 import Image from "next/image";
+import Logo from "@/components/shared/Logo";
 
 const STEPS = ["location", "terms", "budget", "selectStore", "code"] as const;
 
@@ -109,7 +110,8 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
           {/* Logo on image */}
           <div className="absolute top-5 left-5">
             <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg">
-              <ShoppingCart size={22} className="text-primary-foreground" />
+              {/* <ShoppingCart size={22} className="text-primary-foreground" /> */}
+              <Logo />
             </div>
           </div>
 
@@ -186,10 +188,11 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
 
             {/* Logo */}
             <div className="flex items-center gap-2.5 mb-12">
-              <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-sm shadow-primary/20">
-                <ShoppingCart size={17} className="text-primary-foreground" />
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm shadow-primary/20">
+                {/* <ShoppingCart size={17} className="text-primary-foreground" /> */}
+                <Logo />
               </div>
-              <span className="text-sm font-semibold text-foreground">CanadianCart</span>
+              <span className="text-sm font-semibold text-foreground">Canadian's Cart</span>
             </div>
 
             {/* Step list */}

@@ -7,6 +7,7 @@ import { ProductsSection } from "@/components/customer/products/ProductsSection"
 import { redirect } from "next/navigation";
 import { IProduct } from "@/types/store/products.types";
 import { Footer } from "@/components/customer/landing/Footer";
+import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 
 export const metadata: Metadata = {
   title: "Home",
@@ -50,6 +51,7 @@ export default async function CustomerPage() {
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <Navbar />
+<<<<<<< HEAD
       <main>
         {/* Server component — static, no JS needed */}
         <HeroBanner />
@@ -57,6 +59,14 @@ export default async function CustomerPage() {
         <ProductsSection products={products} />
       </main>
       <Footer />
+=======
+      {/* Server component — static, no JS needed */}
+      <HeroBanner />
+      <CustomerAdvertisements />
+      {/* Client component — receives all products, handles filters/pagination */}
+      <ProductsSection products={products} />
+      <Footer/>
+>>>>>>> 7b14c8e (updates on ui)
     </div>
   );
 }

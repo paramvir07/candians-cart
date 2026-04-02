@@ -22,6 +22,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { getPendingPriceChangesCount } from "@/actions/admin/invoice/getPriceChange";
+import Logo from "../shared/Logo";
 
 const NAV_GROUPS = [
   {
@@ -149,7 +150,9 @@ function SidebarContent({
                 <NavItem
                   key={item.href}
                   {...item}
-                  badge={item.label === "Invoices" ? pendingInvoicesCount : undefined}
+                  badge={
+                    item.label === "Invoices" ? pendingInvoicesCount : undefined
+                  }
                   onClick={onNav}
                 />
               ))}
@@ -216,8 +219,8 @@ const AdminSidebar = () => {
       <aside className="hidden md:flex fixed top-4 bottom-4 left-3 w-56 flex-col bg-white rounded-2xl border border-gray-100 shadow-sm z-40 overflow-hidden">
         {/* Brand header */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
-            <Store className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <Logo />
           </div>
           <span className="text-[15px] font-bold text-gray-900 tracking-tight">
             Admin Panel
@@ -231,20 +234,21 @@ const AdminSidebar = () => {
       </aside>
 
       {/* ── Mobile Top Bar ────────────────────────────────────────────────────── */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-14 bg-white border-b border-gray-100">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
-            <Store className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="text-sm font-bold text-gray-900">Admin Panel</span>
-        </div>
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 h-14 bg-white border-b border-gray-100">
         <button
           onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600"
+          className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600 shrink-0"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5" />
         </button>
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
+            {/* <Store className="w-3.5 h-3.5 text-white" /> */}
+            <Logo />
+          </div>
+          <span className="text-sm font-bold text-gray-900">Admin Panel</span>
+        </div>
       </header>
 
       {/* ── Mobile Backdrop ───────────────────────────────────────────────────── */}
@@ -268,8 +272,9 @@ const AdminSidebar = () => {
         {/* Drawer top bar */}
         <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center">
-              <Store className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center">
+              {/* <Store className="w-4 h-4 text-white" /> */}
+              <Logo />
             </div>
             <span className="text-[15px] font-bold text-gray-900">
               Admin Panel
@@ -286,9 +291,9 @@ const AdminSidebar = () => {
 
         {/* Drawer scrollable content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0">
-          <SidebarContent 
-            onNav={() => setMobileOpen(false)} 
-            pendingInvoicesCount={pendingInvoicesCount} 
+          <SidebarContent
+            onNav={() => setMobileOpen(false)}
+            pendingInvoicesCount={pendingInvoicesCount}
           />
         </div>
       </div>

@@ -34,7 +34,7 @@ export function SearchNav({
   cartCount,
 }: SearchNavProps) {
   const [query, setQuery] = useState(initialQuery);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(true);
   const [, startTransition] = useTransition();
 
   const handleChange = (val: string) => {
@@ -44,7 +44,7 @@ export function SearchNav({
     });
   };
 
-  const handleSubmit = (e: React.SubmitEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onQueryChange(query);
   };
@@ -63,58 +63,51 @@ export function SearchNav({
     .slice(0, 2);
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-background border-b border-border overflow-hidden">
-      <div className="flex items-center justify-between px-5 h-14 relative">
-        
-        {/* Left Section: Logo & Back */}
-        <div className={`flex items-center shrink-0 transition-all duration-300 ease-in-out ${isMobileSearchOpen ? "opacity-0 -translate-x-full w-0" : "opacity-100 translate-x-0"}`}>
+    <nav className="sticky top-0 z-50 w-full bg-background border-b border-border">
+      <div className="flex items-center justify-between px-4 md:px-5 h-14">
+        {/* LEFT */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* MOBILE BACK */}
           {!customerId && (
-            <>
-              <Link href="/" className="md:hidden mr-2">
-                <Button variant="ghost" size="icon" className="rounded-full w-9 h-9">
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </Link>
-              <div className="hidden md:block shrink-0">
-                <Logo />
-              </div>
-            </>
+            <Link href="/" className="md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full w-9 h-9"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </Link>
           )}
+
+          {/* DESKTOP LOGO */}
+          <div className="hidden md:block">
+            <Logo />
+          </div>
         </div>
 
-        {/* Search Form Section */}
-        <div 
-          className={`flex items-center gap-2 transition-all duration-300 ease-in-out ${
-            isMobileSearchOpen 
-            ? "flex-1 opacity-100 translate-x-0" 
-            : "hidden md:flex md:flex-1 md:max-w-2xl md:mx-4"
-          }`}
-        >
-          {isMobileSearchOpen && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setIsMobileSearchOpen(false)}
-              className="md:hidden shrink-0"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          )}
-          <form onSubmit={handleSubmit} className="flex-1 flex items-center gap-2 min-w-0">
-            <div className="relative flex-1">
+        {/* SEARCH */}
+        <div className="flex-1 flex items-center gap-2 max-w-full md:max-w-2xl mx-2 md:mx-4">
+
+          <form
+            onSubmit={handleSubmit}
+            className="flex-1 flex items-center gap-2 min-w-0"
+          >
+            <div className="relative flex-1 border-border bg-secondary rounded-xl">
               <Input
                 type="text"
                 placeholder="Search products..."
                 value={query}
                 onChange={(e) => handleChange(e.target.value)}
                 autoFocus={isMobileSearchOpen}
-                className="w-full pr-10 h-9 bg-secondary border-border rounded-xl focus-visible:ring-1 focus-visible:ring-primary transition-all duration-300"
+                className="w-full pr-10 h-9 bg-secondary border-border rounded-xl"
               />
+
               {query && (
                 <button
                   type="button"
                   onClick={() => handleChange("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-slate-200 flex items-center justify-center z-10"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-slate-200 flex items-center justify-center"
                 >
                   <X className="h-3 w-3 text-slate-600" />
                 </button>
@@ -123,22 +116,22 @@ export function SearchNav({
           </form>
         </div>
 
-        {/* Right Actions */}
-        <div className={`flex items-center gap-2 shrink-0 transition-all duration-300 ease-in-out ${isMobileSearchOpen ? "opacity-0 translate-x-full w-0 pointer-events-none" : "opacity-100 translate-x-0"}`}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden rounded-xl w-9 h-9 bg-secondary border border-border"
-            onClick={() => setIsMobileSearchOpen(true)}
-          >
-            <Search className="w-4 h-4 text-primary" />
-          </Button>
-
+        {/* RIGHT */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* MOBILE: ONLY QR */}
           {!customerId && (
-            <>
+            <div className="md:hidden">
               <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
+            </div>
+          )}
+
+          {/* DESKTOP: EVERYTHING */}
+          {!customerId && (
+            <div className="hidden md:flex items-center gap-2">
+              <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
+
               <Link href="/customer/cart">
-                <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary/80 active:scale-[0.97] transition-all">
+                <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center">
                   <ShoppingCartIcon className="w-[16px] h-[16px] text-primary" />
                   {(cartCount ?? 0) > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-primary-foreground border-2 border-background">
@@ -148,29 +141,25 @@ export function SearchNav({
                 </div>
               </Link>
 
-              <Link href="/customer/wallet" className="hidden sm:block">
-                <div className="flex items-center gap-2 bg-secondary border border-border rounded-xl px-4 py-1.5 hover:bg-secondary/80 active:scale-[0.97] transition-all">
-                  <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
+              <Link href="/customer/wallet">
+                <div className="flex items-center gap-2 bg-secondary border border-border rounded-xl px-4 py-1.5">
+                  <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
                     <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
                   </div>
                   <div className="flex flex-col leading-none">
-                    <span className="text-[9px] text-primary font-semibold uppercase tracking-wide">Balance</span>
-                    <span className="text-sm font-black text-foreground tracking-tight mt-0.5">
+                    <span className="text-[9px] text-primary font-semibold uppercase">
+                      Balance
+                    </span>
+                    <span className="text-sm font-black text-foreground">
                       {fmtShort(customerData.walletBalance)}
                     </span>
                   </div>
                 </div>
               </Link>
-              
-              <Link href="/customer/wallet" className="sm:hidden">
-                <div className="w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center">
-                  <Wallet className="w-4 h-4 text-primary" />
-                </div>
-              </Link>
 
               <div className="w-px h-5 bg-border mx-1" />
               <NavAvatarMenu name={customerData.name} initials={initials} />
-            </>
+            </div>
           )}
         </div>
       </div>

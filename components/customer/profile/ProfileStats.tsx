@@ -93,15 +93,6 @@ export default function ProfileStats({ customer,OrderCount }: Props) {
           </p>
         </div>
       </div>
-
-      <Link href={'/customer/analytics'}
-        className="relative col-span-2 rounded-3xl overflow-hidden flex flex-col justify-between cursor-default"
-        style={{ background: "var(--primary)" }}
-      >
-          <Button>Analytics <ChartSpline/></Button>
-
-      </Link>
-
     </div>
   );
 }
