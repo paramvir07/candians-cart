@@ -19,9 +19,9 @@ const CustomerProducts = async ({ params }: CustomerIdParams) => {
     getCartItemsCount(customerId),
   ]);
 
-  if (!response.success) {
-    redirect("/");
-  }
+if (!response.success) {
+  throw new Error("Request failed");
+}
 
   // Pull storeId — adjust the field name if your response shape differs
   const storeId = response.storeId ?? response.products?.[0]?.storeId ?? "";

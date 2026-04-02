@@ -9,7 +9,7 @@ export default async function Page() {
     headers: await headers(),
   });
 
-  if (session) redirect("/");
+  if (session) redirect("/customer");
 
 return (
   <div className="min-h-screen w-full flex items-center justify-center lg:p-8 relative overflow-hidden ">

@@ -3,17 +3,22 @@
 import { useState } from "react";
 import { LogOut } from "lucide-react";
 import { logoutAction } from "@/actions/auth/login-logout.actions";
+import { useRouter } from "next/navigation";
 
 type Props = {
   variant?: "row" | "card";
 };
 
 export default function LogoutButton({ variant = "card" }: Props) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
     setLoading(true);
-    await logoutAction();
+    const response = await logoutAction();
+    if(response.success){
+      router.push("/")
+    }
   };
 
   if (variant === "row") {

@@ -37,7 +37,7 @@ useEffect(() => {
 
   if (state.success) {
     toast.success(state.message);
-    router.push(state.redirectTo || "/");
+    router.push(state.redirectTo || "/customer");
   } else {
     toast.error(state.message);
     // Redirect to correct portal if provided (wrong role case)

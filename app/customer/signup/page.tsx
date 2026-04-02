@@ -9,7 +9,7 @@ export default async function Page() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (session) redirect("/");
+  if (session) redirect("/customer");
 
   const storesResponse = await getStores();
 

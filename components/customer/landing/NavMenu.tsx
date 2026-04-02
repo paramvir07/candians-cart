@@ -29,7 +29,10 @@ export function NavAvatarMenu({ name, initials }: NavAvatarMenuProps) {
 
   
   const handleLogout = async () => {
-    await logoutAction();
+    const response = await logoutAction();
+    if(response.success){
+      router.push("/")
+    }
   };
 
 

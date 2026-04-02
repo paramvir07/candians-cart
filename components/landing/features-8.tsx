@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
-import { ShoppingBag, Wallet, TrendingUp, Store, ArrowRight, Sparkles, Calculator } from 'lucide-react'
+"use client"
+import { useState } from 'react'
+import { ShoppingBag, Wallet, Store, ArrowRight, Sparkles, Calculator } from 'lucide-react'
 
 export default function FeaturesSection() {
   const storeItems = [

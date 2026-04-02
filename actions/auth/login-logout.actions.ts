@@ -8,7 +8,7 @@ import { formDataToObject } from "@/zod/validation/form";
 import { headers } from "next/headers";
 
 const roleRedirectMap = {
-  customer: "/",
+  customer: "/customer",
   admin: "/admin",
   store: "/store",
   cashier: "/cashier",

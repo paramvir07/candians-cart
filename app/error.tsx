@@ -2,7 +2,7 @@
 
 import Lottie from "lottie-react";
 import ErrorAnimation from "@/public/animations/503Error.json";
-import { ChevronLeft, ShoppingCart } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import Logo from "@/components/shared/Logo";
 
