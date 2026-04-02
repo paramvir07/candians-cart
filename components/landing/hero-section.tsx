@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const TABS = [
@@ -177,6 +178,7 @@ export default function HeroSection() {
           </p>
 
           <div style={fade("0.44s")} className="flex flex-wrap gap-3 justify-center mb-5">
+            <Link href={"/customer"}>
             <button
               className="px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold text-white text-sm sm:text-base"
               style={{
@@ -185,11 +187,14 @@ export default function HeroSection() {
                 border: "1px solid rgba(0,0,0,.1)",
               }}
             >
-              Register
+              Sign Up
             </button>
+            </Link>
+            <Link href={"/customer"}>
             <button className="px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold text-green-800 text-sm sm:text-base bg-white border border-green-200 hover:bg-green-50 transition-colors">
               Login
             </button>
+            </Link>
           </div>
 
           <div
@@ -249,8 +254,8 @@ export default function HeroSection() {
           {/* LEFT character */}
           <div className="stage-char stage-char--left">
             <img
-              src="https://media.discordapp.net/attachments/1265793460825227377/1488676752837443789/aaa.png?ex=69cda5c4&is=69cc5444&hm=f7052be91941c56e4db848e5d67f87642ab075252ee7acf12a5a30bee47f6b25&=&format=webp&quality=lossless"
-              alt="Happy customer"
+              src="https://ik.imagekit.io/h7w5h0hou/customer-left.png"
+              alt="https://ik.imagekit.io/h7w5h0hou/customer-right.png"
             />
           </div>
 

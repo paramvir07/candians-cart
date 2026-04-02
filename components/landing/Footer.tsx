@@ -3,33 +3,26 @@
 import Logo from "../shared/Logo";
 
 const FOOTER_LINKS = {
-  Shop: [
-    { label: "All Groceries",    href: "#" },
-    { label: "Fresh Produce",    href: "#" },
-    { label: "Staples & Grains", href: "#" },
-    { label: "Dairy & Eggs",     href: "#" },
-    { label: "Spices & Pastes",  href: "#" },
-    { label: "Weekly Deals",     href: "#" },
-  ],
+  // Shop: [
+  //   { label: "All Groceries",    href: "#" },
+  //   { label: "Fresh Produce",    href: "#" },
+  //   { label: "Staples & Grains", href: "#" },
+  //   { label: "Dairy & Eggs",     href: "#" },
+  //   { label: "Spices & Pastes",  href: "#" },
+  //   { label: "Weekly Deals",     href: "#" },
+  // ],
   Company: [
-    { label: "About Us",    href: "#" },
-    { label: "How It Works",href: "#" },
-    { label: "Blog",        href: "#" },
-    { label: "Careers",     href: "#" },
-    { label: "Press",       href: "#" },
+    { label: "About Us",    href: "/about-us" },
+    { label: "How It Works",href: "#howitworks" },
   ],
   Support: [
-    { label: "Help Centre",     href: "#" },
-    { label: "Track My Order",  href: "#" },
-    { label: "Returns Policy",  href: "#" },
-    { label: "Contact Us",      href: "#" },
-    { label: "Store Hours",     href: "#" },
+    { label: "Returns Policy",  href: "/returns" },
+    { label: "Contact Us",      href: "/contact-us" },
   ],
   Legal: [
-    { label: "Privacy Policy",   href: "#" },
-    { label: "Terms of Service", href: "#" },
-    { label: "Cookie Policy",    href: "#" },
-    { label: "Accessibility",    href: "#" },
+    { label: "Privacy Policy",   href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
+    { label: "Cookie Policy",    href: "/cookies" },
   ],
 };
 
@@ -308,7 +301,7 @@ export default function Footer() {
       <footer className="footer-root">
 
         {/* ── Newsletter band ── */}
-        <div className="footer-nl">
+        {/* <div className="footer-nl">
           <div className="footer-nl-inner">
             <div>
               <h3>🛒 Get weekly deal alerts</h3>
@@ -319,7 +312,7 @@ export default function Footer() {
               <button type="submit">Subscribe →</button>
             </form>
           </div>
-        </div>
+        </div> */}
 
         {/* ── Main grid ── */}
         <div className="footer-main">
@@ -333,7 +326,7 @@ export default function Footer() {
             </a>
             <p>Subsidised grocery pickup for Canadian families in Abbotsford, BC. Save up to 30% on everyday essentials.</p>
 
-            <div className="footer-store-info">
+            {/* <div className="footer-store-info">
               <div className="footer-store-row">
                 <span>📍</span>
                 <div>
@@ -341,13 +334,13 @@ export default function Footer() {
                   123 Fraser Valley Way, Abbotsford, BC V2S 0A1
                 </div>
               </div>
-              {/* <div className="footer-store-row">
+              <div className="footer-store-row">
                 <span>🕐</span>
                 <div>
                   <strong>Pickup Hours</strong>
                   Mon–Sat 9 am – 7 pm · Sun 10 am – 5 pm
                 </div>
-              </div> */}
+              </div>
               <div className="footer-store-row">
                 <span>📞</span>
                 <div>
@@ -355,7 +348,7 @@ export default function Footer() {
                   (604) 555-0192
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <div className="footer-social">
               {SOCIAL.map((s) => (
@@ -383,8 +376,6 @@ export default function Footer() {
             <p>© {currentYear} Canadian's Cart Inc. All rights reserved.</p>
             <div className="footer-badges">
               <span className="footer-badge">🇨🇦 Made in Canada</span>
-              <span className="footer-badge">🔒 SSL Secured</span>
-              <span className="footer-badge">🌿 Eco Packaging</span>
             </div>
           </div>
         </div>

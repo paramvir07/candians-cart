@@ -12,16 +12,21 @@ export default function FeaturesSection() {
 
   const [spend, setSpend] = useState(100)
 
-  const subsidised = spend * 0.40
-  const savings = subsidised * 0.60
+  const eligible = spend >= 21
+  const subsidised = eligible ? spend * 0.40 : 0
+  const savings = eligible ? subsidised * 0.60 : 0
   const annual = savings * 12
 
   const fmt = (n: number) => '$' + n.toFixed(2)
   const fmtInt = (n: number) => '$' + Math.round(n).toLocaleString()
 
   const handleInput = (val: string) => {
-    const v = Math.max(0, Math.min(5000, parseFloat(val) || 0))
-    setSpend(v)
+    const parsed = parseFloat(val)
+    if (isNaN(parsed) || val === '') {
+      setSpend(0)
+      return
+    }
+    setSpend(Math.min(5000, Math.max(0, parsed)))
   }
 
   return (
@@ -172,6 +177,7 @@ export default function FeaturesSection() {
         .calc-input::-webkit-outer-spin-button,
         .calc-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .calc-input:focus { border-color: #16a34a; background: #fff; }
+        .calc-input.ineligible { border-color: #fca5a5; background: #fff7f7; }
 
         .calc-slider {
           -webkit-appearance: none;
@@ -227,7 +233,7 @@ export default function FeaturesSection() {
       <div className="feat-section relative max-w-5xl mx-auto px-5 sm:px-6">
 
         {/* Section header */}
-        <div className="text-center mb-12">
+        <div id='how-it-works' className="text-center mb-12">
           <div className="section-pill">
             <Sparkles size={13} />
             Why families choose us
@@ -423,7 +429,6 @@ export default function FeaturesSection() {
               </div>
             </div>
           </div>
-
           {/* ── Card 6: Savings Calculator (full width) ── */}
           <div className="feat-card card-calc p-7 sm:p-8">
             {/* Header */}
@@ -452,7 +457,7 @@ export default function FeaturesSection() {
                   <div style={{ position: "relative" }}>
                     <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: "1rem", fontWeight: 600, color: "#78716c", pointerEvents: "none" }}>$</span>
                     <input
-                      className="calc-input"
+                      className={`calc-input${!eligible && spend > 0 ? ' ineligible' : ''}`}
                       type="number"
                       min="0"
                       max="5000"
@@ -461,21 +466,27 @@ export default function FeaturesSection() {
                       onChange={e => handleInput(e.target.value)}
                     />
                   </div>
+                  {/* Below-minimum notice */}
+                  {spend > 0 && !eligible && (
+                    <p style={{ fontSize: "0.75rem", color: "#dc2626", fontWeight: 600, marginTop: 6, display: "flex", alignItems: "center", gap: 4 }}>
+                      <span>⚠️</span> Minimum spend of $21 required to qualify for savings.
+                    </p>
+                  )}
                 </div>
 
                 {/* Slider */}
                 <div style={{ marginBottom: "1.5rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ fontSize: "0.78rem", color: "#a8a29e", fontWeight: 600 }}>$10</span>
+                    <span style={{ fontSize: "0.78rem", color: "#a8a29e", fontWeight: 600 }}>$0</span>
                     <span style={{ fontSize: "0.78rem", color: "#a8a29e", fontWeight: 600 }}>$2,000</span>
                   </div>
                   <input
                     className="calc-slider"
                     type="range"
-                    min="10"
+                    min="0"
                     max="2000"
                     step="1"
-                    value={Math.min(2000, Math.max(10, spend))}
+                    value={Math.min(2000, Math.max(0, spend))}
                     onChange={e => handleInput(e.target.value)}
                   />
                 </div>
@@ -527,25 +538,18 @@ export default function FeaturesSection() {
 
                   <div className="calc-row">
                     <div>
-                      <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#1c1917", margin: 0 }}>Subsidised portion</p>
-                      <p style={{ fontSize: "0.72rem", color: "#a8a29e", margin: "2px 0 0" }}>40% of your spend</p>
-                    </div>
-                    <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "#1c1917" }}>{fmt(subsidised)}</span>
-                  </div>
-
-                  <div className="calc-row">
-                    <div>
                       <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#1c1917", margin: 0 }}>Discount applied</p>
-                      <p style={{ fontSize: "0.72rem", color: "#a8a29e", margin: "2px 0 0" }}>60% off the subsidised portion</p>
                     </div>
-                    <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "#16a34a" }}>{fmt(savings)}</span>
+                    <span style={{ fontSize: "0.9rem", fontWeight: 700, color: eligible ? "#16a34a" : "#a8a29e" }}>{fmt(savings)}</span>
                   </div>
                 </div>
 
                 {/* Result banner */}
                 <div
                   style={{
-                    background: "linear-gradient(135deg, #166534 0%, #16a34a 100%)",
+                    background: eligible
+                      ? "linear-gradient(135deg, #166534 0%, #16a34a 100%)"
+                      : "linear-gradient(135deg, #78716c 0%, #a8a29e 100%)",
                     borderRadius: 14,
                     padding: "18px 20px",
                     display: "flex",
@@ -554,6 +558,7 @@ export default function FeaturesSection() {
                     gap: 12,
                     position: "relative",
                     overflow: "hidden",
+                    transition: "background 0.4s ease",
                   }}
                 >
                   <div style={{ position: "absolute", top: -24, right: -24, width: 96, height: 96, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.12)" }} />
@@ -561,7 +566,7 @@ export default function FeaturesSection() {
 
                   <div style={{ position: "relative", zIndex: 1 }}>
                     <p style={{ fontSize: "0.7rem", fontWeight: 700, color: "rgba(255,255,255,0.65)", letterSpacing: "0.07em", textTransform: "uppercase", margin: "0 0 4px" }}>
-                      You save up to
+                      {eligible ? "You save up to" : "Minimum not met"}
                     </p>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
                       <span
