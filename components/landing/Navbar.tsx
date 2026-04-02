@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Logo from "../shared/Logo";
+import Link from "next/link";
 
 const NAV_LINKS = [
   {
@@ -25,6 +26,9 @@ const NAV_LINKS = [
       { label: "Community",  href: "#" },
       { label: "Blog",       href: "#" },
     ],
+  },
+  {
+    label: "Calculator", href: "#calculator"
   },
 ];
 
@@ -460,9 +464,7 @@ export default function Navbar() {
           </button>
 
           {/* Logo */}
-          <a href="/" className="nav-logo">
-            <Logo variant="full" />
-          </a>
+          <Logo variant="full" />
 
           {/* Desktop links */}
           <div className="nav-links">
@@ -496,8 +498,9 @@ export default function Navbar() {
 
           {/* Desktop CTAs */}
           <div className="nav-right">
-            <button className="btn-ghost">Login</button>
-            <button className="btn-primary">Register Free</button>
+            
+            <Link href={"/customer"}><button className="btn-ghost">Login</button></Link>
+            <Link href={"/customer/signup"}><button className="btn-primary">Sign Up</button></Link>
           </div>
         </div>
 
@@ -539,8 +542,8 @@ export default function Navbar() {
             <div className="mobile-location">📍 Abbotsford, BC</div>
 
             <div className="mobile-btns">
-              <button className="mobile-btn-ghost">Login</button>
-              <button className="mobile-btn-primary">Register Free</button>
+              <Link href={"/customer"}><button className="mobile-btn-ghost">Login</button></Link>
+              <Link href={"/customer/signup"}><button className="mobile-btn-primary">Register Free</button></Link>
             </div>
           </div>
         </div>
