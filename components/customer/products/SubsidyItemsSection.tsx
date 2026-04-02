@@ -17,6 +17,7 @@ export const SubsidyItemsSection = ({
   if (!subItems || subItems.length === 0) return null;
 
   const totalSubsidy = subItems.reduce((sum, item) => sum + item.subsidy, 0);
+  console.log("Used subsidy : ",totalSubsidy)
   let leftOffSubsidy = 0;
 
   return (
@@ -42,7 +43,7 @@ export const SubsidyItemsSection = ({
             }}>
             CA${fmt(totalSubsidy)} saved
           </span>
-          <GetUsedSubsidy usedSubsidy={totalSubsidy}/>
+          <GetUsedSubsidy usedSubsidy={totalSubsidy} subItemslength={subItems.length}/>
         </div>
 
         <div className="flex flex-col gap-2.5">

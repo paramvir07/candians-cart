@@ -7,7 +7,7 @@ import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { signupAction } from "@/actions/auth/signup.actions";
-import { Eye, EyeOff, ShoppingCart } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { UserRole } from "@/types/auth";
 import { useAtom } from "jotai";
 import {

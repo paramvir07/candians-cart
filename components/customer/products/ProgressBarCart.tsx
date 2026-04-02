@@ -22,6 +22,7 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
   const [dialogOpen, setDialogOpen] = useState(false)
   const [showBtn, setShowBtn] = useState(false)
   const [SubsidyVal, setSubsidyVal] = useAtom(SubsidyValue)
+  const [, setUsedSubsidy] = useAtom(UsedSubsidy)
 
   const amount = total / 100
   const giftBalance = (giftWalletBalance ?? 0) / 100
@@ -33,21 +34,30 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
   const prevAmountRef = useRef<number | null>(null)
 
   useEffect(() => {
+  if (!subItemIds || subItemIds.length === 0) {
+    setUsedSubsidy(0)
+  }
+}, [subItemIds])
+
+  useEffect(() => {
     setSubsidyVal((SubsidyonOrder / 100) + giftBalance)
 
     const prevAmount = prevAmountRef.current
 
-    if (amount < 21 && prevAmount !== null && prevAmount >= 21) {
+    if (amount < 21) {
       setShowBtn(false)
       setDialogOpen(false)
-      lastMilestoneRef.current = null
-      lastSubsidyRef.current = null
-      ClearAllSubsidyItems(customerId)
+      if (prevAmount !== null && prevAmount >= 21) {
+        lastMilestoneRef.current = null
+        lastSubsidyRef.current = null
+        ClearAllSubsidyItems(customerId)
+        setUsedSubsidy(0) 
+      }
+      prevAmountRef.current = amount
+      return
     }
 
     prevAmountRef.current = amount
-
-    if (amount < 21) return
 
     if (lastSubsidyRef.current === SubsidyonOrder) return
     lastSubsidyRef.current = SubsidyonOrder
@@ -57,11 +67,6 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
     if (lastMilestoneRef.current !== prev) {
       lastMilestoneRef.current = prev
       setShowBtn(true)
-    }
-    return () => {
-      prevAmountRef.current = null
-      lastSubsidyRef.current = null
-      lastMilestoneRef.current = null
     }
   }, [SubsidyonOrder, amount, prev, giftBalance])
 
@@ -151,13 +156,35 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
             40%  { opacity: 1; }
             100% { opacity: 0; transform: translateX(10px); }
           }
+
+          .subsidy-btn-wrap {
+            overflow: hidden;
+            max-height: 0;
+            margin-top: 0;
+            opacity: 0;
+            transform: translateY(-6px);
+            transition:
+              max-height 320ms ease-in-out,
+              margin-top 320ms ease-in-out,
+              opacity 280ms ease-in-out,
+              transform 280ms ease-in-out;
+            pointer-events: none;
+          }
+
+          .subsidy-btn-show {
+            max-height: 56px;
+            margin-top: 12px;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+          }
         `}</style>
       </div>
 
-      {showBtn && (
+      <div className={`subsidy-btn-wrap${showBtn ? " subsidy-btn-show" : ""}`}>
         <Button
           onClick={() => setDialogOpen(true)}
-          className="mt-3 w-full h-11 rounded-2xl bg-primary border-0"
+          className="w-full h-11 rounded-2xl bg-primary border-0"
         >
           <div className="flex items-center justify-between w-full px-1">
             <div className="flex items-center gap-2.5">
@@ -171,7 +198,7 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
             </div>
           </div>
         </Button>
-      )}
+      </div>
 
       <SubsidizedPopup
         subsidyGot={SubsidyVal}

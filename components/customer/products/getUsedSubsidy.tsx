@@ -2,20 +2,20 @@
 
 import { UsedSubsidy } from "@/atoms/customer/CartAtom";
 import { useAtom } from "jotai";
+import { useEffect } from "react";
 
-const GetUsedSubsidy = ({usedSubsidy}:{usedSubsidy:number}) => {
+const GetUsedSubsidy = ({ usedSubsidy, subItemslength }: { usedSubsidy: number, subItemslength: number }) => {
+  const [, setUsedSub] = useAtom(UsedSubsidy);
 
-  const [usedSub,setUsedSub] = useAtom(UsedSubsidy);
+  useEffect(() => {
+    if (subItemslength <= 0) {
+      setUsedSub(0);
+    } else if (usedSubsidy) {
+      setUsedSub(usedSubsidy);
+    }
+  }, [usedSubsidy, subItemslength]);
 
-  if(!usedSubsidy){
-    return null
-  }else{
-    setUsedSub(usedSubsidy)
-  }
-
-  return (
-    null
-  )
+  return null;
 }
 
-export default GetUsedSubsidy
+export default GetUsedSubsidy;
