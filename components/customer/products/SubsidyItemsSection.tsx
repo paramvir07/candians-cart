@@ -17,7 +17,6 @@ export const SubsidyItemsSection = ({
   if (!subItems || subItems.length === 0) return null;
 
   const totalSubsidy = subItems.reduce((sum, item) => sum + item.subsidy, 0);
-  console.log("Used subsidy : ",totalSubsidy)
   let leftOffSubsidy = 0;
 
   return (
