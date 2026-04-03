@@ -169,7 +169,7 @@ export const StoreProductsList = ({
           />
         </div>
       </div>
-
+      {/* {} updates param ka lund */}
       <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg border">
         <p className="text-sm font-medium text-slate-600">
           Want to add a new product?

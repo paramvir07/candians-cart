@@ -1,20 +1,16 @@
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-
+import { Badge } from "@/components/ui/badge";
 import {
   ShoppingCart,
   Package,
   ShoppingBag,
   ChevronLeft,
   Wallet,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { CustomerIdParams } from "@/types/cashier/customer";
@@ -22,45 +18,43 @@ import { CustomerIdParams } from "@/types/cashier/customer";
 const customerCardInfo = [
   {
     title: "Cart",
-    description: "Review the customer’s current cart and make quick changes.",
+    description: "Review and modify the customer's current cart before checkout.",
     icon: ShoppingCart,
-    highlights: [{ label: "Notes", value: "Add/remove items before checkout" }],
-    actions: [
-      { label: "Open Cart", variant: "default" as const, href: "/cart" },
-    ],
+    tip: "Add or remove items before checkout",
+    accent: "text-blue-600 bg-blue-50 dark:bg-blue-950 dark:text-blue-400",
+    border: "hover:border-blue-200 dark:hover:border-blue-800",
+    href: "/cart",
+    label: "Open Cart",
   },
   {
     title: "Orders",
-    description: "View recent purchases, reprint receipts, or reorder quickly.",
+    description: "View purchase history, reprint receipts, or quickly reorder.",
     icon: Package,
-    highlights: [{ label: "Tip", value: "Tap an order to reorder items" }],
-    actions: [
-      { label: "View Orders", variant: "default" as const, href: "/orders" },
-    ],
+    tip: "Tap an order to reorder items",
+    accent: "text-violet-600 bg-violet-50 dark:bg-violet-950 dark:text-violet-400",
+    border: "hover:border-violet-200 dark:hover:border-violet-800",
+    href: "/orders",
+    label: "View Orders",
   },
   {
     title: "Products",
-    description: "Browse products and add them to the customer’s cart fast.",
+    description: "Browse the catalogue and add items to the customer's cart.",
     icon: ShoppingBag,
-    highlights: [{ label: "Tip", value: "Scan barcode to add instantly" }],
-    actions: [
-      {
-        label: "Browse Products",
-        variant: "default" as const,
-        href: "/products",
-      },
-    ],
+    tip: "Scan a barcode to add instantly",
+    accent: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950 dark:text-emerald-400",
+    border: "hover:border-emerald-200 dark:hover:border-emerald-800",
+    href: "/products",
+    label: "Browse Products",
   },
   {
     title: "Wallet",
-    description: "Check balance, recharge funds, and review wallet activity.",
+    description: "Check balance, top up funds, and review wallet activity.",
     icon: Wallet,
-    highlights: [
-      { label: "Tip", value: "Recharge to speed up checkout" },
-    ],
-    actions: [
-      { label: "Open Wallet", variant: "default" as const, href: "/wallet" },
-    ],
+    tip: "Recharge to speed up checkout",
+    accent: "text-amber-600 bg-amber-50 dark:bg-amber-950 dark:text-amber-400",
+    border: "hover:border-amber-200 dark:hover:border-amber-800",
+    href: "/wallet",
+    label: "Open Wallet",
   },
 ];
 
@@ -69,95 +63,65 @@ const Page = async ({ params }: CustomerIdParams) => {
   const customerId = recievedParams.customerId;
 
   return (
-    <div className="max-h-screen w-full bg-linear-to-b from-background to-muted/40 py-8 md:pl-10">
-      <div className="mx-auto w-full max-w-6xl pb-20">
+    <div className="min-h-screen w-full bg-background">
+      <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 md:px-10 py-8 pb-24">
+
         {/* Header */}
-        <div className="mb-6 sm:mb-8 flex flex-col gap-2">
-          <div className="flex items-center gap-3">
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-3">
             <Link href="/cashier">
-              <Button className="rounded-full" variant="outline" size="icon">
-                <ChevronLeft className="w-4 h-4" />
+              <Button variant="outline" size="icon" className="rounded-full h-9 w-9 shrink-0">
+                <ChevronLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">
-              Customer Quick Access
-            </h1>
+            <div className="flex items-center gap-2.5">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-tight">
+                  Customer Quick Access
+                </h1>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Manage cart, orders, products, and wallet
+                </p>
+              </div>
+            </div>
           </div>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
-            Select what you need to prepare the customer’s order: cart, order
-            history, or products.
-          </p>
         </div>
 
-        {/* Cards */}
-        <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {customerCardInfo.map((card, index) => {
+        {/* Cards grid */}
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
+          {customerCardInfo.map((card) => {
             const Icon = card.icon;
-
             return (
-              <Card
-                key={index}
-                className="group relative overflow-hidden border-muted/60 bg-card/60 backdrop-blur supports-backdrop-filter:bg-card/50
-                           transition hover:-translate-y-1 hover:shadow-lg focus-within:shadow-lg max-w-80"
+              <Link
+                key={card.title}
+                href={`/cashier/customer/${customerId}${card.href}`}
+                className="block group"
               >
-                {/* top accent */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/70 via-primary/30 to-transparent" />
-
-                {/* Make all cards consistent height + better layout */}
-                <div className="flex h-full flex-col">
-                  <CardHeader className="space-y-2">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <CardTitle className="text-base sm:text-lg">
-                          {card.title}
-                        </CardTitle>
-                        <CardDescription className="text-sm leading-relaxed">
-                          {card.description}
-                        </CardDescription>
+                <Card className={`h-full border border-border/60 shadow-none transition-all duration-200 hover:shadow-md ${card.border} cursor-pointer`}>
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ${card.accent}`}>
+                        <Icon className="h-5 w-5" />
                       </div>
-
-                      <div className="shrink-0 rounded-xl border bg-background/60 p-2 sm:p-2.5 text-primary shadow-sm">
-                        <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="flex flex-1 flex-col gap-4">
-                    {/* Highlights */}
-                    <div className="space-y-3">
-                      {card.highlights.map((h, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-start justify-between gap-3"
-                        >
-                          <span className="text-sm text-muted-foreground">
-                            {h.label}
-                          </span>
-                          <span className="text-sm font-medium text-right">
-                            {h.value}
-                          </span>
-                        </div>
-                      ))}
+                      <ArrowRight className="h-4 w-4 text-muted-foreground/40 mt-1 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
                     </div>
 
-                    <Separator />
+                    <h2 className="text-base font-semibold text-foreground mb-1 tracking-tight">
+                      {card.title}
+                    </h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                      {card.description}
+                    </p>
 
-                    {/* Actions pinned toward bottom */}
-                    <div className="mt-auto flex flex-col gap-2">
-                      <Link
-                        href={`/cashier/customer/${customerId}${card.actions[0].href}`}
-                      >
-                        <Button
-                          className="w-full h-10 sm:h-11"
-                          variant={card.actions[0].variant}
-                        >
-                          {card.actions[0].label}
-                        </Button>
-                      </Link>
-                    </div>
+                    <Badge
+                      variant="secondary"
+                      className="text-[11px] font-medium px-2 py-0.5 bg-muted/60 text-muted-foreground border-0"
+                    >
+                      {card.tip}
+                    </Badge>
                   </CardContent>
-                </div>
-              </Card>
+                </Card>
+              </Link>
             );
           })}
         </div>

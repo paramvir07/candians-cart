@@ -7,8 +7,8 @@ type LogoProps = {
 export const Logo = ({ variant = "icon" }: LogoProps) => {
   const src =
     variant === "full"
-      ? "https://ik.imagekit.io/h7w5h0hou/CC-Logo_full.png"
-      : "https://ik.imagekit.io/h7w5h0hou/CC-Logo_cropped_icon.png";
+      ? "https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo.png"
+      : "https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo-abb.png"; // put here for short one
 
   return (
     <Link href="/customer" className="flex items-center">

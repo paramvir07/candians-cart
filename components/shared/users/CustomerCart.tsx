@@ -1,12 +1,20 @@
 import { getCart } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { EmptyCart } from "@/components/customer/products/EmptyCart";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-  ShoppingBag,
+  ShoppingCart,
   Shield,
   Wallet,
   ChevronLeft,
   Gift,
+  Package,
+  Receipt,
+  CreditCard,
+  BadgePercent,
+  User,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,6 +33,7 @@ import { CategoryIllustration } from "@/components/customer/shared/CategoryIllus
 import { getFibBracketFrom21 } from "@/lib/FibBracket";
 import { RemoveButton } from "@/components/customer/products/RemoveButton";
 import { QuantityControl } from "@/components/customer/products/QuantityControls";
+import { cn } from "@/lib/utils";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 const calcLine = (item: ICartItem) => {
@@ -53,6 +62,8 @@ const calcLine = (item: ICartItem) => {
 };
 
 const CustomerCart = async ({ customerId }: { customerId?: string }) => {
+  const isCashier = !!customerId;
+
   const [CartItems, UserData] = await Promise.all([
     getCart(customerId),
     getUser(customerId),
@@ -61,7 +72,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const giftWalletBalance = UserData?.giftWalletBalance ?? 0;
   const items = CartItems?.items as ICartItem[] | null;
   const subItems = (CartItems?.subItems as ISubsidyItems[]) ?? [];
-  const subItemProductIds = subItems.map((s) => s.productId._id.toString()); 
+  const subItemProductIds = subItems.map((s) => s.productId._id.toString());
 
   if (!items || (items.length === 0 && !subItems))
     return <EmptyCart customerId={customerId} />;
@@ -99,7 +110,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     else if (mid && totalInDollars >= mid && totalInDollars <= current) return 30;
     return null;
   })();
-  
 
   const calculateTotalMarkup = (item: ICartItem) => {
     if (activeMarkup === null || item.productId.subsidised) return null;
@@ -108,26 +118,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   };
 
   const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarkup(item) ?? 0), 0);
-
-// console.log("📦 progressTotal:", progressTotal);
-// console.log("💰 totalInDollars:", totalInDollars);
-// console.log("🔢 Fib bracket — prev:", prev, "| mid:", mid, "| current:", current);
-// console.log("📊 avgMarkup:", avgMarkup, "(totalMarkup:", progressTotal.totalMarkup, "/ productCount:", progressTotal.productCount, ")");
-// console.log("🎯 activeMarkup:", activeMarkup);
-// console.log("🛒 Per-item calculateTotalMarkup breakdown:");
-// items.forEach((item) => {
-//   const result = calculateTotalMarkup(item);
-//   console.log(
-//     `  ${item.productId.subsidised ? "🔒 [subsidised]" : "📦"} ${item.productId.name}`,
-//     `| qty: ${item.quantity}`,
-//     `| price: ${item.productId.price}`,
-//     `| originalMarkup: ${item.productId.markup}%`,
-//     `| activeMarkup: ${activeMarkup}%`,
-//     `| calculateTotalMarkup: ${result ?? "null (skipped)"}`,
-//   );
-// });
-// console.log("💵 totalActiveMarkup (all items):", totalActiveMarkup);
-// console.log("💵 Subsidy to be given:", totalActiveMarkup * (60 / 100));
 
   const subsidyTotals = subItems.reduce(
     (acc, item) => {
@@ -146,7 +136,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       }
 
       const totalTax = gst + pst;
-
       acc.disposable += (item.productId.disposableFee ?? 0) * item.quantity;
       acc.subtotal   += afterSubsidy;
       acc.gst        += gst;
@@ -180,31 +169,28 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const MarkupSub = markupBase * (active / 100);
   const subsidyOnOrder = Math.floor(MarkupSub * 0.60);
   const TotalSubsidy = Number(((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2));
+  const totalItemCount = items.length + subItems.length;
 
-  // console.log("SubTotal Cart : ",totals.subtotal)
-  // console.log("Active Markup : ",active)
-  // console.log("Total Markup : ",totals.subtotal*(active/100))
-  // console.log("Subsidy to be given : ",MarkupSub*0.60)
-  // console.log("Active Margin : ",activeMarkup)
+  // ── Sub-components ──────────────────────────────────────────────────────────
 
   const TaxRows = () => (
     <>
       {showGST && (
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">GST (5%)</span>
-          <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.gst)}</span>
+          <span className="text-muted-foreground">GST (5%)</span>
+          <span className="font-medium tabular-nums">CA${fmt(totals.gst)}</span>
         </div>
       )}
       {showPST && (
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">PST (7%)</span>
-          <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.pst)}</span>
+          <span className="text-muted-foreground">PST (7%)</span>
+          <span className="font-medium tabular-nums">CA${fmt(totals.pst)}</span>
         </div>
       )}
       {showGST && showPST && (
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Total Tax</span>
-          <span className="font-medium text-gray-900 tabular-nums">CA${fmt(totals.totalTax)}</span>
+          <span className="text-muted-foreground">Total Tax</span>
+          <span className="font-medium tabular-nums">CA${fmt(totals.totalTax)}</span>
         </div>
       )}
     </>
@@ -214,21 +200,19 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     <>
       {itemTotals.disposable > 0 && (
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Disposable fee</span>
-          <span className="font-medium text-gray-900 tabular-nums">
-            CA${fmt(itemTotals.disposable)}
-          </span>
+          <span className="text-muted-foreground">Disposable fee</span>
+          <span className="font-medium tabular-nums">CA${fmt(itemTotals.disposable)}</span>
         </div>
       )}
       {subsidyTotals.disposable > 0 && (
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500 flex items-center gap-1.5">
+          <span className="text-muted-foreground flex items-center gap-1.5">
             Disposable fee
-            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-full leading-none">
-              subsidy covered
-            </span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400">
+              covered
+            </Badge>
           </span>
-          <span className="font-medium text-emerald-600 tabular-nums line-through">
+          <span className="font-medium tabular-nums text-emerald-600 line-through">
             CA${fmt(subsidyTotals.disposable)}
           </span>
         </div>
@@ -236,375 +220,456 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     </>
   );
 
-  const WalletCards = () => (
-    <div className="grid grid-cols-2 gap-3">
-      <div className="relative rounded-2xl overflow-hidden border border-gray-100"
-        style={{ background: "var(--card)", boxShadow: "0 2px 12px oklch(0.6271 0.1699 149.2138 / 0.08)" }}>
-        <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.07]"
-          style={{ background: "var(--primary)" }} />
-        <div className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full"
-          style={{ background: "linear-gradient(to bottom, transparent, var(--primary), transparent)" }} />
-        <div className="px-4 pt-4 pb-4 pl-5">
+  // Wallet section — different emphasis for cashier vs customer
+  const WalletSection = () => (
+    <div className={cn("grid gap-3", isCashier ? "grid-cols-2" : "grid-cols-2")}>
+      {/* Main Wallet */}
+      <Card className="relative overflow-hidden border-border/60 shadow-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+        <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "oklch(0.6271 0.1699 149.2138 / 0.12)" }}>
-              <Wallet className="w-3.5 h-3.5" style={{ color: "var(--primary)" }} />
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Wallet className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-[11px] font-bold leading-tight" style={{ color: "var(--foreground)" }}>Main Wallet</p>
-              <p className="text-[10px] leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Available balance</p>
+              <p className="text-xs font-semibold text-foreground leading-tight">Main Wallet</p>
+              <p className="text-[11px] text-muted-foreground leading-tight">Available balance</p>
             </div>
           </div>
-          <p className="text-[20px] font-black tabular-nums leading-tight tracking-tight mb-3"
-            style={{ color: "var(--foreground)" }}>
-            <span className="text-[12px] font-semibold mr-0.5" style={{ color: "var(--muted-foreground)" }}>CA$</span>
+          <p className="text-xl font-bold tabular-nums text-foreground mb-3">
+            <span className="text-xs font-medium text-muted-foreground mr-0.5">CA$</span>
             {fmt(UserData?.walletBalance ?? 0)}
           </p>
           <TopUpDialog customerId={customerId} />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="relative rounded-2xl overflow-hidden border border-gray-100"
-        style={{ background: "var(--card)", boxShadow: "0 2px 12px oklch(0.6271 0.1699 149.2138 / 0.08)" }}>
-        <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.06]"
-          style={{ background: "oklch(0.7858 0.1598 85.3091)" }} />
-        <div className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full"
-          style={{
-            background: (UserData?.giftWalletBalance ?? 0) > 0
-              ? `linear-gradient(to bottom, transparent, var(--primary), transparent)`
-              : `linear-gradient(to bottom, transparent, var(--muted-foreground), transparent)`
-          }} />
-        <div className="px-4 pt-4 pb-4 pl-5">
+      {/* Gift Wallet */}
+      <Card className={cn(
+        "relative overflow-hidden border-border/60 shadow-none",
+        giftWalletBalance > 0 && "border-primary/30 bg-primary/[0.02]"
+      )}>
+        {giftWalletBalance > 0 && (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 to-transparent pointer-events-none" />
+        )}
+        <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
-              style={{
-                background: (UserData?.giftWalletBalance ?? 0) > 0
-                  ? "oklch(0.6271 0.1699 149.2138 / 0.12)"
-                  : "oklch(0.5252 0.0315 157.3462 / 0.1)"
-              }}>
-              <Gift className="w-3.5 h-3.5"
-                style={{ color: (UserData?.giftWalletBalance ?? 0) > 0 ? "var(--primary)" : "var(--muted-foreground)" }} />
+            <div className={cn(
+              "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
+              giftWalletBalance > 0 ? "bg-primary/10" : "bg-muted"
+            )}>
+              <Gift className={cn("h-4 w-4", giftWalletBalance > 0 ? "text-primary" : "text-muted-foreground")} />
             </div>
             <div>
-              <p className="text-[11px] font-bold leading-tight" style={{ color: "var(--foreground)" }}>Gift Wallet</p>
-              <p className="text-[10px] leading-none mt-0.5" style={{ color: "var(--muted-foreground)" }}>Subsidies earned</p>
+              <p className="text-xs font-semibold text-foreground leading-tight">Gift Wallet</p>
+              <p className="text-[11px] text-muted-foreground leading-tight">Subsidies earned</p>
             </div>
           </div>
-          <p className="text-[20px] font-black tabular-nums leading-tight tracking-tight mb-3"
-            style={{ color: (UserData?.giftWalletBalance ?? 0) > 0 ? "var(--primary)" : "var(--muted-foreground)" }}>
-            <span className="text-[12px] font-semibold mr-0.5" style={{ color: "var(--muted-foreground)" }}>CA$</span>
-            {fmt(UserData?.giftWalletBalance ?? 0)}
+          <p className={cn(
+            "text-xl font-bold tabular-nums mb-3",
+            giftWalletBalance > 0 ? "text-primary" : "text-muted-foreground"
+          )}>
+            <span className="text-xs font-medium text-muted-foreground mr-0.5">CA$</span>
+            {fmt(giftWalletBalance)}
           </p>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-            style={{
-              background: (UserData?.giftWalletBalance ?? 0) > 0
-                ? "oklch(0.6271 0.1699 149.2138 / 0.1)"
-                : "oklch(0.5252 0.0315 157.3462 / 0.08)",
-              border: `1px solid ${(UserData?.giftWalletBalance ?? 0) > 0 ? "oklch(0.6271 0.1699 149.2138 / 0.2)" : "var(--border)"}`,
-            }}>
-            <div className="w-1.5 h-1.5 rounded-full"
-              style={{
-                background: (UserData?.giftWalletBalance ?? 0) > 0 ? "var(--primary)" : "var(--muted-foreground)",
-                ...(UserData?.giftWalletBalance ?? 0) > 0 ? { animation: "pulse 2s infinite" } : {}
-              }} />
-            <span className="text-[10px] font-semibold"
-              style={{ color: (UserData?.giftWalletBalance ?? 0) > 0 ? "var(--primary)" : "var(--muted-foreground)" }}>
-              {(UserData?.giftWalletBalance ?? 0) > 0 ? "Active" : "No subsidies yet"}
-            </span>
+          <div className={cn(
+            "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border",
+            giftWalletBalance > 0
+              ? "bg-primary/10 text-primary border-primary/20"
+              : "bg-muted text-muted-foreground border-border"
+          )}>
+            <span className={cn(
+              "h-1.5 w-1.5 rounded-full",
+              giftWalletBalance > 0 ? "bg-primary animate-pulse" : "bg-muted-foreground/40"
+            )} />
+            {giftWalletBalance > 0 ? "Active" : "No subsidies yet"}
           </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Order summary card content (shared between mobile + desktop)
+  const OrderSummaryContent = () => (
+    <div className="space-y-2.5">
+      <div className="flex justify-between text-sm">
+        <span className="text-muted-foreground">Subtotal</span>
+        <span className="font-medium tabular-nums">CA${fmt(totals.subtotal)}</span>
+      </div>
+      <TaxRows />
+      <DisposableRow />
+      <SubsidyCart subsidy={subsidyOnOrder} />
+      <Separator className="my-1" />
+      <div className="flex justify-between items-center pt-0.5">
+        <span className="font-semibold text-foreground">Total</span>
+        <div className="flex items-baseline gap-0.5">
+          <span className="text-xs font-medium text-muted-foreground">CA$</span>
+          <span className="text-2xl font-bold tabular-nums text-foreground">{fmt(totals.total)}</span>
         </div>
       </div>
     </div>
   );
 
-  return (
-    <div className={`min-h-screen ${!customerId ? "" : ""}`}
-      style={{ background: !customerId ? "oklch(0.9859 0.0027 158.6587)" : "var(--background)" }}>
-      {!customerId && <Navbar />}
+  // Cart item row (shared between mobile card and desktop row)
+  const CartItemCard = ({ item, variant }: { item: ICartItem; variant: "mobile" | "desktop" }) => {
+    const { afterMarkup } = calcLine(item);
+    const hasImage = item.productId.images?.[0]?.url;
+    const isMobile = variant === "mobile";
 
-      {/* ════════ MOBILE ════════ */}
-      <div className="md:hidden px-4 pt-6 pb-52">
-
-        <div className="flex items-center gap-2.5 mb-5">
-          <Link href={customerId ? `/cashier/customer/${customerId}` : "/"}>
-            <Button className="rounded-full" variant="outline" size="icon">
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div className="flex items-center gap-2 flex-1">
-            <div className="w-7 h-7 rounded-xl flex items-center justify-center"
-              style={{ background: "oklch(0.6271 0.1699 149.2138 / 0.1)" }}>
-              <ShoppingBag className="w-3.5 h-3.5" style={{ color: "var(--primary)" }} />
-            </div>
-            <h1 className="text-lg font-black tracking-tight" style={{ color: "var(--foreground)" }}>
-              {customerId ? "Customer's Cart" : "My Cart"}
-            </h1>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-              style={{ background: "var(--secondary)", color: "var(--muted-foreground)" }}>
-              {items.length + subItems.length}
-            </span>
-          </div>
+    return (
+      <div className={cn(
+        "flex gap-3 bg-card",
+        isMobile ? "rounded-xl border border-border/60 p-3" : "px-5 py-4 border-b border-border/50 last:border-0 hover:bg-accent/30 transition-colors"
+      )}>
+        {/* Image */}
+        <div className={cn(
+          "relative shrink-0 rounded-lg overflow-hidden bg-secondary",
+          isMobile ? "h-16 w-16" : "h-[60px] w-[60px]"
+        )}>
+          {hasImage ? (
+            <Image
+              src={item.productId.images?.[0]?.url ?? ""}
+              alt={item.productId.name}
+              width={64} height={64}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <CategoryIllustration category={item.productId.category} className="w-full h-full" />
+          )}
         </div>
 
-        <div className="mb-5 rounded-2xl px-4 py-3.5 border"
-          style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-        <ProgressBarCart
-          total={progressTotal.total}
-          customerId={customerId}
-          giftWalletBalance={giftWalletBalance}
-          totalMarkup={totalActiveMarkup}
-          Totalsubsidy={TotalSubsidy}
-          SubsidyonOrder={subsidyOnOrder}
-          subItemIds={subItemProductIds}
-        />
-        </div>
-
-        <div className="flex flex-col gap-2.5 mb-5">
-          {items.map((item: ICartItem) => {
-            const { afterMarkup } = calcLine(item);
-            const hasImage = item.productId.images?.[0]?.url;
-            return (
-              <div key={item.productId._id}
-                className="rounded-2xl overflow-hidden border"
-                style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-                <div className="flex gap-3 p-3">
-                  <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0"
-                    style={{ background: "var(--secondary)" }}>
-                    {hasImage ? (
-                      <Image src={item.productId.images?.[0]?.url ?? ""} alt={item.productId.name} width={64} height={64} className="w-full h-full object-cover" />
-                    ) : (
-                      <CategoryIllustration category={item.productId.category} className="w-full h-full" />
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate" style={{ color: "var(--foreground)" }}>
-                          {item.productId.name}
-                        </p>
-                        <p className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                          {item.productId.category}
-                        </p>
-                      </div>
-                      <p className="text-sm font-black tabular-nums shrink-0" style={{ color: "var(--primary)" }}>
-                        CA${fmt(afterMarkup)}
-                      </p>
-                    </div>
-
-                    {item.productId.subsidised && (
-                      <div className="mt-1.5">
-                        <AddtoSubsidyBtn ProductId={item.productId._id.toString()} customerId={customerId} />
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between mt-2.5">
-                      <RemoveButton productId={item.productId._id.toString()} customerId={customerId} variant="mobile" />
-                      <QuantityControl productId={item.productId._id.toString()} customerId={customerId} initialQuantity={item.quantity} variant="mobile" />
-                    </div>
-                  </div>
-                </div>
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className={cn("flex items-start gap-2", isMobile ? "flex-col" : "flex-row justify-between")}>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm font-semibold truncate text-foreground">{item.productId.name}</p>
+                {item.productId.subsidised && (
+                  <AddtoSubsidyBtn ProductId={item.productId._id.toString()} customerId={customerId} />
+                )}
               </div>
-            );
-          })}
-        </div>
-
-        <SubsidyItemsSection subItems={subItems} customerId={customerId} />
-
-        <div className="mb-4 mt-2">
-          <WalletCards />
-        </div>
-
-        <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-          <div className="px-5 py-3 flex items-center justify-between border-b"
-            style={{ borderColor: "var(--border)", background: "oklch(0.6271 0.1699 149.2138 / 0.04)" }}>
-            <p className="text-[10px] font-black uppercase tracking-[0.15em]" style={{ color: "var(--muted-foreground)" }}>
-              Bill Details
+              <p className="text-xs text-muted-foreground mt-0.5">{item.productId.category}</p>
+            </div>
+            <p className="text-sm font-bold tabular-nums text-primary shrink-0">
+              CA${fmt(afterMarkup)}
             </p>
-            <div className="w-4 h-px" style={{ background: "var(--primary)", opacity: 0.4 }} />
           </div>
 
-          <div className="px-5 py-4 space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm" style={{ color: "var(--muted-foreground)" }}>Subtotal</span>
-              <span className="text-sm font-semibold tabular-nums" style={{ color: "var(--foreground)" }}>CA${fmt(totals.subtotal)}</span>
-            </div>
-            <TaxRows />
-            <DisposableRow />
-            <SubsidyCart subsidy={subsidyOnOrder} />
-
-            <div className="flex items-center gap-1 py-1">
-              <div className="flex-1 border-t border-dashed" style={{ borderColor: "var(--border)" }} />
-              <div className="w-1 h-1 rounded-full" style={{ background: "var(--border)" }} />
-              <div className="flex-1 border-t border-dashed" style={{ borderColor: "var(--border)" }} />
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-black tracking-tight" style={{ color: "var(--foreground)" }}>Total</span>
-              <div className="flex items-baseline gap-0.5">
-                <span className="text-[11px] font-semibold" style={{ color: "var(--muted-foreground)" }}>CA$</span>
-                <span className="text-xl font-black tabular-nums" style={{ color: "var(--foreground)" }}>{fmt(totals.total)}</span>
-              </div>
-            </div>
+          <div className="flex items-center justify-between mt-2.5">
+            <RemoveButton productId={item.productId._id.toString()} customerId={customerId} variant={variant} />
+            <QuantityControl productId={item.productId._id.toString()} customerId={customerId} initialQuantity={item.quantity} variant={variant} />
           </div>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className={cn(
+      "min-h-screen",
+      !isCashier && "bg-background"
+    )}>
+      {!isCashier && <Navbar />}
+
+      {/* ══════════════════════════════════════════
+          CASHIER MODE — top banner
+      ══════════════════════════════════════════ */}
+      {isCashier && (
+        <div className="border-b border-border bg-muted/40 px-4 md:px-8 py-2.5 flex items-center gap-2.5">
+          <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
+            <User className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <span className="text-sm font-medium text-muted-foreground">
+            Cashier View
+          </span>
+          <Separator orientation="vertical" className="h-4" />
+          <span className="text-sm text-foreground font-semibold">Customer Cart</span>
+        </div>
+      )}
+
+      {/* ════════════════════════════════════════
+          MOBILE LAYOUT
+      ════════════════════════════════════════ */}
+      <div className="md:hidden px-4 pt-5 pb-52 space-y-4">
+
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <Link href={isCashier ? `/cashier/customer/${customerId}` : "/"}>
+            <Button variant="outline" size="icon" className="rounded-full h-9 w-9 shrink-0">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div className="flex items-center gap-2 flex-1">
+            <ShoppingCart className="h-5 w-5 text-primary" />
+            <h1 className="text-lg font-bold tracking-tight text-foreground">
+              {isCashier ? "Customer's Cart" : "My Cart"}
+            </h1>
+            <Badge variant="secondary" className="rounded-full font-semibold">
+              {totalItemCount}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <Card className="border-border/60 shadow-none">
+          <CardContent className="p-4">
+            <ProgressBarCart
+              total={progressTotal.total}
+              customerId={customerId}
+              giftWalletBalance={giftWalletBalance}
+              totalMarkup={totalActiveMarkup}
+              Totalsubsidy={TotalSubsidy}
+              SubsidyonOrder={subsidyOnOrder}
+              subItemIds={subItemProductIds}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Cart items */}
+        <div>
+          <div className="flex items-center gap-2 mb-2.5">
+            <Package className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Items ({items.length})
+            </span>
+          </div>
+          <div className="space-y-2">
+            {items.map((item: ICartItem) => (
+              <CartItemCard key={item.productId._id.toString()} item={item} variant="mobile" />
+            ))}
+          </div>
+        </div>
+
+        {/* Subsidy items */}
+        <SubsidyItemsSection subItems={subItems} customerId={customerId} />
+
+        {/* Wallets */}
+        <div>
+          <div className="flex items-center gap-2 mb-2.5">
+            <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Wallets
+            </span>
+          </div>
+          <WalletSection />
+        </div>
+
+        {/* Bill summary */}
+        <Card className="border-border/60 shadow-none overflow-hidden">
+          <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Bill Details
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent className="px-5 py-4">
+            <OrderSummaryContent />
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Mobile Fixed CTA */}
-      <div className={`md:hidden fixed bottom-0 left-0 right-0 border-t px-4 pt-4 ${customerId ? "pb-22" : "pb-5"}`}
-        style={{ background: "oklch(1 0 0 / 0.97)", borderColor: "var(--border)", backdropFilter: "blur(12px)" }}>
+      <div className={cn(
+        "md:hidden fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur-md px-4 pt-4",
+        isCashier ? "pb-24" : "pb-6"
+      )}>
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>Total</p>
-            <p className="text-2xl font-black tabular-nums tracking-tight" style={{ color: "var(--foreground)" }}>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Total</p>
+            <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
               CA${fmt(totals.total)}
             </p>
           </div>
           <CheckoutActions customerId={customerId} compact TotalCart={totals} />
         </div>
         <div className="flex items-center justify-center gap-1.5">
-          <Shield className="w-3 h-3" style={{ color: "var(--muted-foreground)", opacity: 0.5 }} />
-          <p className="text-[11px]" style={{ color: "var(--muted-foreground)", opacity: 0.6 }}>Secured checkout</p>
+          <Shield className="h-3 w-3 text-muted-foreground/50" />
+          <p className="text-[11px] text-muted-foreground/60">Secured checkout</p>
         </div>
       </div>
 
-      {/* ════════ DESKTOP ════════ */}
-      <div className="hidden md:block max-w-5xl mx-auto px-8 py-10">
+      {/* ════════════════════════════════════════
+          DESKTOP LAYOUT
+      ════════════════════════════════════════ */}
+      <div className="hidden md:block max-w-5xl mx-auto px-8 py-8">
 
-        <div className="flex items-center gap-3 mb-3">
-          <Link href={customerId ? `/cashier/customer/${customerId}` : "/"}>
-            <Button className="rounded-full" variant="outline" size="icon">
-              <ChevronLeft className="w-4 h-4" />
+        {/* Page header */}
+        <div className="flex items-center gap-3 mb-6">
+          <Link href={isCashier ? `/cashier/customer/${customerId}` : "/"}>
+            <Button variant="outline" size="icon" className="rounded-full h-9 w-9 shrink-0">
+              <ChevronLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-            style={{ background: "oklch(0.6271 0.1699 149.2138 / 0.1)" }}>
-            <ShoppingBag className="w-4 h-4" style={{ color: "var(--primary)" }} />
-          </div>
-          <h1 className="text-2xl font-black tracking-tight" style={{ color: "var(--foreground)" }}>
-            {customerId ? "Customer's Cart" : "My Cart"}
-          </h1>
-          <span className="text-sm font-bold px-2.5 py-0.5 rounded-full"
-            style={{ background: "var(--secondary)", color: "var(--muted-foreground)" }}>
-            {items.length + subItems.length} items
-          </span>
-        </div>
-
-        <div className="mb-7 rounded-2xl px-5 py-4 border"
-          style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-          <ProgressBarCart
-            total={progressTotal.total}
-            customerId={customerId}
-            giftWalletBalance={giftWalletBalance}
-            totalMarkup={totalActiveMarkup}
-            Totalsubsidy={TotalSubsidy}
-            SubsidyonOrder={subsidyOnOrder}
-            subItemIds={subItemProductIds}
-          />
-        </div>
-
-        <div className="flex gap-6 items-start">
-          <div className="flex-1 flex flex-col gap-4">
-
-            <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-              {items.length > 0 && (
-                <div className="px-6 pt-5 pb-3 border-b flex items-center justify-between"
-                  style={{ borderColor: "var(--border)", background: "oklch(0.6271 0.1699 149.2138 / 0.03)" }}>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em]" style={{ color: "var(--muted-foreground)" }}>
-                    {items.length} {items.length === 1 ? "item" : "items"}
-                  </p>
-                </div>
-              )}
-
-              {items.map((item: ICartItem, i) => {
-                const { afterMarkup } = calcLine(item);
-                const hasImage = item.productId.images?.[0]?.url;
-                return (
-                  <div key={item.productId._id}
-                    className={`flex items-center gap-5 px-6 py-4 transition-colors hover:bg-[oklch(0.6271_0.1699_149.2138_/_0.02)] ${i !== items.length - 1 ? "border-b" : ""}`}
-                    style={{ borderColor: "var(--border)" }}>
-
-                    <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0"
-                      style={{ background: "var(--secondary)" }}>
-                      {hasImage ? (
-                        <Image src={item.productId.images?.[0]?.url ?? ""} alt={item.productId.name} width={64} height={64} className="w-full h-full object-cover" />
-                      ) : (
-                        <CategoryIllustration category={item.productId.category} className="w-full h-full" />
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate flex items-center gap-2.5" style={{ color: "var(--foreground)" }}>
-                        {item.productId.name}
-                        {item.productId.subsidised && (
-                          <AddtoSubsidyBtn ProductId={item.productId._id.toString()} customerId={customerId} />
-                        )}
-                      </p>
-                      <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                        {item.productId.category}
-                      </p>
-                    </div>
-
-                    <QuantityControl productId={item.productId._id.toString()} customerId={customerId} initialQuantity={item.quantity} variant="desktop" />
-
-                    <div className="w-24 text-right">
-                      <p className="text-sm font-black tabular-nums" style={{ color: "var(--primary)" }}>
-                        CA${fmt(afterMarkup)}
-                      </p>
-                    </div>
-
-                    <RemoveButton productId={item.productId._id.toString()} customerId={customerId} variant="desktop" />
-                  </div>
-                );
-              })}
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <ShoppingCart className="h-4.5 w-4.5 text-primary" />
             </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-foreground leading-tight">
+                {isCashier ? "Customer's Cart" : "My Cart"}
+              </h1>
+              {isCashier && (
+                <p className="text-xs text-muted-foreground leading-tight">
+                  Managing order on behalf of customer
+                </p>
+              )}
+            </div>
+          </div>
+          <Badge variant="secondary" className="rounded-full font-semibold ml-1">
+            {totalItemCount} {totalItemCount === 1 ? "item" : "items"}
+          </Badge>
+        </div>
+
+        {/* Progress bar */}
+        <Card className="mb-6 border-border/60 shadow-none">
+          <CardContent className="px-5 py-4">
+            <ProgressBarCart
+              total={progressTotal.total}
+              customerId={customerId}
+              giftWalletBalance={giftWalletBalance}
+              totalMarkup={totalActiveMarkup}
+              Totalsubsidy={TotalSubsidy}
+              SubsidyonOrder={subsidyOnOrder}
+              subItemIds={subItemProductIds}
+            />
+          </CardContent>
+        </Card>
+
+        {/* 2-col layout */}
+        <div className="flex gap-6 items-start">
+
+          {/* Left — items + wallets */}
+          <div className="flex-1 min-w-0 space-y-5">
+
+            {/* Items card */}
+            <Card className="border-border/60 shadow-none overflow-hidden">
+              <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50">
+                <div className="flex items-center gap-2">
+                  <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {items.length} {items.length === 1 ? "item" : "items"}
+                  </span>
+                </div>
+              </CardHeader>
+              <div>
+                {items.map((item: ICartItem) => {
+                  const { afterMarkup } = calcLine(item);
+                  const hasImage = item.productId.images?.[0]?.url;
+                  return (
+                    <div key={item.productId._id.toString()}
+                      className="flex items-center gap-4 px-5 py-3.5 border-b border-border/50 last:border-0 hover:bg-accent/20 transition-colors group">
+
+                      <div className="relative h-[56px] w-[56px] shrink-0 rounded-lg overflow-hidden bg-secondary">
+                        {hasImage ? (
+                          <Image
+                            src={item.productId.images?.[0]?.url ?? ""}
+                            alt={item.productId.name}
+                            width={56} height={56}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <CategoryIllustration category={item.productId.category} className="w-full h-full" />
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-foreground truncate">{item.productId.name}</p>
+                          {item.productId.subsidised && (
+                            <AddtoSubsidyBtn ProductId={item.productId._id.toString()} customerId={customerId} />
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{item.productId.category}</p>
+                      </div>
+
+                      <QuantityControl
+                        productId={item.productId._id.toString()}
+                        customerId={customerId}
+                        initialQuantity={item.quantity}
+                        variant="desktop"
+                      />
+
+                      <div className="w-20 text-right">
+                        <p className="text-sm font-bold tabular-nums text-primary">
+                          CA${fmt(afterMarkup)}
+                        </p>
+                      </div>
+
+                      <RemoveButton
+                        productId={item.productId._id.toString()}
+                        customerId={customerId}
+                        variant="desktop"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
 
             <SubsidyItemsSection subItems={subItems} customerId={customerId} />
-            <WalletCards />
+
+            {/* Wallets */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Wallets
+                </span>
+              </div>
+              <WalletSection />
+            </div>
           </div>
 
+          {/* Right — order summary */}
           <div className="w-72 shrink-0 sticky top-6">
-            <div className="rounded-2xl border overflow-hidden" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-              <div className="px-6 py-4 border-b flex items-center justify-between"
-                style={{ borderColor: "var(--border)", background: "oklch(0.6271 0.1699 149.2138 / 0.04)" }}>
-                <p className="text-[10px] font-black uppercase tracking-[0.15em]" style={{ color: "var(--muted-foreground)" }}>
-                  Order Summary
-                </p>
-                <div className="w-6 h-px" style={{ background: "var(--primary)", opacity: 0.5 }} />
-              </div>
-
-              <div className="px-6 py-5 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm" style={{ color: "var(--muted-foreground)" }}>Subtotal</span>
-                  <span className="text-sm font-semibold tabular-nums" style={{ color: "var(--foreground)" }}>CA${fmt(totals.subtotal)}</span>
+            <Card className="border-border/60 shadow-sm overflow-hidden">
+              <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50">
+                <div className="flex items-center gap-2">
+                  <Receipt className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Order Summary
+                  </span>
                 </div>
-                <TaxRows />
-                <DisposableRow />
-                <SubsidyCart subsidy={subsidyOnOrder} />
+              </CardHeader>
 
-                <div className="flex items-center gap-1 py-1">
-                  <div className="flex-1 border-t border-dashed" style={{ borderColor: "var(--border)" }} />
-                  <div className="w-1 h-1 rounded-full" style={{ background: "var(--border)" }} />
-                  <div className="flex-1 border-t border-dashed" style={{ borderColor: "var(--border)" }} />
-                </div>
+              <CardContent className="px-5 py-5">
+                <OrderSummaryContent />
+              </CardContent>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-black" style={{ color: "var(--foreground)" }}>Total</span>
-                  <div className="flex items-baseline gap-0.5">
-                    <span className="text-[11px] font-semibold" style={{ color: "var(--muted-foreground)" }}>CA$</span>
-                    <span className="text-xl font-black tabular-nums" style={{ color: "var(--foreground)" }}>{fmt(totals.total)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-6 pb-5">
+              <div className="px-5 pb-5 space-y-3">
                 <CheckoutActions customerId={customerId} TotalCart={totals} />
-                <div className="flex items-center justify-center gap-1.5 mt-3">
-                  <Shield className="w-3 h-3" style={{ color: "var(--muted-foreground)", opacity: 0.4 }} />
-                  <p className="text-[11px]" style={{ color: "var(--muted-foreground)", opacity: 0.5 }}>Secured checkout</p>
+                <div className="flex items-center justify-center gap-1.5">
+                  <Shield className="h-3 w-3 text-muted-foreground/40" />
+                  <p className="text-[11px] text-muted-foreground/50">Secured checkout</p>
                 </div>
               </div>
-            </div>
+            </Card>
+
+            {/* Cashier quick-info card */}
+            {isCashier && (
+              <Card className="mt-3 border-border/60 shadow-none bg-muted/30">
+                <CardContent className="px-4 py-3.5 space-y-2">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <BadgePercent className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Order Info</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Active markup</span>
+                    <span className="font-semibold text-foreground">{active > 0 ? `${active}%` : "—"}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Subsidy on order</span>
+                    <span className="font-semibold text-primary">CA${fmt(subsidyOnOrder)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Gift wallet balance</span>
+                    <span className="font-semibold text-foreground">CA${fmt(giftWalletBalance)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>

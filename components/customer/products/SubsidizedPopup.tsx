@@ -10,13 +10,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { IProduct } from "@/types/store/products.types";
-import { CheckSquare, Square, Sparkles } from "lucide-react";
+import { Sparkles, ArrowRight } from "lucide-react";
 import { AddSubsidyItem } from "@/actions/customer/SubsidyItems.Action";
 import { useAtom } from "jotai";
 import { UsedSubsidy } from "@/atoms/customer/CartAtom";
+import { useRouter } from "next/navigation";
 
 const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`;
-const VISIBLE_LIMIT = 5;
+const VISIBLE_LIMIT = 4;
 
 export function SubsidizedPopup({
   subsidyGot,
@@ -35,6 +36,7 @@ export function SubsidizedPopup({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [usedSubsidy] = useAtom(UsedSubsidy);
+  const router = useRouter();
 
   useEffect(() => {
     getSubsidizedProducts(customerId)
@@ -54,11 +56,15 @@ export function SubsidizedPopup({
     });
   };
 
+  // Only non-already-added products, capped at VISIBLE_LIMIT
   const selectableProducts = products
     .filter((p) => !alreadyAddedIds.includes(p._id))
     .slice(0, VISIBLE_LIMIT);
 
+  // All visible products (including already-added), capped at VISIBLE_LIMIT
   const visibleProducts = products.slice(0, VISIBLE_LIMIT);
+
+  const hasMore = products.length > VISIBLE_LIMIT;
 
   const toggleAll = () => {
     if (selected.size === selectableProducts.length) setSelected(new Set());
@@ -75,6 +81,12 @@ export function SubsidizedPopup({
   const handleAddSubsidyItems = async () => {
     AddSubsidyItem(selectedProducts, subsidy * 100, customerId);
     onOpenChange(false);
+  };
+
+  const handleViewAll = () => {
+    onOpenChange(false);
+    // Navigate to /customer with subsidisedOnly filter flag in search params
+    router.push("/customer?subsidisedOnly=true");
   };
 
   return (
@@ -99,7 +111,7 @@ export function SubsidizedPopup({
             </div>
           </div>
 
-          {/* Subsidy pill only */}
+          {/* Subsidy pill */}
           <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-50 border border-emerald-100 w-full">
             <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
             <span className="text-[12px] font-medium text-emerald-700">Available subsidy</span>
@@ -121,6 +133,7 @@ export function SubsidizedPopup({
             </div>
           ) : (
             <div className="flex flex-col gap-1">
+
               {/* Select All row */}
               {selectableProducts.length > 0 && (
                 <button
@@ -146,7 +159,7 @@ export function SubsidizedPopup({
               {/* Separator */}
               <div className="h-px bg-gray-100 my-1" />
 
-              {/* Individual products — capped at 5 */}
+              {/* Individual products — capped at VISIBLE_LIMIT */}
               {visibleProducts.map((product) => {
                 const isChecked = selected.has(product._id);
                 const alreadyAdded = alreadyAddedIds.includes(product._id);
@@ -186,6 +199,31 @@ export function SubsidizedPopup({
                   </button>
                 );
               })}
+
+              {/* View all button — only shown when there are more than VISIBLE_LIMIT products */}
+              {hasMore && (
+                <>
+                  <div className="h-px bg-gray-100 my-1" />
+                  <button
+                    onClick={handleViewAll}
+                    className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl hover:bg-emerald-50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-md bg-emerald-100 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-3 h-3 text-emerald-600" />
+                      </div>
+                      <span className="text-[13px] font-semibold text-emerald-700">
+                        View all subsidy items
+                      </span>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600">
+                        {products.length - VISIBLE_LIMIT}+ more
+                      </span>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 text-emerald-500 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </>
+              )}
+
             </div>
           )}
         </div>

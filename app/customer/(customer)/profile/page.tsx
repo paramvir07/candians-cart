@@ -53,8 +53,8 @@ export default async function ProfilePage() {
       iconColor: "text-emerald-600",
     },
     {
-      label: "Dashboard",
-      desc: "View dashboard",
+      label: "Analytics",
+      desc: "View analytics",
       href: "/customer/analytics",
       icon: ChartSpline,
       iconBg: "bg-blue-500/10",

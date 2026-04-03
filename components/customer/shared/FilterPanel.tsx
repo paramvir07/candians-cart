@@ -1,6 +1,8 @@
 "use client";
 // components/customer/shared/FilterPanel.tsx
 
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { X, SlidersHorizontal } from "lucide-react";
 import {
   ALL_CATEGORIES,
@@ -38,7 +40,6 @@ interface FilterPanelProps {
   onApply?: () => void;
 }
 
-// ── Shared section label ──────────────────────────────────────────────────────
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2.5">
@@ -54,7 +55,26 @@ export function FilterPanel({
   showApplyButton = false,
   onApply,
 }: FilterPanelProps) {
-  const activeCount = getActiveFilterCount(filters);
+  const searchParams = useSearchParams();
+  const activeCount  = getActiveFilterCount(filters);
+
+  // On mount: reset to defaults then apply only what the URL specifies,
+  // so selecting one filter from the footer never stacks on prior filters.
+  //   ?subsidisedOnly=true     - from the subsidy popup "View all" button
+  //   ?category=Fresh+Produce  - from footer category links
+  useEffect(() => {
+    const subsidisedParam = searchParams.get("subsidisedOnly") === "true";
+    const cat             = searchParams.get("category");
+    const validCat        = cat && ALL_CATEGORIES.includes(cat) ? cat : null;
+
+    if (!subsidisedParam && !validCat) return;
+
+    onChange({
+      ...DEFAULT_FILTERS,
+      subsidisedOnly: subsidisedParam,
+      categories:     validCat ? [validCat] : [],
+    });
+  }, [searchParams]);
 
   const toggleCategory = (cat: string) => {
     const next = filters.categories.includes(cat)
@@ -85,7 +105,7 @@ export function FilterPanel({
             <SectionLabel>Category</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {ALL_CATEGORIES.map((cat) => {
-                const cfg = getCategoryConfig(cat);
+                const cfg    = getCategoryConfig(cat);
                 const active = filters.categories.includes(cat);
                 return (
                   <button
@@ -97,7 +117,6 @@ export function FilterPanel({
                         : "bg-card border-border/60 hover:border-border hover:bg-secondary/60"
                     }`}
                   >
-                    {/* Emoji bubble */}
                     <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm m-0.5 shrink-0 transition-colors ${
                       active ? "bg-white/30" : "bg-secondary"
                     }`}>
@@ -120,8 +139,8 @@ export function FilterPanel({
             <SectionLabel>Availability</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {[
-                { key: "inStockOnly" as const,    label: "In stock only",    emoji: "✅" },
-                { key: "subsidisedOnly" as const, label: "Subsidised only",  emoji: "✨" },
+                { key: "inStockOnly"    as const, label: "In stock only",   emoji: "✅" },
+                { key: "subsidisedOnly" as const, label: "Subsidised only", emoji: "✨" },
               ].map(({ key, label, emoji }) => (
                 <button
                   key={key}
@@ -153,10 +172,10 @@ export function FilterPanel({
             <SectionLabel>Sort By</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {[
-                { value: "default",    label: "Recommended" },
+                { value: "default",    label: "Recommended"       },
                 { value: "price_asc",  label: "Price: Low → High" },
                 { value: "price_desc", label: "Price: High → Low" },
-                { value: "name_asc",   label: "Name A → Z" },
+                { value: "name_asc",   label: "Name A → Z"        },
               ].map((opt) => (
                 <button
                   key={opt.value}

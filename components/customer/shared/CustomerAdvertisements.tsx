@@ -19,11 +19,11 @@ import { cn } from "@/lib/utils";
    ───────────────────────────────────────────── */
 
 const DEFAULT_AD_IMAGES: string[] = [
-  "https://cdn.discordapp.com/attachments/1265793460825227377/1488347615941885972/IMG-20260330-WA0001.jpg?ex=69cc733b&is=69cb21bb&hm=7400263a90142d84da4ee9c94a9401fa331488061e49489cc2ae2d964a85eb12&",
-  "https://cdn.discordapp.com/attachments/1265793460825227377/1488347619523690496/IMG-20260330-WA0002.jpg?ex=69cc733c&is=69cb21bc&hm=a1d3ee91fcc697ef332c5467d9f88aaf3f5c23311aaf5070299b003485d31a02&",
-  "https://cdn.discordapp.com/attachments/1265793460825227377/1488347635583811665/IMG-20260330-WA0003.jpg?ex=69cc7340&is=69cb21c0&hm=aedc772e605ed4a7e4e49a4e1e42f11f21615c783fb304dbefcbfc3a7e79c95b&",
-  "https://cdn.discordapp.com/attachments/1265793460825227377/1488347641237733496/IMG-20260330-WA0004.jpg?ex=69cc7341&is=69cb21c1&hm=fdb4583c8e2a10e748e7d27a5a76873cd1b5688aa9da9366e62f7c17c50264f7&",
-  "https://cdn.discordapp.com/attachments/1265793460825227377/1488347648581963816/IMG-20260330-WA0005.jpg?ex=69cc7343&is=69cb21c3&hm=4831e3cfd8165b427af4c07e3a5df98dd42c060365bc60d4674debddc1429a19&",
+  "https://ik.imagekit.io/h7w5h0hou/IMG-20260330-WA0001.webp",
+  "https://ik.imagekit.io/h7w5h0hou/IMG-20260330-WA0002.webp",
+  "https://ik.imagekit.io/h7w5h0hou/IMG-20260330-WA0004%20(1).webp",
+  "https://ik.imagekit.io/h7w5h0hou/IMG-20260330-WA0003.webp",
+  "https://ik.imagekit.io/h7w5h0hou/IMG-20260330-WA0005.webp",
 ];
 
 interface CustomerAdvertisementsProps {
@@ -68,7 +68,7 @@ export default function CustomerAdvertisements({
     <div
       className={cn(
         "w-full max-w-screen-2xl mx-auto",
-        "px-3 py-3 sm:px-5 sm:py-4 md:px-6 md:py-5 lg:px-8 lg:py-6",
+        "px-3 py-3 sm:px-5 sm:py-4 md:px-6 md:py-5 lg:px-8 lg:py-6 ",
         className,
       )}
     >

@@ -178,7 +178,7 @@ export default function HeroSection() {
           </p>
 
           <div style={fade("0.44s")} className="flex flex-wrap gap-3 justify-center mb-5">
-            <Link href={"/customer"}>
+            <Link href={"/customer/signup"}>
             <button
               className="px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold text-white text-sm sm:text-base"
               style={{
