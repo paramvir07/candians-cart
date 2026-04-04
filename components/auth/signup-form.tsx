@@ -14,6 +14,7 @@ import {
   budgetAtom,
   referralCodeAtom,
   storeIdAtom,
+  storeAddressAtom,
 } from "@/atoms/customer/signUp";
 import SelectStore from "../customer/signup/SelectStore";
 import StoreSelected from "../customer/signup/StoreSelected";
@@ -35,6 +36,7 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
   const [budget] = useAtom(budgetAtom);
   const [storeId] = useAtom(storeIdAtom);
   const [referralCode] = useAtom(referralCodeAtom);
+  const [storeAddress] = useAtom(storeAddressAtom);
 
   const customer = userRole === "customer";
   const admin = userRole === "admin";
@@ -141,18 +143,23 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
         </p>
 
         {/* Address */}
-        {!admin && (
-          <Input
-            id="address"
-            type="text"
-            name="address"
-            placeholder={
-              customer ? "Address (e.g. 308-123 Main St)" : "Full Store Address"
-            }
-            required={customer || store || cashier}
-            className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-          />
-        )}
+{!admin && (
+  <Input
+    id="address"
+    type="text"
+    name="address"
+    placeholder={
+      customer ? "Address (e.g. 308-123 Main St)" : "Full Store Address"
+    }
+    value={!customer && storeAddress ? storeAddress : undefined}
+    disabled={!customer && !!storeAddress}
+    required={customer || store || cashier}
+    className={cn(
+      "h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary",
+      !customer && storeAddress && "opacity-60 cursor-not-allowed bg-muted"
+    )}
+  />
+)}
 
         {/* City + Province — customer only */}
         {customer && (

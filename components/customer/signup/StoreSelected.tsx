@@ -15,27 +15,50 @@ import {
   isStoreSelectedDialogOpenAtom,
   stepAtom,
   storeNameAtom,
+  storeIdAtom,
+  storeAddressAtom,
+  pendingStoreIdAtom,
+  pendingStoreAddressAtom,
 } from "@/atoms/customer/signUp";
 import { UserRole } from "@/types/auth";
 import { MapPin } from "lucide-react";
 
 const StoreSelected = ({ userRole }: { userRole?: UserRole }) => {
   const cashierRole = userRole === "cashier";
-  const [store] = useAtom(storeNameAtom);
+  const [store, setStoreName] = useAtom(storeNameAtom);
   const setStep = useSetAtom(stepAtom);
+  const setStoreId = useSetAtom(storeIdAtom);
+  const setStoreAddress = useSetAtom(storeAddressAtom);
+  const [pendingStoreId, setPendingStoreId] = useAtom(pendingStoreIdAtom);
+  const [pendingAddress, setPendingAddress] = useAtom(pendingStoreAddressAtom);
   const [isStoreSelectedDialogOpen, setIsStoreSelectedDialogOpen] = useAtom(
     isStoreSelectedDialogOpenAtom,
   );
 
   const handleConfirm = () => {
+    // Promote pending → confirmed
+    setStoreId(pendingStoreId);
+    setStoreAddress(pendingAddress);
+    setPendingStoreId("");
+    setPendingAddress("");
     setIsStoreSelectedDialogOpen(false);
     if (!cashierRole) setStep("code");
+  };
+
+  const handleCancel = () => {
+    // Discard pending, leave confirmed state untouched
+    setStoreName("");
+    setPendingStoreId("");
+    setPendingAddress("");
+    setIsStoreSelectedDialogOpen(false);
   };
 
   return (
     <AlertDialog
       open={isStoreSelectedDialogOpen}
-      onOpenChange={setIsStoreSelectedDialogOpen}
+      onOpenChange={(open) => {
+        if (!open) handleCancel();
+      }}
     >
       <AlertDialogContent className="
         w-[calc(100%-1.5rem)] max-w-[340px]
@@ -43,10 +66,7 @@ const StoreSelected = ({ userRole }: { userRole?: UserRole }) => {
         bg-card p-0 shadow-2xl shadow-black/10
         overflow-hidden gap-0
       ">
-        {/* Body */}
         <AlertDialogHeader className="px-5 pt-5 pb-4 space-y-3">
-
-          {/* Store pill badge */}
           <div className="inline-flex items-center gap-1.5 self-start rounded-full bg-primary/8 border border-primary/15 px-2.5 py-1">
             <MapPin className="h-3 w-3 text-primary" />
             <span className="text-[11px] font-semibold text-primary tracking-wide truncate max-w-[200px]">
@@ -66,18 +86,19 @@ const StoreSelected = ({ userRole }: { userRole?: UserRole }) => {
           </div>
         </AlertDialogHeader>
 
-        {/* Divider */}
-        <div className="h-px bg-border/60 mx-0" />
+        <div className="h-px bg-border/60" />
 
-        {/* Footer */}
         <AlertDialogFooter className="flex flex-row gap-2.5 p-4">
-          <AlertDialogCancel className="
-            flex-1 h-10 rounded-xl
-            border border-border bg-background
-            hover:bg-muted
-            text-[13px] font-semibold text-foreground
-            transition-colors shadow-none m-0
-          ">
+          <AlertDialogCancel
+            onClick={handleCancel}
+            className="
+              flex-1 h-10 rounded-xl
+              border border-border bg-background
+              hover:bg-muted
+              text-[13px] font-semibold text-foreground
+              transition-colors shadow-none m-0
+            "
+          >
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction

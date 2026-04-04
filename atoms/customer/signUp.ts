@@ -9,3 +9,6 @@ export const storeIdAtom = atom<string>("");
 export const referralCodeAtom = atom<string>("");
 export const isStoreSelectedDialogOpenAtom = atom<boolean>(false);
 export const selectedStoreInfoAtom = atom<StoreDetails | null>(null);
+export const storeAddressAtom = atom<string>("");
+export const pendingStoreAddressAtom = atom<string>("")
+export const pendingStoreIdAtom = atom<string>("")
