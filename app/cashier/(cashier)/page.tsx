@@ -11,7 +11,6 @@ const page = async () => {
         <UserList
           myStoreCustomersData={myStoreCustomersData}
           userRole="cashier"
-          limit={5}
         />  {/* http://localhost:3000/cashier */}
       </div>
     </>
