@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     default: "Candian's Cart | Smart grocery shopping for families",
     template: "%s | Candian's Cart",
   },
-  description: "Your favorite grocery app. Order fresh produce, dairy, and everyday essentials for easy pickup or in-store shopping.",
+  description: "Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.",
   keywords: ["grocery delivery", "fresh produce", "Candian's Cart", "online grocery", "food delivery"],
   authors: [{ name: "Candian's Cart Team" }],
   creator: "Candian's Cart",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     locale: "en_CA",
     url: "/",
     title: "Candian's Cart | Smart grocery shopping for families",
-    description: "Your favorite grocery app. Order fresh produce, dairy, and everyday essentials for easy pickup or in-store shopping.",
+    description: "Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.",
     siteName: "Candian's Cart",
     images: [
       {
