@@ -3,6 +3,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
+import AdminFooter from "@/components/admin/footer/Footer";
 
 export const metadata: Metadata = {
   title: {
@@ -35,6 +36,7 @@ export default async function RootLayout({
     }
   }
   return (
+    <>
     <div className="scroll-smooth">
       <TooltipProvider>
         <div className="min-h-screen bg-gray-50">
@@ -44,6 +46,9 @@ export default async function RootLayout({
           </main>
         </div>
       </TooltipProvider>
+      
     </div>
+    {/* <AdminFooter /> */}
+    </>
   );
 }
