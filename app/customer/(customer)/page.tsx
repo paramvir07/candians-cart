@@ -61,7 +61,7 @@ export default async function CustomerPage() {
         storeId={storeId}
         initialData={initialProductsData} 
        />
-      <Footer/>
+      {/* <Footer/> */}
     </div>
   );
 }
