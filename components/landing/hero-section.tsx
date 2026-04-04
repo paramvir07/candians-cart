@@ -11,8 +11,8 @@ const TABS = [
 ];
 
 const ORDER_ITEMS = [
-  { emoji: "🌾", name: "Sher Atta 20lb",    was: "$18.99", now: "$12.49", save: "34%" },
-  { emoji: "🍚", name: "Basmati Rice 10kg", was: "$24.99", now: "$15.99", save: "36%" },
+  { emoji: "🌾", name: "Sher Atta 20lb",    was: "$18.90", now: "$12.49", save: "34%" },
+  { emoji: "🍚", name: "Daawat Super Basmati Rice 1kg", was: "$4.58", now: "$15.99", save: "36%" },
   { emoji: "🧅", name: "Yellow Onions 5lb", was: "$4.49",  now: "$2.79",  save: "38%" },
   { emoji: "🥛", name: "Whole Milk 4L",     was: "$5.49",  now: "$3.29",  save: "40%" },
 ];

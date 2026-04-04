@@ -15,8 +15,7 @@ import {
 const TOPICS = [
   "General Inquiry",
   "Savings & Pricing",
-  "Store Pickup",
-  "Family Plans",
+  // "Family Plans",
   "Gift Wallet & Rewards",
   "Technical Support",
   "Partnership",
