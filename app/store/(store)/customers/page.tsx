@@ -125,7 +125,7 @@ const page = async () => {
         avgBudgetChange={avgBudgetChange}
         avgBudgetUp={avgBudgetUp}
       />
-      <UserList myStoreCustomersData={myStoreCustomersData} userRole="store" limit={5}/>  {/* http://localhost:3000/store/customers */}
+      <UserList myStoreCustomersData={myStoreCustomersData} userRole="store"/>  {/* http://localhost:3000/store/customers */}
     </div>
   );
 };
