@@ -34,10 +34,13 @@ const ITEMS_PER_PAGE = 16;
 
 interface ProductsSectionProps {
   products: IProduct[];
-  subsidized?:boolean
+  subsidized?: boolean;
 }
 
-export function ProductsSection({ products,subsidized }: ProductsSectionProps) {
+export function ProductsSection({
+  products,
+  subsidized,
+}: ProductsSectionProps) {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
@@ -130,9 +133,9 @@ export function ProductsSection({ products,subsidized }: ProductsSectionProps) {
     }
 
     // Featured products float to top only when not sorting by price
-  if (filters.sortBy !== "price_asc" && filters.sortBy !== "price_desc") {
-  result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
-}
+    if (filters.sortBy !== "price_asc" && filters.sortBy !== "price_desc") {
+      result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+    }
 
     return result;
   }, [products, filters]);

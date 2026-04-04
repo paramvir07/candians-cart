@@ -4,6 +4,21 @@ import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import { ProductActionResponse } from "@/types/store/products.types";
 import mongoose, { PipelineStage } from "mongoose";
+import { getUserSession } from "@/actions/auth/getUserSession.actions";
+import Customer from "@/db/models/customer/customer.model";
+import { cache as reactCache } from "react";
+import { unstable_cache } from "next/cache";
+
+/**
+ * Deduplicated fetch for customer profile within a single request.
+ *
+ */
+const getCustomerProfile = reactCache(async (userId: string) => {
+  await dbConnect();
+  return await Customer.findOne({
+    userId: new mongoose.Types.ObjectId(userId),
+  }).lean();
+});
 
 /**
  * Searches products using MongoDB Atlas full-text search with optional store filtering.
@@ -31,69 +46,94 @@ import mongoose, { PipelineStage } from "mongoose";
  * }
  */
 
-export const searchProducts = async (
-  searchQuery: string = "",
-  storeId?: string, // Optional: filter results by a specific store
-): Promise<ProductActionResponse> => {
-  try {
-    await dbConnect();
+/**
+ * Cached product search logic using Next.js unstable_cache.
+ *
+ */
+const getCachedProducts = (query: string, storeId?: string) =>
+  unstable_cache(
+    async () => {
+      await dbConnect();
 
-    let products;
-
-    if (searchQuery && searchQuery.trim() !== "") {
-      // Build the aggregation pipeline
-      const pipeline: PipelineStage[] = [
-        {
-          $search: {
-            index: "ProductSearch", // Must match your Atlas Search Index name on the 'products' collection
-            text: {
-              query: searchQuery.trim(),
-              path: ["name", "description", "category"], // Fields to perform fuzzy search on
-              fuzzy: {
-                maxEdits: 2, // Allows for typos
-                prefixLength: 1,
-                maxExpansions: 50,
+      // If there is a search query, use MongoDB Atlas Search aggregation
+      if (query && query.trim() !== "") {
+        const pipeline: PipelineStage[] = [
+          {
+            $search: {
+              index: "ProductSearch",
+              text: {
+                query: query.trim(),
+                path: ["name", "description", "category"],
+                fuzzy: { maxEdits: 2, prefixLength: 1, maxExpansions: 50 },
               },
             },
           },
-        },
-      ];
+        ];
 
-      // If a storeId is provided, filter the search results to only that store
-      if (storeId) {
-        pipeline.push({
-          $match: {
-            storeId: new mongoose.Types.ObjectId(storeId),
-          },
-        });
+        if (storeId) {
+          pipeline.push({
+            $match: { storeId: new mongoose.Types.ObjectId(storeId) },
+          });
+        }
+
+        pipeline.push({ $limit: 20 });
+        return await Product.aggregate(pipeline);
       }
 
-      // Limit the results to prevent massive payloads
-      pipeline.push({ $limit: 20 });
-
-      // Execute the aggregation
-      products = await Product.aggregate(pipeline);
-    } else {
-      // Fallback: If no search query, return all products (or products for the specific store)
-      const query = storeId
+      // Fallback for no query: return all products or store-specific products
+      const findQuery = storeId
         ? { storeId: new mongoose.Types.ObjectId(storeId) }
         : {};
-      products = await Product.find(query).lean();
+      return await Product.find(findQuery).lean();
+    },
+    [`product-search-${query}-${storeId}`],
+    { revalidate: 3600, tags: ["products"] },
+  )();
+
+/**
+ * Role-aware search for Candian Cart.
+ *
+ */
+
+export const searchProducts = async (
+  searchQuery: string = "",
+  providedStoreId?: string,
+): Promise<ProductActionResponse> => {
+  try {
+    const session = await getUserSession();
+    const { id: userId, role } = session.user;
+
+    let targetStoreId = providedStoreId;
+
+    // Enforcement Rule: Customers MUST only see their associated store
+    if (role === "customer") {
+      const customer = await getCustomerProfile(userId);
+      if (!customer?.associatedStoreId) {
+        return {
+          success: false,
+          error: "Associated store not found for customer.",
+        };
+      }
+      targetStoreId = customer.associatedStoreId.toString();
     }
+    // Roles like 'admin', 'store', or 'cashier' use the providedStoreId if available
+
+    const products = await getCachedProducts(searchQuery, targetStoreId);
 
     if (!products) {
-      return { success: false, error: `No products found` };
+      return { success: false, error: "No products found in Candian Cart." };
     }
 
-    // Serialize to pass safely to Client Component (Handles ObjectIds and Dates)
-    const serializedProducts = JSON.parse(JSON.stringify(products));
-
-    return { success: true, data: serializedProducts };
+    // JSON Serialization for safe transfer to Client Components
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(products)),
+    };
   } catch (error) {
     console.error("Product search error:", error);
     return {
       success: false,
-      error: `Failed to search products. Please try again later.`,
+      error: "Failed to search products. Please try again later.",
     };
   }
 };
