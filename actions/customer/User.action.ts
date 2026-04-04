@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { getUserSession } from "../auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { Cashier } from "@/db/models/cashier/cashier.model";
-import { unstable_cache } from "next/cache";
+import { getCachedCustomerAndStore, getCachedCustomerProfile } from "../cache/user.cache";
 
 export const getUser = async (customerId?: string) => {
   try {
@@ -39,24 +39,6 @@ export const GetUserfromSession = async (sessionId: string | null) => {
   }
 };
 
-const getCachedCustomerAndStore = unstable_cache(
-  async (userId: string) => {
-    await dbConnect();
-    const customerData = await Customer.findOne({ userId })
-      .populate("associatedStoreId")
-      .lean();
-
-    if (!customerData)
-      return { success: false, message: "Unable to find customer data" };
-
-    return {
-      success: true,
-      customerData: JSON.parse(JSON.stringify(customerData)),
-    };
-  },
-  ["customer-and-store"],
-  { tags: ["customer-and-store"] } 
-);
 
 export const getCustomerAndStoreDataAction = async () => {
   try {
@@ -161,15 +143,6 @@ export const getMyStoreCustomers = async () => {
   }
 };
 
-const getCachedCustomerProfile = unstable_cache(
-  async (userId: string) => {
-    await dbConnect();
-    const customerProfile = await Customer.findOne({ userId }).lean();
-    return JSON.parse(JSON.stringify(customerProfile));
-  },
-  ["customer-profile"],
-  { tags: ["customer"] }
-);
 
 export const getCustomerProfileAction = async () => {
   const session = await getUserSession();

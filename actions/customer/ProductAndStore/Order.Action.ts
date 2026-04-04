@@ -9,7 +9,8 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { Cashier } from "@/db/models/cashier/cashier.model";
 import mongoose from "mongoose";
 import Customer from "@/db/models/customer/customer.model";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { revalidateTag } from "next/cache";
+import { getOrderCountCached } from "@/actions/cache/user.cache";
 
 export const getOrders = async (customerId?: string) => {
   await dbConnect();
@@ -366,24 +367,7 @@ export const cancelPendingOrder = async (
   }
 };
 
-const getOrderCountCached = unstable_cache(
-  async (userId: string) => {          // ← userId passed in
-    try {
-      await dbConnect();
-      const user = await Customer.findOne({ userId }).lean();
 
-      if (!user) return { success: false, message: "User not found" };
-
-      const orderCount = await OrderModel.countDocuments({ userId: user._id });
-      return { success: true, orderCount };
-    } catch (err) {
-      console.log(err);
-      return { success: false, message: "Something went wrong" };
-    }
-  },
-  ["order-count"],
-  { tags: ["orders"] }
-);
 
 export const getOrderCount = async () => {
   const session = await getUserSession();         // ← session outside
