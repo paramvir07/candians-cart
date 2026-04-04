@@ -11,24 +11,24 @@ const TABS = [
 ];
 
 const ORDER_ITEMS = [
-  { emoji: "🌾", name: "Sher Atta 20lb",    was: "$18.90", now: "$12.49", save: "34%" },
-  { emoji: "🍚", name: "Daawat Super Basmati Rice 1kg", was: "$4.58", now: "$15.99", save: "36%" },
-  { emoji: "🧅", name: "Yellow Onions 5lb", was: "$4.49",  now: "$2.79",  save: "38%" },
-  { emoji: "🥛", name: "Whole Milk 4L",     was: "$5.49",  now: "$3.29",  save: "40%" },
+  { emoji: "🌾", name: "Sher Atta 20lb",    was: "$18.90", now: "$14.93", save: "21%" },
+  { emoji: "🍚", name: "Daawat Super Basmati Rice 1kg", was: "$4.58", now: "$3.62", save: "21%" },
+  { emoji: "🍞", name: "White Bread 480g", was: "$3.36",  now: "$2.65",  save: "21%" },
+  { emoji: "🍫", name: "Dairy Milk 38g",     was: "$1.15",  now: "$0.91",  save: "21%" },
 ];
 
 const PRODUCE_ITEMS = [
-  { emoji: "🍅", name: "Roma Tomatoes 2lb",  was: "$3.99",  now: "$2.49",  save: "38%" },
-  { emoji: "🥦", name: "Broccoli Crown",      was: "$2.99",  now: "$1.79",  save: "40%" },
-  { emoji: "🥕", name: "Baby Carrots 1kg",   was: "$3.49",  now: "$1.99",  save: "43%" },
-  { emoji: "🌽", name: "Sweet Corn 4-pack",  was: "$4.99",  now: "$2.99",  save: "40%" },
+  { emoji: "🍅", name: "Roma Tomatoes 2lb",  was: "$3.99",  now: "$3.15",  save: "21%" },
+  { emoji: "🧅", name: "Yellow Onions 50lb",      was: "$45.90",  now: "$36.26",  save: "21%" },
+  { emoji: "🥕", name: "Baby Carrots 1kg",   was: "$3.49",  now: "2.76",  save: "21%" },
+  { emoji: "🌽", name: "Sweet Corn 4-pack",  was: "$4.99",  now: "$3.94",  save: "21%" },
 ];
 
 const SAVINGS_ITEMS = [
-  { emoji: "🌾", name: "Sher Atta 20lb",    was: "$18.99", now: "$12.49", save: "34%", highlight: true },
-  { emoji: "🍚", name: "Basmati Rice 10kg", was: "$24.99", now: "$15.99", save: "36%", highlight: true },
-  { emoji: "🧅", name: "Yellow Onions 5lb", was: "$4.49",  now: "$2.79",  save: "38%", highlight: true },
-  { emoji: "🥛", name: "Whole Milk 4L",     was: "$5.49",  now: "$3.29",  save: "40%", highlight: true },
+  { emoji: "🛢️", name: "Canola Oil 16l",    was: "$53.72", now: "$42.43", save: "21%", highlight: true },
+  { emoji: "🍚", name: "Maggi Masala Noodles 280g", was: "$2.03", now: "$1.60", save: "21%", highlight: true },
+  { emoji: "🧅", name: "Yellow Onions 5lb", was: "$4.49",  now: "$3.55",  save: "21%", highlight: true },
+  { emoji: "🥛", name: "MDH Chana Masala 500g",     was: "$9.44",  now: "$7.46",  save: "21%", highlight: true },
 ];
 
 interface HeroSectionProps {
@@ -73,10 +73,10 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
   const bottomBarSub = isProduce ? "Abbotsford Store" : "Abbotsford Store";
   const bottomBarBtn = isProduce ? "Browse All →" : "Place Order →";
 
-  const savingsBanner = isSavings ? "$47.30 saved" : "$31.40 saved";
+  const savingsBanner = isSavings ? "$47.30 saved" : "$22.91 saved";
   const savingsDesc = isSavings
-    ? "Total savings this month · 39% avg off"
-    : "On your 4-item cart · 37% avg off";
+    ? "Total savings this month · 21% avg off"
+    : "On your 4-item cart · 21% avg off";
 
   return (
     <div className="min-h-screen w-full bg-white relative overflow-hidden">

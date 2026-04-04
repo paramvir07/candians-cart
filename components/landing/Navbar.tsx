@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Logo from "../shared/Logo";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -14,17 +15,19 @@ import {
 } from "lucide-react";
 
 type TNavLink =
-  | { label: string; href: string; children?: never }
-  | { label: string; href?: never; children: { label: string; href: string }[] };
+  | { label: string; href: string; scrollTo?: string; children?: never }
+  | { label: string; href?: never; scrollTo?: never; children: { label: string; href: string }[] };
 
 const NAV_LINKS: TNavLink[] = [
   {
     label: "How It Works",
     href: "/#how-it-works",
+    scrollTo: "how-it-works",
   },
   {
     label: "Calculator",
     href: "/#calculator",
+    scrollTo: "calculator",
   },
   {
     label: "About Us",
@@ -44,7 +47,9 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
   const [scrolled, setScrolled]         = useState(false);
   const [mobileOpen, setMobileOpen]     = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef   = useRef<HTMLDivElement>(null);
+  const router    = useRouter();
+  const pathname  = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -72,6 +77,29 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
   const closeMobile = () => {
     setMobileOpen(false);
     setOpenDropdown(null);
+  };
+
+  /**
+   * Smooth-scroll to a section by id.
+   * Works whether we're already on "/" or navigating from another page.
+   */
+  const handleSectionClick = (
+    e: React.MouseEvent,
+    sectionId: string,
+  ) => {
+    e.preventDefault();
+    closeMobile();
+
+    if (pathname === "/") {
+      // Already on home — just scroll
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } else {
+      // Navigate to home, pass the target section as a query param
+      router.push(`/?scrollTo=${sectionId}`);
+    }
   };
 
   return (
@@ -139,10 +167,18 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
                     ))}
                   </div>
                 </div>
+              ) : link.scrollTo ? (
+                <button
+                  key={link.label}
+                  onClick={(e) => handleSectionClick(e, link.scrollTo!)}
+                  className="rounded-lg px-3 py-1.5 text-[13.5px] font-semibold text-stone-600 transition-colors hover:bg-green-700/8 hover:text-green-800"
+                >
+                  {link.label}
+                </button>
               ) : (
                 <Link
                   key={link.label}
-                  href={link.href}
+                  href={link.href!}
                   className="rounded-lg px-3 py-1.5 text-[13.5px] font-semibold text-stone-600 transition-colors hover:bg-green-700/8 hover:text-green-800"
                 >
                   {link.label}
@@ -197,12 +233,9 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
 
         {/* ══════════════════════════════════════════
             MOBILE DRAWER
-            — uses lg:hidden to match the hamburger button
         ══════════════════════════════════════════ */}
         <div
           className={cn(
-            // FIX 1: was md:hidden — must match hamburger (lg:hidden) so the
-            // drawer is visible in the 768–1024 px gap where the bug appeared.
             "fixed inset-x-0 top-16 z-40 overflow-y-auto bg-white shadow-2xl shadow-stone-900/15 transition-all duration-300 ease-in-out lg:hidden",
             "max-h-[calc(100dvh-64px)] border-t border-stone-900/8",
             mobileOpen
@@ -218,7 +251,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
               <span className="text-[12px] font-semibold text-stone-400">Abbotsford, BC</span>
             </div>
 
-            {/* Nav links — use Next <Link> so client-side routing works on any page */}
+            {/* Nav links */}
             <div className="py-1">
               {NAV_LINKS.map((link) =>
                 link.children ? (
@@ -260,12 +293,18 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
                       </div>
                     </div>
                   </div>
+                ) : link.scrollTo ? (
+                  <button
+                    key={link.label}
+                    onClick={(e) => handleSectionClick(e, link.scrollTo!)}
+                    className="flex w-full items-center justify-between px-2 py-3.5 text-[14px] font-semibold text-stone-800 border-b border-stone-100 last:border-0 transition-colors hover:text-green-800"
+                  >
+                    {link.label}
+                  </button>
                 ) : (
-                  // FIX 2: was plain <a> — use Next <Link> for proper client-side
-                  // navigation so active page state & prefetching work on all routes.
                   <Link
                     key={link.label}
-                    href={link.href}
+                    href={link.href!}
                     onClick={closeMobile}
                     className="flex items-center justify-between px-2 py-3.5 text-[14px] font-semibold text-stone-800 border-b border-stone-100 last:border-0 transition-colors hover:text-green-800"
                   >

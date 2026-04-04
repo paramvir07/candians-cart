@@ -1,5 +1,6 @@
 "use client"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { ShoppingBag, Wallet, Store, ArrowRight, Sparkles, Calculator } from 'lucide-react'
 import Link from 'next/link'
 
@@ -12,6 +13,26 @@ export default function FeaturesSection() {
   ]
 
   const [spend, setSpend] = useState(21)
+  const searchParams = useSearchParams()
+
+  /**
+   * When navigated from another page with ?scrollTo=<sectionId>,
+   * wait for the page to paint then smooth-scroll to the section.
+   */
+  useEffect(() => {
+    const target = searchParams.get("scrollTo")
+    if (!target) return
+
+    // Small delay so the page has fully rendered before we scroll
+    const timer = setTimeout(() => {
+      const el = document.getElementById(target)
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" })
+      }
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [searchParams])
 
   const eligible = spend >= 21
   const subsidised = eligible ? spend * 0.40 : 0
@@ -432,6 +453,7 @@ export default function FeaturesSection() {
               </Link>
             </div>
           </div>
+
           {/* ── Card 6: Savings Calculator (full width) ── */}
           <div id='calculator' className="feat-card card-calc p-7 sm:p-8">
             {/* Header */}

@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     siteName: "Candian's Cart",
     images: [
       {
-        url: "/CC-Logo.png",
+        url: "https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo.png?updatedAt=1775186605806",
         width: 1200,
         height: 630,
         alt: "Candian's Cart Logo",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Candian's Cart | Smart grocery shopping for families",
     description: "Your favorite grocery app.",
-    images: ["/CC-Logo.png"],
+    images: ["https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo.png?updatedAt=1775186605806"],
   },
   robots: {
     index: true,
