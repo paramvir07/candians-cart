@@ -20,9 +20,24 @@ Keep the name of the index as `ProductSearch` and then use the following data to
       "category": {
         "type": "string",
         "analyzer": "lucene.standard"
+      },
+      "primaryUPC": {
+        "type": "number"
       }
     }
   }
 }
 ```
+
 Used in `searchProducts.action.ts`
+
+# FilterQuery is Replaced with QueryFilter (Using mongo 9.x.x)
+
+```ts
+import type { QueryFilter } from "mongoose";
+
+// usage
+const query: QueryFilter<typeof Product> = {
+  // code
+};
+```

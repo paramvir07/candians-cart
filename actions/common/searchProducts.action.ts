@@ -57,14 +57,41 @@ const getCachedProducts = (query: string, storeId?: string) =>
 
       // If there is a search query, use MongoDB Atlas Search aggregation
       if (query && query.trim() !== "") {
+        const cleanQuery = query.trim();
+
+        // 1. Check if the search query can be parsed as a valid number for the UPC check
+        const parsedNumber = Number(cleanQuery);
+        const isNumeric = !isNaN(parsedNumber) && cleanQuery !== "";
+
+        // 2. Build the 'should' clauses for the compound query
+        const shouldClauses: any[] = [
+          {
+            text: {
+              query: cleanQuery,
+              path: ["name", "description", "category"],
+              fuzzy: { maxEdits: 2, prefixLength: 1, maxExpansions: 50 },
+            },
+          },
+        ];
+
+        // 3. If it's a number, add an 'equals' clause for the primaryUPC
+        if (isNumeric) {
+          shouldClauses.push({
+            equals: {
+              path: "primaryUPC",
+              value: parsedNumber,
+            },
+          });
+        }
+
         const pipeline: PipelineStage[] = [
           {
             $search: {
               index: "ProductSearch",
-              text: {
-                query: query.trim(),
-                path: ["name", "description", "category"],
-                fuzzy: { maxEdits: 2, prefixLength: 1, maxExpansions: 50 },
+              // Use a compound query to match EITHER the text fields OR the UPC
+              compound: {
+                should: shouldClauses,
+                minimumShouldMatch: 1,
               },
             },
           },

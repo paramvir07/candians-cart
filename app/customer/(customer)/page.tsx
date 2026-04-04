@@ -5,14 +5,13 @@ import Navbar from "@/components/customer/landing/Navbar";
 import { HeroBanner } from "@/components/customer/landing/HeroBanner";
 import { ProductsSection } from "@/components/customer/products/ProductsSection";
 import { redirect } from "next/navigation";
-import { IProduct } from "@/types/store/products.types";
 import { Footer } from "@/components/customer/landing/Footer";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
+import { getCachedStoreProducts } from "@/actions/cache/product.cache";
 
 export const metadata: Metadata = {
-  title: "Home",
-  description:
-    "Browse our fresh selection of groceries, exclusive subsidized items, and everyday essentials.",
+  title: "Home | Candian Cart",
+  description: "Browse our fresh selection of groceries, exclusive subsidized items, and everyday essentials.",
 };
 
 export default async function CustomerPage() {
@@ -25,9 +24,10 @@ export default async function CustomerPage() {
     else redirect("/customer/login");
   }
 
-  const response = await getStoreAndProduct();
+  // 1. Get the store context (customer profile & storeId)
+  const storeResponse = await getStoreAndProduct();
 
-  if (!response.success) {
+  if (!storeResponse.success || !storeResponse.customer?.associatedStoreId) {
     return (
       <div className="min-h-screen bg-slate-50">
         <Navbar />
@@ -35,8 +35,7 @@ export default async function CustomerPage() {
           <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 max-w-md shadow-sm">
             <h3 className="font-bold text-lg mb-2">Unable to Load Store</h3>
             <p className="text-sm text-red-500">
-              {response.error ||
-                "Please verify your account matches a registered store."}
+              {storeResponse.error || "Please verify your account matches a registered Candian Cart store."}
             </p>
           </div>
         </div>
@@ -44,18 +43,26 @@ export default async function CustomerPage() {
     );
   }
 
-  const products: IProduct[] = response.products
-    ? JSON.parse(JSON.stringify(response.products))
-    : [];
+  const storeId = storeResponse.customer.associatedStoreId.toString();
+
+  // 2. Fetch ONLY Page 1 using our new highly-optimized Cache Action
+  const initialProductsData = await getCachedStoreProducts(storeId, 1, 16, { 
+    categories: [], 
+    sortBy: "default" 
+  });
 
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <Navbar />
-      {/* Server component — static, no JS needed */}
       <HeroBanner />
       <CustomerAdvertisements />
-      {/* Client component — receives all products, handles filters/pagination */}
-      <ProductsSection products={products} />
+      
+      {/* 3. Pass Page 1 and the storeId to the client component */}
+      <ProductsSection 
+        storeId={storeId}
+        initialData={initialProductsData} 
+      />
+      
       <Footer/>
     </div>
   );
