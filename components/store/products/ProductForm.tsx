@@ -131,6 +131,9 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
     stock: initialData ? String(initialData.stock) : "true",
     isFeatured: initialData ? String(initialData.isFeatured) : "false",
     InvoiceId: initialData?.InvoiceId || "",
+    isMeasuredInWeight: initialData?.isMeasuredInWeight ? "true" : "false",
+    UOM: initialData?.UOM || "",
+    primaryUPC: initialData?.primaryUPC?.toString() || "",
   });
 
   const handleChange = (field: string, value: string) =>
@@ -162,7 +165,10 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
       if (imageFile) {
         const fd = new FormData();
         fd.append("file", imageFile);
-        const uploadRes = await fetch("/imagekit", { method: "POST", body: fd });
+        const uploadRes = await fetch("/imagekit", {
+          method: "POST",
+          body: fd,
+        });
         const uploadData = await uploadRes.json();
         if (!uploadData.success) {
           toast.error(uploadData.error || "Failed to upload image");
@@ -183,6 +189,11 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
         images: finalImages,
         isFeatured: formData.isFeatured === "true",
         InvoiceId: formData.InvoiceId,
+        isMeasuredInWeight: formData.isMeasuredInWeight === "true",
+        UOM: formData.UOM || undefined,
+        primaryUPC: formData.primaryUPC
+          ? parseInt(formData.primaryUPC, 10)
+          : undefined,
       };
 
       const schema = createProductFormSchema(role);
@@ -206,7 +217,9 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
         toast.success(initialData ? "Product Updated" : "Product Created", {
           description: `${formData.name} has been saved successfully.`,
         });
-        router.push(storeId ? `/admin/store/${storeId}/products` : "/store/products");
+        router.push(
+          storeId ? `/admin/store/${storeId}/products` : "/store/products",
+        );
         router.refresh();
       } else {
         toast.error(result.message || "An error occurred.");
@@ -219,7 +232,11 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
   };
 
   const isEditMode = !!initialData;
-  const buttonText = loading ? "Saving…" : isEditMode ? "Update Product" : "Create Product";
+  const buttonText = loading
+    ? "Saving…"
+    : isEditMode
+      ? "Update Product"
+      : "Create Product";
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -233,7 +250,9 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
               className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
               onClick={() =>
                 router.push(
-                  storeId ? `/admin/store/${storeId}/products` : "/store/products",
+                  storeId
+                    ? `/admin/store/${storeId}/products`
+                    : "/store/products",
                 )
               }
             >
@@ -258,7 +277,9 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
               className="text-sm hidden sm:flex"
               onClick={() =>
                 router.push(
-                  storeId ? `/admin/store/${storeId}/products` : "/store/products",
+                  storeId
+                    ? `/admin/store/${storeId}/products`
+                    : "/store/products",
                 )
               }
             >
@@ -281,12 +302,14 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
       {/* ── Body ────────────────────────────────────── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-
           {/* ── LEFT ──────────────────────────────────── */}
           <div className="space-y-6">
-
             {/* Basic Info */}
-            <SectionCard icon={Package} title="Basic Information" accent="bg-blue-500/10 text-blue-600">
+            <SectionCard
+              icon={Package}
+              title="Basic Information"
+              accent="bg-blue-500/10 text-blue-600"
+            >
               <Field label="Product Name" required>
                 <Input
                   placeholder="e.g. Organic Whole Milk"
@@ -303,6 +326,51 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
                   className="min-h-32 resize-none"
                 />
               </Field>
+
+              <FieldRow>
+                <Field
+                  label="Primary UPC Barcode"
+                  hint="10-12 digit barcode number"
+                >
+                  <Input
+                    type="number"
+                    placeholder="e.g. 123456789012"
+                    value={formData.primaryUPC}
+                    onChange={(e) => handleChange("primaryUPC", e.target.value)}
+                  />
+                </Field>
+
+                <Field label="Measurement Type">
+                  <Select
+                    value={formData.isMeasuredInWeight}
+                    onValueChange={(v) => handleChange("isMeasuredInWeight", v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Sold by Unit/Item</SelectItem>
+                      <SelectItem value="true">Sold by Weight</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </FieldRow>
+
+              {/* 🆕 Conditional Unit of Measurement */}
+              {formData.isMeasuredInWeight === "true" && (
+                <div className="pt-2 animate-fade-in-up">
+                  <Field
+                    label="Unit of Measurement (UOM)"
+                    hint="e.g. kg, lbs, grams, liters"
+                  >
+                    <Input
+                      placeholder="e.g. kg"
+                      value={formData.UOM}
+                      onChange={(e) => handleChange("UOM", e.target.value)}
+                    />
+                  </Field>
+                </div>
+              )}
 
               <FieldRow>
                 <Field label="Stock Status" required>
@@ -373,13 +441,13 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
             </SectionCard>
 
             {/* Financials */}
-            <SectionCard icon={DollarSign} title="Financials & Fees" accent="bg-emerald-500/10 text-emerald-600">
+            <SectionCard
+              icon={DollarSign}
+              title="Financials & Fees"
+              accent="bg-emerald-500/10 text-emerald-600"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Field
-                  label="Markup (%)"
-                  required
-                  hint="Range: 30 – 35%"
-                >
+                <Field label="Markup (%)" required hint="Range: 30 – 35%">
                   <Input
                     type="number"
                     placeholder="30"
@@ -461,9 +529,12 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
 
           {/* ── RIGHT ─────────────────────────────────── */}
           <div className="space-y-6">
-
             {/* Image Upload */}
-            <SectionCard icon={ImageIcon} title="Product Image" accent="bg-violet-500/10 text-violet-600">
+            <SectionCard
+              icon={ImageIcon}
+              title="Product Image"
+              accent="bg-violet-500/10 text-violet-600"
+            >
               <input
                 type="file"
                 accept="image/png, image/jpeg, image/webp"
@@ -520,7 +591,11 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
             </SectionCard>
 
             {/* Category */}
-            <SectionCard icon={Tag} title="Classification" accent="bg-orange-500/10 text-orange-600">
+            <SectionCard
+              icon={Tag}
+              title="Classification"
+              accent="bg-orange-500/10 text-orange-600"
+            >
               <Field label="Category" required>
                 <Select
                   value={formData.category}
@@ -531,14 +606,32 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
                   </SelectTrigger>
                   <SelectContent className="max-h-64">
                     {[
-                      "Fruits", "Vegetables", "Dairy", "Meat", "Bakery",
-                      "Beverages", "Snacks", "Household", "Oil & Ghee",
-                      "Pulses & Lentils", "Flour & Atta", "Rice", "Spices",
-                      "Pickles & Chutneys", "Instant Foods", "Frozen Foods",
-                      "Sweets & Mithai", "Dry Fruits & Nuts", "Tea & Coffee",
-                      "Sauces & Condiments", "Papad & Fryums",
-                      "Pooja / Religious Items", "Utensils", "Disposables",
-                      "Personal Care", "Other",
+                      "Fruits",
+                      "Vegetables",
+                      "Dairy",
+                      "Meat",
+                      "Bakery",
+                      "Beverages",
+                      "Snacks",
+                      "Household",
+                      "Oil & Ghee",
+                      "Pulses & Lentils",
+                      "Flour & Atta",
+                      "Rice",
+                      "Spices",
+                      "Pickles & Chutneys",
+                      "Instant Foods",
+                      "Frozen Foods",
+                      "Sweets & Mithai",
+                      "Dry Fruits & Nuts",
+                      "Tea & Coffee",
+                      "Sauces & Condiments",
+                      "Papad & Fryums",
+                      "Pooja / Religious Items",
+                      "Utensils",
+                      "Disposables",
+                      "Personal Care",
+                      "Other",
                     ].map((cat) => (
                       <SelectItem key={cat} value={cat}>
                         {cat}
@@ -550,7 +643,11 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
             </SectionCard>
 
             {/* Invoice */}
-            <SectionCard icon={FileText} title="Invoice Details" accent="bg-sky-500/10 text-sky-600">
+            <SectionCard
+              icon={FileText}
+              title="Invoice Details"
+              accent="bg-sky-500/10 text-sky-600"
+            >
               <Field
                 label="Invoice ID"
                 required

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import {
@@ -52,8 +52,17 @@ export async function createProduct(
       storeId = String(store._id); // ensure it's not undefined
     }
 
-    const { price, disposableFee, tax, images, InvoiceId, ...otherData } =
-      validationResult.data;
+    const {
+      price,
+      disposableFee,
+      tax,
+      images,
+      InvoiceId,
+      isMeasuredInWeight,
+      UOM,
+      primaryUPC,
+      ...otherData
+    } = validationResult.data;
 
     // Checks if the invoice Id exists when the role is Store, for admin no checking so it can bypass
     if (userRole === "store") {
@@ -73,7 +82,7 @@ export async function createProduct(
 
     // Automatically sets the subsidy to true, if product category = Fruits, Vegetables, Dairy
     const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
-    const isSubsidized = subsidyCategories.includes(otherData.category); 
+    const isSubsidized = subsidyCategories.includes(otherData.category);
 
     const dbPayload = {
       ...otherData,
@@ -84,6 +93,9 @@ export async function createProduct(
       disposableFee: Math.round((disposableFee ?? 0) * 100),
       InvoiceId: InvoiceId || undefined,
       subsidised: isSubsidized,
+      isMeasuredInWeight,
+      UOM,
+      primaryUPC
     };
 
     const newProduct = await Product.create(dbPayload);
@@ -99,6 +111,9 @@ export async function createProduct(
         },
       });
     }
+
+    // BUST THE CACHE GLOBALLY FOR THIS STORE!
+    revalidateTag(`products-${storeId}`, "default" as any);
 
     if (userRole === "store") {
       revalidatePath("/store/products");

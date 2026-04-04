@@ -72,6 +72,9 @@ export interface IProduct {
   subsidised: boolean;
   isFeatured: boolean;
   InvoiceId: string;
+  isMeasuredInWeight?: boolean; // Optional field for weight-based products
+  UOM?: string; // Optional field for unit of measurement (e.g., kg, lb)
+  primaryUPC?: string; // Optional field for UPC code
   createdAt: string; // ISO Date string
   updatedAt: string; // ISO Date string
 }

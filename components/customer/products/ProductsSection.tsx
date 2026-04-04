@@ -33,6 +33,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { PackageOpen, Filter, Loader2 } from "lucide-react";
+import { startTransition } from "react";
 
 const ITEMS_PER_PAGE = 16;
 
@@ -118,8 +119,10 @@ export function ProductsSection({
   };
 
   const updateFilters = (partial: Partial<FilterState>) => {
-    setFilters((prev) => ({ ...prev, ...partial }));
-    setCurrentPage(1);
+    startTransition(() => {
+      setFilters((prev) => ({ ...prev, ...partial }));
+      setCurrentPage(1);
+    });
     scrollToGrid();
   };
 

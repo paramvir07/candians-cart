@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import {
@@ -77,8 +77,17 @@ export async function updateProduct(
       };
     }
 
-    const { price, disposableFee, tax, images, InvoiceId, ...otherData } =
-      validationResult.data;
+    const {
+      price,
+      disposableFee,
+      tax,
+      images,
+      InvoiceId,
+      isMeasuredInWeight,
+      UOM,
+      primaryUPC,
+      ...otherData
+    } = validationResult.data;
 
     // Comparing the old and the new images
     const newImageIds = images?.map((img) => img.fileId) || [];
@@ -147,6 +156,9 @@ export async function updateProduct(
       disposableFee: Math.round((disposableFee || 0) * 100),
       InvoiceId: InvoiceId || existingProduct.InvoiceId,
       subsidised: isSubsidized,
+      isMeasuredInWeight,
+      UOM,
+      primaryUPC,
     };
 
     let updatedProduct;
@@ -172,6 +184,11 @@ export async function updateProduct(
           "Product not found or You dont have permission to update the product",
       };
     }
+
+    const targetStoreId =
+      store?._id?.toString() || existingProduct.storeId.toString();
+
+    revalidateTag(`products-${targetStoreId}`, "default" as any);
 
     if (adminRole) {
       revalidatePath(`/admin/store/${store?._id}/products`);

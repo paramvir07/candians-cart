@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
@@ -25,8 +25,7 @@ export async function deleteProduct(
     let deletedProduct;
     if (session.user.role === "admin") {
       deletedProduct = await Product.findByIdAndDelete(productId);
-    }
-    else {
+    } else {
       const store = await Store.findOne({ userId: session.user.id }).lean();
       if (!store)
         return {
@@ -39,7 +38,6 @@ export async function deleteProduct(
         storeId: store._id,
       });
     }
-    
 
     if (!deletedProduct) {
       return {
@@ -70,6 +68,9 @@ export async function deleteProduct(
         }
       }
     }
+
+    // 🚨 BUST THE CACHE GLOBALLY!
+    revalidateTag(`products-${deletedProduct.storeId.toString()}`, "default" as any);
 
     revalidatePath("/store/products");
 

@@ -100,6 +100,10 @@ export const BaseProductFormSchema = z.object({
       { message: "UPC must be between 10 and 12 digits" },
     ),
 
+  isMeasuredInWeight: z.boolean().optional().default(false),
+
+  UOM: z.string().trim().optional(),
+
   vendorId: z
     .string()
     .trim()
