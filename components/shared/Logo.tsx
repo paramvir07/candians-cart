@@ -2,16 +2,17 @@ import Link from "next/link";
 
 type LogoProps = {
   variant?: "icon" | "full";
+  href?: string;
 };
 
-export const Logo = ({ variant = "icon" }: LogoProps) => {
+export const Logo = ({ variant = "icon", href = "/customer" }: LogoProps) => {
   const src =
     variant === "full"
       ? "https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo.png"
-      : "https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo-abb.png"; // put here for short one
+      : "https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo-abb.png";
 
   return (
-    <Link href="/customer" className="flex items-center">
+    <Link href={href} className="flex items-center">
       <img
         src={src}
         alt="Logo"

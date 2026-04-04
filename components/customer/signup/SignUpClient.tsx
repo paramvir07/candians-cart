@@ -109,9 +109,9 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
 
           {/* Logo on image */}
           <div className="absolute top-5 left-5">
-            <div className=" h-12 bg-white/80 rounded-xl flex items-center justify-center shadow-2xl p-2">
+            <div className=" h-12 bg-white rounded-xl flex items-center justify-center shadow-2xl p-2">
               {/* <ShoppingCart size={22} className="text-primary-foreground" /> */}
-              <Logo variant="full" />
+              <Logo variant="icon" />
             </div>
           </div>
 

@@ -13,33 +13,42 @@ import {
   Home,
 } from "lucide-react";
 
-const NAV_LINKS = [
-  {
-    label: "Shop",
-    children: [
-      { label: "All Groceries",    href: "#" },
-      { label: "Fresh Produce",    href: "#" },
-      { label: "Staples & Grains", href: "#" },
-      { label: "Dairy & Eggs",     href: "#" },
-      { label: "Spices & Pastes",  href: "#" },
-    ],
-  },
+type TNavLink =
+  | { label: string; href: string; children?: never }
+  | { label: string; href?: never; children: { label: string; href: string }[] };
+
+const NAV_LINKS: TNavLink[] = [
+  // {
+  //   label: "Shop",
+  //   children: [
+  //     { label: "All Groceries",    href: "#" },
+  //     { label: "Fresh Produce",    href: "#" },
+  //     { label: "Staples & Grains", href: "#" },
+  //     { label: "Dairy & Eggs",     href: "#" },
+  //     { label: "Spices & Pastes",  href: "#" },
+  //   ],
+  // },
   {
     label: "How It Works",
-    href: "#how-it-works",
-  },
-  {
-    label: "About",
-    children: [
-      { label: "Our Story", href: "#" },
-      { label: "Community", href: "#" },
-      { label: "Blog",      href: "#" },
-    ],
+    href: "/#how-it-works",
   },
   {
     label: "Calculator",
-    href: "#calculator",
+    href: "/#calculator",
   },
+  {
+    label: "About Us",
+    href: "/about"
+    // children: [
+    //   { label: "Our Story", href: "#" },
+    //   { label: "Community", href: "#" },
+    //   { label: "Blog",      href: "#" },
+    // ],
+  },
+  {
+    label: "Contact Us",
+    href: "/contact"
+  }
 ];
 
 interface NavbarProps {
@@ -103,7 +112,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
 
           {/* ── Hamburger (mobile only) ── */}
           <button
-            className="mr-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-transparent transition-colors hover:bg-black/5 md:hidden"
+            className="mr-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-transparent transition-colors hover:bg-black/5 lg:hidden"
             onClick={() => setMobileOpen((o) => !o)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
@@ -115,12 +124,12 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
           </button>
 
           {/* ── Logo ── */}
-          <Link href="/" className="mr-7 flex shrink-0 items-center gap-2.5">
-            <Logo variant="full" />
-          </Link>
+          {/* <Link href="/" className="mr-7 flex shrink-0 items-center gap-2.5"> */}
+            <Logo variant="full" href="/" />
+          {/* </Link> */}
 
           {/* ── Desktop nav links ── */}
-          <div className="hidden flex-1 items-center gap-0.5 md:flex">
+          <div className="hidden flex-1 items-center gap-0.5 lg:flex">
             {NAV_LINKS.map((link) =>
               link.children ? (
                 <div key={link.label} className="group relative">

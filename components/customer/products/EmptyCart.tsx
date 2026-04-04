@@ -14,7 +14,7 @@ export const EmptyCart = ({ customerId }: { customerId?: string }) => {
       <div className="px-5 pt-6 max-w-md mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Link href={customerId ? `/cashier/customer/${customerId}` : "/"}>
+          <Link href={customerId ? `/cashier/customer/${customerId}` : "/customer"}>
             <Button className="w-9 h-9 flex items-center justify-center rounded-full shadow-sm">
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -39,7 +39,7 @@ export const EmptyCart = ({ customerId }: { customerId?: string }) => {
           </p>
 
           <Link
-            href={customerId ? `/cashier/customer/${customerId}/products` : "/"}
+            href={customerId ? `/cashier/customer/${customerId}/products` : "/cutomer"}
             className="mt-8 w-full"
           >
             <Button className="w-full p-5">Browse Products</Button>

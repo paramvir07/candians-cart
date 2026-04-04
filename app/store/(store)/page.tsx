@@ -28,12 +28,13 @@ export default async function StoreDashboardPage() {
 
         {/* Recent Orders + Recent Payouts side by side */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
-          <StoreDashRecentOrders orders={recentOrders} />
-          <StoreDashRecentPayouts payouts={recentPayouts} />
+          <StoreDashRecentOrders orders={recentOrders} limit={5} />
+          <StoreDashRecentPayouts payouts={recentPayouts} limit={5} />
           <CashActivityWidget
             activities={cashActivities}
             viewAllHref="/store/cash-collection"
             showStore={false}
+            limit={5}
           />
         </div>
       </div>

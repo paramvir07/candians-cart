@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const CustomerSchema = z.object({
   name: z.string().min(1, "Name is Required"),
-  email: z.email("Invalid email address"),
+  email: z.email("Invalid email address").transform((v) => v.trim().toLowerCase()),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")

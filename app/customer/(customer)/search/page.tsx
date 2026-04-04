@@ -14,7 +14,7 @@ export default async function SearchPage() {
   ])
 
   if (!response.success) {
-    redirect("/");
+    throw new Error("Something went wrong")
   }
 
   // Pull storeId — adjust the field name if your response shape differs

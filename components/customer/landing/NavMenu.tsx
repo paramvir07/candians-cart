@@ -31,7 +31,7 @@ export function NavAvatarMenu({ name, initials }: NavAvatarMenuProps) {
   const handleLogout = async () => {
     const response = await logoutAction();
     if(response.success){
-      router.push("/")
+      throw new Error("Something went wrong")
     }
   };
 

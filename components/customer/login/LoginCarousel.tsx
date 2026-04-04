@@ -68,7 +68,7 @@ export function LoginCarousel() {
                 <div className="relative z-10 flex items-center justify-between px-6 pt-6">
                   <div className="w-12 h-12 bg-white backdrop-blur-sm rounded-lg flex items-center justify-center shadow-2xl">
                     {/* <ShoppingCart size={22} className="text-white" /> */}
-                    <Logo />
+                    <Logo href="#" />
                   </div>
                 </div>
 

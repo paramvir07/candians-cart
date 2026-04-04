@@ -20,7 +20,7 @@ const Page = async () => {
       <WalletSwitcher />
       
       <WalletView customerData={customerData} />
-      <CustomerAdvertisements />
+      <CustomerAdvertisements maxHeight={250} />
     </div>
   );
 };

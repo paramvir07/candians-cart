@@ -18,7 +18,12 @@ import {
 import { ProductCard, ProductCardRole } from "./ProductCard";
 import { IProduct } from "@/types/store/products.types";
 import { Button } from "@/components/ui/button";
-import { AdminProduct, getStoreProductsPaginated, searchProducts } from "@/actions/admin/products/getProducts.action";
+import {
+  AdminProduct,
+  getStoreProductsPaginated,
+  searchProducts,
+} from "@/actions/admin/products/getProducts.action";
+import QrScannerButton from "@/components/shared/users/QrScannerButton";
 
 const ProductCardSkeleton = () => (
   <div className="bg-card rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">
@@ -96,6 +101,11 @@ export const StoreProductsList = ({
     }, 350);
     return () => clearTimeout(timer);
   }, [searchQuery, storeId]);
+  
+  const handleBarcodeScan = (value: string) => {
+    setSearchQuery(value);
+    setIsSearchMode(true);
+  };
 
   const getPageNumbers = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
@@ -158,7 +168,7 @@ export const StoreProductsList = ({
               : titles[role].sub}
           </p>
         </div>
-        <div className="relative w-full sm:max-w-xs">
+        <div className="relative flex gap-3 w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
@@ -167,6 +177,7 @@ export const StoreProductsList = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
         </div>
       </div>
       {/* {} updates param ka lund */}

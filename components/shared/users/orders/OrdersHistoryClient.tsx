@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { OrderWithProductsClient } from "@/types/customer/OrdersClient";
 import QrScannerButton from "../QrScannerButton";
 import OrderCard from "./OrderCard";
+import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 
 const norm = (v: unknown) =>
   String(v ?? "")
@@ -61,7 +62,7 @@ export default function OrdersHistoryClient({
     ? `/cashier/customer/${customerId}`
     : allOrders
       ? "/cashier"
-      : "/";
+      : "/customer/";
 
   const pageTitle = customerId
     ? "Customer Orders"
@@ -97,7 +98,7 @@ export default function OrdersHistoryClient({
           </span>
         </p>
       </div>
-
+      <CustomerAdvertisements maxHeight={250} />
       {/* Filters + search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
         <div className="flex items-center gap-2">
@@ -127,7 +128,7 @@ export default function OrdersHistoryClient({
         <div className="flex items-center gap-2 w-full sm:w-auto">
           {(customerId || allOrders) && (
             <div className="shrink-0">
-              <QrScannerButton onScan={handleScanResult} usedFor="orders"/>
+              <QrScannerButton onScan={handleScanResult} usedFor="orders" />
             </div>
           )}
           <div className="relative flex-1 sm:w-60">
