@@ -1,28 +1,19 @@
 "use client";
 
 import Logo from "../shared/Logo";
+import { useRouter, usePathname } from "next/navigation";
 
-const FOOTER_LINKS = {
-  // Shop: [
-  //   { label: "All Groceries",    href: "#" },
-  //   { label: "Fresh Produce",    href: "#" },
-  //   { label: "Staples & Grains", href: "#" },
-  //   { label: "Dairy & Eggs",     href: "#" },
-  //   { label: "Spices & Pastes",  href: "#" },
-  //   { label: "Weekly Deals",     href: "#" },
-  // ],
+const FOOTER_LINKS: Record<string, { label: string; href: string; scrollTo?: string }[]> = {
   Company: [
-    { label: "About Us",    href: "/about" },
-    { label: "How It Works",href: "/#how-it-works" },
+    { label: "About Us",     href: "/about" },
+    { label: "How It Works", href: "/#how-it-works", scrollTo: "how-it-works" },
   ],
   Support: [
-    { label: "Contact Us",      href: "/contact" },
+    { label: "Contact Us", href: "/contact" },
   ],
-  // Legal: [
-  //   { label: "Privacy Policy",   href: "/privacy" },
-  //   { label: "Terms of Service", href: "/terms" },
-  //   { label: "Cookie Policy",    href: "/cookies" },
-  // ],
+  Tools: [
+    { label: "Calculator", href: "/#calculator", scrollTo: "calculator" },
+  ],
 };
 
 const SOCIAL = [
@@ -37,38 +28,21 @@ const SOCIAL = [
       </svg>
     ),
   },
-  // {
-  //   label: "Facebook",
-  //   href: "#",
-  //   icon: (
-  //     <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-  //       <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-  //     </svg>
-  //   ),
-  // },
-  // {
-  //   label: "WhatsApp",
-  //   href: "#",
-  //   icon: (
-  //     <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-  //       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-  //       <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.532 5.852L.057 23.203a.75.75 0 0 0 .916.916l5.356-1.474A11.947 11.947 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.853 0-3.593-.504-5.087-1.382l-.364-.217-3.773 1.038 1.04-3.774-.217-.364A9.953 9.953 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
-  //     </svg>
-  //   ),
-  // },
-  // {
-  //   label: "X / Twitter",
-  //   href: "#",
-  //   icon: (
-  //     <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17">
-  //       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-  //     </svg>
-  //   ),
-  // },
 ];
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const router   = useRouter();
+  const pathname = usePathname();
+
+  const handleSectionClick = (e: React.MouseEvent, sectionId: string) => {
+    e.preventDefault();
+    if (pathname === "/") {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      router.push(`/?scrollTo=${sectionId}`);
+    }
+  };
 
   return (
     <>
@@ -80,67 +54,6 @@ export default function Footer() {
           background: #1c1917;
           color: #e7e5e4;
         }
-
-        /* ── Newsletter band ── */
-        .footer-nl {
-          background: linear-gradient(135deg, #166534 0%, #15803d 100%);
-          padding: 48px 24px;
-        }
-        .footer-nl-inner {
-          max-width: 1200px;
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 32px;
-          flex-wrap: wrap;
-        }
-        .footer-nl h3 {
-          font-size: 1.35rem;
-          font-weight: 800;
-          color: #fff;
-          letter-spacing: -0.5px;
-          margin: 0 0 4px;
-        }
-        .footer-nl p {
-          font-size: 0.875rem;
-          color: rgba(255,255,255,0.75);
-          margin: 0;
-        }
-        .footer-nl-form {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-        .footer-nl-form input {
-          padding: 10px 16px;
-          border-radius: 10px;
-          border: 1.5px solid rgba(255,255,255,0.25);
-          background: rgba(255,255,255,0.12);
-          color: #fff;
-          font-size: 13.5px;
-          font-family: inherit;
-          font-weight: 500;
-          outline: none;
-          width: 240px;
-          transition: border-color 0.2s, background 0.2s;
-        }
-        .footer-nl-form input::placeholder { color: rgba(255,255,255,0.55); }
-        .footer-nl-form input:focus { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.18); }
-        .footer-nl-form button {
-          padding: 10px 20px;
-          border-radius: 10px;
-          background: #fff;
-          color: #166534;
-          font-weight: 800;
-          font-size: 13.5px;
-          border: none;
-          cursor: pointer;
-          font-family: inherit;
-          transition: transform 0.15s, box-shadow 0.15s;
-          white-space: nowrap;
-        }
-        .footer-nl-form button:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
 
         /* ── Main grid ── */
         .footer-main {
@@ -159,49 +72,6 @@ export default function Footer() {
           margin: 12px 0 20px;
           max-width: 240px;
         }
-
-        .footer-logo {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          text-decoration: none;
-        }
-        .footer-logo-mark {
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
-          background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #fff;
-          font-size: 13px;
-          font-weight: 800;
-          letter-spacing: -0.5px;
-          flex-shrink: 0;
-        }
-        .footer-logo-text {
-          font-weight: 800;
-          font-size: 15px;
-          color: #fff;
-          letter-spacing: -0.4px;
-        }
-        .footer-logo-text span { color: #4ade80; }
-
-        /* Store info */
-        .footer-store-info {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .footer-store-row {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          font-size: 12.5px;
-          color: #a8a29e;
-        }
-        .footer-store-row strong { color: #e7e5e4; display: block; margin-bottom: 1px; }
 
         /* Social */
         .footer-social {
@@ -234,14 +104,21 @@ export default function Footer() {
           margin: 0 0 14px;
         }
         .footer-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 9px; }
-        .footer-col ul li a {
+        .footer-col ul li a,
+        .footer-col ul li button {
           font-size: 13px;
           font-weight: 500;
           color: #a8a29e;
           text-decoration: none;
+          background: none;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          font-family: inherit;
           transition: color 0.15s;
         }
-        .footer-col ul li a:hover { color: #4ade80; }
+        .footer-col ul li a:hover,
+        .footer-col ul li button:hover { color: #4ade80; }
 
         /* ── Bottom bar ── */
         .footer-bottom {
@@ -262,11 +139,7 @@ export default function Footer() {
           color: #78716c;
           margin: 0;
         }
-        .footer-badges {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
+        .footer-badges { display: flex; align-items: center; gap: 10px; }
         .footer-badge {
           display: flex;
           align-items: center;
@@ -282,73 +155,24 @@ export default function Footer() {
 
         /* Responsive */
         @media (max-width: 900px) {
-          .footer-main {
-            grid-template-columns: 1fr 1fr;
-            gap: 36px 24px;
-          }
+          .footer-main { grid-template-columns: 1fr 1fr; gap: 36px 24px; }
           .footer-brand { grid-column: 1 / -1; }
         }
         @media (max-width: 560px) {
           .footer-main { grid-template-columns: 1fr 1fr; }
-          .footer-nl-inner { flex-direction: column; align-items: flex-start; }
-          .footer-nl-form { width: 100%; }
-          .footer-nl-form input { width: 100%; flex: 1; }
           .footer-bottom-inner { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
 
       <footer className="footer-root">
 
-        {/* ── Newsletter band ── */}
-        {/* <div className="footer-nl">
-          <div className="footer-nl-inner">
-            <div>
-              <h3>🛒 Get weekly deal alerts</h3>
-              <p>Be first to know when new subsidised products drop. No spam, ever.</p>
-            </div>
-            <form className="footer-nl-form" onSubmit={(e) => e.preventDefault()}>
-              <input type="email" placeholder="you@example.com" />
-              <button type="submit">Subscribe →</button>
-            </form>
-          </div>
-        </div> */}
-
         {/* ── Main grid ── */}
         <div className="footer-main">
 
           {/* Brand col */}
           <div className="footer-brand">
-            {/* <a href="/" className="footer-logo"> */}
-              {/* <div className="footer-logo-mark">CC</div>
-              <span className="footer-logo-text">Canadian<span>'s</span>Cart</span> */}
-              <Logo variant="full" href="/" />
-            {/* </a> */}
+            <Logo variant="full" href="/" />
             <p>Subsidised grocery pickup for Canadian families in Abbotsford, BC. Save up to 30% on everyday essentials.</p>
-
-            {/* <div className="footer-store-info">
-              <div className="footer-store-row">
-                <span>📍</span>
-                <div>
-                  <strong>Office</strong>
-                  123 Fraser Valley Way, Abbotsford, BC V2S 0A1
-                </div>
-              </div>
-              <div className="footer-store-row">
-                <span>🕐</span>
-                <div>
-                  <strong>Pickup Hours</strong>
-                  Mon–Sat 9 am – 7 pm · Sun 10 am – 5 pm
-                </div>
-              </div>
-              <div className="footer-store-row">
-                <span>📞</span>
-                <div>
-                  <strong>Phone</strong>
-                  (604) 555-0192
-                </div>
-              </div>
-            </div> */}
-
             <div className="footer-social">
               {SOCIAL.map((s) => (
                 <a key={s.label} href={s.href} aria-label={s.label}>{s.icon}</a>
@@ -361,9 +185,19 @@ export default function Footer() {
             <div key={title} className="footer-col">
               <h4>{title}</h4>
               <ul>
-                {links.map((l) => (
-                  <li key={l.label}><a href={l.href}>{l.label}</a></li>
-                ))}
+                {links.map((l) =>
+                  l.scrollTo ? (
+                    <li key={l.label}>
+                      <button onClick={(e) => handleSectionClick(e, l.scrollTo!)}>
+                        {l.label}
+                      </button>
+                    </li>
+                  ) : (
+                    <li key={l.label}>
+                      <a href={l.href}>{l.label}</a>
+                    </li>
+                  )
+                )}
               </ul>
             </div>
           ))}
