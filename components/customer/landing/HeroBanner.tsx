@@ -316,8 +316,6 @@ export function HeroBanner() {
 
       {/* ── CENTER CONTENT ── */}
       <div className="relative w-full max-w-2xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center flex flex-col items-center gap-5">
-<<<<<<< HEAD
-=======
 
         {/* ── HOME STORE BADGE ── */}
         <div
@@ -344,7 +342,6 @@ export function HeroBanner() {
         </div>
 
         {/* Existing pill */}
->>>>>>> 6dbb406 (fixes to ui, creation of about us, contact)
         <div className="inline-flex items-center gap-2 bg-primary text-white text-sm px-4 py-1.5 rounded-full">
           <Leaf className="h-3.5 w-3.5" />
           Fresh · Local · Family Exclusive
