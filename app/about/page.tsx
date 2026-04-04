@@ -1,12 +1,12 @@
 import About from "@/components/about/About"
 import Footer from "@/components/landing/Footer"
-import Navbar from "@/components/landing/Navbar"
+import NavbarWrapper from "@/components/landing/NavbarWrapper"
 
 
 const page = () => {
   return (
     <>
-    <Navbar />
+    <NavbarWrapper />
     <About />
     <Footer />
     </>

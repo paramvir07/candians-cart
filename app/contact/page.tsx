@@ -1,11 +1,11 @@
 import Contact from "@/components/contact/Contact"
 import Footer from "@/components/landing/Footer"
-import Navbar from "@/components/landing/Navbar"
+import NavbarWrapper from "@/components/landing/NavbarWrapper"
 
 const page = () => {
   return (
     <>
-    <Navbar />
+    <NavbarWrapper />
     <Contact />
     <Footer />
     </>

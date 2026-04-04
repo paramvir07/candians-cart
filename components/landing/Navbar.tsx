@@ -18,16 +18,6 @@ type TNavLink =
   | { label: string; href?: never; children: { label: string; href: string }[] };
 
 const NAV_LINKS: TNavLink[] = [
-  // {
-  //   label: "Shop",
-  //   children: [
-  //     { label: "All Groceries",    href: "#" },
-  //     { label: "Fresh Produce",    href: "#" },
-  //     { label: "Staples & Grains", href: "#" },
-  //     { label: "Dairy & Eggs",     href: "#" },
-  //     { label: "Spices & Pastes",  href: "#" },
-  //   ],
-  // },
   {
     label: "How It Works",
     href: "/#how-it-works",
@@ -38,17 +28,12 @@ const NAV_LINKS: TNavLink[] = [
   },
   {
     label: "About Us",
-    href: "/about"
-    // children: [
-    //   { label: "Our Story", href: "#" },
-    //   { label: "Community", href: "#" },
-    //   { label: "Blog",      href: "#" },
-    // ],
+    href: "/about",
   },
   {
     label: "Contact Us",
-    href: "/contact"
-  }
+    href: "/contact",
+  },
 ];
 
 interface NavbarProps {
@@ -94,7 +79,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/25 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-40 bg-black/25 backdrop-blur-sm lg:hidden"
           onClick={closeMobile}
         />
       )}
@@ -110,7 +95,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
       >
         <div className="mx-auto flex h-16 max-w-[1200px] items-center gap-0 px-4 sm:px-6">
 
-          {/* ── Hamburger (mobile only) ── */}
+          {/* ── Hamburger (mobile only, matches drawer breakpoint) ── */}
           <button
             className="mr-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-transparent transition-colors hover:bg-black/5 lg:hidden"
             onClick={() => setMobileOpen((o) => !o)}
@@ -124,9 +109,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
           </button>
 
           {/* ── Logo ── */}
-          {/* <Link href="/" className="mr-7 flex shrink-0 items-center gap-2.5"> */}
-            <Logo variant="full" href="/" />
-          {/* </Link> */}
+          <Logo variant="full" href="/" />
 
           {/* ── Desktop nav links ── */}
           <div className="hidden flex-1 items-center gap-0.5 lg:flex">
@@ -146,24 +129,24 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
 
                   <div className="pointer-events-none absolute left-0 top-[calc(100%+10px)] z-50 min-w-[200px] translate-y-[-6px] rounded-2xl border border-stone-900/10 bg-white p-1.5 opacity-0 shadow-xl shadow-stone-900/10 transition-all duration-200 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
                     {link.children.map((c) => (
-                      <a
+                      <Link
                         key={c.label}
                         href={c.href}
                         className="block rounded-lg px-3 py-2 text-[13px] font-medium text-stone-600 transition-colors hover:bg-green-50 hover:text-green-800"
                       >
                         {c.label}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </div>
               ) : (
-                <a
+                <Link
                   key={link.label}
                   href={link.href}
                   className="rounded-lg px-3 py-1.5 text-[13.5px] font-semibold text-stone-600 transition-colors hover:bg-green-700/8 hover:text-green-800"
                 >
                   {link.label}
-                </a>
+                </Link>
               )
             )}
           </div>
@@ -214,10 +197,13 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
 
         {/* ══════════════════════════════════════════
             MOBILE DRAWER
+            — uses lg:hidden to match the hamburger button
         ══════════════════════════════════════════ */}
         <div
           className={cn(
-            "fixed inset-x-0 top-16 z-40 overflow-y-auto bg-white shadow-2xl shadow-stone-900/15 transition-all duration-300 ease-in-out md:hidden",
+            // FIX 1: was md:hidden — must match hamburger (lg:hidden) so the
+            // drawer is visible in the 768–1024 px gap where the bug appeared.
+            "fixed inset-x-0 top-16 z-40 overflow-y-auto bg-white shadow-2xl shadow-stone-900/15 transition-all duration-300 ease-in-out lg:hidden",
             "max-h-[calc(100dvh-64px)] border-t border-stone-900/8",
             mobileOpen
               ? "translate-y-0 opacity-100 pointer-events-auto"
@@ -232,7 +218,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
               <span className="text-[12px] font-semibold text-stone-400">Abbotsford, BC</span>
             </div>
 
-            {/* Nav links */}
+            {/* Nav links — use Next <Link> so client-side routing works on any page */}
             <div className="py-1">
               {NAV_LINKS.map((link) =>
                 link.children ? (
@@ -261,7 +247,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
                     >
                       <div className="mx-1 mb-2 mt-0.5 rounded-xl bg-stone-50">
                         {link.children.map((c) => (
-                          <a
+                          <Link
                             key={c.label}
                             href={c.href}
                             onClick={closeMobile}
@@ -269,20 +255,22 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
                           >
                             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-stone-300" />
                             {c.label}
-                          </a>
+                          </Link>
                         ))}
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <a
+                  // FIX 2: was plain <a> — use Next <Link> for proper client-side
+                  // navigation so active page state & prefetching work on all routes.
+                  <Link
                     key={link.label}
                     href={link.href}
                     onClick={closeMobile}
                     className="flex items-center justify-between px-2 py-3.5 text-[14px] font-semibold text-stone-800 border-b border-stone-100 last:border-0 transition-colors hover:text-green-800"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 )
               )}
             </div>
