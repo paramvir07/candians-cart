@@ -32,7 +32,7 @@ const AdminAllCustomersPage = async () => {
       />
 
       {/* adminMode=true → UserList fetches its own data, no storeId = all stores */}
-      <UserList adminMode={true} />
+      <UserList adminMode={true} limit={5} />  {/* http://localhost:3000/admin/customers */}
     </div>
   );
 };

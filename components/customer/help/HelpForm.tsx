@@ -9,6 +9,7 @@ import {
   CheckCircle2, ChevronLeft, Wallet,
 } from "lucide-react"
 import { ReportSubmit } from "@/actions/customer/Reportaction"
+import CustomerAdvertisements from "../shared/CustomerAdvertisements"
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] })
 
@@ -43,7 +44,7 @@ export default function HelpForm({ userEmail }: { userEmail: string }) {
 
   useEffect(() => {
     if (state.success) {
-      const t = setTimeout(() => router.push("/"), 3000)
+      const t = setTimeout(() => router.push("/customer"), 3000)
       return () => clearTimeout(t)
     }
   }, [state.success, router])
@@ -79,7 +80,7 @@ export default function HelpForm({ userEmail }: { userEmail: string }) {
         <div className="px-8 sm:px-12 pt-6">
           <button
             type="button"
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/customer")}
             className="flex items-center gap-1.5 text-xs font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors duration-150"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -189,7 +190,7 @@ export default function HelpForm({ userEmail }: { userEmail: string }) {
                   </div>
                 </div>
               )}
-
+<CustomerAdvertisements />
               {/* email */}
               <div>
                 <label className="block text-xs font-semibold tracking-[0.12em] uppercase text-[var(--muted-foreground)] mb-2">

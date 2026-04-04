@@ -103,7 +103,7 @@ export default async function ProfilePage() {
         {/* Header */}
         <BlurFade delay={0.05} inView>
           <div className="flex items-center gap-3 py-4 lg:py-6">
-            <Link href="/">
+            <Link href="/customer">
               <Button variant="ghost" size="icon" className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground">
                 <ChevronLeft className="h-4 w-4" />
               </Button>

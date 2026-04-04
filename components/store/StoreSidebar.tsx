@@ -136,9 +136,9 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full"
         >
           <Avatar className="h-8 w-8 shrink-0">
-            <AvatarImage src="https://github.com/shadcn.png" />
+            <AvatarImage src="https://api.dicebear.com/9.x/lorelei/svg?seed=store=profile-name" />
             <AvatarFallback className="text-xs bg-emerald-100 text-emerald-700 font-semibold">
-              AD
+              JK
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">

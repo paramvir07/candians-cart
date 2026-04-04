@@ -264,7 +264,7 @@ export function ProductDetailDialog({
                 Price
               </p>
               <p className="text-2xl font-black text-primary tracking-tight">
-                {fmt(product.price + product.markup)}
+                {fmt(product.price + product.price * (product.markup / 100))}
               </p>
               {product.tax > 0 && (
                 <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">

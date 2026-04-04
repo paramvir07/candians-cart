@@ -6,6 +6,7 @@ import Link from "next/link";
 
 interface StoreDashRecentOrdersProps {
   orders: StoreRecentOrder[];
+  limit?: number;
 }
 
 function formatCents(cents: number) {
@@ -28,9 +29,14 @@ function getStatusBadge(status: string, paymentMode: string) {
   return { label: "Pending", className: "bg-blue-100 text-blue-700" };
 }
 
+const DEFAULT_LIMIT = 5;
+
 export default function StoreDashRecentOrders({
   orders,
+  limit = DEFAULT_LIMIT,
 }: StoreDashRecentOrdersProps) {
+  const visibleOrders = orders.slice(0, limit);
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col">
       {/* Header */}
@@ -62,7 +68,7 @@ export default function StoreDashRecentOrders({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {orders.length === 0 ? (
+            {visibleOrders.length === 0 ? (
               <tr>
                 <td
                   colSpan={4}
@@ -72,7 +78,7 @@ export default function StoreDashRecentOrders({
                 </td>
               </tr>
             ) : (
-              orders.map((order) => {
+              visibleOrders.map((order) => {
                 const badge = getStatusBadge(order.status, order.paymentMode);
                 return (
                   <tr

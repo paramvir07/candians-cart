@@ -55,15 +55,13 @@ export default async function CustomerPage() {
     <div className="min-h-screen bg-[#f7f8fa]">
       <Navbar />
       <HeroBanner />
-      <CustomerAdvertisements />
-      
+      <CustomerAdvertisements maxHeight={250} />
       {/* 3. Pass Page 1 and the storeId to the client component */}
       <ProductsSection 
         storeId={storeId}
         initialData={initialProductsData} 
-      />
-      
-      <Footer/>
+       />
+      {/* <Footer/> */}
     </div>
   );
 }

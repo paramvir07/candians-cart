@@ -1,6 +1,7 @@
 "use client"
 import { useState } from 'react'
 import { ShoppingBag, Wallet, Store, ArrowRight, Sparkles, Calculator } from 'lucide-react'
+import Link from 'next/link'
 
 export default function FeaturesSection() {
   const storeItems = [
@@ -10,7 +11,7 @@ export default function FeaturesSection() {
     { emoji: "🥛", name: "Whole Milk 4L",     price: "$4.29",  was: "$6.49",  tag: false },
   ]
 
-  const [spend, setSpend] = useState(100)
+  const [spend, setSpend] = useState(21)
 
   const eligible = spend >= 21
   const subsidised = eligible ? spend * 0.40 : 0
@@ -424,13 +425,15 @@ export default function FeaturesSection() {
               <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.75)", lineHeight: 1.6, marginTop: 6 }}>
                 Exclusive access for Canadian families. Apply once — your whole household benefits every week.
               </p>
+              <Link href={"/customer/signup"}>
               <div className="mt-5 inline-flex items-center gap-2" style={{ background: "#fff", color: "#15803d", fontWeight: 700, fontSize: "0.82rem", borderRadius: 10, padding: "8px 16px", cursor: "pointer" }}>
                 Apply now <ArrowRight size={14} />
               </div>
+              </Link>
             </div>
           </div>
           {/* ── Card 6: Savings Calculator (full width) ── */}
-          <div className="feat-card card-calc p-7 sm:p-8">
+          <div id='calculator' className="feat-card card-calc p-7 sm:p-8">
             {/* Header */}
             <div className="flex items-center gap-4 mb-7">
               <div className="icon-ring">
@@ -495,7 +498,7 @@ export default function FeaturesSection() {
                 <div>
                   <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#57534e", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 8 }}>Quick select</p>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {[100, 200, 300, 500, 800].map(v => (
+                    {[21, 100, 200, 300, 500, 800].map(v => (
                       <button
                         key={v}
                         onClick={() => setSpend(v)}

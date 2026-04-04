@@ -12,12 +12,12 @@ const NotFound = () => {
 
       {/* Logo */}
       <div className="flex items-center gap-2.5 mb-2">
-        <div className="w-9 h-9 rounded-2xl flex items-center justify-center shadow-sm">
-          <Logo />
-        </div>
-        <span className="text-base font-bold text-foreground tracking-tight">
-          Candian&apos;s Cart
-        </span>
+        {/* <div className="w-9 h-9 rounded-2xl flex items-center justify-center shadow-sm"> */}
+          <Logo variant="full" />
+        {/* </div> */}
+        {/* <span className="text-base font-bold text-foreground tracking-tight"> */}
+          {/* Candian&apos;s Cart */}
+        {/* </span> */}
       </div>
 
       {/* 404 Lottie */}

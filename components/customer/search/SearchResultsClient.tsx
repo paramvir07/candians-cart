@@ -17,7 +17,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Loader2, PackageOpen, Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  Loader2,
+  PackageOpen,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { Customer } from "@/types/customer/customer";
 
 interface SearchResultsClientProps {
@@ -64,10 +70,16 @@ export function SearchResultsClient({
   const isFirstFilterRender = useRef(true);
 
   useEffect(() => {
-    if (isFirstFilterRender.current) { isFirstFilterRender.current = false; return; }
+    if (isFirstFilterRender.current) {
+      isFirstFilterRender.current = false;
+      return;
+    }
     if (!resultsRef.current) return;
     const rect = resultsRef.current.getBoundingClientRect();
-    window.scrollTo({ top: window.scrollY + rect.top - 70, behavior: "smooth" });
+    window.scrollTo({
+      top: window.scrollY + rect.top - 70,
+      behavior: "smooth",
+    });
   }, [filters]);
 
   const updateFilters = (partial: Partial<FilterState>) =>
@@ -76,7 +88,11 @@ export function SearchResultsClient({
   const activeFilterCount = getActiveFilterCount(filters);
 
   useEffect(() => {
-    if (!query.trim()) { setAllResults([]); setHasSearched(false); return; }
+    if (!query.trim()) {
+      setAllResults([]);
+      setHasSearched(false);
+      return;
+    }
     const timer = setTimeout(async () => {
       setIsLoading(true);
       setHasSearched(true);
@@ -87,6 +103,8 @@ export function SearchResultsClient({
     return () => clearTimeout(timer);
   }, [query, storeId]);
 
+  const displayPrice = (p: IProduct) => p.price + p.price * (p.markup / 100);
+
   const filtered = useMemo(() => {
     let result = [...allResults];
     if (filters.categories.length > 0)
@@ -94,9 +112,16 @@ export function SearchResultsClient({
     if (filters.inStockOnly) result = result.filter((p) => p.stock);
     if (filters.subsidisedOnly) result = result.filter((p) => p.subsidised);
     switch (filters.sortBy) {
-      case "price_asc":  result.sort((a, b) => a.price - b.price); break;
-      case "price_desc": result.sort((a, b) => b.price - a.price); break;
-      case "name_asc":   result.sort((a, b) => a.name.localeCompare(b.name)); break;
+      // To this:
+      case "price_asc":
+        result.sort((a, b) => displayPrice(a) - displayPrice(b));
+        break;
+      case "price_desc":
+        result.sort((a, b) => displayPrice(b) - displayPrice(a));
+        break;
+      case "name_asc":
+        result.sort((a, b) => a.name.localeCompare(b.name));
+        break;
     }
     result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
     return result;
@@ -114,7 +139,6 @@ export function SearchResultsClient({
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-6">
-
           {/* ── Desktop sidebar ── */}
           {hasSearched && allResults.length > 0 && !customerId && (
             <aside className="hidden lg:flex flex-col w-64 shrink-0">
@@ -127,7 +151,9 @@ export function SearchResultsClient({
                   <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center">
                     <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
-                  <span className="font-bold text-foreground text-sm">Refine</span>
+                  <span className="font-bold text-foreground text-sm">
+                    Refine
+                  </span>
                   {activeFilterCount > 0 && (
                     <>
                       <span className="bg-green-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center ml-auto">
@@ -144,7 +170,11 @@ export function SearchResultsClient({
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-5 py-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
-                  <FilterPanel filters={filters} onChange={updateFilters} onReset={resetFilters} />
+                  <FilterPanel
+                    filters={filters}
+                    onChange={updateFilters}
+                    onReset={resetFilters}
+                  />
                 </div>
               </div>
             </aside>
@@ -152,7 +182,6 @@ export function SearchResultsClient({
 
           {/* ── Results column ── */}
           <div className="flex-1 min-w-0">
-
             {/* ── Idle state ── */}
             {!query.trim() && !hasSearched && (
               <div className="flex flex-col items-center justify-center py-20 gap-6">
@@ -165,9 +194,11 @@ export function SearchResultsClient({
                 </div>
 
                 <div className="text-center">
-                  <p className="font-bold text-foreground text-xl tracking-tight">What are you looking for?</p>
+                  <p className="font-bold text-foreground text-xl tracking-tight">
+                    What are you looking for?
+                  </p>
                   <p className="text-muted-foreground text-sm mt-1.5 max-w-xs">
-                   Type above to search products, or scan a barcode
+                    Type above to search products, or scan a barcode
                   </p>
                 </div>
 
@@ -197,7 +228,9 @@ export function SearchResultsClient({
                 <div className="w-12 h-12 rounded-2xl bg-card border border-border/60 flex items-center justify-center">
                   <Loader2 className="h-5 w-5 animate-spin text-green-600" />
                 </div>
-                <p className="text-sm font-semibold text-muted-foreground">Searching…</p>
+                <p className="text-sm font-semibold text-muted-foreground">
+                  Searching…
+                </p>
               </div>
             )}
 
@@ -205,7 +238,10 @@ export function SearchResultsClient({
             {!isLoading && hasSearched && (
               <>
                 {/* Toolbar */}
-                <div ref={resultsRef} className="flex items-center justify-between mb-5 gap-3">
+                <div
+                  ref={resultsRef}
+                  className="flex items-center justify-between mb-5 gap-3"
+                >
                   <div>
                     <p className="font-bold text-foreground">
                       {filtered.length > 0
@@ -221,7 +257,8 @@ export function SearchResultsClient({
                         className="text-xs text-green-600 font-semibold hover:text-green-700 mt-0.5 flex items-center gap-1"
                       >
                         <X className="h-3 w-3" />
-                        Clear {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""}
+                        Clear {activeFilterCount} filter
+                        {activeFilterCount !== 1 ? "s" : ""}
                       </button>
                     )}
                   </div>
@@ -255,8 +292,12 @@ export function SearchResultsClient({
                       <PackageOpen className="h-6 w-6 text-muted-foreground/50" />
                     </div>
                     <div className="text-center">
-                      <p className="font-bold text-foreground">No products match your filters</p>
-                      <p className="text-sm text-muted-foreground mt-1">Try adjusting or clearing your filters</p>
+                      <p className="font-bold text-foreground">
+                        No products match your filters
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Try adjusting or clearing your filters
+                      </p>
                     </div>
                     <button
                       onClick={resetFilters}
@@ -272,7 +313,9 @@ export function SearchResultsClient({
                       🔍
                     </div>
                     <div className="text-center">
-                      <p className="font-bold text-foreground text-lg">Nothing found for &ldquo;{query}&rdquo;</p>
+                      <p className="font-bold text-foreground text-lg">
+                        Nothing found for &ldquo;{query}&rdquo;
+                      </p>
                       <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
                         Try a different spelling or browse by category
                       </p>
@@ -313,7 +356,11 @@ export function SearchResultsClient({
 
           <div className="flex-1 overflow-hidden relative">
             <div className="h-full overflow-y-auto px-5 pt-4 pb-28">
-              <FilterPanel filters={filters} onChange={updateFilters} onReset={resetFilters} />
+              <FilterPanel
+                filters={filters}
+                onChange={updateFilters}
+                onReset={resetFilters}
+              />
             </div>
 
             {/* Fixed apply button */}
@@ -325,7 +372,8 @@ export function SearchResultsClient({
                 Show {filtered.length} Result{filtered.length !== 1 ? "s" : ""}
                 {activeFilterCount > 0 && (
                   <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""}
+                    {activeFilterCount} filter
+                    {activeFilterCount !== 1 ? "s" : ""}
                   </span>
                 )}
               </button>

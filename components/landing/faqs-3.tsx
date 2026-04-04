@@ -236,7 +236,7 @@ export default function FAQsSection() {
                 Our support team is happy to help you get started.
               </p>
               <Link
-                href="#"
+                href="/contact"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -311,7 +311,7 @@ export default function FAQsSection() {
             })}
 
             {/* Bottom CTA strip */}
-            <div
+            {/* <div
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -349,7 +349,7 @@ export default function FAQsSection() {
               >
                 Join waitlist <ArrowRight size={13} />
               </Link>
-            </div>
+            </div> */}
           </div>
 
         </div>

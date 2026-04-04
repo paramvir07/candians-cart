@@ -1,18 +1,27 @@
 // components/customer/landing/HeroBanner.tsx
 import Link from "next/link";
 import Image from "next/image";
-import { Leaf, ShieldCheck, Zap, Users, ShoppingCart } from "lucide-react";
+import { Leaf, ShieldCheck, Zap, Users, ShoppingCart, Home } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  EASY SWAP ZONE
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Desktop: each item has fully freeform absolute positioning — intentionally messy
+// Before (hardcoded)
+// const HOME_STORE_NAME = "JK Spice & Grocery";
+
+// // After (from props/backend)
+// interface HeroBannerProps { storeName: string; }
+// export function HeroBanner({ storeName }: HeroBannerProps) { ... }
+// use storeName everywhere HOME_STORE_NAME was
+
+// TODO: replace with your backend store name
+const HOME_STORE_NAME = "JK Spice & Grocery";
+
 const LEFT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(1).png",
     alt: "Broccoli",
-    // top-left, large, leaning left
     cls: "absolute -left-2 top-3 w-48 h-48 xl:w-56 xl:h-56",
     rotation: -22,
     delay: "0s",
@@ -21,7 +30,6 @@ const LEFT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(2).png",
     alt: "Tomato",
-    // pushed far right, clips into center zone, mid height
     cls: "absolute left-24 top-[30%] w-32 h-32 xl:w-40 xl:h-40",
     rotation: 16,
     delay: "1s",
@@ -30,7 +38,6 @@ const LEFT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(4).png",
     alt: "Lemons",
-    // bottom, close to center, small
     cls: "absolute left-20 bottom-8 w-28 h-28 xl:w-32 xl:h-32",
     rotation: -8,
     delay: "1.6s",
@@ -39,7 +46,6 @@ const LEFT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(6).png",
     alt: "Strawberries",
-    // very top-right, small, high up
     cls: "absolute left-32 -top-2 w-24 h-24 xl:w-28 xl:h-28",
     rotation: 28,
     delay: "2.2s",
@@ -48,7 +54,6 @@ const LEFT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(5).png",
     alt: "Orange accent",
-    // bottom-left, peeking out, medium
     cls: "absolute -left-4 bottom-16 w-36 h-36 xl:w-40 xl:h-40",
     rotation: -30,
     delay: "0.6s",
@@ -57,7 +62,6 @@ const LEFT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(7).png",
     alt: "Pineapple accent",
-    // almost overlapping tomato but higher
     cls: "absolute left-10 top-[55%] w-20 h-20 xl:w-24 xl:h-24",
     rotation: 12,
     delay: "3s",
@@ -69,7 +73,6 @@ const RIGHT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(5).png",
     alt: "Oranges",
-    // top-right, large, leaning right
     cls: "absolute -right-2 top-6 w-48 h-48 xl:w-56 xl:h-56",
     rotation: 20,
     delay: "0.5s",
@@ -78,7 +81,6 @@ const RIGHT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(7).png",
     alt: "Pineapple",
-    // pushed left, clips toward center, lower than orange
     cls: "absolute right-20 top-[25%] w-36 h-36 xl:w-44 xl:h-44",
     rotation: -18,
     delay: "1.2s",
@@ -87,7 +89,6 @@ const RIGHT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(6).png",
     alt: "Strawberries",
-    // bottom-right, medium
     cls: "absolute right-4 bottom-6 w-36 h-36 xl:w-44 xl:h-44",
     rotation: 14,
     delay: "2s",
@@ -96,7 +97,6 @@ const RIGHT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(1).png",
     alt: "Broccoli accent",
-    // high up, close to center
     cls: "absolute right-28 -top-3 w-24 h-24 xl:w-28 xl:h-28",
     rotation: -25,
     delay: "3.2s",
@@ -105,7 +105,6 @@ const RIGHT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(2).png",
     alt: "Tomato accent",
-    // bottom-left of right cluster, small, tilted heavy
     cls: "absolute right-32 bottom-14 w-20 h-20 xl:w-24 xl:h-24",
     rotation: 35,
     delay: "1.8s",
@@ -114,7 +113,6 @@ const RIGHT_IMAGES = [
   {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(4).png",
     alt: "Lemon accent",
-    // far right, mid-bottom
     cls: "absolute -right-4 bottom-28 w-28 h-28 xl:w-32 xl:h-32",
     rotation: -12,
     delay: "0.9s",
@@ -122,7 +120,6 @@ const RIGHT_IMAGES = [
   },
 ];
 
-// Mobile — two corner peeks, kept small so they don't overwhelm
 const MOBILE_BG_IMAGES = {
   left: {
     src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(6).png",
@@ -184,7 +181,7 @@ export function HeroBanner() {
       <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-emerald-100/60 blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-green-100/60 blur-3xl pointer-events-none" />
 
-      {/* ── MOBILE BG IMAGES — small corner peeks ── */}
+      {/* ── MOBILE BG IMAGES ── */}
       <div className="lg:hidden absolute inset-0 pointer-events-none">
         <div
           className="absolute -left-6 -bottom-4 w-48 h-48 opacity-80 drop-shadow-xl"
@@ -216,7 +213,7 @@ export function HeroBanner() {
         </div>
       </div>
 
-      {/* ── DESKTOP LEFT — chaotic scatter ── */}
+      {/* ── DESKTOP LEFT ── */}
       <div className="absolute left-0 top-0 w-[300px] xl:w-[340px] h-full pointer-events-none hidden lg:block">
         {LEFT_IMAGES.map((img) => (
           <div
@@ -236,7 +233,6 @@ export function HeroBanner() {
           </div>
         ))}
 
-        {/* Left floating card */}
         <div
           className="absolute left-36 top-[62%] bg-white rounded-2xl shadow-xl border border-green-100 px-4 py-3 flex items-center gap-2.5 z-10"
           style={{ animation: "floatAnim 5s ease-in-out 0.4s infinite" }}
@@ -257,7 +253,7 @@ export function HeroBanner() {
         </div>
       </div>
 
-      {/* ── DESKTOP RIGHT — chaotic scatter ── */}
+      {/* ── DESKTOP RIGHT ── */}
       <div className="absolute right-0 top-0 w-[300px] xl:w-[340px] h-full pointer-events-none hidden lg:block">
         {RIGHT_IMAGES.map((img) => (
           <div
@@ -277,7 +273,6 @@ export function HeroBanner() {
           </div>
         ))}
 
-        {/* Right stat card */}
         <div
           className="absolute right-36 top-[12%] bg-white rounded-2xl shadow-xl border border-border/60 px-4 py-3 min-w-[140px] z-10"
           style={{ animation: "floatAnim 5.5s ease-in-out 1s infinite" }}
@@ -297,7 +292,6 @@ export function HeroBanner() {
           </p>
         </div>
 
-        {/* Right bottom card */}
         <div
           className="absolute right-10 bottom-24 bg-white rounded-2xl shadow-xl border border-green-100 px-4 py-3 flex items-center gap-2.5 z-10"
           style={{ animation: "floatAnim 6s ease-in-out 1.8s infinite" }}
@@ -322,6 +316,32 @@ export function HeroBanner() {
 
       {/* ── CENTER CONTENT ── */}
       <div className="relative w-full max-w-2xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center flex flex-col items-center gap-5">
+
+        {/* ── HOME STORE BADGE ── */}
+        <div
+          className="inline-flex items-center gap-2 bg-white border border-green-100 rounded-full pl-1.5 pr-4 py-1.5 shadow-sm shadow-green-900/5"
+          style={{ animation: "floatAnim 5s ease-in-out 0.3s infinite" }}
+        >
+          {/* Icon circle */}
+          <div className="w-7 h-7 rounded-full bg-green-600 flex items-center justify-center shrink-0">
+            <Home className="h-3.5 w-3.5 text-white" />
+          </div>
+
+          {/* Text */}
+          <div className="text-left leading-tight">
+            <p className="text-[10px] text-muted-foreground font-medium leading-none">Your home store</p>
+            <p className="text-xs font-bold text-foreground mt-0.5 leading-none">{HOME_STORE_NAME}</p>
+          </div>
+
+          {/* Divider + verified pill */}
+          <div className="w-px h-4 bg-border/60 mx-0.5" />
+          <div className="flex items-center gap-1 text-[10px] font-semibold text-green-600">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            Verified
+          </div>
+        </div>
+
+        {/* Existing pill */}
         <div className="inline-flex items-center gap-2 bg-primary text-white text-sm px-4 py-1.5 rounded-full">
           <Leaf className="h-3.5 w-3.5" />
           Fresh · Local · Family Exclusive

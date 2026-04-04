@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Added import
+import { useRouter } from "next/navigation";
 import { Receipt } from "lucide-react";
 import { StoreRecentPayout } from "@/actions/store/getStoreDashboard.actions";
 
 interface StoreDashRecentPayoutsProps {
   payouts: StoreRecentPayout[];
+  limit?: number;
 }
 
 function formatCents(cents: number) {
@@ -19,8 +20,14 @@ function formatCents(cents: number) {
   );
 }
 
-export default function StoreDashRecentPayouts({ payouts }: StoreDashRecentPayoutsProps) {
-  const router = useRouter(); // Initialize the router
+const DEFAULT_LIMIT = 5;
+
+export default function StoreDashRecentPayouts({
+  payouts,
+  limit = DEFAULT_LIMIT,
+}: StoreDashRecentPayoutsProps) {
+  const router = useRouter();
+  const visiblePayouts = payouts.slice(0, limit);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col">
@@ -54,20 +61,20 @@ export default function StoreDashRecentPayouts({ payouts }: StoreDashRecentPayou
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {payouts.length === 0 ? (
+            {visiblePayouts.length === 0 ? (
               <tr>
                 <td colSpan={3} className="py-12 text-center text-sm text-gray-400">
                   No payouts yet
                 </td>
               </tr>
             ) : (
-              payouts.map((payout) => {
+              visiblePayouts.map((payout) => {
                 const isPaid = payout.status === "paid";
                 return (
                   <tr
                     key={payout.payoutId}
-                    onClick={() => router.push(`/store/payouts/${payout.payoutId}`)} // Added onClick navigation
-                    className="hover:bg-gray-50/50 transition-colors cursor-pointer" // Added cursor-pointer
+                    onClick={() => router.push(`/store/payouts/${payout.payoutId}`)}
+                    className="hover:bg-gray-50/50 transition-colors cursor-pointer"
                   >
                     <td className="px-5 sm:px-6 py-3.5 font-medium text-gray-700">
                       {payout.weekLabel}

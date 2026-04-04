@@ -5,7 +5,9 @@ import dynamic from "next/dynamic";
 import Logo from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, X, ShoppingCartIcon, Wallet, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, X, ShoppingCart, Wallet } from "lucide-react";
 import Link from "next/link";
 import { Customer } from "@/types/customer/customer";
 import { fmtShort } from "@/lib/fomatPrice";
@@ -34,7 +36,6 @@ export function SearchNav({
   cartCount,
 }: SearchNavProps) {
   const [query, setQuery] = useState(initialQuery);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(true);
   const [, startTransition] = useTransition();
 
   const handleChange = (val: string) => {
@@ -51,7 +52,6 @@ export function SearchNav({
 
   const handleBarcodeScan = (value: string) => {
     handleChange(value);
-    setIsMobileSearchOpen(true);
     if (onBarcodeScan) onBarcodeScan(value);
   };
 
@@ -63,105 +63,100 @@ export function SearchNav({
     .slice(0, 2);
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-background border-b border-border">
-      <div className="flex items-center justify-between px-4 md:px-5 h-14">
-        {/* LEFT */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* MOBILE BACK */}
-          {!customerId && (
-            <Link href="/" className="md:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full w-9 h-9"
-              >
-                <ArrowLeft className="w-5 h-5" />
+    <nav className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
+      <div className="flex items-center gap-5 px-3 sm:px-4 md:px-6 h-14">
+
+        {/* LEFT — back button (mobile, guest) or logo (desktop) */}
+        <div className="flex items-center shrink-0">
+          {!customerId ? (
+            <Link href="/customer" className="md:hidden">
+              <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
+                <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-          )}
-
-          {/* DESKTOP LOGO */}
-          <div className="hidden md:block">
+          ) : null}
+          <div className="hidden md:flex items-center">
             <Logo />
           </div>
         </div>
 
-        {/* SEARCH */}
-        <div className="flex-1 flex items-center gap-2 max-w-full md:max-w-2xl mx-2 md:mx-4">
+        {/* SEARCH — grows to fill space */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-1 items-center gap-2 min-w-0"
+        >
+          <div className="relative flex-1 min-w-0">
+            <Input
+              type="text"
+              placeholder="Search products…"
+              value={query}
+              onChange={(e) => handleChange(e.target.value)}
+              autoFocus
+              className="h-9 w-full rounded-xl bg-muted border-transparent focus-visible:border-border pr-8 text-sm placeholder:text-muted-foreground"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => handleChange("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-muted-foreground/20 hover:bg-muted-foreground/30 flex items-center justify-center transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-2.5 w-2.5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="flex-1 flex items-center gap-2 min-w-0"
-          >
-            <div className="relative flex-1 border-border bg-secondary rounded-xl">
-              <Input
-                type="text"
-                placeholder="Search products..."
-                value={query}
-                onChange={(e) => handleChange(e.target.value)}
-                autoFocus={isMobileSearchOpen}
-                className="w-full pr-10 h-9 bg-secondary border-border rounded-xl"
-              />
+          {/* Barcode scanner — always visible in form row */}
+          <div className="shrink-0">
+            <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
+          </div>
+        </form>
 
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => handleChange("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-slate-200 flex items-center justify-center"
-                >
-                  <X className="h-3 w-3 text-slate-600" />
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
+        {/* RIGHT — desktop-only extras for guest users */}
+        {!customerId && (
+          <div className="hidden md:flex items-center gap-2 shrink-0">
+            {/* Cart */}
+            <Link href="/customer/cart">
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative h-9 w-9 rounded-xl"
+                aria-label="Cart"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {cartCount > 0 && (
+                  <Badge
+                    variant="default"
+                    className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] font-bold rounded-full border-2 border-background leading-none"
+                  >
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* MOBILE: ONLY QR */}
-          {!customerId && (
-            <div className="md:hidden">
-              <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
-            </div>
-          )}
-
-          {/* DESKTOP: EVERYTHING */}
-          {!customerId && (
-            <div className="hidden md:flex items-center gap-2">
-              <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
-
-              <Link href="/customer/cart">
-                <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center">
-                  <ShoppingCartIcon className="w-[16px] h-[16px] text-primary" />
-                  {(cartCount ?? 0) > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-primary-foreground border-2 border-background">
-                      {cartCount > 99 ? "99+" : cartCount}
-                    </span>
-                  )}
+            {/* Wallet */}
+            <Link href="/customer/wallet">
+              <div className="flex items-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-xl px-3 py-1.5 transition-colors cursor-pointer">
+                <div className="h-6 w-6 rounded-lg bg-primary flex items-center justify-center shrink-0">
+                  <Wallet className="h-3 w-3 text-primary-foreground" />
                 </div>
-              </Link>
-
-              <Link href="/customer/wallet">
-                <div className="flex items-center gap-2 bg-secondary border border-border rounded-xl px-4 py-1.5">
-                  <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-                    <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
-                  </div>
-                  <div className="flex flex-col leading-none">
-                    <span className="text-[9px] text-primary font-semibold uppercase">
-                      Balance
-                    </span>
-                    <span className="text-sm font-black text-foreground">
-                      {fmtShort(customerData.walletBalance)}
-                    </span>
-                  </div>
+                <div className="flex flex-col leading-none">
+                  <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Balance
+                  </span>
+                  <span className="text-sm font-bold text-foreground tabular-nums">
+                    {fmtShort(customerData.walletBalance)}
+                  </span>
                 </div>
-              </Link>
+              </div>
+            </Link>
 
-              <div className="w-px h-5 bg-border mx-1" />
-              <NavAvatarMenu name={customerData.name} initials={initials} />
-            </div>
-          )}
-        </div>
+            <Separator orientation="vertical" className="h-5 mx-1" />
+
+            <NavAvatarMenu name={customerData.name} initials={initials} />
+          </div>
+        )}
       </div>
     </nav>
   );

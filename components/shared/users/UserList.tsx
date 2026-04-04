@@ -30,8 +30,6 @@ const CustomerCardSkeleton = () => (
   </div>
 );
 
-// Unified customer type — AdminCustomer has storeName, Customer does not.
-// We cast both to this internal shape.
 type AnyCustomer = {
   _id: string | { toString(): string };
   name: string;
@@ -46,39 +44,35 @@ type AnyCustomer = {
 
 type UserListProps =
   | {
-      // ── Store / Cashier mode ──────────────────────────────────────────────────
-      // Data is fetched server-side and passed in as a prop.
-      // The component does NOT fetch on its own.
       myStoreCustomersData: Customer[];
       userRole?: "cashier" | "store";
-      // These must NOT be passed in store/cashier mode:
+      limit?: number;
       storeId?: never;
       adminMode?: never;
     }
   | {
-      // ── Admin mode ────────────────────────────────────────────────────────────
-      // Data is fetched client-side. No prop array is accepted.
       adminMode: true;
-      storeId?: string; // omit for all-stores, pass for store-specific
+      storeId?: string;
       userRole?: string;
+      limit?: number;
       myStoreCustomersData?: never;
     };
+
+const DEFAULT_LIMIT = undefined; // undefined = show all (no cap)
 
 const UserList = (props: UserListProps) => {
   const isAdminMode = "adminMode" in props && props.adminMode === true;
   const userRole = props.userRole;
   const cashierRole = userRole === "cashier";
   const storeRole = userRole === "store";
+  const limit = props.limit ?? DEFAULT_LIMIT;
   const router = useRouter();
 
-  // ── State ───────────────────────────────────────────────────────────────────
-  // In store/cashier mode the data is pre-loaded; skip fetch.
   const [fetchedCustomers, setFetchedCustomers] = useState<AnyCustomer[]>([]);
-  const [isLoading, setIsLoading] = useState(isAdminMode); // only loading when admin fetches
+  const [isLoading, setIsLoading] = useState(isAdminMode);
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 
-  // Resolve which data array to use
   const allCustomers: AnyCustomer[] = isAdminMode
     ? fetchedCustomers
     : (((props as any).myStoreCustomersData ?? []) as AnyCustomer[]);
@@ -88,7 +82,6 @@ const UserList = (props: UserListProps) => {
     : undefined;
   const isAllStores = isAdminMode && !storeId;
 
-  // ── Admin fetch ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isAdminMode) return;
     let mounted = true;
@@ -101,12 +94,9 @@ const UserList = (props: UserListProps) => {
       setIsLoading(false);
     };
     load();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [isAdminMode, storeId]);
 
-  // ── Sort / filter ───────────────────────────────────────────────────────────
   const getSortableTime = (c: AnyCustomer) => {
     const t = new Date(c.createdAt).getTime();
     if (Number.isFinite(t) && t > 0) return t;
@@ -135,23 +125,22 @@ const UserList = (props: UserListProps) => {
     );
   }, [allCustomers, search, sortOrder]);
 
+  // Apply limit after filtering & sorting
+  const visibleCustomers = limit !== undefined ? filtered.slice(0, limit) : filtered;
+  const isLimited = limit !== undefined && filtered.length > limit;
+
   const handleScanResult = (scannedId: string) => setSearch(scannedId);
 
-  // ── Heading ─────────────────────────────────────────────────────────────────
-  const heading = isAllStores
-    ? "All Customers"
-    : cashierRole
-      ? "Customer List"
-      : "Customer List";
+  const heading = isAllStores ? "All Customers" : "Customer List";
 
   const searchPlaceholder = isAllStores
     ? "Search id, name, email, phone or store…"
-    : cashierRole || storeRole ? "Search id, name or scan QR…" : "Search"
+    : cashierRole || storeRole
+      ? "Search id, name or scan QR…"
+      : "Search";
 
   return (
-    <div
-      className={`space-y-3 mb-20 sm:mb-0 ${cashierRole ? "px-0 md:px-5" : ""}`}
-    >
+    <div className={`space-y-3 mb-20 sm:mb-0 ${cashierRole ? "px-0 md:px-5" : ""}`}>
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="border border-border rounded-xl bg-card">
         <div className="flex items-center justify-between px-3 pt-3 pb-2 sm:px-4">
@@ -162,8 +151,8 @@ const UserList = (props: UserListProps) => {
               <Skeleton className="h-5 w-10 rounded-full" />
             ) : (
               <Badge variant="secondary" className="text-xs tabular-nums">
-                {filtered.length}
-                {filtered.length !== allCustomers.length && (
+                {visibleCustomers.length}
+                {(filtered.length !== allCustomers.length || isLimited) && (
                   <span className="text-muted-foreground ml-0.5">
                     /{allCustomers.length}
                   </span>
@@ -176,9 +165,7 @@ const UserList = (props: UserListProps) => {
             variant={sortOrder === "oldest" ? "default" : "secondary"}
             size="sm"
             className="gap-1.5 text-xs h-8 px-2.5 shrink-0"
-            onClick={() =>
-              setSortOrder((p) => (p === "newest" ? "oldest" : "newest"))
-            }
+            onClick={() => setSortOrder((p) => (p === "newest" ? "oldest" : "newest"))}
             type="button"
           >
             <CalendarDays className="w-3.5 h-3.5" />
@@ -209,7 +196,6 @@ const UserList = (props: UserListProps) => {
               )}
             </div>
           </div>
-          {/* QR scanner only for cashier / store — not useful for all-stores admin view */}
           {!isAllStores && <QrScannerButton onScan={handleScanResult} />}
         </div>
       </div>
@@ -217,56 +203,58 @@ const UserList = (props: UserListProps) => {
       {/* ── Grid ────────────────────────────────────────────────────────────── */}
       {isLoading ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: limit ?? 8 }).map((_, i) => (
             <CustomerCardSkeleton key={i} />
           ))}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : visibleCustomers.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
           <Users className="w-10 h-10 opacity-20" />
           <p className="text-sm">
             {search ? "No customers match your search" : "No customers yet"}
           </p>
           {search && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSearch("")}
-              type="button"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setSearch("")} type="button">
               Clear search
             </Button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {filtered.map((customer) => (
-            <div
-              key={customer._id.toString()}
-              className={`flex flex-col gap-0 ${cashierRole || isAdminMode ? "hover:cursor-pointer" : ""}`}
-              onClick={() => {
-                if (cashierRole)
-                  router.push(`/cashier/customer/${customer._id}`);
-                if(isAdminMode) router.push(`/admin/customers/${customer._id}`);
-              }}
-            >
-              {/* Store chip — admin all-stores view only */}
-              {isAllStores && customer.associatedStoreId && (
-                <Link
-                  href={`/admin/store/${customer.associatedStoreId}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="group inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors"
-                >
-                  <Store className="w-3 h-3 text-emerald-500 shrink-0" />
-                  <span className="text-xs font-semibold text-emerald-700 truncate max-w-[160px] group-hover:underline underline-offset-2">
-                    {customer.storeName ?? "Unknown Store"}
-                  </span>
-                </Link>
-              )}
-              <CustomerCard customer={customer as any} userRole={userRole} />
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            {visibleCustomers.map((customer) => (
+              <div
+                key={customer._id.toString()}
+                className={`flex flex-col gap-0 ${cashierRole || isAdminMode ? "hover:cursor-pointer" : ""}`}
+                onClick={() => {
+                  if (cashierRole) router.push(`/cashier/customer/${customer._id}`);
+                  if (isAdminMode) router.push(`/admin/customers/${customer._id}`);
+                }}
+              >
+                {isAllStores && customer.associatedStoreId && (
+                  <Link
+                    href={`/admin/store/${customer.associatedStoreId}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="group inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors"
+                  >
+                    <Store className="w-3 h-3 text-emerald-500 shrink-0" />
+                    <span className="text-xs font-semibold text-emerald-700 truncate max-w-[160px] group-hover:underline underline-offset-2">
+                      {customer.storeName ?? "Unknown Store"}
+                    </span>
+                  </Link>
+                )}
+                <CustomerCard customer={customer as any} userRole={userRole} />
+              </div>
+            ))}
+          </div>
+
+          {/* "Showing X of Y" hint when limit is active */}
+          {isLimited && (
+            <p className="text-center text-xs text-muted-foreground pt-1">
+              Showing {visibleCustomers.length} of {filtered.length} customers
+            </p>
+          )}
+        </>
       )}
     </div>
   );
