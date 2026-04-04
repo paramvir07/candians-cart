@@ -5,14 +5,25 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-  ShoppingCart, Shield, Wallet, ChevronLeft, Gift,
-  Package, Receipt, CreditCard, BadgePercent, User, Store,
+  ShoppingCart,
+  Shield,
+  Wallet,
+  ChevronLeft,
+  Gift,
+  Package,
+  Receipt,
+  CreditCard,
+  BadgePercent,
+  User,
+  Store,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { getUser } from "@/actions/customer/User.action";
 import { TopUpDialog } from "@/components/customer/wallet/TopupDialog";
-import ProgressBarCart, { SubsidyCart } from "@/components/customer/products/ProgressBarCart";
+import ProgressBarCart, {
+  SubsidyCart,
+} from "@/components/customer/products/ProgressBarCart";
 import { ICartItem } from "@/types/customer/CustomerCart";
 import Navbar from "@/components/customer/landing/Navbar";
 import CheckoutActions from "./CheckOutActions";
@@ -33,14 +44,28 @@ const calcLine = (item: ICartItem) => {
   const markupPercentage = item.productId.markup;
   const afterMarkup = base + markup;
   const tax = item.productId.tax;
-  let gst = 0, pst = 0;
+  let gst = 0,
+    pst = 0;
   if (tax === 0.05) gst = Math.round(afterMarkup * 0.05);
   else if (tax === 0.07) pst = Math.round(afterMarkup * 0.07);
-  else if (tax === 0.12) { gst = Math.round(afterMarkup * 0.05); pst = Math.round(afterMarkup * 0.07); }
+  else if (tax === 0.12) {
+    gst = Math.round(afterMarkup * 0.05);
+    pst = Math.round(afterMarkup * 0.07);
+  }
   const totalTax = gst + pst;
   const disposable = (item.productId.disposableFee ?? 0) * item.quantity;
   const lineTotal = afterMarkup + totalTax + disposable;
-  return { base, markup, markupPercentage, afterMarkup, gst, pst, totalTax, disposable, lineTotal };
+  return {
+    base,
+    markup,
+    markupPercentage,
+    afterMarkup,
+    gst,
+    pst,
+    totalTax,
+    disposable,
+    lineTotal,
+  };
 };
 
 const CustomerCart = async ({ customerId }: { customerId?: string }) => {
@@ -61,50 +86,76 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const itemTotals = items.reduce(
     (acc, item) => {
-      const { afterMarkup, gst, pst, totalTax, disposable, lineTotal } = calcLine(item);
-      acc.subtotal += afterMarkup; acc.gst += gst; acc.pst += pst;
-      acc.totalTax += totalTax; acc.disposable += disposable; acc.total += lineTotal;
+      const { afterMarkup, gst, pst, totalTax, disposable, lineTotal } =
+        calcLine(item);
+      acc.subtotal += afterMarkup;
+      acc.gst += gst;
+      acc.pst += pst;
+      acc.totalTax += totalTax;
+      acc.disposable += disposable;
+      acc.total += lineTotal;
       return acc;
     },
     { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
   );
 
-  const progressTotal = items.reduce((acc, item) => {
-    if (item.productId.subsidised) return acc;
-    const { markupPercentage, afterMarkup } = calcLine(item);
-    return { total: acc.total + afterMarkup, totalMarkup: acc.totalMarkup + markupPercentage, productCount: acc.productCount + 1 };
-  }, { total: 0, totalMarkup: 0, productCount: 0 });
+  const progressTotal = items.reduce(
+    (acc, item) => {
+      if (item.productId.subsidised) return acc;
+      const { markupPercentage, afterMarkup } = calcLine(item);
+      return {
+        total: acc.total + afterMarkup,
+        totalMarkup: acc.totalMarkup + markupPercentage,
+        productCount: acc.productCount + 1,
+      };
+    },
+    { total: 0, totalMarkup: 0, productCount: 0 },
+  );
 
   const totalInDollars = progressTotal.total / 100;
   const { prev, current, mid } = getFibBracketFrom21(totalInDollars);
   const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
 
   const activeMarkup = (() => {
-    if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!) return avgMarkup;
-    else if (mid && totalInDollars >= mid && totalInDollars <= current) return 30;
+    if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
+      return avgMarkup;
+    else if (mid && totalInDollars >= mid && totalInDollars <= current)
+      return 30;
     return null;
   })();
 
   const calculateTotalMarkup = (item: ICartItem) => {
     if (activeMarkup === null || item.productId.subsidised) return null;
-    return Math.round(item.productId.price * item.quantity * (activeMarkup / 100));
+    return Math.round(
+      item.productId.price * item.quantity * (activeMarkup / 100),
+    );
   };
 
-  const totalActiveMarkup = items.reduce((acc, item) => acc + (calculateTotalMarkup(item) ?? 0), 0);
+  const totalActiveMarkup = items.reduce(
+    (acc, item) => acc + (calculateTotalMarkup(item) ?? 0),
+    0,
+  );
 
   const subsidyTotals = subItems.reduce(
     (acc, item) => {
       const fullPrice = item.TotalPrice * item.quantity;
       const afterSubsidy = Math.max(fullPrice - item.subsidy, 0);
       const taxRate = item.productId.tax ?? 0;
-      let gst = 0, pst = 0;
+      let gst = 0,
+        pst = 0;
       if (taxRate === 0.05) gst = Math.round(fullPrice * 0.05);
       else if (taxRate === 0.07) pst = Math.round(fullPrice * 0.07);
-      else if (taxRate === 0.12) { gst = Math.round(fullPrice * 0.05); pst = Math.round(fullPrice * 0.07); }
+      else if (taxRate === 0.12) {
+        gst = Math.round(fullPrice * 0.05);
+        pst = Math.round(fullPrice * 0.07);
+      }
       const totalTax = gst + pst;
       acc.disposable += (item.productId.disposableFee ?? 0) * item.quantity;
-      acc.subtotal += afterSubsidy; acc.gst += gst; acc.pst += pst;
-      acc.totalTax += totalTax; acc.total += afterSubsidy + totalTax;
+      acc.subtotal += afterSubsidy;
+      acc.gst += gst;
+      acc.pst += pst;
+      acc.totalTax += totalTax;
+      acc.total += afterSubsidy + totalTax;
       return acc;
     },
     { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
@@ -124,14 +175,18 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const active = activeMarkup ?? 0;
 
   const markupBase = (() => {
-    if (mid && totalInDollars >= mid && totalInDollars <= current) return mid * 100;
-    if (totalInDollars >= prev && totalInDollars < (mid ?? current)) return prev * 100;
+    if (mid && totalInDollars >= mid && totalInDollars <= current)
+      return mid * 100;
+    if (totalInDollars >= prev && totalInDollars < (mid ?? current))
+      return prev * 100;
     return 0;
   })();
 
   const MarkupSub = markupBase * (active / 100);
-  const subsidyOnOrder = Math.floor(MarkupSub * 0.60);
-  const TotalSubsidy = Number(((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2));
+  const subsidyOnOrder = Math.floor(MarkupSub * 0.6);
+  const TotalSubsidy = Number(
+    ((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2),
+  );
   const totalItemCount = items.length + subItems.length;
 
   // ── Sub-components ──────────────────────────────────────────────
@@ -153,7 +208,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       {showGST && showPST && (
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Total Tax</span>
-          <span className="font-medium tabular-nums">CA${fmt(totals.totalTax)}</span>
+          <span className="font-medium tabular-nums">
+            CA${fmt(totals.totalTax)}
+          </span>
         </div>
       )}
     </>
@@ -164,14 +221,19 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       {itemTotals.disposable > 0 && (
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Disposable fee</span>
-          <span className="font-medium tabular-nums">CA${fmt(itemTotals.disposable)}</span>
+          <span className="font-medium tabular-nums">
+            CA${fmt(itemTotals.disposable)}
+          </span>
         </div>
       )}
       {subsidyTotals.disposable > 0 && (
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
             Disposable fee
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400">
+            <Badge
+              variant="secondary"
+              className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400"
+            >
               covered
             </Badge>
           </span>
@@ -193,55 +255,86 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               <Wallet className="h-4 w-4 text-primary" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-foreground leading-tight truncate">Main Wallet</p>
-              <p className="text-[11px] text-muted-foreground leading-tight truncate">Available balance</p>
+              <p className="text-xs font-semibold text-foreground leading-tight truncate">
+                Main Wallet
+              </p>
+              <p className="text-[11px] text-muted-foreground leading-tight truncate">
+                Available balance
+              </p>
             </div>
           </div>
           <p className="text-xl font-bold tabular-nums text-foreground truncate">
-            <span className="text-xs font-medium text-muted-foreground mr-0.5">CA$</span>
+            <span className="text-xs font-medium text-muted-foreground mr-0.5">
+              CA$
+            </span>
             {fmt(UserData?.walletBalance ?? 0)}
           </p>
           <TopUpDialog customerId={customerId} />
         </CardContent>
       </Card>
 
-      <Card className={cn(
-        "relative overflow-hidden border-border/60 shadow-none",
-        giftWalletBalance > 0 && "border-primary/30 bg-primary/[0.02]"
-      )}>
+      <Card
+        className={cn(
+          "relative overflow-hidden border-border/60 shadow-none",
+          giftWalletBalance > 0 && "border-primary/30 bg-primary/[0.02]",
+        )}
+      >
         {giftWalletBalance > 0 && (
           <div className="absolute inset-0 bg-gradient-to-br from-primary/8 to-transparent pointer-events-none" />
         )}
         <CardContent className="p-4 flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <div className={cn(
-              "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
-              giftWalletBalance > 0 ? "bg-primary/10" : "bg-muted"
-            )}>
-              <Gift className={cn("h-4 w-4", giftWalletBalance > 0 ? "text-primary" : "text-muted-foreground")} />
+            <div
+              className={cn(
+                "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
+                giftWalletBalance > 0 ? "bg-primary/10" : "bg-muted",
+              )}
+            >
+              <Gift
+                className={cn(
+                  "h-4 w-4",
+                  giftWalletBalance > 0
+                    ? "text-primary"
+                    : "text-muted-foreground",
+                )}
+              />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-foreground leading-tight truncate">Gift Wallet</p>
-              <p className="text-[11px] text-muted-foreground leading-tight truncate">Subsidies earned</p>
+              <p className="text-xs font-semibold text-foreground leading-tight truncate">
+                Gift Wallet
+              </p>
+              <p className="text-[11px] text-muted-foreground leading-tight truncate">
+                Subsidies earned
+              </p>
             </div>
           </div>
-          <p className={cn(
-            "text-xl font-bold tabular-nums truncate",
-            giftWalletBalance > 0 ? "text-primary" : "text-muted-foreground"
-          )}>
-            <span className="text-xs font-medium text-muted-foreground mr-0.5">CA$</span>
+          <p
+            className={cn(
+              "text-xl font-bold tabular-nums truncate",
+              giftWalletBalance > 0 ? "text-primary" : "text-muted-foreground",
+            )}
+          >
+            <span className="text-xs font-medium text-muted-foreground mr-0.5">
+              CA$
+            </span>
             {fmt(giftWalletBalance)}
           </p>
-          <div className={cn(
-            "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border w-fit",
-            giftWalletBalance > 0
-              ? "bg-primary/10 text-primary border-primary/20"
-              : "bg-muted text-muted-foreground border-border"
-          )}>
-            <span className={cn(
-              "h-1.5 w-1.5 rounded-full shrink-0",
-              giftWalletBalance > 0 ? "bg-primary animate-pulse" : "bg-muted-foreground/40"
-            )} />
+          <div
+            className={cn(
+              "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border w-fit",
+              giftWalletBalance > 0
+                ? "bg-primary/10 text-primary border-primary/20"
+                : "bg-muted text-muted-foreground border-border",
+            )}
+          >
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full shrink-0",
+                giftWalletBalance > 0
+                  ? "bg-primary animate-pulse"
+                  : "bg-muted-foreground/40",
+              )}
+            />
             {giftWalletBalance > 0 ? "Active" : "No subsidies yet"}
           </div>
         </CardContent>
@@ -253,7 +346,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     <div className="space-y-2.5">
       <div className="flex justify-between text-sm gap-4">
         <span className="text-muted-foreground shrink-0">Subtotal</span>
-        <span className="font-medium tabular-nums">CA${fmt(totals.subtotal)}</span>
+        <span className="font-medium tabular-nums">
+          CA${fmt(totals.subtotal)}
+        </span>
       </div>
       <TaxRows />
       <DisposableRow />
@@ -262,8 +357,12 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       <div className="flex justify-between items-center gap-4 pt-0.5">
         <span className="font-semibold text-foreground shrink-0">Total</span>
         <div className="flex items-baseline gap-0.5 min-w-0">
-          <span className="text-xs font-medium text-muted-foreground shrink-0">CA$</span>
-          <span className="text-2xl font-bold tabular-nums text-foreground truncate">{fmt(totals.total)}</span>
+          <span className="text-xs font-medium text-muted-foreground shrink-0">
+            CA$
+          </span>
+          <span className="text-2xl font-bold tabular-nums text-foreground truncate">
+            {fmt(totals.total)}
+          </span>
         </div>
       </div>
     </div>
@@ -280,13 +379,18 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
               <Store className="h-3 w-3 text-primary" />
             </div>
-            <Badge variant="secondary" className="font-semibold text-xs gap-1 px-2">
+            <Badge
+              variant="secondary"
+              className="font-semibold text-xs gap-1 px-2"
+            >
               <User className="h-3 w-3" />
               Cashier View
             </Badge>
             <div className="ml-auto flex items-center gap-1.5">
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Live session</span>
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                Live session
+              </span>
             </div>
           </div>
         </div>
@@ -304,15 +408,22 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           of the viewport when content is long — without
           ever using `position: fixed`.
       ════════════════════════════════════════ */}
-      <div className="md:hidden flex flex-col" style={{ minHeight: "calc(100dvh - 0px)" }}>
-
+      <div
+        className="md:hidden flex flex-col"
+        style={{ minHeight: "calc(100dvh - 0px)" }}
+      >
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto px-4 pt-5 pb-4 space-y-4">
-
           {/* Header */}
           <div className="flex items-center gap-3">
-            <Link href={isCashier ? `/cashier/customer/${customerId}` : "/customer"}>
-              <Button variant="outline" size="icon" className="rounded-full h-9 w-9 shrink-0">
+            <Link
+              href={isCashier ? `/cashier/customer/${customerId}` : "/customer"}
+            >
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full h-9 w-9 shrink-0"
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             </Link>
@@ -322,7 +433,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 {isCashier ? "Customer's Cart" : "My Cart"}
               </h1>
             </div>
-            <Badge variant="secondary" className="rounded-full font-semibold shrink-0">
+            <Badge
+              variant="secondary"
+              className="rounded-full font-semibold shrink-0"
+            >
               {totalItemCount}
             </Badge>
           </div>
@@ -364,11 +478,15 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                         <Image
                           src={item.productId.images?.[0]?.url ?? ""}
                           alt={item.productId.name}
-                          width={64} height={64}
+                          width={64}
+                          height={64}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <CategoryIllustration category={item.productId.category} className="w-full h-full" />
+                        <CategoryIllustration
+                          category={item.productId.category}
+                          className="w-full h-full"
+                        />
                       )}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col gap-2">
@@ -387,12 +505,24 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                       </div>
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <RemoveButton productId={item.productId._id.toString()} customerId={customerId} variant="mobile" />
+                          <RemoveButton
+                            productId={item.productId._id.toString()}
+                            customerId={customerId}
+                            variant="mobile"
+                          />
                           {item.productId.subsidised && (
-                            <AddtoSubsidyBtn ProductId={item.productId._id.toString()} customerId={customerId} />
+                            <AddtoSubsidyBtn
+                              ProductId={item.productId._id.toString()}
+                              customerId={customerId}
+                            />
                           )}
                         </div>
-                        <QuantityControl productId={item.productId._id.toString()} customerId={customerId} initialQuantity={item.quantity} variant="mobile" />
+                        <QuantityControl
+                          productId={item.productId._id.toString()}
+                          customerId={customerId}
+                          initialQuantity={item.quantity}
+                          variant="mobile"
+                        />
                       </div>
                     </div>
                   </div>
@@ -441,16 +571,28 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                   </span>
                 </div>
                 <div className="flex justify-between text-xs gap-4">
-                  <span className="text-muted-foreground shrink-0">Active markup</span>
-                  <span className="font-semibold text-foreground">{active > 0 ? `${active}%` : "—"}</span>
+                  <span className="text-muted-foreground shrink-0">
+                    Active markup
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {active > 0 ? `${active}%` : "—"}
+                  </span>
                 </div>
                 <div className="flex justify-between text-xs gap-4">
-                  <span className="text-muted-foreground shrink-0">Subsidy on order</span>
-                  <span className="font-semibold text-primary">CA${fmt(subsidyOnOrder)}</span>
+                  <span className="text-muted-foreground shrink-0">
+                    Subsidy on order
+                  </span>
+                  <span className="font-semibold text-primary">
+                    CA${fmt(subsidyOnOrder)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-xs gap-4">
-                  <span className="text-muted-foreground shrink-0">Gift wallet</span>
-                  <span className="font-semibold text-foreground">CA${fmt(giftWalletBalance)}</span>
+                  <span className="text-muted-foreground shrink-0">
+                    Gift wallet
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    CA${fmt(giftWalletBalance)}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -462,7 +604,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             the viewport, overflow-y-auto on the sibling above keeps
             this pinned at the bottom of the flex column (= bottom of
             the screen) without position:fixed. */}
-        <div className="shrink-0 border-t border-border bg-background/95 backdrop-blur-md px-4 pt-3.5 pb-6">
+        {/* ── Mobile CTA — sticky above footer ── */}
+        <div className="sticky bottom-0 shrink-0 border-t border-border bg-background/95 backdrop-blur-md px-4 pt-3.5 pb-6 z-10">
+          {" "}
           <div className="flex items-center justify-between gap-4 mb-3">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground leading-tight">
@@ -473,12 +617,18 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               </p>
             </div>
             <div className="shrink-0">
-              <CheckoutActions customerId={customerId} compact TotalCart={totals} />
+              <CheckoutActions
+                customerId={customerId}
+                compact
+                TotalCart={totals}
+              />
             </div>
           </div>
           <div className="flex items-center justify-center gap-1.5">
             <Shield className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-            <p className="text-[11px] text-muted-foreground/60">Secured checkout</p>
+            <p className="text-[11px] text-muted-foreground/60">
+              Secured checkout
+            </p>
           </div>
         </div>
       </div>
@@ -488,11 +638,16 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       ════════════════════════════════════════ */}
       <div className="hidden md:block">
         <div className="max-w-5xl mx-auto px-6 lg:px-8 py-8">
-
           {/* Page header */}
           <div className="flex items-center gap-3 mb-6 flex-wrap">
-            <Link href={isCashier ? `/cashier/customer/${customerId}` : "/customer"}>
-              <Button variant="outline" size="icon" className="rounded-full h-9 w-9 shrink-0">
+            <Link
+              href={isCashier ? `/cashier/customer/${customerId}` : "/customer"}
+            >
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full h-9 w-9 shrink-0"
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             </Link>
@@ -511,7 +666,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 )}
               </div>
             </div>
-            <Badge variant="secondary" className="rounded-full font-semibold ml-1 shrink-0">
+            <Badge
+              variant="secondary"
+              className="rounded-full font-semibold ml-1 shrink-0"
+            >
               {totalItemCount} {totalItemCount === 1 ? "item" : "items"}
             </Badge>
           </div>
@@ -533,10 +691,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
           {/* 2-col layout */}
           <div className="flex gap-6 items-start">
-
             {/* Left col */}
             <div className="flex-1 min-w-0 space-y-5">
-
               {/* Items card */}
               <Card className="border-border/60 shadow-none overflow-hidden">
                 <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50">
@@ -561,11 +717,15 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                             <Image
                               src={item.productId.images?.[0]?.url ?? ""}
                               alt={item.productId.name}
-                              width={56} height={56}
+                              width={56}
+                              height={56}
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <CategoryIllustration category={item.productId.category} className="w-full h-full" />
+                            <CategoryIllustration
+                              category={item.productId.category}
+                              className="w-full h-full"
+                            />
                           )}
                         </div>
 
@@ -576,7 +736,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                             </p>
                             {item.productId.subsidised && (
                               <span className="shrink-0">
-                                <AddtoSubsidyBtn ProductId={item.productId._id.toString()} customerId={customerId} />
+                                <AddtoSubsidyBtn
+                                  ProductId={item.productId._id.toString()}
+                                  customerId={customerId}
+                                />
                               </span>
                             )}
                           </div>
@@ -614,7 +777,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               </Card>
 
               {/* Subsidy items */}
-              <SubsidyItemsSection subItems={subItems} customerId={customerId} />
+              <SubsidyItemsSection
+                subItems={subItems}
+                customerId={customerId}
+              />
 
               {/* Wallets */}
               <section>
@@ -646,7 +812,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                   <CheckoutActions customerId={customerId} TotalCart={totals} />
                   <div className="flex items-center justify-center gap-1.5">
                     <Shield className="h-3 w-3 text-muted-foreground/40 shrink-0" />
-                    <p className="text-[11px] text-muted-foreground/50">Secured checkout</p>
+                    <p className="text-[11px] text-muted-foreground/50">
+                      Secured checkout
+                    </p>
                   </div>
                 </div>
               </Card>
@@ -662,16 +830,28 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                     </div>
                     <Separator />
                     <div className="flex justify-between text-xs gap-4">
-                      <span className="text-muted-foreground shrink-0">Active markup</span>
-                      <span className="font-semibold text-foreground">{active > 0 ? `${active}%` : "—"}</span>
+                      <span className="text-muted-foreground shrink-0">
+                        Active markup
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {active > 0 ? `${active}%` : "—"}
+                      </span>
                     </div>
                     <div className="flex justify-between text-xs gap-4">
-                      <span className="text-muted-foreground shrink-0">Subsidy on order</span>
-                      <span className="font-semibold text-primary">CA${fmt(subsidyOnOrder)}</span>
+                      <span className="text-muted-foreground shrink-0">
+                        Subsidy on order
+                      </span>
+                      <span className="font-semibold text-primary">
+                        CA${fmt(subsidyOnOrder)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-xs gap-4">
-                      <span className="text-muted-foreground shrink-0">Gift wallet</span>
-                      <span className="font-semibold text-foreground">CA${fmt(giftWalletBalance)}</span>
+                      <span className="text-muted-foreground shrink-0">
+                        Gift wallet
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        CA${fmt(giftWalletBalance)}
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
