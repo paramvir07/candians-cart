@@ -111,7 +111,7 @@ const getCachedProducts = (query: string, storeId?: string) =>
       const findQuery = storeId
         ? { storeId: new mongoose.Types.ObjectId(storeId) }
         : {};
-      return await Product.find(findQuery).lean();
+      return await Product.find(findQuery).limit(50).lean();
     },
     [`product-search-${query}-${storeId}`],
     { revalidate: 3600, tags: ["products"] },

@@ -6,10 +6,20 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Server actions
 import { createProduct } from "@/actions/store/products/addProducts";
 import { updateProduct } from "@/actions/store/products/editProduct";
+import { searchProducts } from "@/actions/common/searchProducts.action";
 import {
   createProductFormSchema,
   ProductFormValues,
@@ -34,6 +44,12 @@ interface ProductFormProps {
 const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Duplicate Check State
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+  const [potentialDuplicates, setPotentialDuplicates] = useState<IProduct[]>(
+    [],
+  );
 
   // Image state
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -81,8 +97,69 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleSubmit = async () => {
+  // Step 1: Pre-Submit Validation and Duplicate Check
+  const handlePreSubmitValidation = async () => {
+    // Basic validation check before hitting the DB for duplicates
+    const rawpayload: ProductFormValues = {
+      name: formData.name,
+      description: formData.description,
+      category: formData.category as ProductFormValues["category"],
+      markup: parseFloat(formData.markup) || 0,
+      tax: parseFloat(formData.tax) || 0,
+      disposableFee: parseFloat(formData.disposableFee) || 0,
+      price: parseFloat(formData.price) || 0,
+      stock: formData.stock === "true",
+      images: initialData?.images || [], // Uses existing images temporarily for validation
+      isFeatured: formData.isFeatured === "true",
+      InvoiceId: formData.InvoiceId,
+      isMeasuredInWeight: formData.isMeasuredInWeight === "true",
+      UOM: formData.UOM || undefined,
+      primaryUPC: formData.primaryUPC
+        ? parseInt(formData.primaryUPC, 10)
+        : undefined,
+    };
+
+    const schema = createProductFormSchema(role);
+    const validationResult = schema.safeParse(rawpayload);
+
+    if (!validationResult.success) {
+      toast.error(`Validation Error: ${zodErrorResponse(validationResult)}`);
+      return;
+    }
+
     setLoading(true);
+
+    try {
+      // Execute Fuzzy Search
+      const searchRes = await searchProducts(formData.name, storeId);
+
+      if (searchRes.success && searchRes.data && searchRes.data.length > 0) {
+        // Filter out the current product if we are in Edit Mode
+        const duplicates = searchRes.data.filter(
+          (p) => p._id.toString() !== initialData?._id?.toString(),
+        );
+
+        if (duplicates.length > 0) {
+          setPotentialDuplicates(duplicates);
+          setIsDuplicateModalOpen(true);
+          setLoading(false);
+          return; // Pause submission, wait for user confirmation
+        }
+      }
+    } catch (err) {
+      console.error("Duplicate check failed, proceeding with save", err);
+      // If the search fails, we fail open and allow them to save anyway
+    }
+
+    // If no duplicates are found, proceed straight to execution
+    await executeSubmit(validationResult.data);
+  };
+
+  // Step 2: Final Execution (Image upload + Save)
+  const executeSubmit = async (preValidatedPayload?: ProductFormValues) => {
+    setLoading(true);
+    setIsDuplicateModalOpen(false);
+
     try {
       let finalImages = initialData?.images || [];
       if (!imagePreview && !imageFile) finalImages = [];
@@ -90,15 +167,20 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
       if (imageFile) {
         const fd = new FormData();
         fd.append("file", imageFile);
-        const uploadRes = await fetch("/imagekit", { method: "POST", body: fd });
+        const uploadRes = await fetch("/imagekit", {
+          method: "POST",
+          body: fd,
+        });
         const uploadData = await uploadRes.json();
         if (!uploadData.success) {
           toast.error(uploadData.error || "Failed to upload image");
+          setLoading(false);
           return;
         }
         finalImages = uploadData.images;
       }
 
+      // Reconstruct payload with final images
       const rawpayload: ProductFormValues = {
         name: formData.name,
         description: formData.description,
@@ -118,15 +200,19 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
           : undefined,
       };
 
+      // Final validation pass
       const schema = createProductFormSchema(role);
       const validationResult = schema.safeParse(rawpayload);
+
       if (!validationResult.success) {
         toast.error(`Validation Error: ${zodErrorResponse(validationResult)}`);
+        setLoading(false);
         return;
       }
 
       const payload = validationResult.data;
       let result;
+
       if (initialData) {
         result = await updateProduct(initialData._id, payload);
       } else {
@@ -172,7 +258,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
         loading={loading}
         buttonText={buttonText}
         onBack={navigateBack}
-        onSubmit={handleSubmit}
+        onSubmit={handlePreSubmitValidation}
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -211,7 +297,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
             onInvoiceChange={(v) => handleChange("InvoiceId", v)}
             loading={loading}
             buttonText={buttonText}
-            onSubmit={handleSubmit}
+            onSubmit={handlePreSubmitValidation}
           />
         </div>
       </div>
@@ -219,7 +305,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
       {/* Mobile sticky save bar */}
       <div className="lg:hidden sticky bottom-0 z-20 bg-background/90 backdrop-blur-md border-t border-border/60 px-4 py-3">
         <Button
-          onClick={handleSubmit}
+          onClick={handlePreSubmitValidation}
           disabled={loading}
           className="w-full gap-2 py-5 text-sm font-semibold"
         >
@@ -227,6 +313,59 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
           {buttonText}
         </Button>
       </div>
+
+      {/* Duplicate Check Dialog */}
+      <Dialog
+        open={isDuplicateModalOpen}
+        onOpenChange={setIsDuplicateModalOpen}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Potential Duplicates Found</DialogTitle>
+            <DialogDescription>
+              We found similar products already in the store. Please review them
+              below to avoid creating duplicates.
+            </DialogDescription>
+          </DialogHeader>
+
+          <ScrollArea className="max-h-75 w-full rounded-md border p-4">
+            <div className="space-y-4">
+              {potentialDuplicates.map((dup) => (
+                <div
+                  key={dup._id}
+                  className="flex justify-between items-center border-b pb-2 last:border-0 last:pb-0"
+                >
+                  <div>
+                    <p className="text-sm font-medium leading-none">
+                      {dup.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {dup.category}{" "}
+                      {dup.primaryUPC ? `| UPC: ${dup.primaryUPC}` : ""}
+                    </p>
+                  </div>
+                  <div className="text-sm font-medium">
+                    ${(dup.price / 100).toFixed(2)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+
+          <DialogFooter className="sm:justify-end gap-2 sm:gap-0 mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDuplicateModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={() => executeSubmit()}>
+              Proceed Anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
