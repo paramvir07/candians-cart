@@ -105,7 +105,7 @@ function NavItem({
   );
 }
 
-function SidebarContent({ onNav }: { onNav?: () => void }) {
+function SidebarContent({ onNav, name }: { onNav?: () => void; name: string }) {
   return (
     <div className="flex flex-col h-full">
       {/* Brand — only shown inside mobile drawer (desktop brand is in the aside header area) */}
@@ -136,14 +136,16 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full"
         >
           <Avatar className="h-8 w-8 shrink-0">
-            <AvatarImage src="https://api.dicebear.com/9.x/lorelei/svg?seed=store=profile-name" />
+            <AvatarImage 
+            src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(name?name : "User")}`}
+            />
             <AvatarFallback className="text-xs bg-emerald-100 text-emerald-700 font-semibold">
               JK
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-800 leading-tight">
-              Profile
+              {name}
             </p>
             <p className="text-xs text-gray-400 leading-tight">Store</p>
           </div>
@@ -156,7 +158,11 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
   );
 }
 
-const AdminSidebar = () => {
+type StoreSidebarProps = {
+  name: string;
+}
+
+const AdminSidebar = ({ name }: StoreSidebarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
@@ -190,7 +196,7 @@ const AdminSidebar = () => {
 
         {/* Nav content — fills remaining height */}
         <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0">
-          <SidebarContent />
+          <SidebarContent name={name} />
         </div>
       </aside>
 
@@ -251,7 +257,7 @@ const AdminSidebar = () => {
 
         {/* Drawer scrollable content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0">
-          <SidebarContent onNav={() => setMobileOpen(false)} />
+          <SidebarContent name={name} onNav={() => setMobileOpen(false)} />
         </div>
       </div>
     </>

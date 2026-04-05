@@ -225,7 +225,7 @@ function SidebarContent({
             <p className="text-xs text-gray-400 leading-tight">Cashier</p>
           </div>
         </Link>
-        <div className="px-1 flex items-center font-semibold ">
+        <div className="px-1">
           <LogoutButton />
         </div>
       </div>

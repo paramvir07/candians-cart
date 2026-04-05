@@ -6,10 +6,10 @@ import Link from 'next/link'
 
 export default function FeaturesSection() {
   const storeItems = [
-    { emoji: "🌾", name: "Sher Atta 20lb",    price: "$12.49", was: "$18.99", tag: true  },
-    { emoji: "🍚", name: "Basmati Rice 10kg", price: "$15.99", was: "$24.99", tag: true  },
-    { emoji: "🫘", name: "Chana Dal 4lb",     price: "$4.99",  was: "$7.99",  tag: true  },
-    { emoji: "🥛", name: "Whole Milk 4L",     price: "$4.29",  was: "$6.49",  tag: false },
+    { emoji: "🍹", name: "BP Chocolate Drink 500g",    price: "$0.00", was: "$12.49", tag: true  },
+    { emoji: "🍫", name: "Chocolate 500g", price: "$0.00", was: "$8.44", tag: true  },
+    { emoji: "🧋", name: "Kesar Badam 500g",     price: "$0.00",  was: "$273.38",  tag: true  },
+    { emoji: "🥛", name: "Nestle Everyday Milk Powder 1kg",     price: "$0.00",  was: "$16.88",  tag: true },
   ]
 
   const [spend, setSpend] = useState(200)

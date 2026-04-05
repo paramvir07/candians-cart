@@ -26,6 +26,7 @@ export default async function RootLayout({
   });
   if (!session) redirect("/store/login");
 
+  const name = session.user.name;
   const role = session.user.role;
   if (role !== "store") {
     if (role === "admin") {
@@ -42,7 +43,7 @@ export default async function RootLayout({
     <div className="scroll-smooth">
       <TooltipProvider>
         <div className="min-h-screen bg-gray-50">
-          <StoreSidebar />
+          <StoreSidebar name={name} />
           <main className="md:ml-64 pt-14 md:pt-0 min-h-screen m-4">
             {children}
           </main>

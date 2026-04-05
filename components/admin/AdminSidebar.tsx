@@ -124,9 +124,11 @@ function NavItem({
 function SidebarContent({
   onNav,
   pendingInvoicesCount,
+  name,
 }: {
   onNav?: () => void;
   pendingInvoicesCount: number;
+  name: string
 }) {
   return (
     <div className="flex flex-col h-full">
@@ -158,14 +160,17 @@ function SidebarContent({
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full cursor-pointer"
         >
           <Avatar className="h-8 w-8 shrink-0">
-            <AvatarImage src="https://github.com/shadcn.png" />
+            <AvatarImage 
+              src={`https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(name?name : "User")}`}
+ 
+            />
             <AvatarFallback className="text-xs bg-emerald-100 text-emerald-700 font-semibold">
               AD
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-800 leading-tight">
-              Profile
+              {name}
             </p>
             <p className="text-xs text-gray-400 leading-tight">Admin</p>
           </div>
@@ -178,7 +183,12 @@ function SidebarContent({
   );
 }
 
-const AdminSidebar = () => {
+type AdminSidebarProps = {
+  name: string;
+};
+
+
+const AdminSidebar = ({ name }: AdminSidebarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pendingInvoicesCount, setPendingInvoicesCount] = useState(0);
   const pathname = usePathname();
@@ -223,7 +233,7 @@ const AdminSidebar = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0">
-          <SidebarContent pendingInvoicesCount={pendingInvoicesCount} />
+          <SidebarContent pendingInvoicesCount={pendingInvoicesCount} name={name} />
         </div>
       </aside>
 
@@ -284,6 +294,7 @@ const AdminSidebar = () => {
           <SidebarContent
             onNav={() => setMobileOpen(false)}
             pendingInvoicesCount={pendingInvoicesCount}
+            name={name}
           />
         </div>
       </div>

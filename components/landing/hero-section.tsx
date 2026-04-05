@@ -3,6 +3,7 @@
 import { Home } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import Logo from "../shared/Logo";
 
 const TABS = [
   { icon: "🛒", label: "Order Online" },
@@ -73,7 +74,7 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
   const bottomBarSub = isProduce ? "Abbotsford Store" : "Abbotsford Store";
   const bottomBarBtn = isProduce ? "Browse All →" : "Place Order →";
 
-  const savingsBanner = isSavings ? "$47.30 saved" : "$22.91 saved";
+  const savingsBanner = isSavings ? "$55.04 saved" : "$22.91 saved";
   const savingsDesc = isSavings
     ? "Total savings this month · 21% avg off"
     : "On your 4-item cart · 21% avg off";
@@ -263,7 +264,7 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
               <div key={animKey} className="mockup-animate" style={{ background: "#fff" }}>
                 <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">CC</div>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"><Logo href="#" /></div>
                     <div>
                       <p className="text-xs text-stone-400 leading-none mb-0.5">Shopping at</p>
                       <p className="text-sm font-bold text-stone-800">Abbotsford Store ▾</p>

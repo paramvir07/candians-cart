@@ -23,6 +23,7 @@ export default async function RootLayout({
 }>) {
   const session = await getUserSession();
   const role = session.user.role;
+  const name = session.user.name;
 
   if (role !== "admin") {
     if (role === "store") {
@@ -45,7 +46,7 @@ export default async function RootLayout({
           to match <main> height and sticky stops working.
         */}
         <div className="flex flex-1 items-start">
-          <AdminSidebar />
+          <AdminSidebar name={name} />
           {/*
             md:ml-64 → was the offset for the old `fixed` sidebar.
             Now sidebar is in-flow (sticky), so we just need a small gap.
