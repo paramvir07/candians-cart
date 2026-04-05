@@ -10,7 +10,6 @@ import {
   Package,
   Receipt,
   ShoppingCart,
-  Store,
   UserPlus,
   Users2,
   X,
@@ -35,7 +34,6 @@ const NAV_GROUPS = [
   {
     label: "Management",
     items: [
-      // { href: "/admin/store", label: "Stores", icon: Store },
       { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
       { href: "/admin/products", label: "Products", icon: Package },
       { href: "/admin/customers", label: "Customers", icon: Users2 },
@@ -112,7 +110,6 @@ function NavItem({
         {label}
       </span>
 
-      {/* Render the red badge if there is a count > 0, otherwise show the active dot */}
       {badge !== undefined && badge > 0 ? (
         <div className="ml-auto flex h-5 min-w-[20px] px-1.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shrink-0">
           {badge}
@@ -133,12 +130,6 @@ function SidebarContent({
 }) {
   return (
     <div className="flex flex-col h-full">
-      {/* Brand — only shown inside mobile drawer (desktop brand is in the aside header area) */}
-      <div className="hidden-in-desktop flex items-center gap-2.5 pb-5 shrink-0">
-        {/* intentionally empty — brand shown in drawer header */}
-      </div>
-
-      {/* Scrollable nav groups */}
       <nav className="flex-1 overflow-y-auto space-y-4 pr-0.5">
         {NAV_GROUPS.map((group) => (
           <div key={group.label}>
@@ -161,7 +152,6 @@ function SidebarContent({
         ))}
       </nav>
 
-      {/* Profile + Logout */}
       <div className="shrink-0 border-t border-gray-100 pt-3 mt-3 space-y-1">
         <div
           onClick={onNav}
@@ -193,19 +183,15 @@ const AdminSidebar = () => {
   const [pendingInvoicesCount, setPendingInvoicesCount] = useState(0);
   const pathname = usePathname();
 
-  // Close on route change and refetch the pending invoices count
   useEffect(() => {
     setMobileOpen(false);
-
     const fetchPendingCount = async () => {
       const count = await getPendingPriceChangesCount();
       setPendingInvoicesCount(count);
     };
-
     fetchPendingCount();
   }, [pathname]);
 
-  // Lock body scroll when drawer open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
@@ -216,7 +202,16 @@ const AdminSidebar = () => {
   return (
     <>
       {/* ── Desktop Sidebar ──────────────────────────────────────────────────── */}
-      <aside className="hidden md:flex fixed top-4 bottom-4 left-3 w-56 flex-col bg-white rounded-2xl border border-gray-100 shadow-sm z-40 overflow-hidden">
+      {/*
+        KEY CHANGE: was `fixed top-4 bottom-4 left-3` — now `sticky top-4`.
+        `sticky` behaves like fixed (floats while you scroll) but is scoped to
+        its containing block. Since the layout puts <AdminFooter> OUTSIDE the
+        flex row that contains this sidebar, sticky naturally stops at the
+        footer edge. `self-start` keeps the aside at its own height so sticky
+        actually works. `max-h-[calc(100vh-2rem)]` caps the height so it
+        never taller than the viewport.
+      */}
+      <aside className="hidden md:flex sticky top-4 self-start flex-col bg-white rounded-2xl border border-gray-100 shadow-sm z-40 overflow-hidden w-56 ml-3 h-[calc(100vh-2rem)]">
         {/* Brand header */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
@@ -227,7 +222,6 @@ const AdminSidebar = () => {
           </span>
         </div>
 
-        {/* Nav content — fills remaining height */}
         <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0">
           <SidebarContent pendingInvoicesCount={pendingInvoicesCount} />
         </div>
@@ -244,7 +238,6 @@ const AdminSidebar = () => {
         </button>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
-            {/* <Store className="w-3.5 h-3.5 text-white" /> */}
             <Logo />
           </div>
           <span className="text-sm font-bold text-gray-900">Admin Panel</span>
@@ -269,11 +262,9 @@ const AdminSidebar = () => {
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        {/* Drawer top bar */}
         <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center">
-              {/* <Store className="w-4 h-4 text-white" /> */}
               <Logo />
             </div>
             <span className="text-[15px] font-bold text-gray-900">
@@ -289,7 +280,6 @@ const AdminSidebar = () => {
           </button>
         </div>
 
-        {/* Drawer scrollable content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0">
           <SidebarContent
             onNav={() => setMobileOpen(false)}

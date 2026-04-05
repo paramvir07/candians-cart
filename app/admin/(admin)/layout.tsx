@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | Admin - Candian's Cart",
   },
   robots: {
-    index: false, // Prevents indexing of all admin routes
+    index: false,
     follow: false,
   },
 };
@@ -35,20 +35,35 @@ export default async function RootLayout({
       redirect("/admin/login");
     }
   }
+
   return (
-    <>
-    <div className="scroll-smooth">
+    // flex-col so the footer sits below the content row, never overlapped
+    <div className="min-h-screen flex flex-col bg-gray-50 scroll-smooth">
       <TooltipProvider>
-        <div className="min-h-screen bg-gray-50">
+        {/*
+          items-start is REQUIRED — without it the sidebar wrapper stretches
+          to match <main> height and sticky stops working.
+        */}
+        <div className="flex flex-1 items-start">
           <AdminSidebar />
-          <main className="md:ml-64 pt-14 md:pt-0 min-h-screen m-4">
+          {/*
+            md:ml-64 → was the offset for the old `fixed` sidebar.
+            Now sidebar is in-flow (sticky), so we just need a small gap.
+            Keep pt-14 for the mobile fixed top-bar spacer.
+          */}
+          <main className="flex-1 min-w-0 pt-14 md:pt-0 min-h-screen p-4">
             {children}
           </main>
         </div>
       </TooltipProvider>
-      
+
+      {/*
+        Footer is OUTSIDE the flex row above.
+        This is the boundary that sticky respects — the sidebar can never
+        scroll past the end of its containing block (the flex row), so it
+        stops exactly here and never overlaps the footer.
+      */}
+      <AdminFooter />
     </div>
-    {/* <AdminFooter /> */}
-    </>
   );
 }

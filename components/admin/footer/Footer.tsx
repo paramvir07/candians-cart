@@ -1,95 +1,127 @@
-import Link from "next/link";
-import { Instagram } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import Logo from "@/components/shared/Logo";
+"use client";
 
-const NAV_SECTIONS = [
+import Logo from "@/components/shared/Logo";
+import {
+  BarChart,
+  Banknote,
+  HandCoins,
+  HomeIcon,
+  LinkIcon,
+  Package,
+  Receipt,
+  ShoppingCart,
+  UserPlus,
+  Users2,
+} from "lucide-react";
+import Link from "next/link";
+
+const FOOTER_GROUPS = [
   {
-    heading: "Company",
-    links: [
-      { label: "About Us",    href: "/about"       },
-      { label: "How It Works",href: "/how-it-works"},
+    label: "Management",
+    items: [
+      { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+      { href: "/admin/products", label: "Products", icon: Package },
+      { href: "/admin/customers", label: "Customers", icon: Users2 },
     ],
   },
   {
-    heading: "Support",
-    links: [
-      { label: "Contact Us",  href: "/contact"     },
-      { label: "Help",        href: "/help"        },
+    label: "Finance",
+    items: [
+      { href: "/admin/store-payouts", label: "Payouts", icon: HandCoins },
+      { href: "/admin/cash-collection", label: "Cash Collection", icon: Banknote },
+      { href: "/admin/price-invoices", label: "Invoices", icon: Receipt },
+    ],
+  },
+  {
+    label: "Other",
+    items: [
+      { href: "/admin/new-user", label: "New User", icon: UserPlus },
+      { href: "/admin/referral-codes", label: "Referrals", icon: LinkIcon },
     ],
   },
 ];
 
-export default function Footer() {
+function LogoPlaceholder() {
   return (
-    <footer className="w-full bg-[#1c1c1a] text-white">
-      {/* Main content */}
-      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-14 sm:py-16">
-        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="flex items-center gap-2.5">
+      {/* Swap this div for your <Logo /> — use a light/white variant on dark bg */}
+      <div className="w-9 h-9 rounded-xlflex items-center justify-center shrink-0">
+        <Logo />
+      </div>
+      <div>
+        <p className="text-sm font-bold text-white leading-tight">Admin Panel</p>
+        <p className="text-[11px] text-gray-500 leading-tight">Candian's Cart</p>
+      </div>
+    </div>
+  );
+}
 
-          {/* Brand */}
-          <div className="flex flex-col gap-5 sm:col-span-2 lg:col-span-2">
-            {/* Replace with <Logo /> */}
-            <Logo />
+const AdminFooter = () => {
+  const year = new Date().getFullYear();
 
-            <p className="text-sm text-white/50 leading-relaxed max-w-sm">
-              Subsidised grocery pickup for Canadian families in Abbotsford,
-              BC. Save up to 30% on everyday essentials.
+  return (
+    <footer className="w-full bg-gray-950 mt-10">
+      {/* Top section */}
+      <div className="max-w-screen-xl mx-auto px-6 py-10">
+        <div className="flex flex-col md:flex-row gap-10 md:gap-16">
+
+          {/* Brand column */}
+          <div className="md:w-56 shrink-0 space-y-4">
+            <LogoPlaceholder />
+            <p className="text-xs text-gray-500 leading-relaxed">
+              Internal admin portal for managing stores, orders, products, and
+              platform finances.
             </p>
-
-            {/* Social */}
-            <div className="flex items-center gap-2 mt-1">
-              <Link
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center size-9 rounded-md border border-white/10 text-white/50 hover:text-white hover:border-white/25 transition-colors duration-150"
-                aria-label="Instagram"
-              >
-                <Instagram className="size-4" />
-              </Link>
+            {/* Status pill */}
+            <div className="inline-flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-full px-3 py-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+              <span className="text-[11px] text-gray-400">All systems operational</span>
             </div>
           </div>
 
+          {/* Vertical divider */}
+          <div className="hidden md:block w-px bg-gray-800 self-stretch" />
+
           {/* Nav columns */}
-          {NAV_SECTIONS.map((section) => (
-            <div key={section.heading} className="flex flex-col gap-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-white/35">
-                {section.heading}
-              </p>
-              <ul className="flex flex-col gap-2.5">
-                {section.links.map(({ label, href }) => (
-                  <li key={label}>
-                    <Link
-                      href={href}
-                      className="text-sm text-white/60 hover:text-white transition-colors duration-150"
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-8">
+            {FOOTER_GROUPS.map((group) => (
+              <div key={group.label}>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.1em] mb-3">
+                  {group.label}
+                </p>
+                <ul className="space-y-2.5">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="group flex items-center gap-2.5 text-xs text-gray-400 hover:text-emerald-400 transition-colors duration-150"
+                        >
+                          <Icon className="w-3.5 h-3.5 text-gray-600 group-hover:text-emerald-500 transition-colors shrink-0" />
+                          {item.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <Separator className="bg-white/8" />
-
       {/* Bottom bar */}
-      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 py-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-white/30">
-            &copy; {new Date().getFullYear()} Candian's Cart Inc. All rights reserved.
+      <div className="border-t border-gray-800">
+        <div className="max-w-screen-xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-[11px] text-gray-600">
+            © {year} Candian's Cart. All rights reserved.
           </p>
-
-          {/* Made in Canada badge */}
-          <div className="flex items-center gap-1.5 text-xs text-white/30">
-            <span className="text-sm">🍁</span>
-            <span>Made in Canada</span>
-          </div>
+          <p className="text-[11px] text-gray-600">Made in Canada 🍁</p>
         </div>
       </div>
     </footer>
   );
-}
+};
+
+export default AdminFooter;
