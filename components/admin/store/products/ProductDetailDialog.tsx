@@ -125,7 +125,10 @@ export const ProductDetailDialog = ({
                 Price
               </p>
               <p className="text-2xl font-bold text-gray-900 tracking-tight">
-                {fmt(product.price)}
+                {fmt(product.price + product.price * (product.markup / 100))}{" "}
+                <span className="text-sm text-gray-500">
+                  ({fmt(product.price)})
+                </span>
               </p>
             </div>
 

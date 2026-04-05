@@ -158,8 +158,7 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
             }}
             className="sm:text-lg"
           >
-            Order online, pick up at our Abbotsford store, and save up to 30% on
-            everyday groceries — subsidised exclusively for Canadian families.
+            Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.
           </p>
 
           {/* ── CTA buttons: swap based on auth state ── */}

@@ -72,11 +72,15 @@ export function SubsidizedPopup({
   };
 
   const selectedProducts = products.filter((p) => selected.has(p._id));
-  const totalActual = selectedProducts.reduce((sum, p) => sum + p.price / 100, 0);
+  const totalActual = selectedProducts.reduce(
+    (sum, p) => sum + p.price / 100,
+    0,
+  );
   const subsidy = subsidyGot - usedSubsidy / 100;
   const youPay = Math.max(0, totalActual - subsidy);
   const allSelected =
-    selected.size === selectableProducts.length && selectableProducts.length > 0;
+    selected.size === selectableProducts.length &&
+    selectableProducts.length > 0;
 
   const handleAddSubsidyItems = async () => {
     AddSubsidyItem(selectedProducts, subsidy * 100, customerId);
@@ -114,7 +118,9 @@ export function SubsidizedPopup({
           {/* Subsidy pill */}
           <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-50 border border-emerald-100 w-full">
             <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-            <span className="text-[12px] font-medium text-emerald-700">Available subsidy</span>
+            <span className="text-[12px] font-medium text-emerald-700">
+              Available subsidy
+            </span>
             <span className="ml-auto text-[14px] font-extrabold text-emerald-600">
               ${subsidy.toFixed(2)}
             </span>
@@ -133,17 +139,28 @@ export function SubsidizedPopup({
             </div>
           ) : (
             <div className="flex flex-col gap-1">
-
               {/* Select All row */}
               {selectableProducts.length > 0 && (
                 <button
                   onClick={toggleAll}
                   className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
                 >
-                  <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${allSelected ? "bg-emerald-500 border-emerald-500" : "border-gray-300"}`}>
+                  <div
+                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${allSelected ? "bg-emerald-500 border-emerald-500" : "border-gray-300"}`}
+                  >
                     {allSelected && (
-                      <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                        <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        className="w-3 h-3 text-white"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                      >
+                        <path
+                          d="M2 6l3 3 5-5"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     )}
                   </div>
@@ -173,8 +190,8 @@ export function SubsidizedPopup({
                       alreadyAdded
                         ? "opacity-50 cursor-not-allowed"
                         : isChecked
-                        ? "bg-emerald-50/70"
-                        : "hover:bg-gray-50"
+                          ? "bg-emerald-50/70"
+                          : "hover:bg-gray-50"
                     }`}
                   >
                     {alreadyAdded ? (
@@ -182,19 +199,37 @@ export function SubsidizedPopup({
                         In Cart
                       </span>
                     ) : (
-                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${isChecked ? "bg-emerald-500 border-emerald-500" : "border-gray-300"}`}>
+                      <div
+                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${isChecked ? "bg-emerald-500 border-emerald-500" : "border-gray-300"}`}
+                      >
                         {isChecked && (
-                          <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                            <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          <svg
+                            className="w-3 h-3 text-white"
+                            viewBox="0 0 12 12"
+                            fill="none"
+                          >
+                            <path
+                              d="M2 6l3 3 5-5"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
                           </svg>
                         )}
                       </div>
                     )}
-                    <span className={`text-[13px] flex-1 ${alreadyAdded ? "text-gray-400" : isChecked ? "text-gray-900 font-medium" : "text-gray-700"}`}>
+                    <span
+                      className={`text-[13px] flex-1 ${alreadyAdded ? "text-gray-400" : isChecked ? "text-gray-900 font-medium" : "text-gray-700"}`}
+                    >
                       {product.name}
                     </span>
-                    <span className={`text-[13px] font-semibold tabular-nums ${alreadyAdded ? "text-gray-300" : "text-gray-500"}`}>
-                      {fmt(product.price)}
+                    <span
+                      className={`text-[13px] font-semibold tabular-nums ${alreadyAdded ? "text-gray-300" : "text-gray-500"}`}
+                    >
+                      {fmt(
+                        product.price + product.price * (product.markup / 100),
+                      )}
                     </span>
                   </button>
                 );
@@ -223,7 +258,6 @@ export function SubsidizedPopup({
                   </button>
                 </>
               )}
-
             </div>
           )}
         </div>
@@ -239,14 +273,18 @@ export function SubsidizedPopup({
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[12px] text-emerald-600 font-medium">Subsidy</span>
+                <span className="text-[12px] text-emerald-600 font-medium">
+                  Subsidy
+                </span>
                 <span className="text-[12px] font-semibold text-emerald-600 tabular-nums">
                   −${Math.min(subsidy, totalActual).toFixed(2)}
                 </span>
               </div>
               <div className="h-px bg-gray-200" />
               <div className="flex justify-between items-center">
-                <span className="text-[13px] font-bold text-gray-900">You pay</span>
+                <span className="text-[13px] font-bold text-gray-900">
+                  You pay
+                </span>
                 <span className="text-[16px] font-extrabold text-gray-900 tabular-nums">
                   ${youPay.toFixed(2)}
                 </span>
@@ -262,7 +300,11 @@ export function SubsidizedPopup({
             disabled={selected.size === 0}
             onClick={handleAddSubsidyItems}
           >
-            Add {selected.size > 0 ? `${selected.size} item${selected.size > 1 ? "s" : ""}` : "Items"} to Cart
+            Add{" "}
+            {selected.size > 0
+              ? `${selected.size} item${selected.size > 1 ? "s" : ""}`
+              : "Items"}{" "}
+            to Cart
           </Button>
         </div>
       </DialogContent>

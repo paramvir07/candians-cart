@@ -228,7 +228,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
                 Price
               </p>
               <p className="text-xl font-bold text-foreground tracking-tight">
-                {fmt(product.price)}
+                {fmt(product.price + product.price * (product.markup / 100))} <span className="text-sm text-gray-500">({fmt(product.price)})</span> 
               </p>
             </div>
             <div className="flex flex-col items-end gap-1">
