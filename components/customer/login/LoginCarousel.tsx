@@ -1,46 +1,49 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   type CarouselApi,
-} from "@/components/ui/carousel"
-import Autoplay from "embla-carousel-autoplay"
-import { ShoppingCart } from "lucide-react"
-import Image from "next/image"
-import Logo from "@/components/shared/Logo"
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { ShoppingCart } from "lucide-react";
+import Image from "next/image";
+import Logo from "@/components/shared/Logo";
 
 const slides = [
   {
-    image: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800&q=80",
     title: "Fresh Produce,\nAlways in Stock",
     sub: "CANDIAN'S CART",
   },
   {
-    image: "https://images.unsplash.com/photo-1518843875459-f738682238a6?w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1518843875459-f738682238a6?w=800&q=80",
     title: "Handpicked\nFruits & Veggies",
     sub: "CANDIAN'S CART",
   },
   {
-    image: "https://images.unsplash.com/photo-1467453678174-768ec283a940?w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1467453678174-768ec283a940?w=800&q=80",
     title: "Earn While\nYou Shop",
     sub: "CANDIAN'S CART",
   },
-]
+];
 
-const autoplayPlugin = Autoplay({ delay: 3000, stopOnInteraction: false })
+const autoplayPlugin = Autoplay({ delay: 3000, stopOnInteraction: false });
 
 export function LoginCarousel() {
-  const [api, setApi] = React.useState<CarouselApi>()
-  const [current, setCurrent] = React.useState(0)
+  const [api, setApi] = React.useState<CarouselApi>();
+  const [current, setCurrent] = React.useState(0);
 
   React.useEffect(() => {
-    if (!api) return
-    setCurrent(api.selectedScrollSnap())
-    api.on("select", () => setCurrent(api.selectedScrollSnap()))
-  }, [api])
+    if (!api) return;
+    setCurrent(api.selectedScrollSnap());
+    api.on("select", () => setCurrent(api.selectedScrollSnap()));
+  }, [api]);
 
   return (
     <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-2xl">
@@ -54,7 +57,6 @@ export function LoginCarousel() {
           {slides.map((slide, index) => (
             <CarouselItem key={index} className="h-full pl-0">
               <div className="relative h-full w-full flex flex-col min-h-[575px]">
-
                 <Image
                   src={slide.image}
                   alt={slide.title}
@@ -66,9 +68,9 @@ export function LoginCarousel() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 z-[1]" />
 
                 <div className="relative z-10 flex items-center justify-between px-6 pt-6">
-                  <div className="w-12 h-12 bg-white backdrop-blur-sm rounded-lg flex items-center justify-center shadow-2xl">
-                    {/* <ShoppingCart size={22} className="text-white" /> */}
-                    <Logo href="#" />
+                  <div className=" h-12 bg-white/90 rounded-xl flex items-center justify-center shadow-2xl p-2">
+                    {/* <ShoppingCart size={22} className="text-primary-foreground" /> */}
+                    <Logo variant="icon" href="/" />
                   </div>
                 </div>
 
@@ -89,7 +91,8 @@ export function LoginCarousel() {
                         className="h-[3px] cursor-pointer rounded-full transition-all duration-300"
                         style={{
                           width: i === current ? "28px" : "10px",
-                          background: i === current ? "white" : "rgba(255,255,255,0.35)",
+                          background:
+                            i === current ? "white" : "rgba(255,255,255,0.35)",
                         }}
                       />
                     ))}
@@ -101,5 +104,5 @@ export function LoginCarousel() {
         </CarouselContent>
       </Carousel>
     </div>
-  )
+  );
 }

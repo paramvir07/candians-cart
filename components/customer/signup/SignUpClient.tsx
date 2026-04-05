@@ -109,9 +109,9 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
 
           {/* Logo on image */}
           <div className="absolute top-5 left-5">
-            <div className=" h-12 bg-white rounded-xl flex items-center justify-center shadow-2xl p-2">
+            <div className=" h-12 bg-white/90 rounded-xl flex items-center justify-center shadow-2xl p-2">
               {/* <ShoppingCart size={22} className="text-primary-foreground" /> */}
-              <Logo variant="icon" />
+              <Logo variant="icon" href="/" />
             </div>
           </div>
 
@@ -190,7 +190,7 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
             <div className="flex items-center gap-2.5 mb-12">
               {/* <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm shadow-primary/20"> */}
                 {/* <ShoppingCart size={17} className="text-primary-foreground" /> */}
-                <Logo variant="full" />
+                <Logo variant="full" href="/" />
               {/* </div> */}
               {/* <span className="text-sm font-semibold text-foreground">Canadian's Cart</span> */}
             </div>
