@@ -8,6 +8,8 @@ import { redirect } from "next/navigation";
 import { Footer } from "@/components/customer/landing/Footer";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 import { getCachedStoreProducts } from "@/actions/cache/product.cache";
+import Store from "@/db/models/store/store.model";
+import { StoreDocument } from "@/types/store/store";
 
 export const metadata: Metadata = {
   title: "Home | Candian Cart",
@@ -44,6 +46,8 @@ export default async function CustomerPage() {
   }
 
   const storeId = storeResponse.customer.associatedStoreId.toString();
+  const storeDoc = await Store.findById(storeId).lean();
+const store: StoreDocument = JSON.parse(JSON.stringify(storeDoc));
 
   // 2. Fetch ONLY Page 1 using our new highly-optimized Cache Action
   const initialProductsData = await getCachedStoreProducts(storeId, 1, 16, { 
@@ -54,7 +58,7 @@ export default async function CustomerPage() {
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <Navbar />
-      <HeroBanner />
+      <HeroBanner store={store} />
       <CustomerAdvertisements maxHeight={250} />
       {/* 3. Pass Page 1 and the storeId to the client component */}
       <ProductsSection 
