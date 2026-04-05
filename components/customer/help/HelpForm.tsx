@@ -21,7 +21,9 @@ const CATEGORIES: {
   icon: React.ElementType
   tag?: string
 }[] = [
-  { id: "bug",      label: "Bug Report",      icon: Bug,           tag: "+$10 reward" },
+  { id: "bug",      label: "Bug Report",      icon: Bug,          
+    // tag: "+$10 reward" 
+  },
   { id: "question", label: "Question",         icon: HelpCircle },
   { id: "feature",  label: "Feature Request",  icon: Sparkles },
   { id: "other",    label: "Other",            icon: MessageCircle },
@@ -173,7 +175,7 @@ export default function HelpForm({ userEmail }: { userEmail: string }) {
               </div>
 
               {/* bug reward banner */}
-              {category === "bug" && (
+              {/* {category === "bug" && (
                 <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl border border-[var(--primary)]/20 bg-[var(--secondary)]">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
                     style={{ background: "var(--primary)" }}>
@@ -189,7 +191,7 @@ export default function HelpForm({ userEmail }: { userEmail: string }) {
                     </p>
                   </div>
                 </div>
-              )}
+              )} */}
 <CustomerAdvertisements />
               {/* email */}
               <div>

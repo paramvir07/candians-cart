@@ -95,6 +95,9 @@ const GiftWallet = ({ giftWalletData }: GiftWalletProps) => {
           </div>
         </div>
       </div>
+      <div className="w-full h-8.75 px-4 relative flex justify-center gap-1 space-y-2">
+
+            </div>
     </div>
   );
 };

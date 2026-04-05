@@ -3,16 +3,18 @@
 import Logo from "../shared/Logo";
 import { useRouter, usePathname } from "next/navigation";
 
-const FOOTER_LINKS: Record<string, { label: string; href: string; scrollTo?: string }[]> = {
+const FOOTER_LINKS: Record<string, { label: string; href: string; scrollTo?: string; scrollPage?: string }[]> = {
   Company: [
     { label: "About Us",     href: "/about" },
-    { label: "How It Works", href: "/#how-it-works", scrollTo: "how-it-works" },
+    { label: "How It Works", href: "/#how-it-works", scrollTo: "how-it-works", scrollPage: "/" },
+    { label: "Values",       href: "/about#values",  scrollTo: "values",       scrollPage: "/about" },
   ],
   Support: [
     { label: "Contact Us", href: "/contact" },
+    { label: "FAQ",        href: "/#faq", scrollTo: "faq", scrollPage: "/" },
   ],
   Tools: [
-    { label: "Calculator", href: "/#calculator", scrollTo: "calculator" },
+    { label: "Calculator", href: "/#calculator", scrollTo: "calculator", scrollPage: "/" },
   ],
 };
 
@@ -35,12 +37,18 @@ export default function Footer() {
   const router   = useRouter();
   const pathname = usePathname();
 
-  const handleSectionClick = (e: React.MouseEvent, sectionId: string) => {
+  const handleSectionClick = (
+    e: React.MouseEvent,
+    sectionId: string,
+    scrollPage: string = "/"
+  ) => {
     e.preventDefault();
-    if (pathname === "/") {
+    if (pathname === scrollPage) {
+      // Already on the right page — just scroll
       document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
-      router.push(`/?scrollTo=${sectionId}`);
+      // Navigate to the correct page and pass the section to scroll to
+      router.push(`${scrollPage}?scrollTo=${sectionId}`);
     }
   };
 
@@ -188,7 +196,7 @@ export default function Footer() {
                 {links.map((l) =>
                   l.scrollTo ? (
                     <li key={l.label}>
-                      <button onClick={(e) => handleSectionClick(e, l.scrollTo!)}>
+                      <button onClick={(e) => handleSectionClick(e, l.scrollTo!, l.scrollPage)}>
                         {l.label}
                       </button>
                     </li>

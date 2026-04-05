@@ -1,8 +1,38 @@
+"use client";
+
+import { useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 import Link from "next/link";
+
+/** Isolated component so useSearchParams is inside its own Suspense boundary */
+function ScrollToSection() {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const sectionId = searchParams.get("scrollTo");
+    if (!sectionId) return;
+
+    // Retry until the element exists in the DOM (handles SSR/hydration timing)
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (attempts < 20) {
+        attempts++;
+        requestAnimationFrame(tryScroll);
+      }
+    };
+    requestAnimationFrame(tryScroll);
+  }, [searchParams]);
+
+  return null;
+}
 
 const stats = [
   { value: "500+", label: "Families served" },
@@ -40,7 +70,12 @@ const values = [
 
 const About = () => {
   return (
-    <div className="min-h-screen w-full relative" style={{ backgroundColor: "#f5f0e8" }}>
+    <div className="min-h-screen w-full relative overflow-x-hidden" style={{ backgroundColor: "#f5f0e8" }}>
+
+      {/* Scroll handler — must be inside Suspense for useSearchParams */}
+      <Suspense fallback={null}>
+        <ScrollToSection />
+      </Suspense>
 
       {/* Diagonal Cross — top-left origin fade */}
       <div
@@ -61,24 +96,51 @@ const About = () => {
       {/* Content */}
       <div className="relative z-10">
 
-        {/* Hero */}
-        <section className="px-4 pt-20 pb-16 text-center max-w-3xl mx-auto">
-          <Badge
-            variant="outline"
-            className="mb-6 text-green-700 border-green-300 bg-green-50 font-medium px-3 py-1 rounded-full text-sm"
-          >
-            🍁 Our Story · Abbotsford, BC
-          </Badge>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
-            Grocery savings built{" "}
-            <span className="text-green-600">for families like yours</span>
-          </h1>
-          <p className="text-gray-600 text-lg leading-relaxed">
-            Candian&apos;s Cart started with a simple idea: every Canadian family
-            deserves access to fresh, affordable groceries — without the hassle.
-            We&apos;re a subsidised grocery pickup service exclusive to families in
-            Abbotsford, BC.
-          </p>
+        {/* Hero — characters flanking the text */}
+        <section className="pt-20 pb-16 flex items-center justify-center gap-0">
+          {/* Left character */}
+          <div className="hidden lg:flex flex-shrink-0 items-end justify-end w-[200px] xl:w-[260px] self-end">
+            <Image
+              src="https://ik.imagekit.io/h7w5h0hou/customer-aboutus-left.png"
+              alt=""
+              width={260}
+              height={460}
+              className="object-contain object-bottom w-full"
+              priority
+            />
+          </div>
+
+          {/* Hero text */}
+          <div className="text-center max-w-2xl px-6">
+            <Badge
+              variant="outline"
+              className="mb-6 text-green-700 border-green-300 bg-green-50 font-medium px-3 py-1 rounded-full text-sm"
+            >
+              🍁 Our Story · Abbotsford, BC
+            </Badge>
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
+              Grocery savings built{" "}
+              <span className="text-green-600">for families like yours</span>
+            </h1>
+            <p className="text-gray-600 text-lg leading-relaxed">
+              Candian&apos;s Cart started with a simple idea: every Canadian family
+              deserves access to fresh, affordable groceries — without the hassle.
+              We&apos;re a subsidised grocery pickup service exclusive to families in
+              Abbotsford, BC.
+            </p>
+          </div>
+
+          {/* Right character */}
+          <div className="hidden lg:flex flex-shrink-0 items-end justify-start w-[200px] xl:w-[260px] self-end">
+            <Image
+              src="https://ik.imagekit.io/h7w5h0hou/customer-aboutus-right.png"
+              alt=""
+              width={260}
+              height={460}
+              className="object-contain object-bottom w-full"
+              priority
+            />
+          </div>
         </section>
 
         {/* Stats bar */}
@@ -153,7 +215,7 @@ const About = () => {
         </section>
 
         {/* Values */}
-        <section className="max-w-4xl mx-auto px-4 mb-16">
+        <section id="values" className="max-w-4xl mx-auto px-4 mb-16">
           <p className="text-green-700 font-semibold uppercase text-xs tracking-widest mb-2 text-center">
             What We Stand For
           </p>

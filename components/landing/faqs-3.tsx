@@ -56,7 +56,7 @@ export default function FAQsSection() {
   const toggle = (id: string) => setOpenId(prev => prev === id ? null : id)
 
   return (
-    <section
+    <section id='faq'
       className="relative py-20 md:py-32 overflow-hidden"
       style={{
         background: "linear-gradient(180deg, #fef5e4 0%, #fff 100%)",
