@@ -44,7 +44,7 @@ export function TopUpDialog({
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState<number | null>(200);
   const [inputVal, setInputVal] = useState("200");
-  const [paymentMode, setPaymentMode] = useState<"cash" | "card">("card");
+  const [paymentMode, setPaymentMode] = useState<"cash" | "card" | "gift">("card");
 
   const handlePreset = (preset: number) => {
     setAmount(preset);
@@ -336,7 +336,20 @@ export function TopUpDialog({
                             Card
                           </span>
                         </>
-                      ) : (
+                      ) : paymentMode === "gift" ? (
+                        <>
+                          <Gift
+                            size={15}
+                            style={{ color: "var(--color-primary)" }}
+                          />
+                          <span
+                            className="text-sm font-semibold"
+                            style={{ color: "var(--color-foreground)" }}
+                          >
+                            Gift
+                          </span>
+                        </>
+                      ): (
                         <>
                           <Banknote
                             size={15}
@@ -421,7 +434,7 @@ export function TopUpDialog({
                   <CheckCircle2 size={16} />
                   {adminRole
                     ? "Yes, add gift balance"
-                    : `Confirm — ${paymentMode} · $${amount.toFixed(2)}`}
+                    : `Confirm — ${paymentMode.charAt(0).toUpperCase() + paymentMode.slice(1)} · $${amount.toFixed(2)}`}
                 </span>
               )}
             </Button>

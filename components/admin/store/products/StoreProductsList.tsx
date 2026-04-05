@@ -151,9 +151,9 @@ export const StoreProductsList = ({
   const addProductHref =
     role === "store"
       ? "/store/products/add"
-      : storeId
+      : (role === "admin" && storeId)
         ? `/admin/store/${storeId}/products/add`
-        : "/admin/products/add";
+        : "";
 
   return (
     <>
@@ -180,18 +180,20 @@ export const StoreProductsList = ({
           <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
         </div>
       </div>
-      {/* {} updates param ka lund */}
-      <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg border">
-        <p className="text-sm font-medium text-slate-600">
-          Want to add a new product?
-        </p>
-        <Button asChild>
-          <Link href={addProductHref} className="flex items-center gap-2">
-            <CirclePlus className="h-4 w-4" />
-            Add product
-          </Link>
-        </Button>
-      </div>
+      {role === "store" ||
+        (role === "admin" && storeId && (
+          <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg border">
+            <p className="text-sm font-medium text-slate-600">
+              Want to add a new product?
+            </p>
+            <Button asChild>
+              <Link href={addProductHref} className="flex items-center gap-2">
+                <CirclePlus className="h-4 w-4" />
+                Add product
+              </Link>
+            </Button>
+          </div>
+        ))}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {isLoading ? (

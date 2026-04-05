@@ -1,5 +1,4 @@
-type PaymentMode = "cash" | "card";
-
+type PaymentMode = "cash" | "card" | "gift";
 interface PaymentModeToggleProps {
   paymentMode: PaymentMode;
   setPaymentMode: (mode: PaymentMode) => void;
@@ -56,6 +55,27 @@ export function PaymentModeToggle({
           }}
         >
           Cash
+        </button>
+
+        <button
+          onClick={() => setPaymentMode("gift")}
+          className="rounded-xl py-2.5 text-sm transition-all active:scale-95"
+          style={{
+            background:
+              paymentMode === "gift"
+                ? "var(--color-primary)"
+                : "var(--color-secondary)",
+            color:
+              paymentMode === "gift"
+                ? "var(--color-primary-foreground)"
+                : "var(--color-secondary-foreground)",
+            fontWeight: paymentMode === "gift" ? 700 : 500,
+            transform: paymentMode === "gift" ? "scale(1.04)" : "scale(1)",
+            boxShadow:
+              paymentMode === "gift" ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+          }}
+        >
+          Gift
         </button>
       </div>
     </div>
