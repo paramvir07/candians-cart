@@ -29,11 +29,12 @@ export function NavAvatarMenu({ name, initials }: NavAvatarMenuProps) {
 
   
   const handleLogout = async () => {
-    const response = await logoutAction();
-    if(response.success){
-      throw new Error("Something went wrong")
-    }
-  };
+  const response = await logoutAction();
+  if (!response.success) {
+    throw new Error("Something went wrong");
+  }
+  router.push("/customer/login");
+};
 
 
   return (
