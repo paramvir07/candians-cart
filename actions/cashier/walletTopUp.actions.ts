@@ -64,6 +64,7 @@ export const walletTopUpAction = async (
         [
           {
             userId,
+            userRole,
             customerId: data.customerId,
             paymentMode: data.paymentMode,
             value: data.value,

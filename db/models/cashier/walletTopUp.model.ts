@@ -3,6 +3,7 @@ import { model, Model, models, Schema, Types } from "mongoose";
 export interface IWalletTopUp {
   customerId: Types.ObjectId;
   userId: string;
+  userRole: "admin" | "cashier";
   value: number; // in  cents
   paymentMode: "cash" | "card" | "gift"
 }
@@ -18,6 +19,11 @@ const walletTopUpSchema = new Schema<IWalletTopUp>(
       type: String, // cashier or admin
       required: true,
       index: true,
+    },
+    userRole: {
+      type: String,
+      enum: ["admin", "cashier"],
+      required: true
     },
     value: {
       type: Number, // in cents
