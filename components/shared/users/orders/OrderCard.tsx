@@ -156,9 +156,20 @@ export default function OrderCard({
                         Order #{orderId}
                       </p>
 
-                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                        <StatusBadge status={order.status} />
-                        <PaymentBadge mode={order.paymentMode} />
+                      {/* Badges with inline labels so "Pending" is never ambiguous */}
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wide">
+                            Status
+                          </span>
+                          <StatusBadge status={order.status} />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wide">
+                            Pay
+                          </span>
+                          <PaymentBadge mode={order.paymentMode} />
+                        </div>
                       </div>
 
                       <p className="text-xs text-muted-foreground mt-1">

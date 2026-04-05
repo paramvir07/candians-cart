@@ -397,23 +397,15 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       )}
 
       {/* ════════════════════════════════════════
-          MOBILE LAYOUT  (< md)
-          
-          Strategy: flex column, full viewport height.
-          - Top section: scrollable (overflow-y-auto, flex-1)
-          - Bottom CTA: natural in-flow, never fixed
-          
-          This way the CTA scrolls WITH the content when
-          the page is short, and stays pinned at the bottom
-          of the viewport when content is long — without
-          ever using `position: fixed`.
+          MOBILE + TABLET LAYOUT  (< lg / < 1024px)
+          Covers phones AND iPads (768px portrait & landscape)
       ════════════════════════════════════════ */}
       <div
-        className="md:hidden flex flex-col"
+        className="lg:hidden flex flex-col"
         style={{ minHeight: "calc(100dvh - 0px)" }}
       >
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto px-4 pt-5 pb-4 space-y-4">
+        <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-5 pb-4 space-y-4">
           {/* Header */}
           <div className="flex items-center gap-3">
             <Link
@@ -464,7 +456,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 Items ({items.length})
               </span>
             </div>
-            <div className="space-y-2">
+
+            {/* Scrollable items list */}
+            <div className="max-h-[460px] overflow-y-auto no-scrollbar rounded-xl space-y-2 pr-0.5">
               {items.map((item: ICartItem) => {
                 const { afterMarkup } = calcLine(item);
                 const hasImage = item.productId.images?.[0]?.url;
@@ -551,7 +545,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               <div className="flex items-center gap-2">
                 <Receipt className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Bill Details
+                  Order Summary
                 </span>
               </div>
             </CardHeader>
@@ -560,7 +554,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </CardContent>
           </Card>
 
-          {/* Cashier order info (mobile) */}
+          {/* Cashier order info (mobile/tablet) */}
           {isCashier && (
             <Card className="border-border/60 shadow-none bg-muted/30">
               <CardContent className="px-4 py-3.5 space-y-2">
@@ -599,14 +593,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           )}
         </div>
 
-        {/* ── Mobile CTA — in-flow at bottom, never fixed ── */}
-        {/* Sits naturally after content. When content is taller than
-            the viewport, overflow-y-auto on the sibling above keeps
-            this pinned at the bottom of the flex column (= bottom of
-            the screen) without position:fixed. */}
-        {/* ── Mobile CTA — sticky above footer ── */}
+        {/* Mobile/Tablet CTA — sticky above footer */}
         <div className="sticky bottom-0 shrink-0 border-t border-border bg-background/95 backdrop-blur-md px-4 pt-3.5 pb-6 z-10">
-          {" "}
           <div className="flex items-center justify-between gap-4 mb-3">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground leading-tight">
@@ -634,9 +622,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       </div>
 
       {/* ════════════════════════════════════════
-          DESKTOP LAYOUT  (≥ md) — unchanged
+          DESKTOP LAYOUT  (≥ lg / ≥ 1024px)
+          Only triggers on true desktop screens
       ════════════════════════════════════════ */}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <div className="max-w-5xl mx-auto px-6 lg:px-8 py-8">
           {/* Page header */}
           <div className="flex items-center gap-3 mb-6 flex-wrap">
@@ -693,9 +682,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           <div className="flex gap-6 items-start">
             {/* Left col */}
             <div className="flex-1 min-w-0 space-y-5">
+
               {/* Items card */}
               <Card className="border-border/60 shadow-none overflow-hidden">
-                <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50">
+                <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50 sticky top-0 z-10">
                   <div className="flex items-center gap-2">
                     <Package className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -703,14 +693,16 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                     </span>
                   </div>
                 </CardHeader>
-                <div>
+
+                {/* Scrollable items */}
+                <div className="max-h-[420px] overflow-y-auto no-scrollbar divide-y divide-border/50">
                   {items.map((item: ICartItem) => {
                     const { afterMarkup } = calcLine(item);
                     const hasImage = item.productId.images?.[0]?.url;
                     return (
                       <div
                         key={item.productId._id.toString()}
-                        className="flex items-center gap-4 px-5 py-3.5 border-b border-border/50 last:border-0 hover:bg-accent/20 transition-colors group"
+                        className="flex items-center gap-4 px-5 py-3.5 hover:bg-accent/20 transition-colors group"
                       >
                         <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-secondary">
                           {hasImage ? (

@@ -74,6 +74,9 @@ export default function OrdersHistoryClient({
     <div
       className={`max-w-3xl mx-auto py-6 sm:py-8 px-4 sm:px-6 ${customerId || allOrders ? "md:pl-30 lg:pl-20" : ""}`}
     >
+      {!customerId && !allOrders && (
+        <CustomerAdvertisements maxHeight={250} />
+      )}
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
@@ -98,7 +101,7 @@ export default function OrdersHistoryClient({
           </span>
         </p>
       </div>
-      <CustomerAdvertisements maxHeight={250} />
+      {/* <CustomerAdvertisements maxHeight={250} /> */}
       {/* Filters + search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
         <div className="flex items-center gap-2">
