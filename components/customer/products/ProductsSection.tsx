@@ -61,7 +61,7 @@ export function ProductsSection({
         const map = await getCartQuantities();
         if (map) setCartMap(map);
       } catch (error) {
-        console.error("Failed to fetch Candian Cart quantities:", error);
+        console.error("Failed to fetch cart products quantities:", error);
       }
     };
     fetchInitialCart();

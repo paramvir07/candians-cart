@@ -12,7 +12,6 @@ import {
   Minus,
   Trash2,
   Check,
-  Tag,
 } from "lucide-react";
 import { toast } from "sonner";
 import { IProduct } from "@/types/store/products.types";
@@ -23,8 +22,6 @@ import {
 import { fmt } from "@/lib/fomatPrice";
 import {
   AddtoCart,
-  IncrementItem,
-  DecrementItem,
   RemoveItem,
   UpdateItemQuantity,
 } from "@/actions/customer/ProductAndStore/Cart.Action";
@@ -57,24 +54,61 @@ export function CustomerProductCard({
   const [inputValue, setInputValue] = useState(String(cartQuantity));
   const [isQtyDirty, setIsQtyDirty] = useState(false);
 
-  useEffect(() => {
-    setQuantity(cartQuantity);
-    setInputValue(String(cartQuantity));
-    setIsQtyDirty(false);
-  }, [cartQuantity]);
+  const quantityStep = product.isMeasuredInWeight ? 0.01 : 1;
+
+  const formatQtyForInput = useCallback(
+    (value: number) => {
+      if (product.isMeasuredInWeight) {
+        return Number.isInteger(value) ? String(value) : String(value);
+      }
+      return String(Math.trunc(value));
+    },
+    [product.isMeasuredInWeight],
+  );
+
+  const normalizeQuantity = useCallback(
+    (rawValue: string) => {
+      const trimmed = rawValue.trim();
+
+      if (trimmed === "") return null;
+
+      const parsed = Number(trimmed);
+
+      if (!Number.isFinite(parsed)) return null;
+
+      const bounded = Math.max(0, Math.min(99, parsed));
+
+      if (product.isMeasuredInWeight) {
+        return Math.round(bounded * 100) / 100;
+      }
+
+      return Math.trunc(bounded);
+    },
+    [product.isMeasuredInWeight],
+  );
 
   useEffect(() => {
-    setInputValue(String(quantity));
+    setQuantity(cartQuantity);
+    setInputValue(formatQtyForInput(cartQuantity));
     setIsQtyDirty(false);
-  }, [quantity]);
+  }, [cartQuantity, formatQtyForInput]);
+
+  useEffect(() => {
+    setInputValue(formatQtyForInput(quantity));
+    setIsQtyDirty(false);
+  }, [quantity, formatQtyForInput]);
 
   const hasImage = product.images?.length > 0 && !imgError;
   const catConfig = getCategoryConfig(product.category);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setQuantity(1);
+
+    const initialQty = product.isMeasuredInWeight ? 1 : 1;
+    setQuantity(initialQty);
+    setInputValue(formatQtyForInput(initialQty));
     setIsQtyDirty(false);
+
     startTransition(async () => {
       try {
         const res = await AddtoCart(product._id as string, customerId);
@@ -82,9 +116,11 @@ export function CustomerProductCard({
           toast.success(`${product.name} added to cart!`);
         } else {
           setQuantity(0);
+          setInputValue("0");
         }
       } catch {
         setQuantity(0);
+        setInputValue("0");
         toast.error("Failed to add to cart");
       }
     });
@@ -92,30 +128,62 @@ export function CustomerProductCard({
 
   const handleIncrement = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setQuantity((q) => q + 1);
+
+    const prev = quantity;
+    const next = Math.min(99, prev + quantityStep);
+    const normalizedNext = product.isMeasuredInWeight
+      ? Math.round(next * 100) / 100
+      : Math.trunc(next);
+
+    setQuantity(normalizedNext);
+    setInputValue(formatQtyForInput(normalizedNext));
     setIsQtyDirty(false);
+
     startTransition(async () => {
       try {
         const fd = new FormData();
         fd.append("productId", product._id as string);
-        await IncrementItem(customerId, fd);
+        fd.append("quantity", String(normalizedNext));
+
+        const res = await UpdateItemQuantity(customerId, fd);
+        if (!res?.success) throw new Error(res?.message || "Failed");
       } catch {
-        setQuantity((q) => Math.max(0, q - 1));
+        setQuantity(prev);
+        setInputValue(formatQtyForInput(prev));
+        toast.error("Failed to update quantity");
       }
     });
   };
 
   const handleDecrement = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setQuantity((q) => Math.max(0, q - 1));
+
+    const prev = quantity;
+    const next = Math.max(0, prev - quantityStep);
+    const normalizedNext = product.isMeasuredInWeight
+      ? Math.round(next * 100) / 100
+      : Math.trunc(next);
+
+    setQuantity(normalizedNext);
+    setInputValue(formatQtyForInput(normalizedNext));
     setIsQtyDirty(false);
+
     startTransition(async () => {
       try {
         const fd = new FormData();
         fd.append("productId", product._id as string);
-        await DecrementItem(customerId, fd);
+        fd.append("quantity", String(normalizedNext));
+
+        const res = await UpdateItemQuantity(customerId, fd);
+        if (!res?.success) throw new Error(res?.message || "Failed");
+
+        if (normalizedNext === 0) {
+          toast.success(`${product.name} removed from cart`);
+        }
       } catch {
-        setQuantity((q) => q + 1);
+        setQuantity(prev);
+        setInputValue(formatQtyForInput(prev));
+        toast.error("Failed to update quantity");
       }
     });
   };
@@ -124,57 +192,78 @@ export function CustomerProductCard({
     e.stopPropagation();
     const prev = quantity;
     setQuantity(0);
+    setInputValue("0");
     setIsQtyDirty(false);
+
     startTransition(async () => {
       try {
         await removeAllFromServer(product._id as string, customerId);
         toast.success(`${product.name} removed from cart`);
       } catch {
         setQuantity(prev);
+        setInputValue(formatQtyForInput(prev));
         toast.error("Failed to remove item");
       }
     });
   };
 
   const handleQuantityInputCommit = useCallback(() => {
-    const parsed = Number(inputValue);
-    if (Number.isNaN(parsed)) {
-      setInputValue(String(quantity));
+    const newQty = normalizeQuantity(inputValue);
+
+    if (newQty === null) {
+      setInputValue(formatQtyForInput(quantity));
       setIsQtyDirty(false);
       return;
     }
-    const newQty = Math.max(0, Math.min(99, parsed));
+
     const prevQty = quantity;
+
     if (newQty === prevQty) {
-      setInputValue(String(prevQty));
+      setInputValue(formatQtyForInput(prevQty));
       setIsQtyDirty(false);
       return;
     }
+
     setQuantity(newQty);
-    setInputValue(String(newQty));
+    setInputValue(formatQtyForInput(newQty));
     setIsQtyDirty(false);
+
     startTransition(async () => {
       try {
         const fd = new FormData();
         fd.append("productId", product._id as string);
         fd.append("quantity", String(newQty));
+
         const res = await UpdateItemQuantity(customerId, fd);
         if (!res?.success) throw new Error(res?.message || "Failed");
-        if (newQty === 0) toast.success(`${product.name} removed from cart`);
+
+        if (newQty === 0) {
+          toast.success(`${product.name} removed from cart`);
+        }
       } catch {
         setQuantity(prevQty);
-        setInputValue(String(prevQty));
+        setInputValue(formatQtyForInput(prevQty));
         setIsQtyDirty(false);
         toast.error("Failed to update quantity");
       }
     });
-  }, [inputValue, quantity, product._id, product.name, customerId]);
+  }, [
+    inputValue,
+    quantity,
+    product._id,
+    product.name,
+    customerId,
+    normalizeQuantity,
+    formatQtyForInput,
+  ]);
+
+  const normalizedInputQty = normalizeQuantity(inputValue);
 
   const showConfirm =
     isQtyDirty &&
     !isPending &&
-    !Number.isNaN(Number(inputValue)) &&
-    Math.max(0, Math.min(99, Number(inputValue))) !== quantity;
+    normalizedInputQty !== null &&
+    normalizedInputQty !== quantity;
 
   return (
     <>
@@ -189,44 +278,41 @@ export function CustomerProductCard({
 
       <div
         onClick={() => setDialogOpen(true)}
-        className="group relative w-full cursor-pointer rounded-3xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className="group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         style={{ aspectRatio: "2/3" }}
       >
-        {/* ── Full-bleed image / illustration ── */}
-        <div className="absolute inset-0 w-full h-full">
+        <div className="absolute inset-0 h-full w-full">
           {hasImage ? (
             <Image
               src={product.images[0].url}
               alt={product.name}
               fill
               onError={() => setImgError(true)}
-              className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+              className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (
-            <div className="w-full h-full overflow-hidden">
+            <div className="h-full w-full overflow-hidden">
               <CategoryIllustration
                 category={product.category}
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
             </div>
           )}
         </div>
 
-        {/* ── Out-of-stock dimmer ── */}
         {!product.stock && (
-          <div className="absolute inset-0 z-20 bg-black/50 flex items-center justify-center">
-            <span className="text-xs font-bold text-white bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50">
+            <span className="rounded-full border border-white/30 bg-white/20 px-4 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
               Unavailable
             </span>
           </div>
         )}
 
-        <div className="absolute top-2 left-2 right-2 z-10 flex items-start justify-between gap-1">
-          {/* Left: badges stacked */}
+        <div className="absolute left-2 right-2 top-2 z-10 flex items-start justify-between gap-1">
           <div className="flex flex-col gap-1">
             {product.subsidised && (
-              <div className="flex items-center gap-1 bg-teal-500/90 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded-full leading-none whitespace-nowrap shadow-md shadow-teal-900/30">
+              <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-teal-500/90 px-2 py-0.5 text-[9px] font-bold leading-none text-white shadow-md shadow-teal-900/30 backdrop-blur-sm">
                 <BadgeDollarSign
                   className="h-2.5 w-2.5 shrink-0"
                   strokeWidth={2.5}
@@ -235,7 +321,7 @@ export function CustomerProductCard({
               </div>
             )}
             {product.isFeatured && (
-              <div className="flex items-center gap-1 bg-amber-400/90 backdrop-blur-sm text-amber-950 text-[9px] font-bold px-2 py-0.5 rounded-full leading-none whitespace-nowrap shadow-md shadow-amber-900/30">
+              <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm">
                 <Star
                   className="h-2.5 w-2.5 shrink-0 fill-amber-950"
                   strokeWidth={2}
@@ -245,16 +331,15 @@ export function CustomerProductCard({
             )}
           </div>
 
-          {/* Right: stock status pill */}
           <div
-            className={`flex items-center gap-1 px-2 py-0.5 rounded-full backdrop-blur-sm border text-[9px] font-bold shadow shrink-0 ${
+            className={`flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-bold shadow backdrop-blur-sm ${
               product.stock
-                ? "bg-emerald-500/80 border-emerald-400/30 text-white"
-                : "bg-red-500/80 border-red-400/30 text-white"
+                ? "border-emerald-400/30 bg-emerald-500/80 text-white"
+                : "border-red-400/30 bg-red-500/80 text-white"
             }`}
           >
             <span
-              className={`w-1 h-1 rounded-full shrink-0 bg-white ${
+              className={`h-1 w-1 shrink-0 rounded-full bg-white ${
                 product.stock ? "animate-pulse" : ""
               }`}
             />
@@ -262,9 +347,7 @@ export function CustomerProductCard({
           </div>
         </div>
 
-        {/* ── Bottom blur content panel ── */}
         <div className="absolute bottom-0 left-0 right-0 z-10">
-          {/* Dark gradient */}
           <div
             className="absolute inset-0 rounded-b-3xl"
             style={{
@@ -272,7 +355,6 @@ export function CustomerProductCard({
                 "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 50%, transparent 100%)",
             }}
           />
-          {/* Blur layer at bottom */}
           <div
             className="absolute bottom-0 left-0 right-0 h-24 rounded-b-3xl"
             style={{
@@ -284,57 +366,52 @@ export function CustomerProductCard({
             }}
           />
 
-          <div className="relative px-3 pt-8 pb-3 flex flex-col gap-2">
-            {/* Category pill */}
+          <div className="relative flex flex-col gap-2 px-3 pb-3 pt-8">
             <span
-              className={`self-start inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-full ${catConfig.bg} ${catConfig.text} ${catConfig.border} border opacity-90`}
+              className={`self-start inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold opacity-90 ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}
             >
               {catConfig.emoji} {product.category}
             </span>
 
-            {/* Product name */}
-            <h3 className="font-bold text-white text-sm leading-tight line-clamp-2 drop-shadow">
+            <h3 className="line-clamp-2 text-sm font-bold leading-tight text-white drop-shadow">
               {product.name}
             </h3>
 
-            {/* Price row */}
-            <div className="flex items-center text-white/90 text-xs font-medium">
+            <div className="flex items-center text-xs font-medium text-white/90">
               <span className="flex items-center gap-1">
                 <span className="font-black text-white">
-                  {fmt(product.price + product.price * (product.markup / 100))}
+                  {fmt(product.price + product.price * (product.markup / 100))}{product.UOM && `/${product.UOM?.toUpperCase()}`}
                 </span>
               </span>
             </div>
 
-            {/* ── Cart controls ── */}
             <div
               className="flex items-center"
               onClick={(e) => e.stopPropagation()}
             >
               {quantity > 0 ? (
-                <div className="flex items-center gap-1.5 w-full">
-                  {/* Trash */}
+                <div className="flex w-full items-center gap-1.5">
                   <button
                     type="button"
                     onClick={handleRemoveAll}
                     disabled={isPending}
-                    className="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-red-500/40 flex items-center justify-center transition-colors disabled:opacity-40 shrink-0 group/trash"
+                    className="group/trash h-8 w-8 shrink-0 rounded-xl border border-white/25 bg-white/15 backdrop-blur-sm transition-colors hover:bg-red-500/40 disabled:opacity-40"
                   >
-                    <Trash2
-                      size={13}
-                      strokeWidth={2}
-                      className="text-white/80 group-hover/trash:text-white transition-colors"
-                    />
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Trash2
+                        size={13}
+                        strokeWidth={2}
+                        className="text-white/80 transition-colors group-hover/trash:text-white"
+                      />
+                    </div>
                   </button>
 
-                  {/* Stepper */}
-                  <div className="flex-1 flex items-center justify-between bg-white/15 backdrop-blur-sm border border-white/25 rounded-3xl px-2 py-1">
-                    {/* DECREMENT */}
+                  <div className="flex flex-1 items-center justify-between rounded-3xl border border-white/25 bg-white/15 px-2 py-1 backdrop-blur-sm">
                     <button
                       type="button"
                       onClick={handleDecrement}
                       disabled={isPending}
-                      className="w-6 h-6 rounded-full border border-white/30 bg-white/20 flex items-center justify-center hover:bg-white/35 transition-colors disabled:opacity-50 shrink-0"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/20 transition-colors hover:bg-white/35 disabled:opacity-50"
                     >
                       <Minus
                         size={11}
@@ -343,17 +420,33 @@ export function CustomerProductCard({
                       />
                     </button>
 
-                    {/* CENTER (INPUT + OPTIONAL CHECK) */}
-                    <div className="flex items-center justify-center gap-1 flex-1">
+                    <div className="flex flex-1 items-center justify-center gap-1">
                       <input
                         type="number"
                         min={0}
                         max={99}
-                        inputMode="numeric"
+                        step={product.isMeasuredInWeight ? "0.01" : "1"}
+                        inputMode={
+                          product.isMeasuredInWeight ? "decimal" : "numeric"
+                        }
                         value={inputValue}
                         onChange={(e) => {
                           e.stopPropagation();
-                          setInputValue(e.target.value);
+                          const value = e.target.value;
+
+                          if (value === "") {
+                            setInputValue(value);
+                            setIsQtyDirty(true);
+                            return;
+                          }
+
+                          if (!product.isMeasuredInWeight) {
+                            if (!/^\d+$/.test(value)) return;
+                          } else {
+                            if (!/^\d*([.]\d{0,2})?$/.test(value)) return;
+                          }
+
+                          setInputValue(value);
                           setIsQtyDirty(true);
                         }}
                         onBlur={handleQuantityInputCommit}
@@ -363,7 +456,7 @@ export function CustomerProductCard({
                           if (e.key === "Enter") e.currentTarget.blur();
                         }}
                         disabled={isPending}
-                        className="w-10 h-6 rounded-md bg-white/20 border border-white/30 text-center text-sm font-bold text-white tabular-nums outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="h-6 w-10 rounded-md border border-white/30 bg-white/20 text-center text-sm font-bold text-white tabular-nums outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
 
                       {showConfirm && (
@@ -375,7 +468,7 @@ export function CustomerProductCard({
                             handleQuantityInputCommit();
                           }}
                           disabled={isPending}
-                          className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+                          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50"
                         >
                           <Check
                             size={11}
@@ -386,13 +479,12 @@ export function CustomerProductCard({
                       )}
                     </div>
 
-                    {/* INCREMENT */}
                     {!showConfirm && (
                       <button
                         type="button"
                         onClick={handleIncrement}
                         disabled={isPending || quantity >= 99}
-                        className="w-6 h-6 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50"
                       >
                         <Plus
                           size={11}
@@ -408,7 +500,7 @@ export function CustomerProductCard({
                   type="button"
                   disabled={!product.stock || isPending}
                   onClick={handleAddToCart}
-                  className="w-full h-9 rounded-xl bg-secondary text-primary border border-primary/20 text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-primary/15 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                  className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-primary/20 bg-secondary text-xs font-bold text-primary shadow-sm transition-all hover:bg-primary/15 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isPending ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

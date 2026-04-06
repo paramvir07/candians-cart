@@ -74,43 +74,110 @@ export const UpdateItemQuantity = async (
 ) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
-  if (!user) return { success: false, message: "User not found" };
+
+  if (!user) {
+    return { success: false, message: "User not found" };
+  }
 
   const itemId = formData.get("productId");
   const quantityValue = formData.get("quantity");
 
   if (!itemId || typeof itemId !== "string") {
-    throw new Error("Invalid productId");
+    return { success: false, message: "Invalid productId" };
   }
 
-  if (
-    quantityValue === null ||
-    typeof quantityValue !== "string" ||
-    Number.isNaN(Number(quantityValue))
-  ) {
-    throw new Error("Invalid quantity");
+  if (quantityValue === null || typeof quantityValue !== "string") {
+    return { success: false, message: "Invalid quantity" };
   }
 
-  const quantity = Math.max(0, Math.min(99, Number(quantityValue)));
+  const trimmedQuantity = quantityValue.trim();
+
+  if (!trimmedQuantity) {
+    return { success: false, message: "Quantity is required" };
+  }
 
   await dbConnect();
+
+  const product = await productsModel.findById(itemId).select(
+    "_id isMeasuredInWeight",
+  );
+
+  if (!product) {
+    return { success: false, message: "Product not found" };
+  }
+
+  const parsedQuantity = Number(trimmedQuantity);
+
+  if (!Number.isFinite(parsedQuantity)) {
+    return { success: false, message: "Invalid quantity" };
+  }
+
+  let validatedQuantity: number;
+
+  if (product.isMeasuredInWeight) {
+    // Allows: 0, 1, 1.2, 1.25
+    // Rejects: .5, 1.234, -1, abc
+    const weightRegex = /^(0|[1-9]\d*)(\.\d{1,2})?$/;
+
+    if (!weightRegex.test(trimmedQuantity)) {
+      return {
+        success: false,
+        message:
+          "Weighted products must be a valid number with up to 2 decimal places",
+      };
+    }
+
+    if (parsedQuantity < 0 || parsedQuantity > 99) {
+      return { success: false, message: "Quantity must be between 0 and 99" };
+    }
+
+    validatedQuantity = Math.round(parsedQuantity * 100) / 100;
+  } else {
+    // Allows: 0, 1, 2, 99
+    // Rejects: 1.2, 1.00, -1, abc
+    const pieceRegex = /^(0|[1-9]\d*)$/;
+
+    if (!pieceRegex.test(trimmedQuantity)) {
+      return {
+        success: false,
+        message: "Piece-based products must use whole numbers only",
+      };
+    }
+
+    if (!Number.isInteger(parsedQuantity)) {
+      return {
+        success: false,
+        message: "Piece-based products must use whole numbers only",
+      };
+    }
+
+    if (parsedQuantity < 0 || parsedQuantity > 99) {
+      return { success: false, message: "Quantity must be between 0 and 99" };
+    }
+
+    validatedQuantity = parsedQuantity;
+  }
 
   const cart = await CartModel.findOne({
     customerId: user._id,
   });
 
-  if (!cart) return { success: false, message: "Cart not found" };
+  if (!cart) {
+    return { success: false, message: "Cart not found" };
+  }
 
   const index = cart.items.findIndex(
     (item) => item.productId.toString() === itemId,
   );
 
-  if (index === -1) return { success: false, message: "Item not found" };
+  if (index === -1) {
+    return { success: false, message: "Item not found" };
+  }
 
-  if (quantity === 0) {
+  if (validatedQuantity === 0) {
     cart.items.splice(index, 1);
   } else {
-    cart.items[index].quantity = quantity;
+    cart.items[index].quantity = validatedQuantity;
   }
 
   await cart.save();

@@ -40,7 +40,7 @@ const placeOrderProductSchema = new Schema<PlaceOrderProduct>(
     quantity: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0.01,
     },
     markup: {
       type: Number,

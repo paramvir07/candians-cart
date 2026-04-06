@@ -27,8 +27,6 @@ import {
 import { fmt } from "@/lib/fomatPrice";
 import {
   AddtoCart,
-  IncrementItem,
-  DecrementItem,
   RemoveItem,
   UpdateItemQuantity,
 } from "@/actions/customer/ProductAndStore/Cart.Action";
@@ -66,117 +64,220 @@ export function ProductDetailDialog({
   const [inputValue, setInputValue] = useState(String(cartQuantity));
   const [isQtyDirty, setIsQtyDirty] = useState(false);
 
+  const quantityStep = product.isMeasuredInWeight ? 0.01 : 1;
+
+  const formatQtyForInput = useCallback(
+    (value: number) => {
+      if (product.isMeasuredInWeight) {
+        return Number.isInteger(value) ? String(value) : String(value);
+      }
+      return String(Math.trunc(value));
+    },
+    [product.isMeasuredInWeight],
+  );
+
+  const normalizeQuantity = useCallback(
+    (rawValue: string) => {
+      const trimmed = rawValue.trim();
+
+      if (trimmed === "") return null;
+
+      const parsed = Number(trimmed);
+
+      if (!Number.isFinite(parsed)) return null;
+
+      const bounded = Math.max(0, Math.min(99, parsed));
+
+      if (product.isMeasuredInWeight) {
+        return Math.round(bounded * 100) / 100;
+      }
+
+      return Math.trunc(bounded);
+    },
+    [product.isMeasuredInWeight],
+  );
+
   useEffect(() => {
     if (open) {
       setQuantity(cartQuantity);
-      setInputValue(String(cartQuantity));
+      setInputValue(formatQtyForInput(cartQuantity));
       setIsQtyDirty(false);
     }
-  }, [open, cartQuantity]);
+  }, [open, cartQuantity, formatQtyForInput]);
 
   useEffect(() => {
-    setInputValue(String(quantity));
+    setInputValue(formatQtyForInput(quantity));
     setIsQtyDirty(false);
-  }, [quantity]);
+  }, [quantity, formatQtyForInput]);
 
   const optimisticUpdate = useCallback(
-    (newQty: number, serverAction: () => Promise<void>, rollbackQty: number) => {
+    (
+      newQty: number,
+      serverAction: () => Promise<void>,
+      rollbackQty: number,
+    ) => {
       setQuantity(newQty);
       onQuantityChange(newQty);
+      setInputValue(formatQtyForInput(newQty));
       setIsQtyDirty(false);
+
       startTransition(async () => {
         try {
           await serverAction();
         } catch {
           setQuantity(rollbackQty);
           onQuantityChange(rollbackQty);
-          setInputValue(String(rollbackQty));
+          setInputValue(formatQtyForInput(rollbackQty));
           setIsQtyDirty(false);
           toast.error("Something went wrong. Please try again.");
         }
       });
     },
-    [onQuantityChange],
+    [onQuantityChange, formatQtyForInput],
   );
 
-  const handleAddToCart = () =>
-    optimisticUpdate(1, async () => {
-      const res = await AddtoCart(product._id as string, customerId);
-      if (res?.success) toast.success(`${product.name} added to cart!`);
-      else throw new Error("Add to cart failed");
-    }, 0);
+  const handleAddToCart = () => {
+    const initialQty = 1;
 
-  const handleIncrement = () =>
-    optimisticUpdate(quantity + 1, async () => {
-      const fd = new FormData();
-      fd.append("productId", product._id as string);
-      await IncrementItem(customerId, fd);
-    }, quantity);
+    optimisticUpdate(
+      initialQty,
+      async () => {
+        const res = await AddtoCart(product._id as string, customerId);
+        if (res?.success) {
+          toast.success(`${product.name} added to cart!`);
+        } else {
+          throw new Error("Add to cart failed");
+        }
+      },
+      0,
+    );
+  };
 
-  const handleDecrement = () =>
-    optimisticUpdate(Math.max(0, quantity - 1), async () => {
-      const fd = new FormData();
-      fd.append("productId", product._id as string);
-      await DecrementItem(customerId, fd);
-    }, quantity);
+  const handleIncrement = () => {
+    const next = Math.min(99, quantity + quantityStep);
+    const normalizedNext = product.isMeasuredInWeight
+      ? Math.round(next * 100) / 100
+      : Math.trunc(next);
+
+    optimisticUpdate(
+      normalizedNext,
+      async () => {
+        const fd = new FormData();
+        fd.append("productId", product._id as string);
+        fd.append("quantity", String(normalizedNext));
+
+        const res = await UpdateItemQuantity(customerId, fd);
+        if (!res?.success) throw new Error(res?.message || "Failed");
+      },
+      quantity,
+    );
+  };
+
+  const handleDecrement = () => {
+    const next = Math.max(0, quantity - quantityStep);
+    const normalizedNext = product.isMeasuredInWeight
+      ? Math.round(next * 100) / 100
+      : Math.trunc(next);
+
+    optimisticUpdate(
+      normalizedNext,
+      async () => {
+        const fd = new FormData();
+        fd.append("productId", product._id as string);
+        fd.append("quantity", String(normalizedNext));
+
+        const res = await UpdateItemQuantity(customerId, fd);
+        if (!res?.success) throw new Error(res?.message || "Failed");
+
+        if (normalizedNext === 0) {
+          toast.success(`${product.name} removed from cart`);
+        }
+      },
+      quantity,
+    );
+  };
 
   const handleRemoveAll = () => {
     const prev = quantity;
-    optimisticUpdate(0, async () => {
-      await removeAllFromServer(product._id as string, customerId);
-      toast.success(`${product.name} removed from cart`);
-    }, prev);
+
+    optimisticUpdate(
+      0,
+      async () => {
+        await removeAllFromServer(product._id as string, customerId);
+        toast.success(`${product.name} removed from cart`);
+      },
+      prev,
+    );
   };
 
   const handleQuantityInputCommit = useCallback(() => {
-    const parsed = Number(inputValue);
-    if (Number.isNaN(parsed)) {
-      setInputValue(String(quantity));
+    const newQty = normalizeQuantity(inputValue);
+
+    if (newQty === null) {
+      setInputValue(formatQtyForInput(quantity));
       setIsQtyDirty(false);
       return;
     }
-    const newQty = Math.max(0, Math.min(99, parsed));
+
     const prevQty = quantity;
+
     if (newQty === prevQty) {
-      setInputValue(String(prevQty));
+      setInputValue(formatQtyForInput(prevQty));
       setIsQtyDirty(false);
       return;
     }
+
     setQuantity(newQty);
     onQuantityChange(newQty);
-    setInputValue(String(newQty));
+    setInputValue(formatQtyForInput(newQty));
     setIsQtyDirty(false);
+
     startTransition(async () => {
       try {
         const fd = new FormData();
         fd.append("productId", product._id as string);
         fd.append("quantity", String(newQty));
+
         const res = await UpdateItemQuantity(customerId, fd);
         if (!res?.success) throw new Error(res?.message || "Failed");
-        if (newQty === 0) toast.success(`${product.name} removed from cart`);
+
+        if (newQty === 0) {
+          toast.success(`${product.name} removed from cart`);
+        }
       } catch {
         setQuantity(prevQty);
         onQuantityChange(prevQty);
-        setInputValue(String(prevQty));
+        setInputValue(formatQtyForInput(prevQty));
         setIsQtyDirty(false);
         toast.error("Something went wrong. Please try again.");
       }
     });
-  }, [inputValue, quantity, onQuantityChange, product._id, product.name, customerId]);
+  }, [
+    inputValue,
+    quantity,
+    onQuantityChange,
+    product._id,
+    product.name,
+    customerId,
+    normalizeQuantity,
+    formatQtyForInput,
+  ]);
+
+  const normalizedInputQty = normalizeQuantity(inputValue);
 
   const showConfirm =
     isQtyDirty &&
     !isPending &&
-    !Number.isNaN(Number(inputValue)) &&
-    Math.max(0, Math.min(99, Number(inputValue))) !== quantity;
+    normalizedInputQty !== null &&
+    normalizedInputQty !== quantity;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-sm p-0 overflow-hidden rounded-3xl gap-0 border-0 shadow-2xl">
-
-        {/* ── Full-bleed hero image ── */}
-        <div className="relative w-full overflow-hidden" style={{ aspectRatio: "4/3" }}>
-          {/* image / illustration */}
+      <DialogContent className="w-[95vw] max-w-sm overflow-hidden rounded-3xl border-0 p-0 shadow-2xl gap-0">
+        <div
+          className="relative w-full overflow-hidden"
+          style={{ aspectRatio: "4/3" }}
+        >
           {hasImage ? (
             <Image
               src={product.images[0].url}
@@ -186,159 +287,210 @@ export function ProductDetailDialog({
               sizes="512px"
             />
           ) : (
-            <CategoryIllustration category={product.category} className="w-full h-full" />
+            <CategoryIllustration
+              category={product.category}
+              className="w-full h-full"
+            />
           )}
 
-          {/* Out of stock dimmer */}
           {!product.stock && (
-            <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] z-10 flex items-center justify-center">
-              <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white text-sm font-bold px-4 py-2 rounded-full border border-white/30 shadow">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/55 backdrop-blur-[2px]">
+              <span className="flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-4 py-2 text-sm font-bold text-white shadow backdrop-blur-sm">
                 <PackageX className="h-4 w-4" />
                 Unavailable
               </span>
             </div>
           )}
 
-          {/* Top-left badges */}
           <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5">
             {product.subsidised && (
-              <div className="flex items-center gap-1.5 bg-teal-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full leading-none whitespace-nowrap shadow-md shadow-teal-900/30">
-                <BadgeDollarSign className="h-3 w-3 shrink-0" strokeWidth={2.5} />
+              <div className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-teal-500/90 px-2.5 py-1 text-[10px] font-bold leading-none text-white shadow-md shadow-teal-900/30 backdrop-blur-sm">
+                <BadgeDollarSign
+                  className="h-3 w-3 shrink-0"
+                  strokeWidth={2.5}
+                />
                 SUBSIDISED
               </div>
             )}
             {product.isFeatured && (
-              <div className="flex items-center gap-1.5 bg-amber-400/90 backdrop-blur-sm text-amber-950 text-[10px] font-bold px-2.5 py-1 rounded-full leading-none whitespace-nowrap shadow-md shadow-amber-900/30">
-                <Star className="h-3 w-3 shrink-0 fill-amber-950" strokeWidth={2} />
+              <div className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-amber-400/90 px-2.5 py-1 text-[10px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm">
+                <Star
+                  className="h-3 w-3 shrink-0 fill-amber-950"
+                  strokeWidth={2}
+                />
                 FEATURED
               </div>
             )}
           </div>
 
-          {/* Top-right: stock pill */}
           <div className="absolute top-3 right-12 z-20">
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-sm border text-[10px] font-bold shadow ${
-              product.stock
-                ? "bg-emerald-500/80 border-emerald-400/30 text-white"
-                : "bg-red-500/80 border-red-400/30 text-white"
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 bg-white ${product.stock ? "animate-pulse" : ""}`} />
+            <div
+              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold shadow backdrop-blur-sm ${
+                product.stock
+                  ? "bg-emerald-500/80 border-emerald-400/30 text-white"
+                  : "bg-red-500/80 border-red-400/30 text-white"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 shrink-0 rounded-full bg-white ${
+                  product.stock ? "animate-pulse" : ""
+                }`}
+              />
               {product.stock ? "In Stock" : "Sold Out"}
             </div>
           </div>
 
-          {/* Close button */}
           <button
             onClick={() => onOpenChange(false)}
-            className="absolute top-3 right-3 z-30 h-8 w-8 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
+            className="absolute top-3 right-3 z-30 flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
           >
             <X className="h-4 w-4" />
           </button>
 
-          {/* Bottom gradient fade into white */}
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-white to-transparent" />
         </div>
 
-        {/* ── Content body ── */}
-        <div className="bg-white px-5 pt-1 pb-5 space-y-4">
-
-          {/* Category + name */}
+        <div className="space-y-4 bg-white px-5 pt-1 pb-5">
           <div className="space-y-1.5">
-            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}>
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}
+            >
               {catConfig.emoji} {product.category}
             </span>
-            <h2 className="text-lg font-black text-foreground leading-tight">
+
+            <h2 className="text-lg font-black leading-tight text-foreground">
               {product.name}
             </h2>
+
             {product.description && (
-              <p className="text-slate-500 text-sm leading-relaxed line-clamp-3">
+              <p className="line-clamp-3 text-sm leading-relaxed text-slate-500">
                 {product.description}
               </p>
             )}
           </div>
 
-          {/* Price block */}
-          <div className="flex items-center justify-between bg-secondary/60 border border-border rounded-2xl px-4 py-3">
+          <div className="flex items-center justify-between rounded-2xl border border-border bg-secondary/60 px-4 py-3">
             <div>
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-0.5">
+              <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Price
               </p>
-              <p className="text-2xl font-black text-primary tracking-tight">
+              <p className="text-2xl font-black tracking-tight text-primary">
                 {fmt(product.price + product.price * (product.markup / 100))}
+                {product.UOM && `/${product.UOM?.toUpperCase()}`}
               </p>
               {product.tax > 0 && (
-                <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
-                  <Tag className="h-3 w-3" />
-                  +{product.tax}% tax at checkout
+                <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <Tag className="h-3 w-3" />+{product.tax}% tax at checkout
                 </p>
               )}
             </div>
+
             {product.subsidised && (
               <div className="flex flex-col items-end gap-1">
-                <div className="flex items-center gap-1.5 bg-teal-50 border border-teal-200 text-teal-700 text-[10px] font-bold px-2.5 py-1 rounded-xl">
-                  <BadgeDollarSign className="h-3 w-3 shrink-0" strokeWidth={2.5} />
+                <div className="flex items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 px-2.5 py-1 text-[10px] font-bold text-teal-700">
+                  <BadgeDollarSign
+                    className="h-3 w-3 shrink-0"
+                    strokeWidth={2.5}
+                  />
                   Subsidised
                 </div>
-                <p className="text-[10px] text-muted-foreground text-right max-w-[120px]">
+                <p className="max-w-[120px] text-right text-[10px] text-muted-foreground">
                   You may qualify for a reduced price
                 </p>
               </div>
             )}
           </div>
 
-          {/* ── Cart controls ── */}
           <div>
             {product.stock ? (
               quantity > 0 ? (
                 <div className="flex items-center gap-2">
-                  {/* Trash */}
                   <button
                     type="button"
                     onClick={handleRemoveAll}
                     disabled={isPending}
-                    className="w-11 h-11 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-red-50 hover:border-red-200 flex items-center justify-center transition-colors disabled:opacity-40 shrink-0 group/trash"
+                    className="group/trash h-11 w-11 shrink-0 rounded-2xl border border-slate-200 bg-slate-50 transition-colors hover:border-red-200 hover:bg-red-50 disabled:opacity-40"
                   >
-                    <Trash2 size={15} strokeWidth={2} className="text-slate-400 group-hover/trash:text-red-400 transition-colors" />
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Trash2
+                        size={15}
+                        strokeWidth={2}
+                        className="text-slate-400 transition-colors group-hover/trash:text-red-400"
+                      />
+                    </div>
                   </button>
 
-                  {/* Stepper */}
-                  <div className="flex-1 flex items-center bg-secondary border border-border rounded-2xl px-2.5 py-2 gap-2">
+                  <div className="flex flex-1 items-center gap-2 rounded-2xl border border-border bg-secondary px-2.5 py-2">
                     <button
                       type="button"
                       onClick={handleDecrement}
                       disabled={isPending}
-                      className="w-8 h-8 rounded-full border border-border bg-white flex items-center justify-center hover:bg-primary/10 transition-colors disabled:opacity-50 shrink-0"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-white transition-colors hover:bg-primary/10 disabled:opacity-50"
                     >
-                      <Minus size={13} strokeWidth={2.5} className="text-primary" />
+                      <Minus
+                        size={13}
+                        strokeWidth={2.5}
+                        className="text-primary"
+                      />
                     </button>
 
-                    <div className="flex flex-col items-center flex-1 gap-0.5">
-                      <div className="flex items-center justify-center gap-1.5 w-full">
+                    <div className="flex flex-1 flex-col items-center gap-0.5">
+                      <div className="flex w-full items-center justify-center gap-1.5">
                         <input
                           type="number"
                           min={0}
                           max={99}
-                          inputMode="numeric"
+                          step={product.isMeasuredInWeight ? "0.01" : "1"}
+                          inputMode={
+                            product.isMeasuredInWeight ? "decimal" : "numeric"
+                          }
                           value={inputValue}
-                          onChange={(e) => { setInputValue(e.target.value); setIsQtyDirty(true); }}
+                          onChange={(e) => {
+                            const value = e.target.value;
+
+                            if (value === "") {
+                              setInputValue(value);
+                              setIsQtyDirty(true);
+                              return;
+                            }
+
+                            if (!product.isMeasuredInWeight) {
+                              if (!/^\d+$/.test(value)) return;
+                            } else {
+                              if (!/^\d*([.]\d{0,2})?$/.test(value)) return;
+                            }
+
+                            setInputValue(value);
+                            setIsQtyDirty(true);
+                          }}
                           onBlur={handleQuantityInputCommit}
-                          onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur();
+                          }}
                           disabled={isPending}
-                          className="w-14 h-8 rounded-lg border border-border bg-white text-center text-base font-black text-foreground tabular-nums outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          className="h-8 w-14 rounded-lg border border-border bg-white text-center text-base font-black text-foreground tabular-nums outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
+
                         {showConfirm && (
                           <button
                             type="button"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={handleQuantityInputCommit}
                             disabled={isPending}
-                            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50"
                           >
-                            <Check size={13} strokeWidth={3} className="text-primary-foreground" />
+                            <Check
+                              size={13}
+                              strokeWidth={3}
+                              className="text-primary-foreground"
+                            />
                           </button>
                         )}
                       </div>
-                      <span className="text-[10px] text-primary/70 font-medium">in cart</span>
+
+                      <span className="text-[10px] font-medium text-primary/70">
+                        in cart
+                      </span>
                     </div>
 
                     {!showConfirm && (
@@ -346,9 +498,13 @@ export function ProductDetailDialog({
                         type="button"
                         onClick={handleIncrement}
                         disabled={isPending || quantity >= 99}
-                        className="w-8 h-8 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-colors disabled:opacity-50 shrink-0"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary transition-colors hover:opacity-90 disabled:opacity-50"
                       >
-                        <Plus size={13} strokeWidth={2.5} className="text-primary-foreground" />
+                        <Plus
+                          size={13}
+                          strokeWidth={2.5}
+                          className="text-primary-foreground"
+                        />
                       </button>
                     )}
                   </div>
@@ -358,21 +514,25 @@ export function ProductDetailDialog({
                   type="button"
                   onClick={handleAddToCart}
                   disabled={isPending}
-                  className="group relative w-full h-12 rounded-2xl bg-secondary text-primary border border-primary/20 hover:bg-primary/15 active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed overflow-hidden"
+                  className="group relative flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl border border-primary/20 bg-secondary text-primary shadow-sm transition-all duration-150 hover:bg-primary/15 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <span className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 bg-gradient-to-r from-transparent via-primary/10 to-transparent pointer-events-none" />
+                  <span className="pointer-events-none absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-transparent via-primary/10 to-transparent transition-transform duration-500 group-hover:translate-x-[100%]" />
                   {isPending ? (
                     <Loader2 className="h-5 w-5 animate-spin text-primary" />
                   ) : (
                     <ShoppingCart className="h-5 w-5 text-primary" />
                   )}
-                  <span className="text-sm font-bold tracking-wide">Add to Cart</span>
+                  <span className="text-sm font-bold tracking-wide">
+                    Add to Cart
+                  </span>
                 </button>
               )
             ) : (
-              <div className="w-full h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center gap-2">
+              <div className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100">
                 <CircleDot className="h-4 w-4 text-slate-400" />
-                <span className="text-sm font-semibold text-slate-400">Out of Stock</span>
+                <span className="text-sm font-semibold text-slate-400">
+                  Out of Stock
+                </span>
               </div>
             )}
           </div>
