@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import QrCodeClient from "./QrCodeClient";
 import { getMemberSince } from "@/lib/memberSince";
+import ShareButton from "@/components/shared/share/ShareButton";
 
 type Props = {
   customer: Pick<
@@ -165,6 +166,7 @@ export default function ProfileHero({ customer }: Props) {
               Edit Profile
             </Link>
           </Button>
+          <ShareButton />
         </div>
       </div>
     </div>

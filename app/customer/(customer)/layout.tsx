@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { Footer } from "@/components/customer/landing/Footer";
 import { redirect } from "next/navigation";
+import BottomNavbar from "@/components/customer/landing/BottomNavbar";
 
 export const metadata: Metadata = {
   title: {
@@ -33,6 +34,8 @@ export default async function RootLayout({
   return (
     <>
       <div className="flex-1 w-full h-full">{children}</div>
+      <BottomNavbar />
+      <div className="h-16 md:hidden" />
       <Footer />
     </>
   );
