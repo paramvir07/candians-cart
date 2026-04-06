@@ -89,19 +89,26 @@ export const CATEGORY_CONFIG: Record<
   string,
   { bg: string; text: string; border: string; emoji: string; gradient: string }
 > = {
-  Fruits: {
+  // Fruits: {
+  //   bg: "bg-amber-50",
+  //   text: "text-amber-700",
+  //   border: "border-amber-200",
+  //   emoji: "🥭",
+  //   gradient: "from-amber-400 to-orange-500",
+  // },
+  // Vegetables: {
+  //   bg: "bg-green-50",
+  //   text: "text-green-700",
+  //   border: "border-green-200",
+  //   emoji: "🥦",
+  //   gradient: "from-green-400 to-emerald-500",
+  // },
+  Produce: {
     bg: "bg-amber-50",
     text: "text-amber-700",
     border: "border-amber-200",
-    emoji: "🥭",
+    emoji: "🥕",
     gradient: "from-amber-400 to-orange-500",
-  },
-  Vegetables: {
-    bg: "bg-green-50",
-    text: "text-green-700",
-    border: "border-green-200",
-    emoji: "🥦",
-    gradient: "from-green-400 to-emerald-500",
   },
   Dairy: {
     bg: "bg-yellow-50",
@@ -283,8 +290,9 @@ export const getCategoryConfig = (category: string) =>
   };
 
 export const ALL_CATEGORIES = [
-  "Fruits",
-  "Vegetables",
+  // "Fruits",
+  // "Vegetables",
+  "Produce",
   "Dairy",
   "Meat",
   "Bakery",

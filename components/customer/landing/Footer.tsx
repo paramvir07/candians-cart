@@ -4,7 +4,7 @@ import Logo from "@/components/shared/Logo";
 const LINKS = {
   Shop: [
     { label: "All Products",  href: "/customer" },
-    { label: "Fresh Produce", href: "/customer?category=Vegetables" },
+    { label: "Fresh Produce", href: "/customer?category=Produce" },
     { label: "Dairy & Eggs",  href: "/customer?category=Dairy" },
     { label: "Bakery",        href: "/customer?category=Bakery" },
   ],

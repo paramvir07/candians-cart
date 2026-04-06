@@ -38,8 +38,9 @@ interface SearchResultsClientProps {
 }
 
 const QUICK_SUGGESTIONS = [
-  { emoji: "🥭", label: "Fruits" },
-  { emoji: "🥦", label: "Vegetables" },
+  // { emoji: "🥭", label: "Fruits" },
+  // { emoji: "🥦", label: "Vegetables" },
+  { emoji: "🥕", label: "Produce"},
   { emoji: "🥛", label: "Dairy" },
   { emoji: "🍗", label: "Meat" },
   { emoji: "🫓", label: "Bakery" },

@@ -25,11 +25,11 @@ export default function FeaturesSection() {
   }, [searchParams])
 
   const eligible = spend >= 21
-  const savings = eligible ? spend * 0.40 * 0.60 : 0
+  const savings = eligible ? spend * 0.35 * 0.60 : 0
   const annual  = savings * 12
 
   const fmt    = (n: number) => '$' + n.toFixed(2)
-  const fmtInt = (n: number) => '$' + Math.round(n).toLocaleString()
+  const fmtInt = (n: number) => '$' + Math.ceil(n).toLocaleString()
 
   const handleInput = (val: string) => {
     const parsed = parseFloat(val)

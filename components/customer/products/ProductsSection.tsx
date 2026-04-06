@@ -37,6 +37,18 @@ import { startTransition } from "react";
 
 const ITEMS_PER_PAGE = 16;
 
+// ===========================
+const CATEGORY_EXPANSIONS: Record<string, string[]> = {
+  Produce: ["Fruits", "Vegetables"],
+  // Add more as needed e.g:
+  // "Sweets & Mithai": ["Sweets", "Mithai", "Desserts"],
+};
+
+// Expands selected categories for backend — e.g. "Produce" → ["Fruits", "Vegetables"]
+const expandCategories = (cats: string[]) =>
+  cats.flatMap((c) => CATEGORY_EXPANSIONS[c] ?? [c]);
+// ------------------------------
+
 interface ProductsSectionProps {
   storeId: string;
   initialData: PaginatedProductsResponse;
@@ -78,7 +90,8 @@ export function ProductsSection({
         currentPage,
         ITEMS_PER_PAGE,
         {
-          categories: filters.categories,
+          // categories: filters.categories,  old
+          categories: expandCategories(filters.categories),
           inStockOnly: filters.inStockOnly,
           subsidisedOnly: filters.subsidisedOnly || subsidized,
           sortBy: filters.sortBy as any,

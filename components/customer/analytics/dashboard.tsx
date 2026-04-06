@@ -190,12 +190,12 @@ function SavingsCalculator() {
   const [rawInput, setRawInput] = useState("21");
 
   const eligible = spend >= MIN_SPEND;
-  const subsidised = eligible ? spend * 0.4 : 0;
+  const subsidised = eligible ? spend * 0.35 : 0;
   const savings = eligible ? subsidised * 0.6 : 0;
   const annual = savings * 12;
 
   const fmtDollar = (n: number) => "$" + n.toFixed(2);
-  const fmtInt = (n: number) => "$" + Math.round(n).toLocaleString();
+  const fmtInt = (n: number) => "$" + Math.ceil(n).toLocaleString();
 
   const handleInputChange = (val: string) => {
     setRawInput(val);
@@ -343,7 +343,7 @@ function SavingsCalculator() {
               <div className="flex items-center justify-between px-4 py-3">
                 <div>
                   <p className="text-xs font-semibold text-foreground">
-                    Discount applied (60%)
+                    Discount applied (upto 21%)
                   </p>
                 </div>
                 <span
@@ -380,7 +380,7 @@ function SavingsCalculator() {
                     className="text-4xl font-black tabular-nums leading-none"
                     style={{ color: "#fff", animation: "countUp 0.2s ease" }}
                   >
-                    {fmtDollar(savings)}
+                    {fmtInt(Math.ceil(savings))}
                   </span>
                   <span
                     className="text-sm font-semibold"
@@ -403,7 +403,7 @@ function SavingsCalculator() {
                   className="text-2xl font-black tabular-nums"
                   style={{ color: "#fff", animation: "countUp 0.2s ease" }}
                 >
-                  {fmtDollar(annual)}
+                  {fmtInt(Math.ceil(annual))}
                 </span>
               </div>
             </div>
