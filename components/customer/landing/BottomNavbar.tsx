@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { label: "Home", href: "/customer", icon: Home, exact: true },
   { label: "Orders", href: "/customer/orders", icon: ShoppingBag },
-  //   { label: "Search", href: "/customer/search", icon: Search },
   { label: "Scan", href: "/customer/search?scan=1", icon: ScanLine },
   { label: "Analytics", href: "/customer/analytics", icon: BarChart2 },
   { label: "Profile", href: "/customer/profile", icon: User },
@@ -22,23 +21,14 @@ export default function BottomNavbar() {
 
   return (
     <>
-      {/* Spacer so page content isn't clipped by the floating bar */}
-      <div className="h-24 md:hidden" />
+      {/* Spacer — accounts for nav height + safe area */}
+      <div className="h-20 md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }} />
 
       <nav
-        className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-4"
-        style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-100"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        {/* Floating pill */}
-        <div
-          className={cn(
-            "flex items-center justify-around",
-            "bg-white rounded-[28px]",
-            "px-2 py-2",
-            "shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)]",
-            "border border-gray-100/80",
-          )}
-        >
+        <div className="flex items-center justify-around px-2 py-2">
           {navItems.map(({ label, href, icon: Icon, exact }) => {
             const active = isActive(href, exact);
 
@@ -67,14 +57,10 @@ export default function BottomNavbar() {
                     )}
                   />
 
-                  {/* Pulse ring on active — fires once */}
                   {active && (
                     <span
                       className="absolute inset-0 rounded-2xl bg-[#16a34a]/20"
-                      style={{
-                        animation:
-                          "ping 0.6s cubic-bezier(0,0,0.2,1) 1 forwards",
-                      }}
+                      style={{ animation: "ping 0.6s cubic-bezier(0,0,0.2,1) 1 forwards" }}
                     />
                   )}
                 </span>
