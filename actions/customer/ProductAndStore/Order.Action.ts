@@ -204,7 +204,8 @@ export const completePendingOrder = async (
         _id: orderId,
         userId: customerId,
         status: "pending",
-      }).select("cartTotal subsidyLeft")
+      })
+        .select("cartTotal subsidyLeft")
         .session(mongoSession)
         .lean();
 
@@ -286,8 +287,8 @@ export const completePendingOrder = async (
       };
     });
 
-    if(result?.success){
-      revalidateTag("orders", "max")
+    if (result?.success) {
+      revalidateTag("orders", "max");
     }
     return result;
   } catch (error) {
@@ -367,9 +368,7 @@ export const cancelPendingOrder = async (
   }
 };
 
-
-
 export const getOrderCount = async () => {
-  const session = await getUserSession();         // ← session outside
-  return getOrderCountCached(session.user.id);    // ← id into cache key
+  const session = await getUserSession(); // ← session outside
+  return getOrderCountCached(session.user.id); // ← id into cache key
 };

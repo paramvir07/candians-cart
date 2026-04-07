@@ -21,7 +21,6 @@ import {
   Banknote,
   ChevronDown,
   Calculator,
-  CheckCircle2,
   Clock,
   Package,
   ArrowUpRight,
@@ -454,7 +453,7 @@ export default function AnalyticsDashboard({
   const totalStripeLoad = filteredStripe
     .filter((t) => t.status === "paid")
     .reduce((s, t) => s + t.amount, 0);
-  const totalStoreLoad = filteredWallet.reduce((s, t) => s + t.amount, 0);
+  const totalStoreLoad = filteredWallet.reduce((s, t) => s + t.value, 0);
 
   const spendingChart = useMemo(() => {
     const useMonth = ["3m", "6m", "1y", "all"].includes(period);
@@ -573,7 +572,7 @@ export default function AnalyticsDashboard({
         <MetricCard
           label="Subsidy Saved"
           value={fmt(totalSubsidy)}
-          sub="60% markup returned"
+          sub="Saved upto 21%"
           icon={Gift}
           accent
         />

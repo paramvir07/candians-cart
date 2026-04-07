@@ -40,7 +40,7 @@ export type SerializedWalletPayment = Omit<IWalletPayment, "userId"> & {
 export type WalletTopUpEntry = {
   _id: string;
   customerId: string;
-  amount: number;
+  value: number;
   createdAt: string;
 };
 
@@ -53,6 +53,7 @@ const AnalyticsPage = async () => {
   const orders = (Orders ?? []) as SerializedOrder[];
   const stripeTopUps = (WalletHistory?.walletTopUpHistory?.stripeTopUps ?? []) as SerializedWalletPayment[];
   const walletTopUps = (WalletHistory?.walletTopUpHistory?.walletTopUps ?? []) as WalletTopUpEntry[];
+
 
   return (
     <div className="min-h-screen" style={{ background: "oklch(0.9719 0.0055 158.5966)" }}>
