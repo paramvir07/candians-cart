@@ -25,6 +25,7 @@ import {
   X,
 } from "lucide-react";
 import { Customer } from "@/types/customer/customer";
+import { getCartQuantities } from "@/actions/customer/ProductAndStore/Cart.Action";
 
 interface SearchResultsClientProps {
   customerId?: string;
@@ -40,7 +41,7 @@ interface SearchResultsClientProps {
 const QUICK_SUGGESTIONS = [
   // { emoji: "🥭", label: "Fruits" },
   // { emoji: "🥦", label: "Vegetables" },
-  { emoji: "🥕", label: "Produce"},
+  { emoji: "🥕", label: "Produce" },
   { emoji: "🥛", label: "Dairy" },
   { emoji: "🍗", label: "Meat" },
   { emoji: "🫓", label: "Bakery" },
@@ -66,6 +67,20 @@ export function SearchResultsClient({
   const [hasSearched, setHasSearched] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [cartMap, setCartMap] = useState<Record<string, number>>({});
+
+  // 1. Fetch Cart State
+  useEffect(() => {
+    const fetchInitialCart = async () => {
+      try {
+        const map = await getCartQuantities(customerId);
+        if (map) setCartMap(map);
+      } catch (error) {
+        console.error("Failed to fetch cart products quantities:", error);
+      }
+    };
+    fetchInitialCart();
+  }, []);
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const isFirstFilterRender = useRef(true);
@@ -283,6 +298,7 @@ export function SearchResultsClient({
                         customerId={customerId}
                         key={product._id}
                         product={product}
+                        cartQuantity={cartMap[product._id as string] || 0}
                       />
                     ))}
                   </div>

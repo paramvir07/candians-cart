@@ -7,7 +7,6 @@ import {
   MapPin,
   Phone,
   User,
-  ChevronRight,
   ChevronDown,
   ContactRound,
 } from "lucide-react";
@@ -24,12 +23,10 @@ function ContactRow({
   icon: Icon,
   label,
   value,
-  href,
 }: {
   icon: React.ElementType;
   label: string;
   value: string;
-  href?: string;
 }) {
   const inner = (
     <div className="flex items-center gap-3 py-3.5 group">
@@ -40,38 +37,32 @@ function ContactRow({
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 font-semibold leading-none">
           {label}
         </p>
-        <p className="text-sm font-semibold text-foreground truncate mt-1 group-hover:text-primary transition-colors duration-200">
+        <p className="text-sm font-semibold text-foreground truncate mt-1 transition-colors duration-200">
           {value}
         </p>
       </div>
-      {href && (
-        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-primary/60 group-hover:translate-x-0.5 shrink-0 transition-all duration-200" />
-      )}
     </div>
   );
 
-  return href ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="block">
-      {inner}
-    </a>
-  ) : (
-    inner
-  );
+  return inner;
 }
 
 export default function ProfileContact({ customer }: Props) {
   const [open, setOpen] = useState(false);
 
   const rows = [
-    { icon: User,   label: "Full Name",     value: customer.name },
-    { icon: Mail,   label: "Email Address", value: customer.email, href: `mailto:${customer.email}` },
-    { icon: MapPin, label: "Home Address",  value: `${customer.address}, ${customer.city}, ${customer.province}` },
-    { icon: Phone,  label: "Mobile Number", value: customer.mobile, href: `tel:${customer.mobile}` },
+    { icon: User, label: "Full Name", value: customer.name },
+    { icon: Mail, label: "Email Address", value: customer.email },
+    {
+      icon: MapPin,
+      label: "Home Address",
+      value: `${customer.address}, ${customer.city}, ${customer.province}`,
+    },
+    { icon: Phone, label: "Mobile Number", value: customer.mobile },
   ];
 
   return (
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm">
-
       {/* ── Mobile: toggle ── */}
       <button
         onClick={() => setOpen((v) => !v)}
@@ -82,8 +73,12 @@ export default function ProfileContact({ customer }: Props) {
             <ContactRound className="h-4 w-4 text-primary" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-bold text-foreground leading-none">Contact Info</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">{customer.email}</p>
+            <p className="text-sm font-bold text-foreground leading-none">
+              Contact Info
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {customer.email}
+            </p>
           </div>
         </div>
         <ChevronDown
@@ -95,7 +90,7 @@ export default function ProfileContact({ customer }: Props) {
       </button>
 
       {open && (
-      <div className="border-t border-border/40 px-4 divide-y divide-border/30 lg:hidden animate-in slide-in-from-top-4 fade-in-0 duration-500 ease-out">
+        <div className="border-t border-border/40 px-4 divide-y divide-border/30 lg:hidden animate-in slide-in-from-top-4 fade-in-0 duration-500 ease-out">
           {rows.map((row) => (
             <ContactRow key={row.label} {...row} />
           ))}

@@ -54,11 +54,7 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
     if (state.message) {
       if (state.success) {
         toast.success(state.message);
-        customer
-          ? router.push("/customer")
-          : store || cashier || admin
-            ? router.push("/admin")
-            : router.push("/customer/login");
+        userRole ? router.push(`/${userRole}`) : router.push("/customer/login");
       } else {
         toast.error(state.message);
       }
@@ -143,23 +139,25 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
         </p>
 
         {/* Address */}
-{!admin && (
-  <Input
-    id="address"
-    type="text"
-    name="address"
-    placeholder={
-      customer ? "Address (e.g. 308-123 Main St)" : "Full Store Address"
-    }
-    value={!customer && storeAddress ? storeAddress : undefined}
-    disabled={!customer && !!storeAddress}
-    required={customer || store || cashier}
-    className={cn(
-      "h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary",
-      !customer && storeAddress && "opacity-60 cursor-not-allowed bg-muted"
-    )}
-  />
-)}
+        {!admin && (
+          <Input
+            id="address"
+            type="text"
+            name="address"
+            placeholder={
+              customer ? "Address (e.g. 308-123 Main St)" : "Full Store Address"
+            }
+            value={!customer && storeAddress ? storeAddress : undefined}
+            disabled={!customer && !!storeAddress}
+            required={customer || store || cashier}
+            className={cn(
+              "h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary",
+              !customer &&
+                storeAddress &&
+                "opacity-60 cursor-not-allowed bg-muted",
+            )}
+          />
+        )}
 
         {/* City + Province — customer only */}
         {customer && (

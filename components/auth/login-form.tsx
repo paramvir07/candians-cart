@@ -40,7 +40,6 @@ useEffect(() => {
     router.push(state.redirectTo || "/customer");
   } else {
     toast.error(state.message);
-    // Redirect to correct portal if provided (wrong role case)
     if (state.redirectTo) {
       setTimeout(() => router.push(state.redirectTo!), 2000);
     }

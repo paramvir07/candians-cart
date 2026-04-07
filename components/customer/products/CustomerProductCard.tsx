@@ -47,6 +47,8 @@ export function CustomerProductCard({
   cartQuantity?: number;
   subsidyPage: boolean;
 }) {
+  const vegetablesCategory = product.category === "Vegetables";
+  const fruitsCategory = product.category === "Fruits";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -370,7 +372,10 @@ export function CustomerProductCard({
             <span
               className={`self-start inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold opacity-90 ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}
             >
-              {catConfig.emoji} {product.category}
+              {catConfig.emoji}{" "}
+              {vegetablesCategory || fruitsCategory
+                ? "Produce"
+                : product.category}
             </span>
 
             <h3 className="line-clamp-2 text-sm font-bold leading-tight text-white drop-shadow">
@@ -380,7 +385,8 @@ export function CustomerProductCard({
             <div className="flex items-center text-xs font-medium text-white/90">
               <span className="flex items-center gap-1">
                 <span className="font-black text-white">
-                  {fmt(product.price + product.price * (product.markup / 100))}{product.UOM && `/${product.UOM?.toUpperCase()}`}
+                  {fmt(product.price + product.price * (product.markup / 100))}
+                  {product.UOM && `/${product.UOM?.toUpperCase()}`}
                 </span>
               </span>
             </div>

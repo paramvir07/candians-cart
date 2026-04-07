@@ -65,6 +65,8 @@ export function ProductDetailDialog({
   const [isQtyDirty, setIsQtyDirty] = useState(false);
 
   const quantityStep = product.isMeasuredInWeight ? 0.01 : 1;
+  const vegetablesCategory = product.category === "Vegetables";
+  const fruitsCategory = product.category === "Fruits";
 
   const formatQtyForInput = useCallback(
     (value: number) => {
@@ -355,7 +357,7 @@ export function ProductDetailDialog({
             <span
               className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}
             >
-              {catConfig.emoji} {product.category}
+              {catConfig.emoji} {(vegetablesCategory || fruitsCategory) ? "Produce" : product.category }
             </span>
 
             <h2 className="text-lg font-black leading-tight text-foreground">

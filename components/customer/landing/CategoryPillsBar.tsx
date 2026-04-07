@@ -1,5 +1,4 @@
 "use client";
-// components/customer/landing/CategoryPillsBar.tsx
 
 import {
   ALL_CATEGORIES,

@@ -103,6 +103,20 @@ export const CATEGORY_CONFIG: Record<
   //   emoji: "🥦",
   //   gradient: "from-green-400 to-emerald-500",
   // },
+  Fruits: {
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    border: "border-amber-200",
+    emoji: "🥕",
+    gradient: "from-amber-400 to-orange-500",
+  },
+  Vegetables: {
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    border: "border-amber-200",
+    emoji: "🥕",
+    gradient: "from-amber-400 to-orange-500",
+  },
   Produce: {
     bg: "bg-amber-50",
     text: "text-amber-700",
