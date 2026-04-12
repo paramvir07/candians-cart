@@ -64,7 +64,10 @@ const FilterChip = ({
 }) => (
   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-medium">
     {label}
-    <button onClick={onRemove} className="hover:text-destructive transition-colors ml-0.5">
+    <button
+      onClick={onRemove}
+      className="hover:text-destructive transition-colors ml-0.5"
+    >
       <X className="h-3 w-3" />
     </button>
   </span>
@@ -120,7 +123,9 @@ export const StoreProductsList = ({
       setIsLoading(false);
     };
     load();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [storeId, currentPage, isSearchMode, isFilterMode]);
 
   // Filter mode load
@@ -129,7 +134,12 @@ export const StoreProductsList = ({
     let mounted = true;
     const load = async () => {
       setIsLoading(true);
-      const result = await getStoreProductsFiltered(storeId, currentPage, 12, filters);
+      const result = await getStoreProductsFiltered(
+        storeId,
+        currentPage,
+        12,
+        filters,
+      );
       if (!mounted) return;
       if (result.success) {
         setProducts(result.data);
@@ -140,7 +150,9 @@ export const StoreProductsList = ({
       setIsLoading(false);
     };
     load();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [storeId, currentPage, filters, isFilterMode, isSearchMode]);
 
   // Search mode
@@ -176,9 +188,24 @@ export const StoreProductsList = ({
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else if (currentPage <= 3) pages.push(1, 2, 3, 4, "ellipsis", totalPages);
     else if (currentPage >= totalPages - 2)
-      pages.push(1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      pages.push(
+        1,
+        "ellipsis",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
     else
-      pages.push(1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages);
+      pages.push(
+        1,
+        "ellipsis",
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        "ellipsis",
+        totalPages,
+      );
     return pages;
   };
 
@@ -218,13 +245,24 @@ export const StoreProductsList = ({
     );
   }
   if (filters.inStock)
-    filterChips.push({ label: "In stock", clear: () => handleApplyFilters({ ...filters, inStock: undefined }) });
+    filterChips.push({
+      label: "In stock",
+      clear: () => handleApplyFilters({ ...filters, inStock: undefined }),
+    });
   if (filters.subsidised)
-    filterChips.push({ label: "Subsidised", clear: () => handleApplyFilters({ ...filters, subsidised: undefined }) });
+    filterChips.push({
+      label: "Subsidised",
+      clear: () => handleApplyFilters({ ...filters, subsidised: undefined }),
+    });
   if (filters.minPrice !== undefined || filters.maxPrice !== undefined)
     filterChips.push({
       label: `CA$${((filters.minPrice ?? 0) / 100).toFixed(0)}–CA$${((filters.maxPrice ?? 500000) / 100).toFixed(0)}`,
-      clear: () => handleApplyFilters({ ...filters, minPrice: undefined, maxPrice: undefined }),
+      clear: () =>
+        handleApplyFilters({
+          ...filters,
+          minPrice: undefined,
+          maxPrice: undefined,
+        }),
     });
   if ((filters.taxRates?.length ?? 0) > 0)
     filterChips.push({
@@ -234,11 +272,19 @@ export const StoreProductsList = ({
   if (filters.markupMin !== undefined || filters.markupMax !== undefined)
     filterChips.push({
       label: `Markup ${filters.markupMin ?? 0}–${filters.markupMax ?? 100}%`,
-      clear: () => handleApplyFilters({ ...filters, markupMin: undefined, markupMax: undefined }),
+      clear: () =>
+        handleApplyFilters({
+          ...filters,
+          markupMin: undefined,
+          markupMax: undefined,
+        }),
     });
   if (filters.sortBy && filters.sortBy !== "recommended")
     filterChips.push({
-      label: { price_asc: "Price ↑", price_desc: "Price ↓", name_asc: "A → Z" }[filters.sortBy] ?? "",
+      label:
+        { price_asc: "Price ↑", price_desc: "Price ↓", name_asc: "A → Z" }[
+          filters.sortBy
+        ] ?? "",
       clear: () => handleApplyFilters({ ...filters, sortBy: undefined }),
     });
 
@@ -283,7 +329,11 @@ export const StoreProductsList = ({
       {filterChips.length > 0 && (
         <div className="flex flex-wrap gap-2 items-center">
           {filterChips.map((chip) => (
-            <FilterChip key={chip.label} label={chip.label} onRemove={chip.clear} />
+            <FilterChip
+              key={chip.label}
+              label={chip.label}
+              onRemove={chip.clear}
+            />
           ))}
           <button
             onClick={() => handleApplyFilters(EMPTY_FILTERS)}
@@ -295,25 +345,26 @@ export const StoreProductsList = ({
       )}
 
       {/* Add product banner */}
-      {role === "store" ||
-        (role === "admin" && storeId && (
-          <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg border">
-            <p className="text-sm font-medium text-slate-600">
-              Want to add a new product?
-            </p>
-            <Button asChild>
-              <Link href={addProductHref} className="flex items-center gap-2">
-                <CirclePlus className="h-4 w-4" />
-                Add product
-              </Link>
-            </Button>
-          </div>
-        ))}
+      {(role === "store" || (role === "admin" && storeId)) && (
+        <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg border">
+          <p className="text-sm font-medium text-slate-600">
+            Want to add a new product?
+          </p>
+          <Button asChild>
+            <Link href={addProductHref} className="flex items-center gap-2">
+              <CirclePlus className="h-4 w-4" />
+              Add product
+            </Link>
+          </Button>
+        </div>
+      )}
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {isLoading ? (
-          Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)
+          Array.from({ length: 8 }).map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))
         ) : products.length > 0 ? (
           products.map((product) => (
             <div key={product._id} className="flex flex-col gap-0">
@@ -377,7 +428,8 @@ export const StoreProductsList = ({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (currentPage > 1 && !isLoading) setCurrentPage((p) => p - 1);
+                    if (currentPage > 1 && !isLoading)
+                      setCurrentPage((p) => p - 1);
                   }}
                   className={
                     currentPage === 1 || isLoading
@@ -396,9 +448,14 @@ export const StoreProductsList = ({
                       isActive={currentPage === page}
                       onClick={(e) => {
                         e.preventDefault();
-                        if (currentPage !== page && !isLoading) setCurrentPage(page as number);
+                        if (currentPage !== page && !isLoading)
+                          setCurrentPage(page as number);
                       }}
-                      className={isLoading ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      className={
+                        isLoading
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
                     >
                       {page}
                     </PaginationLink>
@@ -410,7 +467,8 @@ export const StoreProductsList = ({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (currentPage < totalPages && !isLoading) setCurrentPage((p) => p + 1);
+                    if (currentPage < totalPages && !isLoading)
+                      setCurrentPage((p) => p + 1);
                   }}
                   className={
                     currentPage === totalPages || isLoading

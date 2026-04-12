@@ -114,7 +114,7 @@ function SidebarContent({ onNav, name }: { onNav?: () => void; name: string }) {
       </div>
 
       {/* Scrollable nav groups */}
-      <nav className="flex-1 overflow-y-auto space-y-4 pr-0.5">
+      <nav className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-0.5">
         {NAV_GROUPS.map((group) => (
           <div key={group.label}>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.08em] px-3 mb-1">
