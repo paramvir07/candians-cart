@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Search, PackageOpen, CirclePlus, Store } from "lucide-react";
+import { Search, PackageOpen, CirclePlus, Store, X } from "lucide-react";
 import Link from "next/link";
 import {
   Pagination,
@@ -18,12 +18,19 @@ import {
 import { ProductCard, ProductCardRole } from "./ProductCard";
 import { IProduct } from "@/types/store/products.types";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   AdminProduct,
   getStoreProductsPaginated,
   searchProducts,
 } from "@/actions/admin/products/getProducts.action";
+import {
+  getStoreProductsFiltered,
+  ProductFilters,
+} from "@/actions/admin/products/getProductsFiltered.action";
+// import { ProductFiltersSheet } from "@/components/shared/products/ProductFiltersSheet";
 import QrScannerButton from "@/components/shared/users/QrScannerButton";
+import { ProductFiltersSheet } from "@/components/shared/filters/ProductFilterSheet";
 
 const ProductCardSkeleton = () => (
   <div className="bg-card rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">
@@ -47,10 +54,39 @@ const ProductCardSkeleton = () => (
   </div>
 );
 
+// Active filter chip
+const FilterChip = ({
+  label,
+  onRemove,
+}: {
+  label: string;
+  onRemove: () => void;
+}) => (
+  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-medium">
+    {label}
+    <button onClick={onRemove} className="hover:text-destructive transition-colors ml-0.5">
+      <X className="h-3 w-3" />
+    </button>
+  </span>
+);
+
 interface StoreProductsListProps {
   storeId?: string;
   role: ProductCardRole;
 }
+
+const EMPTY_FILTERS: ProductFilters = {};
+
+const hasFilters = (f: ProductFilters) =>
+  (f.categories?.length ?? 0) > 0 ||
+  f.minPrice !== undefined ||
+  f.maxPrice !== undefined ||
+  f.subsidised !== undefined ||
+  f.inStock !== undefined ||
+  (f.taxRates?.length ?? 0) > 0 ||
+  f.markupMin !== undefined ||
+  f.markupMax !== undefined ||
+  (f.sortBy && f.sortBy !== "recommended");
 
 export const StoreProductsList = ({
   storeId,
@@ -62,12 +98,15 @@ export const StoreProductsList = ({
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchMode, setIsSearchMode] = useState(false);
+  const [filters, setFilters] = useState<ProductFilters>(EMPTY_FILTERS);
 
   const isAllStores = !storeId;
+  const isFilterMode = hasFilters(filters);
 
+  // Normal paginated load (no search, no filters)
   useEffect(() => {
     let mounted = true;
-    if (isSearchMode) return;
+    if (isSearchMode || isFilterMode) return;
     const load = async () => {
       setIsLoading(true);
       const result = await getStoreProductsPaginated(storeId, currentPage, 12);
@@ -81,11 +120,30 @@ export const StoreProductsList = ({
       setIsLoading(false);
     };
     load();
-    return () => {
-      mounted = false;
-    };
-  }, [storeId, currentPage, isSearchMode]);
+    return () => { mounted = false; };
+  }, [storeId, currentPage, isSearchMode, isFilterMode]);
 
+  // Filter mode load
+  useEffect(() => {
+    if (!isFilterMode || isSearchMode) return;
+    let mounted = true;
+    const load = async () => {
+      setIsLoading(true);
+      const result = await getStoreProductsFiltered(storeId, currentPage, 12, filters);
+      if (!mounted) return;
+      if (result.success) {
+        setProducts(result.data);
+        setTotalPages(result.totalPages ?? 1);
+      } else {
+        toast.error(result.error || "Failed to fetch products");
+      }
+      setIsLoading(false);
+    };
+    load();
+    return () => { mounted = false; };
+  }, [storeId, currentPage, filters, isFilterMode, isSearchMode]);
+
+  // Search mode
   useEffect(() => {
     if (!searchQuery.trim()) {
       setIsSearchMode(false);
@@ -101,10 +159,15 @@ export const StoreProductsList = ({
     }, 350);
     return () => clearTimeout(timer);
   }, [searchQuery, storeId]);
-  
+
   const handleBarcodeScan = (value: string) => {
     setSearchQuery(value);
     setIsSearchMode(true);
+  };
+
+  const handleApplyFilters = (newFilters: ProductFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
   };
 
   const getPageNumbers = (): (number | "ellipsis")[] => {
@@ -113,24 +176,9 @@ export const StoreProductsList = ({
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else if (currentPage <= 3) pages.push(1, 2, 3, 4, "ellipsis", totalPages);
     else if (currentPage >= totalPages - 2)
-      pages.push(
-        1,
-        "ellipsis",
-        totalPages - 3,
-        totalPages - 2,
-        totalPages - 1,
-        totalPages,
-      );
+      pages.push(1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
     else
-      pages.push(
-        1,
-        "ellipsis",
-        currentPage - 1,
-        currentPage,
-        currentPage + 1,
-        "ellipsis",
-        totalPages,
-      );
+      pages.push(1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages);
     return pages;
   };
 
@@ -151,12 +199,52 @@ export const StoreProductsList = ({
   const addProductHref =
     role === "store"
       ? "/store/products/add"
-      : (role === "admin" && storeId)
+      : role === "admin" && storeId
         ? `/admin/store/${storeId}/products/add`
         : "";
 
+  // Build readable chips for active filters
+  const filterChips: { label: string; clear: () => void }[] = [];
+  if ((filters.categories?.length ?? 0) > 0) {
+    filters.categories!.forEach((cat) =>
+      filterChips.push({
+        label: cat,
+        clear: () =>
+          handleApplyFilters({
+            ...filters,
+            categories: filters.categories!.filter((c) => c !== cat),
+          }),
+      }),
+    );
+  }
+  if (filters.inStock)
+    filterChips.push({ label: "In stock", clear: () => handleApplyFilters({ ...filters, inStock: undefined }) });
+  if (filters.subsidised)
+    filterChips.push({ label: "Subsidised", clear: () => handleApplyFilters({ ...filters, subsidised: undefined }) });
+  if (filters.minPrice !== undefined || filters.maxPrice !== undefined)
+    filterChips.push({
+      label: `CA$${((filters.minPrice ?? 0) / 100).toFixed(0)}–CA$${((filters.maxPrice ?? 500000) / 100).toFixed(0)}`,
+      clear: () => handleApplyFilters({ ...filters, minPrice: undefined, maxPrice: undefined }),
+    });
+  if ((filters.taxRates?.length ?? 0) > 0)
+    filterChips.push({
+      label: `Tax: ${filters.taxRates!.map((r) => `${(r * 100).toFixed(0)}%`).join(", ")}`,
+      clear: () => handleApplyFilters({ ...filters, taxRates: undefined }),
+    });
+  if (filters.markupMin !== undefined || filters.markupMax !== undefined)
+    filterChips.push({
+      label: `Markup ${filters.markupMin ?? 0}–${filters.markupMax ?? 100}%`,
+      clear: () => handleApplyFilters({ ...filters, markupMin: undefined, markupMax: undefined }),
+    });
+  if (filters.sortBy && filters.sortBy !== "recommended")
+    filterChips.push({
+      label: { price_asc: "Price ↑", price_desc: "Price ↓", name_asc: "A → Z" }[filters.sortBy] ?? "",
+      clear: () => handleApplyFilters({ ...filters, sortBy: undefined }),
+    });
+
   return (
     <>
+      {/* Header row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
@@ -165,10 +253,12 @@ export const StoreProductsList = ({
           <p className="text-muted-foreground text-sm mt-1">
             {isSearchMode
               ? `Showing results for "${searchQuery}"`
-              : titles[role].sub}
+              : isFilterMode
+                ? `Filtered results`
+                : titles[role].sub}
           </p>
         </div>
-        <div className="relative flex gap-3 w-full sm:max-w-xs">
+        <div className="relative flex gap-2 w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
@@ -178,8 +268,33 @@ export const StoreProductsList = ({
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
+          {/* Filter button — only for admin/store, not customer */}
+          {role !== "customer" && (
+            <ProductFiltersSheet
+              filters={filters}
+              onApply={handleApplyFilters}
+              role={role}
+            />
+          )}
         </div>
       </div>
+
+      {/* Active filter chips */}
+      {filterChips.length > 0 && (
+        <div className="flex flex-wrap gap-2 items-center">
+          {filterChips.map((chip) => (
+            <FilterChip key={chip.label} label={chip.label} onRemove={chip.clear} />
+          ))}
+          <button
+            onClick={() => handleApplyFilters(EMPTY_FILTERS)}
+            className="text-xs font-medium text-muted-foreground hover:text-destructive transition-colors underline underline-offset-2"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+
+      {/* Add product banner */}
       {role === "store" ||
         (role === "admin" && storeId && (
           <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg border">
@@ -195,15 +310,13 @@ export const StoreProductsList = ({
           </div>
         ))}
 
+      {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {isLoading ? (
-          Array.from({ length: 8 }).map((_, i) => (
-            <ProductCardSkeleton key={i} />
-          ))
+          Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)
         ) : products.length > 0 ? (
           products.map((product) => (
             <div key={product._id} className="flex flex-col gap-0">
-              {/* Store chip — only shown in all-stores view */}
               {isAllStores && product.storeId && (
                 <Link
                   href={`/admin/store/${product.storeId}`}
@@ -230,7 +343,9 @@ export const StoreProductsList = ({
             <p className="font-medium">
               {isSearchMode
                 ? "No products matched your search."
-                : "No products yet."}
+                : isFilterMode
+                  ? "No products matched your filters."
+                  : "No products yet."}
             </p>
             {isSearchMode && (
               <button
@@ -240,10 +355,19 @@ export const StoreProductsList = ({
                 Clear search
               </button>
             )}
+            {isFilterMode && !isSearchMode && (
+              <button
+                onClick={() => handleApplyFilters(EMPTY_FILTERS)}
+                className="mt-2 text-sm text-primary underline underline-offset-2"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         )}
       </div>
 
+      {/* Pagination — hidden in search mode */}
       {!isSearchMode && totalPages > 1 && (
         <div className="pt-4 border-t border-border">
           <Pagination>
@@ -253,8 +377,7 @@ export const StoreProductsList = ({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (currentPage > 1 && !isLoading)
-                      setCurrentPage((p) => p - 1);
+                    if (currentPage > 1 && !isLoading) setCurrentPage((p) => p - 1);
                   }}
                   className={
                     currentPage === 1 || isLoading
@@ -273,14 +396,9 @@ export const StoreProductsList = ({
                       isActive={currentPage === page}
                       onClick={(e) => {
                         e.preventDefault();
-                        if (currentPage !== page && !isLoading)
-                          setCurrentPage(page as number);
+                        if (currentPage !== page && !isLoading) setCurrentPage(page as number);
                       }}
-                      className={
-                        isLoading
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
+                      className={isLoading ? "pointer-events-none opacity-50" : "cursor-pointer"}
                     >
                       {page}
                     </PaginationLink>
@@ -292,8 +410,7 @@ export const StoreProductsList = ({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    if (currentPage < totalPages && !isLoading)
-                      setCurrentPage((p) => p + 1);
+                    if (currentPage < totalPages && !isLoading) setCurrentPage((p) => p + 1);
                   }}
                   className={
                     currentPage === totalPages || isLoading

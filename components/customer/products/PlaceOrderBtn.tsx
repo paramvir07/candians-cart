@@ -72,7 +72,7 @@ const PlaceOrderBtn = ({
   // ── compact mode (cashier sidebar etc.) — unchanged ──────────────────────
   if (compact) {
     return (
-      <div className="flex flex-col gap-2 w-full">
+      <div className="flex flex-col mb-10  gap-2 w-full">
         {customerId && (
           <Button
             onClick={handlePlaceOrder}

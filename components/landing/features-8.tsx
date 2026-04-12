@@ -6,13 +6,13 @@ import Link from 'next/link'
 
 export default function FeaturesSection() {
   const storeItems = [
-    { emoji: "🍹", name: "BP Chocolate Drink 500g",    price: "$0.00", was: "$12.49", tag: true  },
-    { emoji: "🍫", name: "Chocolate 500g", price: "$0.00", was: "$8.44", tag: true  },
-    { emoji: "🧋", name: "Kesar Badam 500g",     price: "$0.00",  was: "$273.38",  tag: true  },
-    { emoji: "🥛", name: "Nestle Everyday Milk Powder 1kg",     price: "$0.00",  was: "$16.88",  tag: true },
+    { emoji: "🍹", name: "BP Chocolate Drink 500g",    price: "$9.87", was: "$12.49", tag: true  },
+    { emoji: "🍫", name: "Chocolate 500g", price: "$6.67", was: "$8.44", tag: true  },
+    { emoji: "🧋", name: "Kesar Badam 500g",     price: "$215.97",  was: "$273.38",  tag: true  },
+    { emoji: "🥛", name: "Nestle Everyday Milk Powder 1kg",     price: "$13.33",  was: "$16.88",  tag: true },
   ]
 
-  const [spend, setSpend] = useState(200)
+  const [spend, setSpend] = useState(21)
   const searchParams = useSearchParams()
 
   useEffect(() => {
