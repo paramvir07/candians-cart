@@ -18,6 +18,9 @@ export interface IProductDB {
   InvoiceId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
+  isMeasuredInWeight?: boolean; // Optional field for weight-based products
+  UOM?: string; // Optional field for unit of measurement (e.g., kg, lb)
+  primaryUPC?: string; // Optional field for UPC code
 }
 
 export type ProductCategory =

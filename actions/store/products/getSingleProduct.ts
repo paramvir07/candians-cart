@@ -52,6 +52,9 @@ export async function getSingleProduct(
         fileId: img.fileId,
         _id: img._id?.toString(),
       })),
+      primaryUPC: product.primaryUPC,
+      isMeasuredInWeight: product.isMeasuredInWeight,
+      UOM: product.UOM,
     };
 
     return { success: true, data: serializedProduct };
