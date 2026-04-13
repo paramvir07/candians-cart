@@ -76,6 +76,23 @@ export async function createProduct(
       if (!invoice) {
         return { success: false, message: "Invoice does not exists" };
       }
+
+      // Checks if the primary upc is unique or not
+      if (!primaryUPC) {
+        return {
+          success: false,
+          message: "Primary UPC is required when adding a new product",
+        };
+      }
+      const existingProduct = await Product.findOne({
+        primaryUPC: Number(primaryUPC),
+      }).lean();
+      if (existingProduct) {
+        return {
+          success: false,
+          message: `Primary UPC is already in use by another product: ${existingProduct.name || "Unknown Product"}`,
+        };
+      }
     }
 
     const newPriceinCents = Math.round(price * 100);
@@ -95,7 +112,7 @@ export async function createProduct(
       subsidised: isSubsidized,
       isMeasuredInWeight,
       UOM,
-      primaryUPC
+      primaryUPC: primaryUPC ? Number(primaryUPC) : undefined,
     };
 
     const newProduct = await Product.create(dbPayload);
@@ -113,7 +130,12 @@ export async function createProduct(
     }
 
     // BUST THE CACHE GLOBALLY FOR THIS STORE!
-    revalidateTag(`products-${storeId}`, "default" as any);
+    const tagToBust = `products-${storeId}`;
+    revalidateTag(tagToBust, "max");
+    // Logging to verify it fired
+    console.log(
+      `[Cache] Successfully marked tag '${tagToBust}' as stale via revalidateTag`,
+    );
 
     if (userRole === "store") {
       revalidatePath("/store/products");

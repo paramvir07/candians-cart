@@ -91,7 +91,6 @@ export const BaseProductFormSchema = z.object({
     .number()
     .int("UPC must be a whole number")
     .positive("UPC must be a positive number")
-    .optional()
     .refine(
       (val) => {
         const length = String(val).length;
