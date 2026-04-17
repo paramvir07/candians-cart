@@ -114,9 +114,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
       InvoiceId: formData.InvoiceId,
       isMeasuredInWeight: formData.isMeasuredInWeight === "true",
       UOM: formData.UOM || undefined,
-      primaryUPC: formData.primaryUPC
-        ? parseInt(formData.primaryUPC, 10)
-        : undefined,
+      primaryUPC: parseInt(formData.primaryUPC, 10)
     };
 
     const schema = createProductFormSchema(role);
@@ -195,9 +193,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
         InvoiceId: formData.InvoiceId,
         isMeasuredInWeight: formData.isMeasuredInWeight === "true",
         UOM: formData.UOM || undefined,
-        primaryUPC: formData.primaryUPC
-          ? parseInt(formData.primaryUPC, 10)
-          : undefined,
+        primaryUPC: parseInt(formData.primaryUPC, 10)
       };
 
       // Final validation pass
