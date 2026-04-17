@@ -93,6 +93,7 @@ export const BaseProductFormSchema = z.object({
     .positive("UPC must be a positive number")
     .refine(
       (val) => {
+        if (Number.isNaN(val)) return false;
         const length = String(val).length;
         return length >= 10 && length <= 12;
       },
