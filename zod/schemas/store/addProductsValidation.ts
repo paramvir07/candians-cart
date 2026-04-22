@@ -84,8 +84,8 @@ export const BaseProductFormSchema = z.object({
   isFeatured: z.boolean(),
   markup: z
     .number()
-    .min(30, "Markup must be between 30% and 35%")
-    .max(35, "Markup must be between 30% and 35%"),
+    .min(0, "Markup must be between 0% and 40%")
+    .max(40, "Markup must be between 0% and 40%"),
 
   primaryUPC: z
     .number()

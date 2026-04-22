@@ -160,6 +160,24 @@ export async function updateProduct(
     const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
     const isSubsidized = subsidyCategories.includes(otherData.category);
 
+    if (subsidyCategories.includes(otherData.category)) {
+      if (otherData.markup < 10 || otherData.markup > 35) {
+        return {
+          success: false,
+          message:
+            "For subsidised products, Markup must be between 10% and 35%",
+        };
+      }
+    } else {
+      if (otherData.markup < 0 || otherData.markup > 40) {
+        return {
+          success: false,
+          message:
+            "For non-subsidised products, Markup must be between 0% and 40%",
+        };
+      }
+    }
+
     const dbPayload = {
       ...otherData,
       images: images || [],
