@@ -19,7 +19,7 @@ const PlaceOrderBtn = ({
 }: {
   customerId?: string;
   compact?: boolean;
-  paymentMode: PaymentMode;
+  paymentMode: "wallet" | "pending";
   TotalCart: CartTotals;
 }) => {
   const router = useRouter();

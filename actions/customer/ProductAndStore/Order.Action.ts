@@ -166,7 +166,7 @@ export const ReOrder = async (orderId: string) => {
 export const completePendingOrder = async (
   orderId: string,
   customerId: string | undefined,
-  paymentMode: "card" | "cash" | "wallet",
+  paymentMode: "wallet",
 ) => {
   const sessionData = await getUserSession();
   const userId = sessionData?.user?.id;

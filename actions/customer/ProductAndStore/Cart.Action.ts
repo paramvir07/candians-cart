@@ -333,7 +333,7 @@ export const PlaceOrder = async ({
   TotalCart,
 }: {
   receivedCustomerId?: string;
-  paymentMode?: "card" | "cash" | "wallet" | "pending";
+  paymentMode?: "wallet" | "pending";
   TotalCart: CartTotals;
 }) => {
   await dbConnect();

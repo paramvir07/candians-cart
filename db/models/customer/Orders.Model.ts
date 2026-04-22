@@ -26,7 +26,7 @@ export interface PlaceOrderI {
   subsidy?: number;
   subsidyLeft:number;
   subsidyUsed:number;
-  paymentMode?: "wallet" | "cash" | "card" | "pending";
+  paymentMode?: "wallet" | "pending";
   cashierId?: Types.ObjectId;
 }
 
@@ -144,7 +144,7 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
     },
     paymentMode: {
       type: String,
-      enum: ["wallet", "cash", "card", "pending"],
+      enum: ["wallet", "pending"],
       required: true,
       index: true,
     },
