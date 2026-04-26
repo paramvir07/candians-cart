@@ -15,6 +15,7 @@ import {
   HelpCircle,
   LogOut,
   ChartSpline,
+  PackageOpen,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { logoutAction } from "@/actions/auth/login-logout.actions";
@@ -84,6 +85,13 @@ export function NavAvatarMenu({ name, initials }: NavAvatarMenuProps) {
           Orders
         </DropdownMenuItem>
 
+        <DropdownMenuItem
+          onClick={() => router.push("/customer/budget-packs")}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-sm font-medium text-foreground hover:bg-secondary focus:bg-secondary"
+        >
+          <PackageOpen size={15} className="text-muted-foreground shrink-0" />
+          Budget packs
+        </DropdownMenuItem>
         {/* Settings
         <DropdownMenuItem
           onClick={() => router.push("/customer/settings")}
