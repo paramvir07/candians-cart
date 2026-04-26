@@ -63,10 +63,10 @@ export function HeroBanner({ store }: HeroBannerProps) {
       {/* ── MOBILE BG IMAGES ── */}
       <div className="lg:hidden absolute inset-0 pointer-events-none">
         <div className="absolute -left-6 -bottom-4 w-48 h-48 opacity-80 drop-shadow-xl" style={{ rotate: `${MOBILE_BG_IMAGES.left.rotation}deg`, animation: `floatAnim ${MOBILE_BG_IMAGES.left.duration} ease-in-out ${MOBILE_BG_IMAGES.left.delay} infinite` }}>
-          <Image src={MOBILE_BG_IMAGES.left.src} alt="" fill className="object-contain" />
+          <Image src={MOBILE_BG_IMAGES.left.src} alt="" fill className="object-contain" sizes=""/>
         </div>
         <div className="absolute -right-6 -top-4 w-48 h-48 opacity-80 drop-shadow-xl" style={{ rotate: `${MOBILE_BG_IMAGES.right.rotation}deg`, animation: `floatAnim ${MOBILE_BG_IMAGES.right.duration} ease-in-out ${MOBILE_BG_IMAGES.right.delay} infinite` }}>
-          <Image src={MOBILE_BG_IMAGES.right.src} alt="" fill className="object-contain" />
+          <Image src={MOBILE_BG_IMAGES.right.src} alt="" fill className="object-contain" sizes=""/>
         </div>
       </div>
 
@@ -74,7 +74,7 @@ export function HeroBanner({ store }: HeroBannerProps) {
       <div className="absolute left-0 top-0 w-[300px] xl:w-[340px] h-full pointer-events-none hidden lg:block">
         {LEFT_IMAGES.map((img) => (
           <div key={img.alt} className={`${img.cls} drop-shadow-2xl`} style={{ rotate: `${img.rotation}deg`, animation: `floatAnim ${img.duration} ease-in-out ${img.delay} infinite` }}>
-            <Image src={img.src} alt={img.alt} fill className="object-contain" />
+            <Image src={img.src} alt={img.alt} fill className="object-contain" sizes=""/>
           </div>
         ))}
         <div className="absolute left-36 top-[62%] bg-white rounded-2xl shadow-xl border border-green-100 px-4 py-3 flex items-center gap-2.5 z-10" style={{ animation: "floatAnim 5s ease-in-out 0.4s infinite" }}>
@@ -92,7 +92,7 @@ export function HeroBanner({ store }: HeroBannerProps) {
       <div className="absolute right-0 top-0 w-[300px] xl:w-[340px] h-full pointer-events-none hidden lg:block">
         {RIGHT_IMAGES.map((img) => (
           <div key={img.alt} className={`${img.cls} drop-shadow-2xl`} style={{ rotate: `${img.rotation}deg`, animation: `floatAnim ${img.duration} ease-in-out ${img.delay} infinite` }}>
-            <Image src={img.src} alt={img.alt} fill className="object-contain" />
+            <Image src={img.src} alt={img.alt} fill className="object-contain" sizes="" />
           </div>
         ))}
         <div className="absolute right-36 top-[12%] bg-white rounded-2xl shadow-xl border border-border/60 px-4 py-3 min-w-[140px] z-10" style={{ animation: "floatAnim 5.5s ease-in-out 1s infinite" }}>
