@@ -36,7 +36,6 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
   const [budget] = useAtom(budgetAtom);
   const [storeId] = useAtom(storeIdAtom);
   const [referralCode] = useAtom(referralCodeAtom);
-  const [storeAddress] = useAtom(storeAddressAtom);
 
   const customer = userRole === "customer";
   const admin = userRole === "admin";
@@ -144,17 +143,13 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
             id="address"
             type="text"
             name="address"
-            placeholder={
-              customer ? "Address (e.g. 308-123 Main St)" : "Full Store Address"
+            placeholder={store
+                  ? "Full Store Address"
+                  : "Address (e.g. 308-123 Main St)"
             }
-            value={!customer && storeAddress ? storeAddress : undefined}
-            disabled={!customer && !!storeAddress}
             required={customer || store || cashier}
             className={cn(
-              "h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary",
-              !customer &&
-                storeAddress &&
-                "opacity-60 cursor-not-allowed bg-muted",
+              "h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
             )}
           />
         )}
