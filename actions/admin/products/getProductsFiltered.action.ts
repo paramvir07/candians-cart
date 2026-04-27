@@ -89,3 +89,76 @@ export const getStoreProductsFiltered = async (
     return { success: false, error: "Failed to fetch products" };
   }
 };
+
+// ------
+
+export const searchProductsWithFilters = async (
+  query: string,
+  storeId: string | undefined,
+  page: number = 1,
+  limit: number = 12,
+  filters: ProductFilters = {},
+) => {
+  try {
+    await dbConnect();
+
+    const match: Record<string, any> = {
+      name: { $regex: query, $options: "i" },
+    };
+
+    if (storeId) {
+      match.storeId = new mongoose.Types.ObjectId(storeId);
+    }
+
+    if (filters.categories && filters.categories.length > 0) {
+      match.category = { $in: filters.categories };
+    }
+
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      match.price = {};
+      if (filters.minPrice !== undefined) match.price.$gte = filters.minPrice;
+      if (filters.maxPrice !== undefined) match.price.$lte = filters.maxPrice;
+    }
+
+    if (filters.subsidised !== undefined) match.subsidised = filters.subsidised;
+    if (filters.inStock !== undefined) match.stock = filters.inStock;
+
+    if (filters.taxRates && filters.taxRates.length > 0) {
+      match.tax = { $in: filters.taxRates };
+    }
+
+    if (filters.markupMin !== undefined || filters.markupMax !== undefined) {
+      match.markup = {};
+      if (filters.markupMin !== undefined) match.markup.$gte = filters.markupMin;
+      if (filters.markupMax !== undefined) match.markup.$lte = filters.markupMax;
+    }
+
+    let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
+    if (filters.sortBy === "price_asc") sortOption = { price: 1 };
+    else if (filters.sortBy === "price_desc") sortOption = { price: -1 };
+    else if (filters.sortBy === "name_asc") sortOption = { name: 1 };
+
+    const skip = (page - 1) * limit;
+
+    const [products, totalCount] = await Promise.all([
+      Product.find(match)
+        .select("_id name description category markup tax price stock subsidised images disposableFee isFeatured")
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Product.countDocuments(match),
+    ]);
+
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(products)),
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
+      totalCount,
+    };
+  } catch (error) {
+    console.error("Failed to search with filters:", error);
+    return { success: false, data: [], totalPages: 0, totalCount: 0, error: "Failed to search" };
+  }
+};

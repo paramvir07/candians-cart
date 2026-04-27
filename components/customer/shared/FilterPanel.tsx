@@ -23,9 +23,33 @@ export const DEFAULT_FILTERS: FilterState = {
   sortBy: "default",
 };
 
+// export function getActiveFilterCount(filters: FilterState) {
+//   return (
+//     filters.categories.length +
+//     (filters.inStockOnly ? 1 : 0) +
+//     (filters.subsidisedOnly ? 1 : 0) +
+//     (filters.sortBy !== "default" ? 1 : 0)
+//   );
+// }
+
+const CATEGORY_GROUPS: string[][] = [
+  ["Fruits", "Vegetables", "Produce"],
+];
+
 export function getActiveFilterCount(filters: FilterState) {
+  // Count grouped categories as 1
+  const counted = new Set<string>();
+  let categoryCount = 0;
+  for (const cat of filters.categories) {
+    const group = CATEGORY_GROUPS.find((g) => g.includes(cat));
+    const key = group ? group.join(",") : cat;
+    if (!counted.has(key)) {
+      counted.add(key);
+      categoryCount++;
+    }
+  }
   return (
-    filters.categories.length +
+    categoryCount +
     (filters.inStockOnly ? 1 : 0) +
     (filters.subsidisedOnly ? 1 : 0) +
     (filters.sortBy !== "default" ? 1 : 0)
@@ -76,12 +100,26 @@ export function FilterPanel({
     });
   }, [searchParams]);
 
-  const toggleCategory = (cat: string) => {
-    const next = filters.categories.includes(cat)
-      ? filters.categories.filter((c) => c !== cat)
-      : [...filters.categories, cat];
-    onChange({ categories: next });
-  };
+  // const toggleCategory = (cat: string) => {
+  //   const next = filters.categories.includes(cat)
+  //     ? filters.categories.filter((c) => c !== cat)
+  //     : [...filters.categories, cat];
+  //   onChange({ categories: next });
+  // };
+
+  const CATEGORY_GROUPS: string[][] = [
+  ["Fruits", "Vegetables", "Produce"],
+];
+
+const toggleCategory = (cat: string) => {
+  const group = CATEGORY_GROUPS.find((g) => g.includes(cat));
+  const toToggle = group ?? [cat];
+  const isActive = toToggle.some((c) => filters.categories.includes(c));
+  const next = isActive
+    ? filters.categories.filter((c) => !toToggle.includes(c))
+    : [...new Set([...filters.categories, ...toToggle])];
+  onChange({ categories: next });
+};
 
   return (
     <div className="flex flex-col h-full">
