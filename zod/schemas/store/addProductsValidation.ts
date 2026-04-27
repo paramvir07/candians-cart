@@ -82,23 +82,43 @@ export const BaseProductFormSchema = z.object({
     .default([]), // For the time being this is optional, have to integrate Imagekit
 
   isFeatured: z.boolean(),
-  markup: z
+  markup: z.coerce
     .number()
     .min(0, "Markup must be between 0% and 40%")
     .max(40, "Markup must be between 0% and 40%"),
 
-  primaryUPC: z
-    .number()
-    .int("UPC must be a whole number")
-    .positive("UPC must be a positive number")
-    .refine(
-      (val) => {
-        if (Number.isNaN(val)) return false;
-        const length = String(val).length;
-        return length >= 10 && length <= 12;
-      },
-      { message: "UPC must be between 10 and 12 digits" },
-    ),
+  primaryUPC: z.preprocess(
+    (val) => {
+      // FIX: Check for explicit NaN which gets passed by empty numeric inputs
+      if (
+        val === "" ||
+        val === null ||
+        val === undefined ||
+        (typeof val === "number" && Number.isNaN(val))
+      ) {
+        return undefined;
+      }
+
+      const parsed = Number(val);
+      // If the conversion to Number results in NaN, safely treat as undefined
+      if (Number.isNaN(parsed)) return undefined;
+
+      return parsed;
+    },
+    z
+      .number("UPC must be a valid number") // FIX: Syntax mapped cleanly
+      .int("UPC must be a whole number")
+      .positive("UPC must be a positive number")
+      .optional()
+      .refine(
+        (val) => {
+          if (val === undefined) return true; // Bypass refine if optional
+          const length = String(val).length;
+          return length >= 10 && length <= 12;
+        },
+        { message: "UPC must be between 10 and 12 digits" },
+      ),
+  ),
 
   isMeasuredInWeight: z.boolean().optional().default(false),
 

@@ -111,7 +111,9 @@ const productSchema = new Schema(
 
     // this is the bar code, required false as of now
     primaryUPC: {
+      index: true,
       type: Number,
+      unique: true,
       required: false,
     },
 

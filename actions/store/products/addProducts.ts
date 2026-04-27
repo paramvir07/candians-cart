@@ -78,20 +78,24 @@ export async function createProduct(
       }
 
       // Checks if the primary upc is unique or not
-      if (!primaryUPC) {
-        return {
-          success: false,
-          message: "Primary UPC is required when adding a new product",
-        };
-      }
-      const existingProduct = await Product.findOne({
-        primaryUPC: Number(primaryUPC),
-      }).lean();
-      if (existingProduct) {
-        return {
-          success: false,
-          message: `Primary UPC is already in use by another product: ${existingProduct.name || "Unknown Product"}`,
-        };
+      // if (!primaryUPC) {
+      //   return {
+      //     success: false,
+      //     message: "Primary UPC is required when adding a new product",
+      //   };
+      // }
+
+      if (primaryUPC !== undefined) {
+        const existingProduct = await Product.findOne({
+          primaryUPC: Number(primaryUPC),
+        }).lean();
+
+        if (existingProduct) {
+          return {
+            success: false,
+            message: `Primary UPC is already in use by another product: ${existingProduct.name || "Unknown Product"}`,
+          };
+        }
       }
     }
 

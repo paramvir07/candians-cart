@@ -122,25 +122,27 @@ export async function updateProduct(
         return { success: false, message: "Invoice does not exist" };
       }
 
-      if (!primaryUPC) {
-        return {
-          success: false,
-          message: "Primary UPC is required when updating a product",
-        };
-      }
+      // if (!primaryUPC) {
+      //   return {
+      //     success: false,
+      //     message: "Primary UPC is required when updating a product",
+      //   };
+      // }
 
       // FIX: Rename variable so it doesn't shadow existingProduct
       // FIX: Add $ne (not equal) so we don't flag the product itself as a duplicate
-      const productWithSameUPC = await Product.findOne({
-        primaryUPC: Number(primaryUPC),
-        _id: { $ne: productId },
-      }).lean();
+      if (primaryUPC !== undefined) {
+        const productWithSameUPC = await Product.findOne({
+          primaryUPC: Number(primaryUPC),
+          _id: { $ne: productId }, // Ignore the current product being edited
+        }).lean();
 
-      if (productWithSameUPC) {
-        return {
-          success: false,
-          message: `Primary UPC is already in use by another product: ${productWithSameUPC.name || "Unknown Product"}`,
-        };
+        if (productWithSameUPC) {
+          return {
+            success: false,
+            message: `Primary UPC is already in use by another product: ${productWithSameUPC.name || "Unknown Product"}`,
+          };
+        }
       }
 
       // FIX: Reference the original outer existingProduct
