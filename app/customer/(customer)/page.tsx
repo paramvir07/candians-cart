@@ -5,7 +5,6 @@ import Navbar from "@/components/customer/landing/Navbar";
 import { HeroBanner } from "@/components/customer/landing/HeroBanner";
 import { ProductsSection } from "@/components/customer/products/ProductsSection";
 import { redirect } from "next/navigation";
-import { Footer } from "@/components/customer/landing/Footer";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 import { getCachedStoreProducts } from "@/actions/cache/product.cache";
 import Store from "@/db/models/store/store.model";

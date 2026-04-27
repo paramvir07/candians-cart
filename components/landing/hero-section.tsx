@@ -1,6 +1,5 @@
 "use client";
 
-import { Home } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Logo from "../shared/Logo";
