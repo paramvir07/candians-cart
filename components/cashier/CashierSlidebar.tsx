@@ -12,7 +12,7 @@ import {
   Menu,
   X,
   UserCircle2,
-  Users,
+  List,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import LogoutButton from "../shared/LogoutButton";
@@ -127,6 +127,12 @@ function SidebarContent({
               href="/cashier/customer/orders"
               label="Orders"
               icon={ReceiptText}
+              onClick={onNav}
+            />
+            <NavItem
+              href="/cashier/subsidy-list"
+              label=" Subsidy List"
+              icon={List}
               onClick={onNav}
             />
           </div>

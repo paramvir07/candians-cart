@@ -6,6 +6,7 @@ import {
   HandCoins,
   HomeIcon,
   LinkIcon,
+  List,
   Menu,
   Package,
   Receipt,
@@ -56,6 +57,7 @@ const NAV_GROUPS = [
     items: [
       { href: "/admin/new-user", label: "New User", icon: UserPlus },
       { href: "/admin/referral-codes", label: "Referrals", icon: LinkIcon },
+      { href: "/admin/subsidy-list", label: "Subsidy List", icon: List },
     ],
   },
 ] as const;

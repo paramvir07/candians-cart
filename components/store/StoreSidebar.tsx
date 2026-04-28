@@ -5,6 +5,7 @@ import {
   BarChart,
   HandCoins,
   HomeIcon,
+  List,
   Menu,
   Package,
   Receipt,
@@ -34,6 +35,7 @@ const NAV_GROUPS = [
     items: [
       { href: "/store/orders", label: "Orders", icon: ShoppingCart },
       { href: "/store/products", label: "Products", icon: Package },
+      { href: "/store/subsidy-list", label: "Subsidy List", icon: List },
       { href: "/store/customers", label: "Customers", icon: Users2 },
     ],
   },

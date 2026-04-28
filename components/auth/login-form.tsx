@@ -133,13 +133,6 @@ useEffect(() => {
             </p>
           )
         }
-
-        <p className="text-sm text-muted-foreground">
-          Are you a partner?{" "}
-          <Link href="/partner-access" className="text-primary hover:underline">
-            Login here
-          </Link>
-        </p>
       </div>
     </>
   );

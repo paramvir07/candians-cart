@@ -1,3 +1,4 @@
+import { categories } from "@/lib/categories";
 import { model, models, Schema } from "mongoose";
 
 const productSchema = new Schema(
@@ -22,34 +23,7 @@ const productSchema = new Schema(
 
     category: {
       type: String,
-      enum: [
-        "Fruits",
-        "Vegetables",
-        "Dairy",
-        "Meat",
-        "Bakery",
-        "Beverages",
-        "Snacks",
-        "Household",
-        "Oil & Ghee",
-        "Pulses & Lentils",
-        "Flour & Atta",
-        "Rice",
-        "Spices",
-        "Pickles & Chutneys",
-        "Instant Foods",
-        "Frozen Foods",
-        "Sweets & Mithai",
-        "Dry Fruits & Nuts",
-        "Tea & Coffee",
-        "Sauces & Condiments",
-        "Papad & Fryums",
-        "Pooja / Religious Items",
-        "Utensils",
-        "Disposables",
-        "Personal Care",
-        "Other",
-      ],
+      enum: categories,
       required: true,
     },
 

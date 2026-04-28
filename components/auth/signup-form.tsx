@@ -143,13 +143,12 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
             id="address"
             type="text"
             name="address"
-            placeholder={store
-                  ? "Full Store Address"
-                  : "Address (e.g. 308-123 Main St)"
+            placeholder={
+              store ? "Full Store Address" : "Address (e.g. 308-123 Main St)"
             }
             required={customer || store || cashier}
             className={cn(
-              "h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+              "h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary",
             )}
           />
         )}
@@ -247,16 +246,6 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
                 className="text-primary hover:underline"
               >
                 Log in
-              </Link>
-            </p>
-
-            <p className="text-sm text-muted-foreground">
-              Are you a partner?{" "}
-              <Link
-                href="/partner-access"
-                className="text-primary hover:underline"
-              >
-                Login here
               </Link>
             </p>
           </>
