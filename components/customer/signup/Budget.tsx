@@ -17,7 +17,6 @@ const Budget = () => {
 
   return (
     <div className="w-full space-y-4">
-
       {/* Quick select chips */}
       <div className="flex gap-2 flex-wrap">
         {QUICK_AMOUNTS.map((amount) => (
@@ -51,27 +50,36 @@ const Budget = () => {
       </div>
 
       {/* Validation message */}
-      <div className="h-4">
+      <div className="space-y-2 pb-2">
         {showError ? (
           <p className="text-xs text-destructive">
             Minimum budget is ${minBudget}/month
           </p>
         ) : isValid ? (
-          <p className="text-xs text-emerald-500 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-            Looks good! You&apos;re all set.
-          </p>
+          <>
+            <p className="text-xs text-primary flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+              Looks good! You&apos;re all set.
+            </p>
+
+            <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-xs leading-relaxed text-primary shadow-sm">
+              <span className="font-semibold">Note:</span> Staying consistent
+              with your budget helps you earn the best possible profit sharing.
+              Spending significantly less than your selected budget may reduce
+              your rewards, so choose a realistic amount.
+            </div>
+          </>
         ) : null}
       </div>
 
       <Button
         type="button"
         onClick={() => setStep("selectStore")}
-        className="w-full h-11 rounded-full font-semibold shadow-md shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all duration-150"
+        className="w-full h-11 mt-2 rounded-full font-semibold shadow-md shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all duration-150"
         disabled={!isValid}
       >
         Continue
-        <ChevronRight/>
+        <ChevronRight />
       </Button>
     </div>
   );

@@ -142,14 +142,28 @@ export const createProductFormSchema = (role: "admin" | "store") => {
             .trim()
             .regex(/^[0-9a-fA-F]{24}$/, {
               message: "Invoice ID is required and must be valid",
-            }) // Required for Store
+            })
         : z
             .string()
             .trim()
-            .optional() // Allows undefined
+            .optional()
             .refine((val) => !val || /^[0-9a-fA-F]{24}$/.test(val), {
               message: "Invalid Invoice ID format",
-            }), // For Admin: Allows empty string OR a valid 24-char ObjectId
+            }),
+  }).superRefine((data, ctx) => {
+    const excludedCategories = ["Fruits", "Vegetables", "Dairy"];
+
+    if (
+      role === "store" &&
+      !excludedCategories.includes(data.category) &&
+      (data.markup < 30 || data.markup > 35)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["markup"],
+        message: "Markup must be between 30% and 35%",
+      });
+    }
   });
 };
 

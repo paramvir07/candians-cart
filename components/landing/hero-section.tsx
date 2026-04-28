@@ -12,7 +12,7 @@ const TABS = [
 
 const ORDER_ITEMS = [
   { emoji: "🌾", name: "Sher Atta 20lb",    was: "$18.90", now: "$14.93", save: "21%" },
-  { emoji: "🍚", name: "Daawat Super Basmati Rice 1kg", was: "$4.58", now: "$3.62", save: "21%" },
+  { emoji: "🍚", name: "Basmati Rice 1kg", was: "$4.58", now: "$3.62", save: "21%" },
   { emoji: "🍞", name: "White Bread 480g", was: "$3.36",  now: "$2.65",  save: "21%" },
   { emoji: "🍫", name: "Dairy Milk 38g",     was: "$1.15",  now: "$0.91",  save: "21%" },
 ];

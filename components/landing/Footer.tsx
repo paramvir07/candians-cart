@@ -3,18 +3,37 @@
 import Logo from "../shared/Logo";
 import { useRouter, usePathname } from "next/navigation";
 
-const FOOTER_LINKS: Record<string, { label: string; href: string; scrollTo?: string; scrollPage?: string }[]> = {
+const FOOTER_LINKS: Record<
+  string,
+  { label: string; href: string; scrollTo?: string; scrollPage?: string }[]
+> = {
   Company: [
-    { label: "About Us",     href: "/about" },
-    { label: "How It Works", href: "/#how-it-works", scrollTo: "how-it-works", scrollPage: "/" },
-    { label: "Values",       href: "/about#values",  scrollTo: "values",       scrollPage: "/about" },
+    { label: "About Us", href: "/about" },
+    {
+      label: "How It Works",
+      href: "/#how-it-works",
+      scrollTo: "how-it-works",
+      scrollPage: "/",
+    },
+    {
+      label: "Values",
+      href: "/about#values",
+      scrollTo: "values",
+      scrollPage: "/about",
+    },
   ],
   Support: [
     { label: "Contact Us", href: "/contact" },
-    { label: "FAQ",        href: "/#faq", scrollTo: "faq", scrollPage: "/" },
+    { label: "FAQ", href: "/#faq", scrollTo: "faq", scrollPage: "/" },
+    { label: "Terms and conditions", href: "/terms-and-conditions" },
   ],
   Tools: [
-    { label: "Calculator", href: "/#calculator", scrollTo: "calculator", scrollPage: "/" },
+    {
+      label: "Calculator",
+      href: "/#calculator",
+      scrollTo: "calculator",
+      scrollPage: "/",
+    },
   ],
 };
 
@@ -214,7 +233,7 @@ export default function Footer() {
         {/* ── Bottom bar ── */}
         <div className="footer-bottom">
           <div className="footer-bottom-inner">
-            <p>© {currentYear} Canadian's Cart Inc. All rights reserved.</p>
+            <p>© {currentYear} Candian's Cart Inc. All rights reserved.</p>
             <div className="footer-badges">
               <span className="footer-badge">🇨🇦 Made in Canada</span>
             </div>

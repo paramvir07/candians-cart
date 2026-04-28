@@ -18,7 +18,6 @@ import {
 import { ProductCard, ProductCardRole } from "./ProductCard";
 import { IProduct } from "@/types/store/products.types";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   AdminProduct,
   getStoreProductsPaginated,
@@ -107,7 +106,6 @@ export const StoreProductsList = ({
   const isAllStores = !storeId;
   const isFilterMode = hasFilters(filters);
 
-  // Normal paginated load (no search, no filters)
   useEffect(() => {
     let mounted = true;
     if (isSearchMode || isFilterMode) return;
@@ -129,7 +127,6 @@ export const StoreProductsList = ({
     };
   }, [storeId, currentPage, isSearchMode, isFilterMode]);
 
-  // Filter mode load
   useEffect(() => {
     if (!isFilterMode || isSearchMode) return;
     let mounted = true;

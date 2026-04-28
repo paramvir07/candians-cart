@@ -6,11 +6,6 @@ import { stepAtom } from "@/atoms/customer/signUp";
 
 const POLICY_LINKS = [
   { href: "/terms-and-conditions", label: "Terms & Conditions" },
-  { href: "/advertising-policy", label: "Advertising & Usage Policy" },
-  {
-    href: "/community-support-policy",
-    label: "Community Support & Product Launch Policy",
-  },
 ];
 
 const Terms = () => {
@@ -22,7 +17,7 @@ const Terms = () => {
       <div className="w-full rounded-xl border border-border/60 bg-muted/30 overflow-hidden">
         <div className="px-4 py-3.5 text-xs text-muted-foreground leading-relaxed space-y-2">
           <p>
-            Welcome to Canadian&apos;s Cart. By using our service, you agree to
+            Welcome to Candian&apos;s Cart. By using our service, you agree to
             these terms. You must provide a valid referral code to register.
           </p>
           <p>

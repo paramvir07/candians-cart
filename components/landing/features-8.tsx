@@ -6,11 +6,35 @@ import Link from 'next/link'
 
 export default function FeaturesSection() {
   const storeItems = [
-    { emoji: "🍹", name: "BP Chocolate Drink 500g",    price: "$9.87", was: "$12.49", tag: true  },
-    { emoji: "🍫", name: "Chocolate 500g", price: "$6.67", was: "$8.44", tag: true  },
-    { emoji: "🧋", name: "Kesar Badam 500g",     price: "$215.97",  was: "$273.38",  tag: true  },
-    { emoji: "🥛", name: "Nestle Everyday Milk Powder 1kg",     price: "$13.33",  was: "$16.88",  tag: true },
-  ]
+    {
+      emoji: "🥛",
+      name: "3.25% MILK 4L",
+      price: "$5.52",
+      was: "$6.99",
+      tag: true,
+    },
+    {
+      emoji: "🧈",
+      name: "VERKA GHEE 2.5KG",
+      price: "$34.12",
+      was: "$43.19",
+      tag: true,
+    },
+    {
+      emoji: "🫘",
+      name: "RAJMA 2LB",
+      price: "$4.37",
+      was: "$5.39",
+      tag: true,
+    },
+    {
+      emoji: "🧅",
+      name: "Onions 50lb",
+      price: "$36.26",
+      was: "$45.90",
+      tag: true,
+    },
+  ];
 
   const [spend, setSpend] = useState(21)
   const searchParams = useSearchParams()
@@ -644,7 +668,7 @@ export default function FeaturesSection() {
                 <div>
                   <span className="fs-label">Quick select</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                    {[21, 100, 200, 300, 500, 800].map(v => (
+                    {[21, 52, 112, 175, 204, 256, 345, 431, 579, 899].map(v => (
                       <button
                         key={v}
                         className={`fs-pick-btn${spend === v ? ' active' : ''}`}

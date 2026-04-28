@@ -239,10 +239,6 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
                 Have an account?{" "}
                 <Link href="/customer/login" className="text-primary hover:underline font-medium">Login</Link>
               </p>
-              <p className="text-xs text-muted-foreground">
-                Are you a partner?{" "}
-                <Link href="/partner-access" className="text-primary hover:underline font-medium">Login here</Link>
-              </p>
             </div>
           </div>
 
