@@ -23,17 +23,23 @@ export interface PaginatedProductsResponse {
   error?: string;
 }
 
-// ✅ Factory defined at module level — Next.js can properly track this cache entry
-const createCachedFetcher = (
+/**
+ * Highly optimized caching layer for Candian Cart products.
+ * Uses next/cache unstable_cache to persist results across requests.
+ * Executes query and count in parallel to eliminate waterfalls.
+ */
+export const getCachedStoreProducts = async (
   storeId: string,
-  page: number,
-  limit: number,
-  filters: ProductCacheFilters,
-) => {
+  page: number = 1,
+  limit: number = 25,
+  filters: ProductCacheFilters = { sortBy: "default", categories: [] },
+): Promise<PaginatedProductsResponse> => {
   const filterKey = JSON.stringify(filters);
+
+  // The cache key combines storeId, pagination, and filters so every unique view is cached
   const cacheKey = `store-products-${storeId}-p${page}-l${limit}-${filterKey}`;
 
-  return unstable_cache(
+  const fetchCachedData = unstable_cache(
     async () => {
       await dbConnect();
 
@@ -50,14 +56,17 @@ const createCachedFetcher = (
         query.subsidised = true;
       }
 
+      // sorting logic
       let sortConfig: Record<string, 1 | -1> = {};
       if (filters.sortBy === "price_asc") sortConfig = { price: 1 };
       else if (filters.sortBy === "price_desc") sortConfig = { price: -1 };
       else if (filters.sortBy === "name_asc") sortConfig = { name: 1 };
+      // Default: Featured products float to top, followed by newest
       else sortConfig = { isFeatured: -1, createdAt: -1 };
 
       const skipAmount = (page - 1) * limit;
 
+      // execute in parallel
       const [products, totalCount] = await Promise.all([
         Product.find(query)
           .sort(sortConfig as any)
@@ -72,22 +81,14 @@ const createCachedFetcher = (
         totalCount,
       };
     },
-    [cacheKey],
+    [cacheKey], // dependencies for cache invalidation
     {
-      revalidate: 3600,
-      tags: [`products-${storeId}`],
+      revalidate: 3600, // revalidate after every hour
+      tags: [`products-${storeId}`], // tag for manual invalidation when products change
     },
   );
-};
 
-export const getCachedStoreProducts = async (
-  storeId: string,
-  page: number = 1,
-  limit: number = 25,
-  filters: ProductCacheFilters = { sortBy: "default", categories: [] },
-): Promise<PaginatedProductsResponse> => {
   try {
-    const fetchCachedData = createCachedFetcher(storeId, page, limit, filters);
     const data = await fetchCachedData();
 
     return {

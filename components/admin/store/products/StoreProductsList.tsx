@@ -18,6 +18,7 @@ import {
 import { ProductCard, ProductCardRole } from "./ProductCard";
 import { IProduct } from "@/types/store/products.types";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   AdminProduct,
   getStoreProductsPaginated,

@@ -138,7 +138,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const subsidyTotals = subItems.reduce(
     (acc, item) => {
-      console.log(item)
       const fullPrice = item.TotalPrice * item.quantity;
       const afterSubsidy = Math.max(fullPrice - item.subsidy, 0);
       const taxRate = item.productId.tax ?? 0;
@@ -151,17 +150,15 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
         pst = Math.round(fullPrice * 0.07);
       }
       const totalTax = gst + pst;
-      
       acc.disposable += (item.productId.disposableFee ?? 0) * item.quantity;
       acc.subtotal += afterSubsidy;
       acc.gst += gst;
       acc.pst += pst;
       acc.totalTax += totalTax;
       acc.total += afterSubsidy + totalTax;
-      acc.beforeSubsidy += fullPrice
       return acc;
     },
-    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0,beforeSubsidy: 0 },
+    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
   );
 
   const totals = {
@@ -171,9 +168,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     totalTax: itemTotals.totalTax + subsidyTotals.totalTax,
     disposable: itemTotals.disposable + subsidyTotals.disposable,
     total: itemTotals.total + subsidyTotals.total,
-    beforeSubsidy: itemTotals.subtotal + subsidyTotals.beforeSubsidy
   };
-
 
   const showGST = totals.gst > 0;
   const showPST = totals.pst > 0;
@@ -349,15 +344,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const OrderSummaryContent = () => (
     <div className="space-y-2.5">
-      {subItems.length>0 && <div className="flex justify-between text-sm gap-4">
-        <span className="text-muted-foreground shrink-0">Previous Subtotal</span>
-        <span className="font-medium tabular-nums line-through">
-          CA${fmt(totals.beforeSubsidy)}
-        </span>
-      </div> }
-      
       <div className="flex justify-between text-sm gap-4">
-        <span className="text-muted-foreground shrink-0">Final Subtotal</span>
+        <span className="text-muted-foreground shrink-0">Subtotal</span>
         <span className="font-medium tabular-nums">
           CA${fmt(totals.subtotal)}
         </span>

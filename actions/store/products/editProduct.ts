@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, updateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import {
@@ -59,6 +59,7 @@ export async function updateProduct(
         return { success: false, message: "Store not found" };
       }
 
+      // Fetching existing products
       existingProduct = await Product.findOne({
         _id: productId,
         storeId: store._id,
@@ -92,9 +93,14 @@ export async function updateProduct(
     for (const img of imagesToDelete) {
       try {
         await imagekit.files.delete(img.fileId);
-        console.log(`Successfully deleted old image ${img.fileId} from ImageKit`);
+        console.log(
+          `Successfully deleted old image ${img.fileId} from ImageKit`,
+        );
       } catch (err) {
-        console.error(`Failed to delete old image ${img.fileId} from ImageKit:`, err);
+        console.error(
+          `Failed to delete old image ${img.fileId} from ImageKit:`,
+          err,
+        );
       }
     }
 
@@ -106,7 +112,8 @@ export async function updateProduct(
       if (!InvoiceId) {
         return {
           success: false,
-          message: "An Invoice Id is required when changing the price of a product",
+          message:
+            "An Invoice Id is required when changing the price of a product",
         };
       }
 
@@ -115,10 +122,19 @@ export async function updateProduct(
         return { success: false, message: "Invoice does not exist" };
       }
 
+      // if (!primaryUPC) {
+      //   return {
+      //     success: false,
+      //     message: "Primary UPC is required when updating a product",
+      //   };
+      // }
+
+      // FIX: Rename variable so it doesn't shadow existingProduct
+      // FIX: Add $ne (not equal) so we don't flag the product itself as a duplicate
       if (primaryUPC !== undefined) {
         const productWithSameUPC = await Product.findOne({
           primaryUPC: Number(primaryUPC),
-          _id: { $ne: productId },
+          _id: { $ne: productId }, // Ignore the current product being edited
         }).lean();
 
         if (productWithSameUPC) {
@@ -129,6 +145,7 @@ export async function updateProduct(
         }
       }
 
+      // FIX: Reference the original outer existingProduct
       await ProductInvoice.findByIdAndUpdate(InvoiceId, {
         $push: {
           products: {
@@ -141,7 +158,7 @@ export async function updateProduct(
       });
     }
 
-    // Automatically sets the subsidy to true if category = Fruits, Vegetables, Dairy
+    // Automatically sets the subsidy to true, if product category = Fruits, Vegetables, Dairy
     const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
     const isSubsidized = subsidyCategories.includes(otherData.category);
 
@@ -149,14 +166,16 @@ export async function updateProduct(
       if (otherData.markup < 10 || otherData.markup > 35) {
         return {
           success: false,
-          message: "For subsidised products, Markup must be between 10% and 35%",
+          message:
+            "For subsidised products, Markup must be between 10% and 35%",
         };
       }
     } else {
       if (otherData.markup < 0 || otherData.markup > 40) {
         return {
           success: false,
-          message: "For non-subsidised products, Markup must be between 0% and 40%",
+          message:
+            "For non-subsidised products, Markup must be between 0% and 40%",
         };
       }
     }
@@ -193,23 +212,20 @@ export async function updateProduct(
     if (!updatedProduct) {
       return {
         success: false,
-        message: "Product not found or You don't have permission to update the product",
+        message:
+          "Product not found or You don't have permission to update the product",
       };
     }
 
     const targetStoreId =
       store?._id?.toString() || existingProduct.storeId.toString();
 
-    // ✅ updateTag: immediately expires the cache so the next request fetches
-    // fresh data. Correct choice for Server Actions (vs revalidateTag which is
-    // stale-while-revalidate and won't show changes immediately).
-    // One call busts ALL cache entries sharing this tag — every page, search
-    // result, and filter combination for this store.
-    updateTag(`products-${targetStoreId}`);
-    console.log(`[Cache] Expired tag 'products-${targetStoreId}' via updateTag`);
-
-    // Also bust the "all products" tag used when no storeId is passed (admin all-stores view)
-    updateTag("products-all");
+    // FIX: Use targetStoreId instead of the Mongoose `store` object to avoid "products-[object Object]"
+    const tagToBust = `products-${targetStoreId}`;
+    revalidateTag(tagToBust, "max");
+    console.log(
+      `[Cache] Successfully marked tag '${tagToBust}' as stale via revalidateTag`,
+    );
 
     if (adminRole) {
       revalidatePath(`/admin/store/${targetStoreId}/products`);
