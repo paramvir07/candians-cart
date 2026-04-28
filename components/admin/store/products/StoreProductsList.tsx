@@ -27,6 +27,7 @@ import {
 import {
   getStoreProductsFiltered,
   ProductFilters,
+  searchProductsWithFilters, //-----
 } from "@/actions/admin/products/getProductsFiltered.action";
 // import { ProductFiltersSheet } from "@/components/shared/products/ProductFiltersSheet";
 import QrScannerButton from "@/components/shared/users/QrScannerButton";
@@ -171,6 +172,40 @@ export const StoreProductsList = ({
     }, 350);
     return () => clearTimeout(timer);
   }, [searchQuery, storeId]);
+
+  // -----
+
+  // Combined search + filter mode
+useEffect(() => {
+  if (!searchQuery.trim() || !isFilterMode) return;
+  let mounted = true;
+  const timer = setTimeout(async () => {
+    setIsSearchMode(true);
+    setIsLoading(true);
+    const res = await searchProductsWithFilters(
+      searchQuery,
+      storeId,
+      currentPage,
+      12,
+      filters,
+    );
+    if (!mounted) return;
+    if (res.success) {
+      setProducts(res.data);
+      setTotalPages(res.totalPages ?? 1);
+    } else {
+      toast.error(res.error || "Search with filters failed");
+    }
+    setIsLoading(false); 
+  }, 350);
+  return () => {
+    mounted = false;
+    clearTimeout(timer);
+  };
+}, [searchQuery, storeId, currentPage, filters, isFilterMode]);
+
+  // -----
+
 
   const handleBarcodeScan = (value: string) => {
     setSearchQuery(value);

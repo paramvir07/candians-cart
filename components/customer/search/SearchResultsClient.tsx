@@ -1,5 +1,5 @@
 "use client";
-
+import { getStoreProductsFiltered } from "@/actions/admin/products/getProductsFiltered.action";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { IProduct } from "@/types/store/products.types";
 import { CustomerProductCard } from "@/components/customer/products/CustomerProductCard";
@@ -103,10 +103,49 @@ export function SearchResultsClient({
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
   const activeFilterCount = getActiveFilterCount(filters);
 
+  // useEffect(() => {
+  //   if (!query.trim()) {
+  //     setAllResults([]);
+  //     setHasSearched(false);
+  //     return;
+  //   }
+  //   const timer = setTimeout(async () => {
+  //     setIsLoading(true);
+  //     setHasSearched(true);
+  //     const res = await searchAction(query.trim(), storeId);
+  //     setAllResults(res.success && res.data ? res.data : []);
+  //     setIsLoading(false);
+  //   }, 350);
+  //   return () => clearTimeout(timer);
+  // }, [query, storeId]);
+
   useEffect(() => {
+    // if (!query.trim()) {
+    //   // Only reset if we're not in category-filter mode
+    //   if (!filters.categories.length) {
+    //     setAllResults([]);
+    //     setHasSearched(false);
+    //   }
+    //   return;
+    // }
+
     if (!query.trim()) {
-      setAllResults([]);
-      setHasSearched(false);
+      if (!filters.categories.length) {
+        setAllResults([]);
+        setHasSearched(false);
+      } else {
+        // Query cleared but category filter still active — re-fetch by category
+        const reload = async () => {
+          setIsLoading(true);
+          setHasSearched(true);
+          const res = await getStoreProductsFiltered(storeId, 1, 200, {
+            categories: filters.categories as any,
+          });
+          setAllResults(res.success && res.data ? res.data : []);
+          setIsLoading(false);
+        };
+        reload();
+      }
       return;
     }
     const timer = setTimeout(async () => {
@@ -118,6 +157,29 @@ export function SearchResultsClient({
     }, 350);
     return () => clearTimeout(timer);
   }, [query, storeId]);
+
+  // Re-fetch when categories change via quick suggestions (no active search query)
+  useEffect(() => {
+    if (query.trim()) return; // search mode handles its own fetching
+    if (!hasSearched) return; // nothing shown yet, no need to refetch
+
+    const load = async () => {
+      setIsLoading(true);
+      if (filters.categories.length === 0) {
+        // No categories selected — reset back to idle
+        setAllResults([]);
+        setHasSearched(false);
+        setIsLoading(false);
+        return;
+      }
+      const res = await getStoreProductsFiltered(storeId, 1, 200, {
+        categories: filters.categories as any,
+      });
+      setAllResults(res.success && res.data ? res.data : []);
+      setIsLoading(false);
+    };
+    load();
+  }, [filters.categories, storeId]);
 
   const displayPrice = (p: IProduct) => p.price + p.price * (p.markup / 100);
 
@@ -156,7 +218,8 @@ export function SearchResultsClient({
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-6">
           {/* ── Desktop sidebar ── */}
-          {hasSearched && allResults.length > 0 && !customerId && (
+          {/* {hasSearched && allResults.length > 0 && !customerId && ( */}
+          {hasSearched && activeFilterCount > 0 && !customerId && (
             <aside className="hidden lg:flex flex-col w-64 shrink-0">
               <div
                 className="sticky top-18 rounded-2xl border border-border/60 bg-card overflow-hidden flex flex-col"
@@ -223,7 +286,82 @@ export function SearchResultsClient({
                   {QUICK_SUGGESTIONS.map((s) => (
                     <button
                       key={s.label}
-                      onClick={() => setQuery(s.label)}
+                      // onClick={() => setQuery(s.label)}
+                      // onClick={() => {  // --- new
+                      //   setFilters((prev) => ({
+                      //     ...prev,
+                      //     categories: prev.categories.includes(s.label)
+                      //       ? prev.categories
+                      //       : [...prev.categories, s.label],
+                      //   }));
+                      //   // If no search query yet, search the category name so results populate
+                      //   if (!query.trim()) {
+                      //     setQuery(s.label);
+                      //   }
+                      // }}
+                      // onClick={async () => {  // --- new
+                      //   setFilters((prev) => ({
+                      //     ...prev,
+                      //     categories: prev.categories.includes(s.label)
+                      //       ? prev.categories
+                      //       : [...prev.categories, s.label],
+                      //   }));
+                      //   // Only fetch all products if no search is active yet
+                      //   if (!query.trim()) {
+                      //     setIsLoading(true);
+                      //     setHasSearched(true);
+                      //     const res = await searchAction("", storeId);
+                      //     setAllResults(
+                      //       res.success && res.data ? res.data : [],
+                      //     );
+                      //     setIsLoading(false);
+                      //   }
+                      // }}
+                      onClick={async () => {
+                        const CATEGORY_MAP: Record<string, string[]> = {
+                          Produce: ["Fruits", "Vegetables", "Produce"],
+                        };
+                        const labelsToAdd = CATEGORY_MAP[s.label] ?? [s.label];
+                        // const newCategories = filters.categories.includes(
+                        //   s.label,
+                        // )
+                        //   ? filters.categories
+                        //   : [...filters.categories, s.label];
+                        const newCategories = filters.categories.includes(
+                          s.label,
+                        )
+                          ? filters.categories.filter(
+                              (c) => !labelsToAdd.includes(c),
+                            )
+                          : [
+                              ...new Set([
+                                ...filters.categories,
+                                ...labelsToAdd,
+                              ]),
+                            ];
+
+                        setFilters((prev) => ({
+                          ...prev,
+                          categories: newCategories,
+                        }));
+
+                        if (!query.trim()) {
+                          setIsLoading(true);
+                          setHasSearched(true);
+                          const res = await getStoreProductsFiltered(
+                            storeId,
+                            1,
+                            200,
+                            {
+                              categories: newCategories as any,
+                            },
+                          );
+                          setAllResults(
+                            res.success && res.data ? res.data : [],
+                          );
+                          setIsLoading(false);
+                        }
+                      }}
                       className="group flex items-center gap-0 rounded-full border border-border/60 bg-card hover:border-green-200 hover:bg-green-50/40 transition-all duration-200 pr-4 shrink-0"
                     >
                       <span className="flex items-center justify-center w-8 h-8 rounded-full bg-muted group-hover:bg-green-100/70 m-0.5 text-sm transition-colors">
@@ -264,7 +402,7 @@ export function SearchResultsClient({
                         ? `${filtered.length} result${filtered.length !== 1 ? "s" : ""}`
                         : "No results"}{" "}
                       <span className="text-muted-foreground font-normal text-sm">
-                        for &ldquo;{query}&rdquo;
+                        {/* for &ldquo;{query}&rdquo; */}
                       </span>
                     </p>
                     {activeFilterCount > 0 && (
@@ -325,25 +463,40 @@ export function SearchResultsClient({
                   </div>
                 ) : (
                   /* No results at all */
-                  <div className="py-20 flex flex-col items-center justify-center gap-4">
-                    <div className="w-16 h-16 rounded-3xl bg-card border border-border/60 flex items-center justify-center text-3xl shadow-sm">
-                      🔍
+                  <>
+                    {/* {activeFilterCount > 0 && (
+                      <div className="lg:hidden flex justify-end mb-3">
+                        <FilterTriggerButton
+                          activeCount={activeFilterCount}
+                          onClick={() => setFilterSheetOpen(true)}
+                        />
+                      </div>
+                    )} */}
+                    <div className="py-20 flex flex-col items-center justify-center gap-4">
+                      <div className="w-16 h-16 rounded-3xl bg-card border border-border/60 flex items-center justify-center text-3xl shadow-sm">
+                        🔍
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-foreground text-lg">
+                          Nothing found
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
+                          Try a different spelling or browse by category
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setQuery("");
+                          setAllResults([]);
+                          setHasSearched(false);
+                          setFilters(DEFAULT_FILTERS);
+                        }}
+                        className="h-9 px-5 rounded-full border border-border/60 bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-all"
+                      >
+                        Clear search
+                      </button>
                     </div>
-                    <div className="text-center">
-                      <p className="font-bold text-foreground text-lg">
-                        Nothing found for &ldquo;{query}&rdquo;
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
-                        Try a different spelling or browse by category
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setQuery("")}
-                      className="h-9 px-5 rounded-full border border-border/60 bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-all"
-                    >
-                      Clear search
-                    </button>
-                  </div>
+                  </>
                 )}
               </>
             )}

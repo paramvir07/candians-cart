@@ -3,7 +3,7 @@
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 /**
  * Marks a product as subsidised (admin-only action).
@@ -25,8 +25,10 @@ import { revalidatePath } from "next/cache";
  * }
  */
 
-
-export async function subsidisedProduct(productId: string, isSubsidised: boolean) {
+export async function subsidisedProduct(
+  productId: string,
+  isSubsidised: boolean,
+) {
   try {
     const session = await getUserSession();
     if (session.user.role !== "admin") {
@@ -40,7 +42,7 @@ export async function subsidisedProduct(productId: string, isSubsidised: boolean
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       { subsidised: isSubsidised },
-      { returnDocument: 'after' },
+      { returnDocument: "after" },
     );
 
     if (!updatedProduct) {
@@ -50,7 +52,12 @@ export async function subsidisedProduct(productId: string, isSubsidised: boolean
       };
     }
 
-    revalidatePath(`/admin/store/${productId}`); // have to set the path
+    const product = await Product.findById(productId).select("storeId").lean();
+    if (product && product.storeId) {
+      const tagToBust = `products-${product.storeId.toString()}`;
+      revalidateTag(tagToBust, "max");
+      console.log(`[Cache] Successfully marked tag '${tagToBust}' as stale`);
+    }
 
     return {
       success: true,
