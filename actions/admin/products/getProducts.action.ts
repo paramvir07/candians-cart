@@ -5,7 +5,6 @@ import { dbConnect } from "@/db/dbConnect";
 import productsModel from "@/db/models/store/products.model";
 import mongoose from "mongoose";
 
-// Updated interface to reflect serialized string values
 export interface AdminProduct {
   _id: string;
   name: string;
@@ -38,7 +37,6 @@ export interface GetProductsResult {
   error?: string;
 }
 
-// Utility type for Mongoose Aggregation Output
 type AggregatedProduct = Omit<
   AdminProduct,
   "_id" | "storeId" | "InvoiceId" | "createdAt" | "updatedAt" | "images"
@@ -51,9 +49,6 @@ type AggregatedProduct = Omit<
   images?: { url: string; fileId: string; _id: mongoose.Types.ObjectId }[];
 };
 
-/**
- * Helper function to safely serialize the Mongoose Product Document
- */
 function serializeProduct(p: AggregatedProduct): AdminProduct {
   return {
     ...p,
@@ -74,70 +69,103 @@ function serializeProduct(p: AggregatedProduct): AdminProduct {
   };
 }
 
+// ✅ Hoisted to module level so Next.js can track and invalidate the cache entry
+const getPaginatedProductsCached = (
+  storeId: string | null | undefined,
+  page: number,
+  limit: number,
+) => {
+  // ✅ Fixed: removed stray space in cache key
+  const cacheKey = `admin-products-paginated-${storeId || "all"}-p${page}-l${limit}`;
+  const cacheTags = storeId ? [`products-${storeId}`] : ["products-all"];
+
+  return unstable_cache(
+    async () => {
+      await dbConnect();
+
+      const match: Record<string, mongoose.Types.ObjectId> = {};
+      if (storeId) match.storeId = new mongoose.Types.ObjectId(storeId);
+
+      const skip = (page - 1) * limit;
+
+      const [data, totalCount] = await Promise.all([
+        productsModel.aggregate<AggregatedProduct>([
+          { $match: match },
+          { $sort: { createdAt: -1 } },
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $lookup: {
+              from: "stores",
+              localField: "storeId",
+              foreignField: "_id",
+              as: "store",
+            },
+          },
+          { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
+          { $addFields: { storeName: "$store.name" } },
+          { $project: { store: 0 } },
+        ]),
+        productsModel.countDocuments(match),
+      ]);
+
+      return {
+        data: data.map(serializeProduct),
+        totalPages: Math.ceil(totalCount / limit),
+        totalCount,
+      };
+    },
+    [cacheKey],
+    { revalidate: 3600, tags: cacheTags },
+  );
+};
+
+// ✅ Hoisted to module level
+const getSearchProductsCached = (query: string, storeId?: string | null) => {
+  const cacheKey = `admin-product-search-${query.trim()}-${storeId || "all"}`;
+  const cacheTags = storeId ? [`products-${storeId}`] : ["products-all"];
+
+  return unstable_cache(
+    async () => {
+      await dbConnect();
+
+      const match: Record<string, unknown> = {
+        name: { $regex: query, $options: "i" },
+      };
+      if (storeId) match.storeId = new mongoose.Types.ObjectId(storeId);
+
+      const data = await productsModel.aggregate<AggregatedProduct>([
+        { $match: match },
+        { $sort: { createdAt: -1 } },
+        { $limit: 50 },
+        {
+          $lookup: {
+            from: "stores",
+            localField: "storeId",
+            foreignField: "_id",
+            as: "store",
+          },
+        },
+        { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
+        { $addFields: { storeName: "$store.name" } },
+        { $project: { store: 0 } },
+      ]);
+
+      return data.map(serializeProduct);
+    },
+    [cacheKey],
+    { revalidate: 3600, tags: cacheTags },
+  );
+};
+
 export async function getStoreProductsPaginated(
   storeId: string | null | undefined,
   page: number = 1,
   limit: number = 25,
 ): Promise<GetProductsResult> {
   try {
-    const cacheKey = `admin-products-paginated-${storeId || "all"} -p${page}-l${limit}`;
-    const cacheTags = storeId ? [`products-${storeId}`] : ["products-all"];
-
-    const fetchCachedData = unstable_cache(
-      async () => {
-        await dbConnect();
-
-        const match: Record<string, mongoose.Types.ObjectId> = {};
-        if (storeId) match.storeId = new mongoose.Types.ObjectId(storeId);
-
-        const skip = (page - 1) * limit;
-
-        const [data, totalCount] = await Promise.all([
-          productsModel.aggregate<AggregatedProduct>([
-            { $match: match },
-            { $sort: { createdAt: -1 } },
-            { $skip: skip },
-            { $limit: limit },
-            {
-              $lookup: {
-                from: "stores",
-                localField: "storeId",
-                foreignField: "_id",
-                as: "store",
-              },
-            },
-            { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
-            {
-              $addFields: {
-                storeName: "$store.name",
-              },
-            },
-            { $project: { store: 0 } },
-          ]),
-          productsModel.countDocuments(match),
-        ]);
-
-        return {
-          success: true,
-          data: data.map(serializeProduct),
-          totalPages: Math.ceil(totalCount / limit),
-          totalCount,
-        };
-      },
-      [cacheKey],
-      {
-        revalidate: 3600,
-        tags: cacheTags,
-      },
-    );
-    const result = await fetchCachedData();
-
-    return {
-      success: result.success,
-      data: result.data,
-      totalPages: result.totalPages,
-      totalCount: result.totalCount,
-    };
+    const result = await getPaginatedProductsCached(storeId, page, limit)();
+    return { success: true, ...result };
   } catch (error: unknown) {
     const err = error as Error;
     return {
@@ -155,51 +183,8 @@ export async function searchProducts(
   storeId?: string | null,
 ): Promise<GetProductsResult> {
   try {
-    const cacheKey = `admin-product-search-${query.trim()}-${storeId || "all"}`;
-    const cacheTags = storeId ? [`products-${storeId}`] : ["products-all"];
-
-    const fetchCachedSearch = unstable_cache(
-      async () => {
-        await dbConnect();
-
-        const match: Record<string, unknown> = {
-          name: { $regex: query, $options: "i" },
-        };
-        if (storeId) match.storeId = new mongoose.Types.ObjectId(storeId);
-
-        const data = await productsModel.aggregate<AggregatedProduct>([
-          { $match: match },
-          { $sort: { createdAt: -1 } },
-          { $limit: 50 },
-          {
-            $lookup: {
-              from: "stores",
-              localField: "storeId",
-              foreignField: "_id",
-              as: "store",
-            },
-          },
-          { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
-          { $addFields: { storeName: "$store.name" } },
-          { $project: { store: 0 } },
-        ]);
-
-        return data.map(serializeProduct);
-      },
-      [cacheKey],
-      {
-        revalidate: 3600,
-        tags: cacheTags,
-      },
-    );
-    const cachedData = await fetchCachedSearch();
-
-    return {
-      success: true,
-      data: cachedData,
-      totalPages: 1,
-      totalCount: cachedData.length,
-    };
+    const data = await getSearchProductsCached(query, storeId)();
+    return { success: true, data, totalPages: 1, totalCount: data.length };
   } catch (error: unknown) {
     const err = error as Error;
     return {
