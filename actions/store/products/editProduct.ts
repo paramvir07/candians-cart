@@ -29,6 +29,7 @@ export async function updateProduct(
 ): Promise<ActionResponse> {
   try {
     const session = await getUserSession();
+
     if (!session?.user?.id) {
       return { success: false, message: "Unauthorized" };
     }
@@ -42,7 +43,11 @@ export async function updateProduct(
 
     if (!validationResult.success) {
       const errorMessage = zodErrorResponse(validationResult);
-      return { success: false, message: errorMessage || "Validation error" };
+
+      return {
+        success: false,
+        message: errorMessage || "Validation error",
+      };
     }
 
     await dbConnect();
@@ -59,7 +64,6 @@ export async function updateProduct(
         return { success: false, message: "Store not found" };
       }
 
-      // Fetching existing products
       existingProduct = await Product.findOne({
         _id: productId,
         storeId: store._id,
@@ -82,8 +86,11 @@ export async function updateProduct(
       ...otherData
     } = validationResult.data;
 
-    // Comparing the old and the new images
+    /**
+     * Delete removed images from ImageKit
+     */
     const newImageIds = images?.map((img) => img.fileId) || [];
+
     const imagesToDelete =
       existingProduct.images?.filter(
         (oldImg: { fileId: string; url: string }) =>
@@ -93,6 +100,7 @@ export async function updateProduct(
     for (const img of imagesToDelete) {
       try {
         await imagekit.files.delete(img.fileId);
+
         console.log(
           `Successfully deleted old image ${img.fileId} from ImageKit`,
         );
@@ -104,65 +112,109 @@ export async function updateProduct(
       }
     }
 
+    /**
+     * Price comparison
+     */
     const newPriceInCents = Math.round(price * 100);
     const priceHasChanged = existingProduct.price !== newPriceInCents;
 
-    // Checks if invoice exists for store role, No checks for admin
-    if (storeRole && priceHasChanged) {
-      if (!InvoiceId) {
+    /**
+     * Primary UPC logic
+     *
+     * primaryUPC is already a number, so no Number(primaryUPC)
+     * and no string checks are needed.
+     */
+    const newPrimaryUPC =
+      primaryUPC !== undefined && primaryUPC !== null ? primaryUPC : undefined;
+
+    const primaryUPCHasChanged =
+      newPrimaryUPC !== undefined &&
+      existingProduct.primaryUPC !== newPrimaryUPC;
+
+    /**
+     * Check duplicate UPC only if UPC was edited
+     */
+    if (primaryUPCHasChanged) {
+      const productWithSameUPC = await Product.findOne({
+        primaryUPC: newPrimaryUPC,
+        _id: { $ne: productId },
+      }).lean();
+
+      if (productWithSameUPC) {
         return {
           success: false,
-          message:
-            "An Invoice Id is required when changing the price of a product",
+          message: `Primary UPC is already in use by another product: ${
+            productWithSameUPC.name || "Unknown Product"
+          }`,
         };
       }
+    }
 
+    /**
+     * Store must provide invoice when changing price
+     */
+    if (storeRole && priceHasChanged && !InvoiceId) {
+      return {
+        success: false,
+        message:
+          "An Invoice Id is required when changing the price of a product",
+      };
+    }
+
+    /**
+     * Invoice logic
+     *
+     * If InvoiceId is provided:
+     * - If product already exists inside invoice.products, update newPrice/status
+     * - Otherwise, push product into invoice.products
+     */
+    if (storeRole && InvoiceId) {
       const invoice = await ProductInvoice.findById(InvoiceId).lean();
+
       if (!invoice) {
         return { success: false, message: "Invoice does not exist" };
       }
 
-      // if (!primaryUPC) {
-      //   return {
-      //     success: false,
-      //     message: "Primary UPC is required when updating a product",
-      //   };
-      // }
+      const productAlreadyInInvoice = await ProductInvoice.findOne({
+        _id: InvoiceId,
+        "products.productId": existingProduct._id,
+      }).lean();
 
-      // FIX: Rename variable so it doesn't shadow existingProduct
-      // FIX: Add $ne (not equal) so we don't flag the product itself as a duplicate
-      if (primaryUPC !== undefined) {
-        const productWithSameUPC = await Product.findOne({
-          primaryUPC: Number(primaryUPC),
-          _id: { $ne: productId }, // Ignore the current product being edited
-        }).lean();
-
-        if (productWithSameUPC) {
-          return {
-            success: false,
-            message: `Primary UPC is already in use by another product: ${productWithSameUPC.name || "Unknown Product"}`,
-          };
-        }
-      }
-
-      // FIX: Reference the original outer existingProduct
-      await ProductInvoice.findByIdAndUpdate(InvoiceId, {
-        $push: {
-          products: {
-            productId: existingProduct._id,
-            oldPrice: existingProduct.price,
-            newPrice: newPriceInCents,
-            status: "PENDING",
+      if (productAlreadyInInvoice) {
+        await ProductInvoice.updateOne(
+          {
+            _id: InvoiceId,
+            "products.productId": existingProduct._id,
           },
-        },
-      });
+          {
+            $set: {
+              "products.$.oldPrice": existingProduct.price,
+              "products.$.newPrice": newPriceInCents,
+              "products.$.status": "PENDING",
+            },
+          },
+        );
+      } else {
+        await ProductInvoice.findByIdAndUpdate(InvoiceId, {
+          $push: {
+            products: {
+              productId: existingProduct._id,
+              oldPrice: existingProduct.price,
+              newPrice: newPriceInCents,
+              status: "PENDING",
+            },
+          },
+        });
+      }
     }
 
-    // Automatically sets the subsidy to true, if product category = Fruits, Vegetables, Dairy
+    /**
+     * Subsidy logic
+     */
     const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
     const isSubsidized = subsidyCategories.includes(otherData.category);
 
-    if (subsidyCategories.includes(otherData.category)) {
+    if (isSubsidized) {
       if (otherData.markup < 10 || otherData.markup > 35) {
         return {
           success: false,
@@ -180,6 +232,9 @@ export async function updateProduct(
       }
     }
 
+    /**
+     * Final DB update payload
+     */
     const dbPayload = {
       ...otherData,
       images: images || [],
@@ -190,7 +245,7 @@ export async function updateProduct(
       subsidised: isSubsidized,
       isMeasuredInWeight,
       UOM,
-      primaryUPC: primaryUPC ? Number(primaryUPC) : undefined,
+      primaryUPC: newPrimaryUPC,
     };
 
     let updatedProduct;
@@ -203,7 +258,10 @@ export async function updateProduct(
       );
     } else if (storeRole) {
       updatedProduct = await Product.findOneAndUpdate(
-        { _id: productId, storeId: store?._id },
+        {
+          _id: productId,
+          storeId: store?._id,
+        },
         { $set: dbPayload },
         { returnDocument: "after" },
       );
@@ -217,12 +275,16 @@ export async function updateProduct(
       };
     }
 
+    /**
+     * Cache revalidation
+     */
     const targetStoreId =
       store?._id?.toString() || existingProduct.storeId.toString();
 
-    // FIX: Use targetStoreId instead of the Mongoose `store` object to avoid "products-[object Object]"
     const tagToBust = `products-${targetStoreId}`;
+
     revalidateTag(tagToBust, "max");
+
     console.log(
       `[Cache] Successfully marked tag '${tagToBust}' as stale via revalidateTag`,
     );
@@ -239,6 +301,7 @@ export async function updateProduct(
     };
   } catch (error) {
     console.error("Something went wrong: ", error);
+
     return {
       success: false,
       message: "An error occurred while updating the product",

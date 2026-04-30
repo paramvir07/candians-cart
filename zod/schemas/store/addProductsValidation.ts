@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ALLOWED_TAX_RATES = [0, 5, 7, 12] as const; //percentages
+export const ALLOWED_TAX_RATES = [0, 5, 7, 12] as const; // percentages
 
 export const InvoiceFormSchema = z.object({
   vendorName: z.string().trim().min(2, "Vendor name is required"),
@@ -67,7 +67,7 @@ export const BaseProductFormSchema = z.object({
 
   disposableFee: z.number().min(0, "Fee cannot be negative").default(0),
 
-  price: z.number().min(0.01, "Price must be at least 0.01"),
+  price: z.number().min(0, "Price cannot be negative"),
 
   stock: z.boolean(),
 
@@ -78,10 +78,11 @@ export const BaseProductFormSchema = z.object({
         fileId: z.string(),
       }),
     )
-    .optional() // could be removed since default is empty
-    .default([]), // For the time being this is optional, have to integrate Imagekit
+    .optional()
+    .default([]),
 
   isFeatured: z.boolean(),
+
   markup: z.coerce
     .number()
     .min(0, "Markup must be between 0% and 40%")
@@ -89,7 +90,6 @@ export const BaseProductFormSchema = z.object({
 
   primaryUPC: z.preprocess(
     (val) => {
-      // FIX: Check for explicit NaN which gets passed by empty numeric inputs
       if (
         val === "" ||
         val === null ||
@@ -100,23 +100,26 @@ export const BaseProductFormSchema = z.object({
       }
 
       const parsed = Number(val);
-      // If the conversion to Number results in NaN, safely treat as undefined
+
       if (Number.isNaN(parsed)) return undefined;
 
       return parsed;
     },
     z
-      .number("UPC must be a valid number") // FIX: Syntax mapped cleanly
+      .number("UPC must be a valid number")
       .int("UPC must be a whole number")
       .positive("UPC must be a positive number")
       .optional()
       .refine(
         (val) => {
-          if (val === undefined) return true; // Bypass refine if optional
+          if (val === undefined) return true;
+
           const length = String(val).length;
-          return length >= 10 && length <= 12;
+          return length >= 1 && length <= 13;
         },
-        { message: "UPC must be between 10 and 12 digits" },
+        {
+          message: "UPC must be between 1 and 13 digits",
+        },
       ),
   ),
 
@@ -153,13 +156,21 @@ export const createProductFormSchema = (role: "admin" | "store") => {
   }).superRefine((data, ctx) => {
     const excludedCategories = ["Fruits", "Vegetables", "Dairy"];
 
+    if (data.stock && data.price < 0.01) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["price"],
+        message: "Price must be at least 0.01",
+      });
+    }
+
     if (
       role === "store" &&
       !excludedCategories.includes(data.category) &&
       (data.markup < 30 || data.markup > 35)
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         path: ["markup"],
         message: "Markup must be between 30% and 35%",
       });
