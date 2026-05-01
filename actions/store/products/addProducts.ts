@@ -1,5 +1,6 @@
 "use server";
 
+import mongoose from "mongoose";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
@@ -24,21 +25,30 @@ export async function createProduct(
 ): Promise<ActionResponse> {
   try {
     const session = await getUserSession();
+
     if (!session?.user?.id) {
       return { success: false, message: "Unauthorized" };
     }
 
     const userRole = (session.user.role as "admin" | "store") || "store";
+    const adminRole = userRole === "admin";
+    const storeRole = userRole === "store";
+
     const schema = createProductFormSchema(userRole);
     const validationResult = schema.safeParse(data);
+
     if (!validationResult.success) {
       const errorMessage = zodErrorResponse(validationResult);
-      return { success: false, message: errorMessage || "Validation error" };
+
+      return {
+        success: false,
+        message: errorMessage || "Validation error",
+      };
     }
 
     await dbConnect();
 
-    let storeId = recievedStoreId;
+    let storeId: string | undefined = recievedStoreId;
 
     if (!storeId) {
       const store = await Store.findOne({ userId: session.user.id })
@@ -49,7 +59,7 @@ export async function createProduct(
         return { success: false, message: "Store not found" };
       }
 
-      storeId = String(store._id); // ensure it's not undefined
+      storeId = String(store._id);
     }
 
     const {
@@ -64,48 +74,57 @@ export async function createProduct(
       ...otherData
     } = validationResult.data;
 
-    // Checks if the invoice Id exists when the role is Store, for admin no checking so it can bypass
-    if (userRole === "store") {
-      if (!InvoiceId) {
+    if (storeRole && !InvoiceId) {
+      return {
+        success: false,
+        message: "An Invoice Id is required when adding a new product",
+      };
+    }
+
+    /**
+     * If invoice is provided, validate that it belongs to this store.
+     * Store: required
+     * Admin: optional, but if provided must be valid
+     */
+    if (InvoiceId) {
+      const invoice = await ProductInvoice.findOne({
+        _id: InvoiceId,
+        storeId,
+      }).lean();
+
+      if (!invoice) {
         return {
           success: false,
-          message: "An Invoice Id is required when adding a new product",
+          message: "Invoice does not exist for this store",
         };
-      }
-      const invoice = await ProductInvoice.findById(InvoiceId);
-      if (!invoice) {
-        return { success: false, message: "Invoice does not exists" };
-      }
-
-      // Checks if the primary upc is unique or not
-      // if (!primaryUPC) {
-      //   return {
-      //     success: false,
-      //     message: "Primary UPC is required when adding a new product",
-      //   };
-      // }
-
-      if (primaryUPC !== undefined) {
-        const existingProduct = await Product.findOne({
-          primaryUPC: Number(primaryUPC),
-        }).lean();
-
-        if (existingProduct) {
-          return {
-            success: false,
-            message: `Primary UPC is already in use by another product: ${existingProduct.name || "Unknown Product"}`,
-          };
-        }
       }
     }
 
-    const newPriceinCents = Math.round(price * 100);
+    /**
+     * UPC should be unique inside same store.
+     */
+    if (primaryUPC !== undefined && primaryUPC !== null) {
+      const existingProduct = await Product.findOne({
+        primaryUPC: Number(primaryUPC),
+        storeId,
+      }).lean();
 
-    // Automatically sets the subsidy to true, if product category = Fruits, Vegetables, Dairy
+      if (existingProduct) {
+        return {
+          success: false,
+          message: `Primary UPC is already in use by another product: ${
+            existingProduct.name || "Unknown Product"
+          }`,
+        };
+      }
+    }
+
+    const newPriceInCents = Math.round(price * 100);
+
     const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
     const isSubsidized = subsidyCategories.includes(otherData.category);
 
-    if (subsidyCategories.includes(otherData.category)) {
+    if (isSubsidized) {
       if (otherData.markup < 10 || otherData.markup > 35) {
         return {
           success: false,
@@ -125,49 +144,91 @@ export async function createProduct(
 
     const dbPayload = {
       ...otherData,
-      storeId, // guaranteed defined now
+      storeId,
       images: images ?? [],
       tax: tax > 0 ? tax / 100 : 0,
-      price: newPriceinCents,
+      price: newPriceInCents,
       disposableFee: Math.round((disposableFee ?? 0) * 100),
       InvoiceId: InvoiceId || undefined,
       subsidised: isSubsidized,
       isMeasuredInWeight,
       UOM,
-      primaryUPC: primaryUPC ? Number(primaryUPC) : undefined,
+      primaryUPC:
+        primaryUPC !== undefined && primaryUPC !== null
+          ? Number(primaryUPC)
+          : undefined,
     };
 
-    const newProduct = await Product.create(dbPayload);
+    const mongoSession = await mongoose.startSession();
 
-    if (userRole === "store" && InvoiceId) {
-      await ProductInvoice.findByIdAndUpdate(InvoiceId, {
-        $push: {
-          products: {
-            productId: newProduct._id,
-            newPrice: newPriceinCents,
-            status: "PENDING",
-          },
-        },
+    try {
+      await mongoSession.withTransaction(async () => {
+        const createdProducts = await Product.create([dbPayload], {
+          session: mongoSession,
+        });
+
+        const newProduct = createdProducts[0];
+
+        if (!newProduct) {
+          throw new Error("Failed to create product");
+        }
+
+        /**
+         * Invoice logic:
+         * If InvoiceId exists, add newly created product into invoice products.
+         * This is inside transaction, so product create + invoice update succeed/fail together.
+         */
+        if (InvoiceId) {
+          await ProductInvoice.updateOne(
+            {
+              _id: InvoiceId,
+              storeId,
+            },
+            {
+              $push: {
+                products: {
+                  productId: newProduct._id,
+                  newPrice: newPriceInCents,
+                  status: "PENDING",
+                },
+              },
+            },
+            { session: mongoSession },
+          );
+        }
       });
+    } catch (error) {
+      console.error("Transaction failed:", error);
+
+      return {
+        success: false,
+        message: "Failed to create product and update invoice",
+      };
+    } finally {
+      await mongoSession.endSession();
     }
 
-    // BUST THE CACHE GLOBALLY FOR THIS STORE!
     const tagToBust = `products-${storeId}`;
+
     revalidateTag(tagToBust, "max");
-    // Logging to verify it fired
+
     console.log(
       `[Cache] Successfully marked tag '${tagToBust}' as stale via revalidateTag`,
     );
 
-    if (userRole === "store") {
+    if (storeRole) {
       revalidatePath("/store/products");
-    } else if (userRole === "admin" && recievedStoreId) {
+    } else if (adminRole && recievedStoreId) {
       revalidatePath(`/admin/store/${recievedStoreId}/products`);
     }
 
-    return { success: true, message: "Product created successfully" };
+    return {
+      success: true,
+      message: "Product created successfully",
+    };
   } catch (error) {
     console.error("Error creating product:", error);
+
     return {
       success: false,
       message: "An error occurred while creating the product",

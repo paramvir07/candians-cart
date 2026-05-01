@@ -96,7 +96,7 @@ export const updateSubsidyListItemAction = async (
     const updated = await SubsidisedList.findByIdAndUpdate(
       result.data.id,
       { name: result.data.name, category: result.data.category },
-      { new: true },
+      { returnDocument: "after" },
     );
     if (!updated) return { success: false, message: "Item not found" };
     return { success: true, message: "Subsidy item updated successfully" };

@@ -212,7 +212,7 @@ function SavingsCalculator() {
     setRawInput(String(v));
   };
 
-  const quickPicks = [21, 100, 200, 300, 500];
+  const quickPicks = [21, 34, 55, 89, 144, 200, 300, 400, 500];
 
   return (
     <Card className="overflow-hidden">

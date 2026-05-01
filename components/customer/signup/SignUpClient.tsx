@@ -192,7 +192,7 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
                 {/* <ShoppingCart size={17} className="text-primary-foreground" /> */}
                 <Logo variant="full" href="/" />
               {/* </div> */}
-              {/* <span className="text-sm font-semibold text-foreground">Canadian's Cart</span> */}
+              {/* <span className="text-sm font-semibold text-foreground">Candian's Cart</span> */}
             </div>
 
             {/* Step list */}

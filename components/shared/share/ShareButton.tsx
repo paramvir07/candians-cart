@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const DEFAULT_URL = "https://www.canadianscart.ca";
+const DEFAULT_URL = "https://www.candianscart.ca";
 
 interface AppConfig {
   label: string;

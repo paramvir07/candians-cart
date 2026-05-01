@@ -21,14 +21,25 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://candianscart.ca"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://candianscart.ca",
+  ),
   title: {
     default: "Candian's Cart | Smart grocery shopping for families",
     template: "%s | Candian's Cart",
   },
-  description: "Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.",
-  keywords: ["grocery delivery", "fresh produce", "Candian's Cart", "online grocery", "food delivery"],
+  description:
+    "Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.",
+  keywords: [
+    "grocery savings",
+    "grocery deals",
+    "budget groceries",
+    "fresh produce",
+    "Candian's Cart",
+    "online grocery",
+    "in-store grocery savings",
+    "online grocery savings",
+  ],
   authors: [{ name: "Candian's Cart Team" }],
   creator: "Candian's Cart",
   openGraph: {
@@ -36,7 +47,8 @@ export const metadata: Metadata = {
     locale: "en_CA",
     url: "/",
     title: "Candian's Cart | Smart grocery shopping for families",
-    description: "Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.",
+    description:
+      "Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.",
     siteName: "Candian's Cart",
     images: [
       {
@@ -50,7 +62,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Candian's Cart | Smart grocery shopping for families",
-    description: "Your favorite grocery app.",
+    description:
+      "Save money on groceries with ease—discover deals, compare prices, and shop smarter in-store or online with Candian’s Cart.",
     images: ["https://ik.imagekit.io/h7w5h0hou/opengraph-cc-logo.png"],
   },
   robots: {
