@@ -29,6 +29,11 @@ const NAV_LINKS: TNavLink[] = [
     href: "/#calculator",
     scrollTo: "calculator",
   },
+    {
+    label: "Budget Packs", 
+    href: "/#grocery-packs",
+    scrollTo: "grocery-packs",
+  },
   {
     label: "About Us",
     href: "/about",
