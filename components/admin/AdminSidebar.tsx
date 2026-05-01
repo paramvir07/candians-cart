@@ -4,6 +4,7 @@ import {
   Banknote,
   BarChart,
   HandCoins,
+  Handshake,
   HomeIcon,
   LinkIcon,
   List,
@@ -37,7 +38,9 @@ const NAV_GROUPS = [
     items: [
       { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
       { href: "/admin/products", label: "Products", icon: Package },
-      { href: "/admin/customers", label: "Customers", icon: Users2 },
+      { href: "/admin/customers", label: "Customers", icon: Handshake },
+      { href: "/admin/requests", label: "Requests", icon: Users2 },
+
     ],
   },
   {
