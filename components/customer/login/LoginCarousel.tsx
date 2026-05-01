@@ -67,13 +67,6 @@ export function LoginCarousel() {
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 z-[1]" />
 
-                <div className="relative z-10 flex items-center justify-between px-6 pt-6">
-                  <div className=" h-12 bg-white/90 rounded-xl flex items-center justify-center shadow-2xl p-2">
-                    {/* <ShoppingCart size={22} className="text-primary-foreground" /> */}
-                    <Logo variant="icon" href="/" />
-                  </div>
-                </div>
-
                 <div className="flex-1" />
 
                 <div className="relative z-10 px-6 pb-6">

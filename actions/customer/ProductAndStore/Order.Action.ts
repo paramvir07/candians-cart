@@ -152,7 +152,7 @@ export const ReOrder = async (orderId: string) => {
       },
       {
         upsert: true,
-        new: true,
+        returnDocument: "after",
       },
     );
 

@@ -14,7 +14,6 @@ import {
   budgetAtom,
   referralCodeAtom,
   storeIdAtom,
-  storeAddressAtom,
 } from "@/atoms/customer/signUp";
 import SelectStore from "../customer/signup/SelectStore";
 import StoreSelected from "../customer/signup/StoreSelected";
@@ -74,15 +73,14 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
       ? "Enter admin details to create access"
       : cashier
         ? "Enter cashier details to register"
-        : "Join the Canadian's Cart family today";
+        : "Join the Candian's Cart family today";
 
   const formContent = (
     <>
       {/* Logo + heading */}
       <div className="mb-7">
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-          {/* <ShoppingCart className="text-primary-foreground" size={22} /> */}
-          <Logo />
+        <div className="h-12 flex items-center justify-left mb-6">
+          <Logo variant="full" href="/" />
         </div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
           {heading}

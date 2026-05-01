@@ -59,7 +59,6 @@ useEffect(() => {
       {/* Logo */}
       <div className="mb-8">
         <div className="h-12 flex items-center justify-left mb-6">
-          {/* <ShoppingCart className="text-primary-foreground" size={22} /> */}
           <Logo variant="full" href="/" />
         </div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">

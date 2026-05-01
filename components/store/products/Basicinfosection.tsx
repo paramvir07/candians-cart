@@ -35,6 +35,8 @@ export function BasicInfoSection({
   price,
   onChange,
 }: BasicInfoSectionProps) {
+  const upcDigitCount = primaryUPC.replace(/\D/g, "").length;
+
   return (
     <Card className="border border-border/60 shadow-sm bg-card overflow-hidden">
       <CardHeader className="pb-4 pt-5 px-6">
@@ -45,7 +47,9 @@ export function BasicInfoSection({
           Basic Information
         </CardTitle>
       </CardHeader>
+
       <Separator className="mb-0" />
+
       <CardContent className="p-6 space-y-5">
         {/* Name */}
         <div className="space-y-1.5">
@@ -78,15 +82,26 @@ export function BasicInfoSection({
             <Label className="text-sm font-medium text-foreground/80">
               Primary UPC Barcode
             </Label>
-            <Input
-              type="number"
-              placeholder="e.g. 123456789012"
-              value={primaryUPC}
-              onChange={(e) => onChange("primaryUPC", e.target.value)}
-            />
-            <p className="text-[11px] text-muted-foreground">
-              10-12 digit barcode number
-            </p>
+
+            <div className="relative">
+              <Input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder="e.g. 123456789012"
+                value={primaryUPC}
+                onChange={(e) =>
+                  onChange("primaryUPC", e.target.value.replace(/\D/g, ""))
+                }
+                className="pr-16"
+              />
+
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground select-none">
+                {upcDigitCount} digits
+              </span>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground">Barcode number</p>
           </div>
 
           <div className="space-y-1.5">
@@ -131,10 +146,7 @@ export function BasicInfoSection({
             <Label className="text-sm font-medium text-foreground/80">
               Stock Status <span className="text-destructive">*</span>
             </Label>
-            <Select
-              value={stock}
-              onValueChange={(v) => onChange("stock", v)}
-            >
+            <Select value={stock} onValueChange={(v) => onChange("stock", v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>

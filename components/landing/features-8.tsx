@@ -538,7 +538,7 @@ export default function FeaturesSection() {
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fde68a', display: 'inline-block' }} />
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#86efac', display: 'inline-block' }} />
                   <div style={{ flex: 1, background: '#fff', borderRadius: 5, border: '1px solid #e7e5e4', padding: '3px 8px', fontSize: '0.62rem', color: '#a8a29e', textAlign: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                    canadianscart.ca · store
+                    candianscart.ca · store
                   </div>
                 </div>
                 {/* Items */}
@@ -668,7 +668,7 @@ export default function FeaturesSection() {
                 <div>
                   <span className="fs-label">Quick select</span>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                    {[21, 52, 112, 175, 204, 256, 345, 431, 579, 899].map(v => (
+                    {[21, 34, 55, 89, 144, 200, 300, 400, 500].map(v => (
                       <button
                         key={v}
                         className={`fs-pick-btn${spend === v ? ' active' : ''}`}

@@ -16,17 +16,17 @@ const slides = [
   {
     image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80",
     title: "Join Your\nLocal Community",
-    sub: "CANADIAN'S CART",
+    sub: "CANDIAN'S CART",
   },
   {
     image: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80",
     title: "Fresh Groceries,\nDelivered Fast",
-    sub: "CANADIAN'S CART",
+    sub: "CANDIAN'S CART",
   },
   {
     image: "https://images.unsplash.com/photo-1506617564039-2f3b650b7010?w=800&q=80",
     title: "Save More\nEvery Week",
-    sub: "CANADIAN'S CART",
+    sub: "CANDIAN'S CART",
   },
 ]
 
@@ -63,13 +63,6 @@ export function SignupCarousel() {
                   priority={index === 0}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 z-[1]" />
-
-                <div className="relative z-10 flex items-center justify-between px-6 pt-6">
-                  <div className="w-12 h-12 bg-primary backdrop-blur-sm rounded-lg flex items-center justify-center shadow-2xl">
-                    <ShoppingCart size={22} className="text-white" />
-                    {/* <Logo /> */}
-                  </div>
-                </div>
 
                 <div className="flex-1" />
 
