@@ -28,9 +28,9 @@ export function VerifyEmail({
   verifyUrl,
   appName = "Candian's Cart",
   supportEmail = "support@candianscart.ca",
-  websiteUrl = "https://candianscart.ca",
-  loginUrl = "https://candianscart.ca/customer/login",
-  helpUrl = "https://candianscart.ca",
+  websiteUrl = "https://www.canadianscart.ca",
+  loginUrl = "https://www.canadianscart.ca/customer/login",
+  helpUrl = "https://www.canadianscart.ca",
 
 }: VerifyEmailProps) {
   return (

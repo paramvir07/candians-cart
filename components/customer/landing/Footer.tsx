@@ -3,22 +3,22 @@ import Logo from "@/components/shared/Logo";
 
 const LINKS = {
   Shop: [
-    { label: "All Products",  href: "/customer" },
+    { label: "All Products", href: "/customer" },
     { label: "Fresh Produce", href: "/customer?category=Produce" },
-    { label: "Dairy & Eggs",  href: "/customer?category=Dairy" },
-    { label: "Bakery",        href: "/customer?category=Bakery" },
+    { label: "Dairy & Eggs", href: "/customer?category=Dairy" },
+    { label: "Bakery", href: "/customer?category=Bakery" },
   ],
   Account: [
-    { label: "My Profile",    href: "/customer/profile" },
+    { label: "My Profile", href: "/customer/profile" },
     { label: "Order History", href: "/customer/orders" },
-    { label: "My Wallet",     href: "/customer/wallet" },
-    { label: "Edit Profile",  href: "/customer/profile/edit" },
+    { label: "My Wallet", href: "/customer/wallet" },
+    { label: "Edit Profile", href: "/customer/profile/edit" },
+    { label: "Change Password", href: "/customer/chnage-password" },
   ],
   Company: [
-    { label: "About Us",         href: "/about" },
-    { label: "Contact",          href: "/contact" },
-    { label: "Privacy Policy",   href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
+    { label: "About Us", href: "/about" },
+    { label: "Contact", href: "/contact" },
+    { label: "Terms and Conditions", href: "/terms-and-conditions" },
   ],
 };
 

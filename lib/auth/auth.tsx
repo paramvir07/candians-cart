@@ -6,6 +6,7 @@ import { admin } from "better-auth/plugins";
 import { ac, roles } from "./roles";
 import { sendEmail } from "./email";
 import { VerifyEmail } from "@/components/EmailTemplates/VerifyEmail";
+import { ForgotPasswordEmail } from "@/components/EmailTemplates/ForgotPasswordEmail";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const client = new MongoClient(MONGODB_URI as string);
@@ -18,6 +19,20 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      void sendEmail({
+        to: user.email,
+        subject: "Reset your Candian's Cart account password",
+        react: (
+          <ForgotPasswordEmail
+            username={user.name}
+            resetUrl={url}
+            appName="Candian's Cart"
+          />
+        ),
+      });
+    },
   },
   emailVerification: {
     sendOnSignUp: true,

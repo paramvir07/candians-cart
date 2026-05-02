@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Customer } from "@/types/customer/customer";
-import { Edit, QrCode, ShieldCheck, MapPin, CalendarDays, X } from "lucide-react";
+import { Edit, QrCode, ShieldCheck, MapPin, CalendarDays, X, KeyRound } from "lucide-react";
 import Link from "next/link";
 import {
   Dialog,
@@ -34,10 +34,13 @@ export default function ProfileHero({ customer }: Props) {
 
   return (
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm">
-
       {/* ── Banner ── */}
-      <div className="relative h-32 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, oklch(0.6271 0.1699 149.2138) 0%, oklch(0.4104 0.1066 149.9393) 100%)" }}
+      <div
+        className="relative h-32 overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.6271 0.1699 149.2138) 0%, oklch(0.4104 0.1066 149.9393) 100%)",
+        }}
       >
         {/* Decorative circles */}
         <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10" />
@@ -114,8 +117,12 @@ export default function ProfileHero({ customer }: Props) {
 
             <DialogOverlay className="bg-black/50 backdrop-blur-sm" />
             <DialogContent className="sm:max-w-[320px] rounded-3xl border-0 p-0 overflow-hidden shadow-2xl bg-card">
-              <div className="relative px-6 pt-6 pb-4 border-b border-border/60"
-                style={{ background: "linear-gradient(135deg, oklch(0.9669 0.0287 158.0617) 0%, oklch(1 0 0) 100%)" }}
+              <div
+                className="relative px-6 pt-6 pb-4 border-b border-border/60"
+                style={{
+                  background:
+                    "linear-gradient(135deg, oklch(0.9669 0.0287 158.0617) 0%, oklch(1 0 0) 100%)",
+                }}
               >
                 <DialogClose asChild>
                   <button className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
@@ -123,7 +130,9 @@ export default function ProfileHero({ customer }: Props) {
                   </button>
                 </DialogClose>
                 <DialogHeader className="text-center">
-                  <DialogTitle className="text-base font-bold">Customer QR Code</DialogTitle>
+                  <DialogTitle className="text-base font-bold">
+                    Customer QR Code
+                  </DialogTitle>
                   <DialogDescription className="text-xs text-muted-foreground mt-1">
                     Scan to quickly access your profile.
                   </DialogDescription>
@@ -142,7 +151,9 @@ export default function ProfileHero({ customer }: Props) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <p className="font-bold text-sm truncate leading-tight">{customer.name}</p>
+                    <p className="font-bold text-sm truncate leading-tight">
+                      {customer.name}
+                    </p>
                     <p className="text-[10px] text-primary font-bold mt-0.5 tabular-nums">
                       #{customer._id.toString().slice(-6).toUpperCase()}
                     </p>
@@ -158,12 +169,20 @@ export default function ProfileHero({ customer }: Props) {
             </DialogContent>
           </Dialog>
 
-          <Button
-            className="flex-1 h-10 rounded-full text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all"
-          >
+          <Button className="flex-1 h-10 rounded-full text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all">
             <Link href="/customer/profile/edit" className="flex">
               <Edit className="h-4 w-4 mr-2" />
               Edit Profile
+            </Link>
+          </Button>
+
+          <Button
+            size="icon"
+            variant="outline"
+            className="rounded-xl border-green-500 text-green-600 hover:bg-green-50"
+          >
+            <Link href="/customer/change-password" className="flex">
+              <KeyRound className="h-4 w-4" />
             </Link>
           </Button>
           <ShareButton />

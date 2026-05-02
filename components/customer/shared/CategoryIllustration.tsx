@@ -17,52 +17,86 @@ export const CategoryIllustration = ({
   const cat = normalize(category);
 
   const imageMap: Record<string, string> = {
+    // ── fresh ──────────────────────────────────────────────────────────────
     fruits:
-      "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=600&q=80",
+      // vibrant Indian market fruits — mangoes, bananas, pomegranates
+      "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=600&q=80",
     vegetables:
-      "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=600&q=80",
+      // colourful Indian sabzi — tomatoes, peppers, greens
+      "https://images.unsplash.com/photo-1597362925123-77861d3fbac7?w=600&q=80",
+    produce:
+      // Indian vegetable market spread
+      "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80",
     dairy:
+      // milk, paneer, dahi — Indian dairy staples
       "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=600&q=80",
-    meat: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=600&q=80",
+    meat:
+      // fresh meat at market
+      "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=600&q=80",
     bakery:
+      // Indian bread — naan, roti, pav
       "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80",
+
+    // ── drinks & snacks ────────────────────────────────────────────────────
     beverages:
       "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=600&q=80",
     snacks:
       "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=600&q=80",
-    household:
-      "https://images.unsplash.com/photo-1583947581924-860bda6a26df?w=600&q=80",
+    // ── pantry staples ─────────────────────────────────────────────────────
     "oil & ghee":
+      // golden ghee / oil poured
       "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&q=80",
     "pulses & lentils":
-      "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=600&q=80",
+      // colourful dal — chana, moong, masoor
+      "https://images.unsplash.com/photo-1515543237350-b3eea1ec8082?w=600&q=80",
     "flour & atta":
+      // atta/flour with rolling pin
       "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&q=80",
-    rice: "https://images.unsplash.com/photo-1536304929831-ee1ca9d44906?w=600&q=80",
+    rice:
+      // Indian basmati rice
+      "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80",
     spices:
+      // Indian spices — red chilli, coriander, turmeric in steel spoons
       "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80",
     "pickles & chutneys":
-      "https://images.unsplash.com/photo-1589135716184-03b788f87b3c?w=600&q=80",
+      "hhttps://images.unsplash.com/photo-1601702538934-efffab67ab65?w=600&q=80",
     "instant foods":
-      "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&q=80",
+      // Maggi / instant noodles
+      "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=600&q=80",
     "frozen foods":
-      "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=600&q=80",
+      // frozen samosas, parathas
+      "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80",
+
+    // ── sweets & treats ────────────────────────────────────────────────────
     "sweets & mithai":
-      "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=600&q=80",
+      // gulab jamun / Indian mithai
+      "https://images.unsplash.com/photo-1695568180070-8b5acead5cf4?w=600&q=80",
     "dry fruits & nuts":
+      // cashews, almonds, pistachios — Indian dry fruits
       "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=600&q=80",
     "tea & coffee":
-      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&q=80",
+      // masala chai in glass
+      "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=600&q=80",
     "sauces & condiments":
+      // Indian sauces and condiments
       "https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=600&q=80",
     "papad & fryums":
+      // papad stacked
       "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80",
+
+    // ── non-food ───────────────────────────────────────────────────────────
+    household:
+      // cleaning supplies / household
+      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&q=80",
     "pooja / religious items":
-      "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?w=600&q=80",
+      // diya, flowers, pooja thali
+      "https://images.unsplash.com/photo-1667670651830-2d5bcd0e4f8f?w=600&q=80",
     utensils:
-      "https://images.unsplash.com/photo-1584990347449-a5d9f800a783?w=600&q=80",
+      // kitchen utensils / kadai / tawa
+      "https://images.unsplash.com/photo-1518291344630-4857135fb581?w=600&q=80",
     disposables:
-      "https://images.unsplash.com/photo-1567016432779-094069958ea5?w=600&q=80",
+      // disposable cups and plates
+      "https://images.unsplash.com/photo-1610824352934-c10d87b700cc?w=600&q=80",
     "personal care":
       "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=600&q=80",
     other:

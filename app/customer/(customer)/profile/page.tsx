@@ -5,7 +5,15 @@ import ProfileStats from "@/components/customer/profile/ProfileStats";
 import ProfileStore from "@/components/customer/profile/ProfileStore";
 import ProfileContact from "@/components/customer/profile/ProfileContact";
 import LogoutButton from "@/components/customer/profile/LogoutButton";
-import { Edit, Package, Wallet, ChevronRight, ChevronLeft, ChartSpline } from "lucide-react";
+import {
+  Edit,
+  Package,
+  Wallet,
+  ChevronRight,
+  ChevronLeft,
+  ChartSpline,
+  KeyRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { BlurFade } from "@/components/ui/blur-fade";
@@ -16,7 +24,6 @@ import CustomerAdvertisements from "@/components/customer/shared/CustomerAdverti
 export const metadata: Metadata = {
   title: "Profile", // This becomes "Orders | Store Panel - Candian's Cart" in the browser tab
 };
-
 
 export default async function ProfilePage() {
   const [customerRes, orderRes] = await Promise.all([
@@ -33,6 +40,14 @@ export default async function ProfilePage() {
       desc: "Update your personal info",
       href: "/customer/profile/edit",
       icon: Edit,
+      iconBg: "bg-primary/10",
+      iconColor: "text-primary",
+    },
+    {
+      label: "Change Password",
+      desc: "Change your password",
+      href: "/customer/change-password",
+      icon: KeyRound,
       iconBg: "bg-primary/10",
       iconColor: "text-primary",
     },
@@ -76,14 +91,21 @@ export default async function ProfilePage() {
             href={item.href}
             className="group flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-secondary/60 transition-colors"
           >
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.iconBg}`}>
-              <item.icon className={`h-4 w-4 ${item.iconColor}`} strokeWidth={1.75} />
+            <div
+              className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${item.iconBg}`}
+            >
+              <item.icon
+                className={`h-4 w-4 ${item.iconColor}`}
+                strokeWidth={1.75}
+              />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-none">
                 {item.label}
               </p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {item.desc}
+              </p>
             </div>
             <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
@@ -99,17 +121,22 @@ export default async function ProfilePage() {
       <Navbar />
 
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-
         {/* Header */}
         <BlurFade delay={0.05} inView>
           <div className="flex items-center gap-3 py-4 lg:py-6">
             <Link href="/customer">
-              <Button variant="ghost" size="icon" className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             </Link>
             <div>
-              <h1 className="text-base font-bold tracking-tight leading-none">My Profile</h1>
+              <h1 className="text-base font-bold tracking-tight leading-none">
+                My Profile
+              </h1>
               <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
                 Manage your account and preferences
               </p>
@@ -118,15 +145,17 @@ export default async function ProfilePage() {
         </BlurFade>
 
         <div className="pb-20 max-w-lg mx-auto lg:max-w-none">
-
           {/* ── Mobile ── */}
           <div className="flex flex-col gap-4 lg:hidden">
-            <BlurFade delay={0.10} inView>
+            <BlurFade delay={0.1} inView>
               <ProfileHero customer={customerData} />
               <CustomerAdvertisements />
             </BlurFade>
             <BlurFade delay={0.18} inView>
-              <ProfileStats customer={customerData} OrderCount={orderCount ?? 0} />
+              <ProfileStats
+                customer={customerData}
+                OrderCount={orderCount ?? 0}
+              />
             </BlurFade>
             <BlurFade delay={0.26} inView>
               <ProfileContact customer={customerData} />
@@ -137,20 +166,17 @@ export default async function ProfilePage() {
             <BlurFade delay={0.42} inView>
               <QuickActions />
             </BlurFade>
-            <BlurFade delay={0.50} inView>
+            <BlurFade delay={0.5} inView>
               <LogoutButton variant="card" />
             </BlurFade>
           </div>
 
           {/* ── Desktop ── */}
           <div className="hidden lg:grid grid-cols-[1fr_340px] gap-6 items-start">
-
             {/* Left col */}
             <div className="flex flex-col gap-4">
-              <BlurFade delay={0.10} inView>
+              <BlurFade delay={0.1} inView>
                 <ProfileHero customer={customerData} />
-                
-
               </BlurFade>
               <CustomerAdvertisements />
               <BlurFade delay={0.22} inView>
@@ -161,7 +187,10 @@ export default async function ProfilePage() {
             {/* Right col */}
             <div className="flex flex-col gap-4">
               <BlurFade delay={0.16} inView>
-                <ProfileStats customer={customerData} OrderCount={orderCount ?? 0} />
+                <ProfileStats
+                  customer={customerData}
+                  OrderCount={orderCount ?? 0}
+                />
               </BlurFade>
               <BlurFade delay={0.28} inView>
                 <ProfileContact customer={customerData} />
@@ -174,7 +203,6 @@ export default async function ProfilePage() {
               </BlurFade>
             </div>
           </div>
-
         </div>
       </div>
     </div>

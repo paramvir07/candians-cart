@@ -109,6 +109,14 @@ useEffect(() => {
 
       {/* Footer links */}
       <div className="mt-6 flex flex-col gap-1.5">
+        <p className="text-sm text-muted-foreground">
+          <Link
+            href="/forgot-password"
+            className="text-primary hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </p>
         {customer && (
           <p className="text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
@@ -120,18 +128,17 @@ useEffect(() => {
             </Link>
           </p>
         )}
-        {!customer &&(
-            <p className="text-sm text-muted-foreground">
-              Are you a Customer?{" "}
-              <Link
-                href="/customer/login"
-                className="text-primary hover:underline"
-              >
-                Login here
-              </Link>
-            </p>
-          )
-        }
+        {!customer && (
+          <p className="text-sm text-muted-foreground">
+            Are you a Customer?{" "}
+            <Link
+              href="/customer/login"
+              className="text-primary hover:underline"
+            >
+              Login here
+            </Link>
+          </p>
+        )}
       </div>
     </>
   );

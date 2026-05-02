@@ -23,6 +23,7 @@ import {
 import { Customer } from "@/types/customer/customer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
 
 type FormUserData = Pick<
   Customer,

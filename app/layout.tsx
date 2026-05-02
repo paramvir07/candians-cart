@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "https://candianscart.ca",
+    process.env.NEXT_PUBLIC_APP_URL || "https://www.canadianscart.ca",
   ),
   title: {
     default: "Candian's Cart | Smart grocery shopping for families",
