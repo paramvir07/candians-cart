@@ -39,7 +39,7 @@ export const EmptyCart = ({ customerId }: { customerId?: string }) => {
           </p>
 
           <Link
-            href={customerId ? `/cashier/customer/${customerId}/products` : "/cutomer"}
+            href={customerId ? `/cashier/customer/${customerId}/products` : "/customer/search"}
             className="mt-8 w-full"
           >
             <Button className="w-full p-5">Browse Products</Button>
