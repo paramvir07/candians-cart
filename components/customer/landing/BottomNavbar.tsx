@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ShoppingBag, BarChart2, User, ScanLine } from "lucide-react";
+import { Home, ShoppingBag, BarChart2, User, ScanLine, PackageCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Home", href: "/customer", icon: Home, exact: true },
-  { label: "Orders", href: "/customer/orders", icon: ShoppingBag },
+  { label: "Budget Packs", href: "/customer/budget-packs", icon: PackageCheck },
   { label: "Scan", href: "/customer/search?scan=1", icon: ScanLine },
   { label: "Analytics", href: "/customer/analytics", icon: BarChart2 },
   { label: "Profile", href: "/customer/profile", icon: User },
