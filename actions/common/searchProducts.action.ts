@@ -7,7 +7,6 @@ import mongoose, { PipelineStage } from "mongoose";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Customer from "@/db/models/customer/customer.model";
 import { cache as reactCache } from "react";
-import { unstable_cache } from "next/cache";
 
 /**
  * Deduplicated fetch for customer profile within a single request.
@@ -19,6 +18,16 @@ const getCustomerProfile = reactCache(async (userId: string) => {
     userId: new mongoose.Types.ObjectId(userId),
   }).lean();
 });
+
+type SearchClause =
+  | {
+      text: {
+        query: string;
+        path: string[];
+        fuzzy: { maxEdits: number; prefixLength: number; maxExpansions: number };
+      };
+    }
+  | { equals: { path: string; value: number } };
 
 /**
  * Searches products using MongoDB Atlas full-text search with optional store filtering.
@@ -46,13 +55,7 @@ const getCustomerProfile = reactCache(async (userId: string) => {
  * }
  */
 
-/**
- * Cached product search logic using Next.js unstable_cache.
- *
- */
-const getCachedProducts = (query: string, storeId?: string) =>
-  unstable_cache(
-    async () => {
+const fetchProductsDB = async(query: string, storeId?: string) =>{
       await dbConnect();
 
       // If there is a search query, use MongoDB Atlas Search aggregation
@@ -64,7 +67,7 @@ const getCachedProducts = (query: string, storeId?: string) =>
         const isNumeric = !isNaN(parsedNumber) && cleanQuery !== "";
 
         // 2. Build the 'should' clauses for the compound query
-        const shouldClauses: any[] = [
+        const shouldClauses: SearchClause[] = [
           {
             text: {
               query: cleanQuery,
@@ -112,10 +115,7 @@ const getCachedProducts = (query: string, storeId?: string) =>
         ? { storeId: new mongoose.Types.ObjectId(storeId) }
         : {};
       return await Product.find(findQuery).limit(50).lean();
-    },
-    [`product-search-${query}-${storeId}`],
-    { revalidate: 3600, tags: ["products"] },
-  )();
+    };
 
 /**
  * Role-aware search for Candian Cart.
@@ -145,7 +145,7 @@ export const searchProducts = async (
     }
     // Roles like 'admin', 'store', or 'cashier' use the providedStoreId if available
 
-    const products = await getCachedProducts(searchQuery, targetStoreId);
+    const products = await fetchProductsDB(searchQuery, targetStoreId);
 
     if (!products) {
       return { success: false, error: "No products found in Candian Cart." };
