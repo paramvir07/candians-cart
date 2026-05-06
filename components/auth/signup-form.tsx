@@ -152,7 +152,7 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
         )}
 
         {/* City + Province — customer only */}
-        {customer && (
+        {/* {customer && (
           <div className="flex gap-3">
             <Input
               id="city"
@@ -171,7 +171,39 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
               className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary w-28"
             />
           </div>
-        )}
+        )} */}
+        {/* City + Province — customer only */}
+{customer && (
+  <div className="flex gap-3">
+    <select
+      id="city"
+      name="city"
+      required
+      defaultValue=""
+      className="flex-1 h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+    >
+      <option value="" disabled>City</option>
+      {[
+        "Vancouver", "Burnaby", "New Westminster", "Coquitlam",
+        "Port Coquitlam", "Port Moody", "Surrey", "Delta", "Langley",
+        "Maple Ridge", "Pitt Meadows", "Abbotsford", "Mission",
+        "Chilliwack", "Agassiz", "Hope",
+      ].map((city) => (
+        <option key={city} value={city}>{city}</option>
+      ))}
+    </select>
+
+    <select
+      id="province"
+      name="province"
+      required
+      defaultValue="BC"
+      className="w-28 h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+    >
+      <option value="BC">BC</option>
+    </select>
+  </div>
+)}
 
         {/* Mobile */}
         {!admin && (
