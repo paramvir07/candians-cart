@@ -65,7 +65,7 @@ export const CategoryIllustration = ({
       "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=600&q=80",
     "frozen foods":
       // frozen samosas, parathas
-      "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80",
+      "https://unsplash.com/photos/assorted-food-in-silver-commercial-refrigerator-N6zB7z7MEvk",
 
     // ── sweets & treats ────────────────────────────────────────────────────
     "sweets & mithai":
@@ -82,7 +82,7 @@ export const CategoryIllustration = ({
       "https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=600&q=80",
     "papad & fryums":
       // papad stacked
-      "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80",
+      "https://unsplash.com/photos/white-and-brown-food-lot-SKVKUOy36Zo",
 
     // ── non-food ───────────────────────────────────────────────────────────
     household:

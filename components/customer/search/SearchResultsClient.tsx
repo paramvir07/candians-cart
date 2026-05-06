@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Customer } from "@/types/customer/customer";
 import { getCartQuantities } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { useDebounce } from "use-debounce";
 
 interface SearchResultsClientProps {
   customerId?: string;
@@ -62,6 +63,7 @@ export function SearchResultsClient({
   cartCount,
 }: SearchResultsClientProps) {
   const [query, setQuery] = useState("");
+  const [debouncedQuery] = useDebounce(query, 500);
   const [allResults, setAllResults] = useState<IProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -103,33 +105,8 @@ export function SearchResultsClient({
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
   const activeFilterCount = getActiveFilterCount(filters);
 
-  // useEffect(() => {
-  //   if (!query.trim()) {
-  //     setAllResults([]);
-  //     setHasSearched(false);
-  //     return;
-  //   }
-  //   const timer = setTimeout(async () => {
-  //     setIsLoading(true);
-  //     setHasSearched(true);
-  //     const res = await searchAction(query.trim(), storeId);
-  //     setAllResults(res.success && res.data ? res.data : []);
-  //     setIsLoading(false);
-  //   }, 350);
-  //   return () => clearTimeout(timer);
-  // }, [query, storeId]);
-
   useEffect(() => {
-    // if (!query.trim()) {
-    //   // Only reset if we're not in category-filter mode
-    //   if (!filters.categories.length) {
-    //     setAllResults([]);
-    //     setHasSearched(false);
-    //   }
-    //   return;
-    // }
-
-    if (!query.trim()) {
+    if (!debouncedQuery.trim()) {
       if (!filters.categories.length) {
         setAllResults([]);
         setHasSearched(false);
@@ -148,19 +125,19 @@ export function SearchResultsClient({
       }
       return;
     }
-    const timer = setTimeout(async () => {
+    const fetchResult = async () => {
       setIsLoading(true);
       setHasSearched(true);
-      const res = await searchAction(query.trim(), storeId);
+      const res = await searchAction(debouncedQuery.trim(), storeId);
       setAllResults(res.success && res.data ? res.data : []);
       setIsLoading(false);
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [query, storeId]);
+    };
+    fetchResult();
+  }, [debouncedQuery, storeId]);
 
   // Re-fetch when categories change via quick suggestions (no active search query)
   useEffect(() => {
-    if (query.trim()) return; // search mode handles its own fetching
+    if (debouncedQuery.trim()) return; // search mode handles its own fetching
     if (!hasSearched) return; // nothing shown yet, no need to refetch
 
     const load = async () => {
@@ -179,7 +156,7 @@ export function SearchResultsClient({
       setIsLoading(false);
     };
     load();
-  }, [filters.categories, storeId]);
+  }, [filters.categories, storeId, debouncedQuery, hasSearched]);
 
   const displayPrice = (p: IProduct) => p.price + p.price * (p.markup / 100);
 
@@ -286,37 +263,6 @@ export function SearchResultsClient({
                   {QUICK_SUGGESTIONS.map((s) => (
                     <button
                       key={s.label}
-                      // onClick={() => setQuery(s.label)}
-                      // onClick={() => {  // --- new
-                      //   setFilters((prev) => ({
-                      //     ...prev,
-                      //     categories: prev.categories.includes(s.label)
-                      //       ? prev.categories
-                      //       : [...prev.categories, s.label],
-                      //   }));
-                      //   // If no search query yet, search the category name so results populate
-                      //   if (!query.trim()) {
-                      //     setQuery(s.label);
-                      //   }
-                      // }}
-                      // onClick={async () => {  // --- new
-                      //   setFilters((prev) => ({
-                      //     ...prev,
-                      //     categories: prev.categories.includes(s.label)
-                      //       ? prev.categories
-                      //       : [...prev.categories, s.label],
-                      //   }));
-                      //   // Only fetch all products if no search is active yet
-                      //   if (!query.trim()) {
-                      //     setIsLoading(true);
-                      //     setHasSearched(true);
-                      //     const res = await searchAction("", storeId);
-                      //     setAllResults(
-                      //       res.success && res.data ? res.data : [],
-                      //     );
-                      //     setIsLoading(false);
-                      //   }
-                      // }}
                       onClick={async () => {
                         const CATEGORY_MAP: Record<string, string[]> = {
                           Produce: ["Fruits", "Vegetables", "Produce"],
@@ -464,14 +410,6 @@ export function SearchResultsClient({
                 ) : (
                   /* No results at all */
                   <>
-                    {/* {activeFilterCount > 0 && (
-                      <div className="lg:hidden flex justify-end mb-3">
-                        <FilterTriggerButton
-                          activeCount={activeFilterCount}
-                          onClick={() => setFilterSheetOpen(true)}
-                        />
-                      </div>
-                    )} */}
                     <div className="py-20 flex flex-col items-center justify-center gap-4">
                       <div className="w-16 h-16 rounded-3xl bg-card border border-border/60 flex items-center justify-center text-3xl shadow-sm">
                         🔍
