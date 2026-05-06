@@ -7,6 +7,7 @@ import { ac, roles } from "./roles";
 import { sendEmail } from "./email";
 import { VerifyEmail } from "@/components/EmailTemplates/VerifyEmail";
 import { ForgotPasswordEmail } from "@/components/EmailTemplates/ForgotPasswordEmail";
+import { ChangeEmailConfirmationEmail } from "@/components/EmailTemplates/ChangeEmailConfirmation";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const client = new MongoClient(MONGODB_URI as string);
@@ -16,6 +17,32 @@ export const auth = betterAuth({
   database: mongodbAdapter(db, {
     client,
   }),
+  user:{
+    changeEmail:{
+      enabled:true,
+      sendChangeEmailConfirmation: async ({ newEmail, user, url }) => {
+        const u = new URL(url);
+
+        u.searchParams.set(
+          "callbackURL",
+          "/api/auth/email-change"
+        );
+
+        await sendEmail({
+          to: user.email,
+          subject: "Verify email change",
+          react: (
+            <ChangeEmailConfirmationEmail
+              username={user.name}
+              confirmUrl={u.toString()}
+              newEmail={newEmail}
+              appName="Candian's Cart"
+            />
+          ),
+        });
+      },
+    }
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,

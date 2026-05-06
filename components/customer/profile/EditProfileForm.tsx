@@ -23,7 +23,6 @@ import {
 import { Customer } from "@/types/customer/customer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
 
 type FormUserData = Pick<
   Customer,
@@ -234,11 +233,10 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
                     disabled
                     className="pl-10 h-11 rounded-xl border-border/40 bg-secondary/40 text-muted-foreground cursor-not-allowed"
                   />
-                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40 bg-secondary px-2 py-1 rounded-full">
-                    locked
-                  </span>
+                  <Link className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] font-bold uppercase tracking-widest text-white bg-primary px-2 py-1 rounded-full" href={"/customer/change-email"}>Change email</Link>  
                 </div>
               </div>
+              
 
               {/* Personal */}
               <div className="px-6 py-5 space-y-4">
