@@ -16,17 +16,23 @@ interface HelpFormEmailData {
 export const HelpFormConfirmation = async (data: HelpFormEmailData) => {
   try {
     const response = await resend.emails.send({
-      from: "Candian's Cart <onboarding@resend.dev>",
-      to: [data.email],
+      from:
+        process.env.NODE_ENV === "development"
+          ? "Candian's Cart <onboarding@resend.dev>"
+          : "Candian's Cart <no-reply@canadianscart.ca>",
+      to:
+        process.env.NODE_ENV === "development"
+          ? [process.env.DEV_EMAIL!]
+          : [data.email],
       subject: `We received your ${data.subject}`,
-      // server action file should be in tsx to render react elements 
+      // server action file should be in tsx to render react elements
       html: await render(
         <HelpFormEmail
           userEmail={data.email}
           category={data.category}
           subject={data.subject}
           message={data.message}
-        />
+        />,
       ),
     });
 

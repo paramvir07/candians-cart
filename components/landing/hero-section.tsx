@@ -256,7 +256,7 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
                 <span className="w-2.5 h-2.5 rounded-full bg-yellow-300" />
                 <span className="w-2.5 h-2.5 rounded-full bg-green-300" />
                 <div className="flex-1 mx-3 bg-white border border-stone-200 rounded-md px-3 py-1 text-xs text-stone-400 text-center truncate">
-                  canadianscart.ca · {isProduce ? "fresh produce" : "your cart"}
+                  candianscart.ca · {isProduce ? "fresh produce" : "your cart"}
                 </div>
               </div>
 

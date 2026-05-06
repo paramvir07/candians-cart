@@ -59,7 +59,7 @@ export const CategoryIllustration = ({
       // Indian spices — red chilli, coriander, turmeric in steel spoons
       "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80",
     "pickles & chutneys":
-      "hhttps://images.unsplash.com/photo-1601702538934-efffab67ab65?w=600&q=80",
+      "https://images.unsplash.com/photo-1601702538934-efffab67ab65?w=600&q=80",
     "instant foods":
       // Maggi / instant noodles
       "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=600&q=80",
