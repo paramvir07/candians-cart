@@ -30,7 +30,7 @@ export function VerifyEmail({
   supportEmail = "support@candianscart.ca",
   websiteUrl = "https://www.canadianscart.ca",
   loginUrl = "https://www.canadianscart.ca/customer/login",
-  helpUrl = "https://www.canadianscart.ca",
+  helpUrl = "https://www.canadianscart.ca/contact",
 
 }: VerifyEmailProps) {
   return (

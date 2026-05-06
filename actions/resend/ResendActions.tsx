@@ -19,7 +19,7 @@ export const HelpFormConfirmation = async (data: HelpFormEmailData) => {
       from:
         process.env.NODE_ENV === "development"
           ? "Candian's Cart <onboarding@resend.dev>"
-          : "Candian's Cart <onboarding@candianscart.ca>",
+          : "Candian's Cart <no-reply@canadianscart.ca>",
       to:
         process.env.NODE_ENV === "development"
           ? [process.env.DEV_EMAIL!]

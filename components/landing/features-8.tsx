@@ -538,7 +538,7 @@ export default function FeaturesSection() {
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fde68a', display: 'inline-block' }} />
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#86efac', display: 'inline-block' }} />
                   <div style={{ flex: 1, background: '#fff', borderRadius: 5, border: '1px solid #e7e5e4', padding: '3px 8px', fontSize: '0.62rem', color: '#a8a29e', textAlign: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                    canadianscart.ca · store
+                    candianscart.ca · store
                   </div>
                 </div>
                 {/* Items */}

@@ -14,7 +14,7 @@ export async function sendEmail({ to, subject, react }: SendEmailProps) {
     from:
       process.env.NODE_ENV === "development"
         ? "Candian's Cart <onboarding@resend.dev>"
-        : "Candian's Cart <onboarding@candianscart.ca>",
+        : "Candian's Cart <onboarding@canadianscart.ca>",
     to: process.env.NODE_ENV === "development" ? process.env.DEV_EMAIL! : to,
     subject,
     react,
