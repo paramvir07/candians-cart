@@ -234,7 +234,7 @@ function SubsidyDialog({
                 Choose Your Free Items
               </h2>
               <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, color: "#64748b", margin: "2px 0 0" }}>
-                {pkg.name} · Subsidy wallet: <strong style={{ color: "#16a34a" }}>${subsidyBudget}</strong>
+                {pkg.name} · Your free credit: <strong style={{ color: "#16a34a" }}>${subsidyBudget}</strong>
               </p>
             </div>
           </div>
@@ -252,10 +252,10 @@ function SubsidyDialog({
         <div style={{ padding: "14px 24px", background: "#fafafa", borderBottom: "1px solid #f1f5f9" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
             <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, color: "#64748b", fontWeight: 500 }}>
-              Subsidy used
+              Free credit used
             </span>
             <span style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 13, color: "#16a34a" }}>
-              ${subsidyUsed} <span style={{ color: "#94a3b8", fontWeight: 500 }}>/ ${subsidyBudget}</span>
+              ${subsidyUsed} <span style={{ color: "#94a3b8", fontWeight: 500 }}>of ${subsidyBudget} free</span>
             </span>
           </div>
           <div style={{ height: 7, borderRadius: 999, background: "#e2e8f0", overflow: "hidden" }}>
@@ -276,13 +276,12 @@ function SubsidyDialog({
             }}>
               <Zap size={13} color="#d97706" style={{ marginTop: 2, flexShrink: 0 }} />
               <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, color: "#92400e", margin: 0, lineHeight: 1.6, fontWeight: 500 }}>
-                <strong>${unusedSubsidy.toFixed(2)} unused</strong> — will be added to your spending power.
-                Effective budget becomes <strong>${effectiveBudget.toFixed(2)}</strong> (was ${pkg.maxPrice}).
+                <strong>${unusedSubsidy.toFixed(2)} not used yet.</strong> Pick more items — or it will be saved to your gift wallet.
               </p>
             </div>
           ) : (
             <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: "#16a34a", margin: "6px 0 0", fontWeight: 600 }}>
-              Full subsidy applied ✓
+              All free credit used ✓
             </p>
           )}
         </div>
@@ -294,8 +293,7 @@ function SubsidyDialog({
         }}>
           <Info size={13} color="#16a34a" style={{ marginTop: 2, flexShrink: 0 }} />
           <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, color: "#15803d", margin: 0, lineHeight: 1.6 }}>
-            Items are covered free in order until your ${subsidyBudget} wallet runs out.
-            Any leftover subsidy <strong>adds to your spending power</strong> — never lost.
+            You have <strong>${subsidyBudget} free credit</strong>. Pick items below — we will pay for them using your credit. Any credit not used goes to your <strong>gift wallet</strong>.
           </p>
         </div>
 
@@ -311,20 +309,15 @@ function SubsidyDialog({
             }}
           >
             <span style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 13, color: "#334155" }}>
-              Full Pack (All Items)
+              Select all items
             </span>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontFamily: "'DM Sans',sans-serif", fontWeight: 700, fontSize: 13, color: "#0f172a" }}>
-                ${packTotal.toFixed(2)}
-              </span>
-              <div style={{
-                width: 22, height: 22, borderRadius: 6,
-                background: checked.every(Boolean) ? "#16a34a" : "white",
-                border: `2px solid ${checked.every(Boolean) ? "#16a34a" : "#cbd5e1"}`,
-                display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s",
-              }}>
-                {checked.every(Boolean) && <Check size={12} color="white" strokeWidth={3} />}
-              </div>
+            <div style={{
+              width: 22, height: 22, borderRadius: 6,
+              background: checked.every(Boolean) ? "#16a34a" : "white",
+              border: `2px solid ${checked.every(Boolean) ? "#16a34a" : "#cbd5e1"}`,
+              display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s",
+            }}>
+              {checked.every(Boolean) && <Check size={12} color="white" strokeWidth={3} />}
             </div>
           </div>
 
@@ -392,20 +385,14 @@ function SubsidyDialog({
 
         {/* Summary */}
         <div style={{ padding: "16px 24px 22px", borderTop: "1px solid #f1f5f9", background: "white" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-            <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#94a3b8" }}>Items Total</span>
-            <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#475569" }}>
-              ${pkg.combo.reduce((s, item, i) => checked[i] ? s + item.price : s, 0).toFixed(2)}
-            </span>
-          </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: unusedSubsidy > 0 ? 3 : 10 }}>
-            <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#94a3b8" }}>Subsidy Applied</span>
+            <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#94a3b8" }}>Free credit used</span>
             <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#16a34a", fontWeight: 600 }}>−${subsidyUsed.toFixed(2)}</span>
           </div>
           {unusedSubsidy > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-              <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#94a3b8" }}>Unused → spending power</span>
-              <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#d97706", fontWeight: 600 }}>+${unusedSubsidy.toFixed(2)} to budget</span>
+              <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#94a3b8" }}>Leftover credit → gift wallet</span>
+              <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#d97706", fontWeight: 600 }}>${unusedSubsidy.toFixed(2)} saved</span>
             </div>
           )}
           <div style={{
@@ -413,7 +400,7 @@ function SubsidyDialog({
             background: "#f0fdf4", borderRadius: 10, padding: "10px 14px", margin: "0 0 14px",
           }}>
             <span style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 14, color: "#0f172a" }}>
-              You Pay for these items
+              You pay for these items
             </span>
             <span style={{ fontFamily: "'Sora',sans-serif", fontWeight: 800, fontSize: 22, color: "#16a34a", letterSpacing: -0.5 }}>
               ${youPay.toFixed(2)}
@@ -521,7 +508,7 @@ function PackageCard({
                 <span style={{ color: "#16a34a", fontWeight: 600 }}>${item.price.toFixed(2)}</span>
               </div>
             ))}
-            <Link href="/customer/subsidy-items" style={{ textDecoration: "none" }}>
+            <Link href="/customer/budget-packs/subsidy-items" style={{ textDecoration: "none" }}>
               <div style={{
                 padding: "10px 13px", background: "white",
                 display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -621,10 +608,10 @@ function PackageCard({
                 <Zap size={13} color="#d97706" />
                 <div>
                   <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 12, color: "#92400e" }}>
-                    Remainder Added to Budget
+                    Saved to Gift Wallet
                   </div>
                   <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: "#b45309" }}>
-                    Unused subsidy boosts your spending power
+                    Leftover free credit
                   </div>
                 </div>
               </div>
@@ -749,17 +736,17 @@ function PackageCard({
           {confirmed ? (
             // ── POST-CONFIRM: show actual breakdown ──────────────────────────
             <>
-              {/* Items total (what the selected items are worth) */}
+              {/* Items total */}
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#94a3b8" }}>Items Total</span>
+                <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#94a3b8" }}>Items you picked</span>
                 <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#475569" }}>
                   ${confirmed.items.reduce((s, i) => s + i.price, 0).toFixed(2)}
                 </span>
               </div>
 
-              {/* Subsidy applied */}
+              {/* Free credit used */}
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: hasRemainder ? 5 : 10 }}>
-                <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#94a3b8" }}>Subsidy Applied</span>
+                <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#94a3b8" }}>Free credit used</span>
                 <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#16a34a", fontWeight: 700 }}>
                   −${confirmed.subsidyUsed.toFixed(2)}
                 </span>
@@ -775,7 +762,7 @@ function PackageCard({
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     <Zap size={12} color="#d97706" />
                     <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13, color: "#92400e", fontWeight: 600 }}>
-                      Unused subsidy → budget
+                      Saved to gift wallet
                     </span>
                   </div>
                   <span style={{ fontFamily: "'Sora',sans-serif", fontSize: 13, color: "#d97706", fontWeight: 700 }}>
@@ -796,15 +783,15 @@ function PackageCard({
                   {/* Breakdown subline: $21 pack + $2.87 items = $23.87 effective budget */}
                   {confirmed.youPay > 0 ? (
                     <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: "#d97706", marginTop: 2, fontWeight: 600 }}>
-                      ${pkg.maxPrice} pack + ${confirmed.youPay.toFixed(2)} items = ${confirmed.effectiveBudget.toFixed(2)} budget
+                      ${pkg.maxPrice} pack + ${confirmed.youPay.toFixed(2)} extra = ${confirmed.effectiveBudget.toFixed(2)} total
                     </div>
                   ) : hasRemainder ? (
                     <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: "#d97706", marginTop: 2, fontWeight: 600 }}>
-                      ${pkg.maxPrice} + ${confirmed.unusedSubsidy.toFixed(2)} bonus = ${confirmed.effectiveBudget.toFixed(2)} budget
+                      ${pkg.maxPrice} + ${confirmed.unusedSubsidy.toFixed(2)} gift wallet = ${confirmed.effectiveBudget.toFixed(2)} total
                     </div>
                   ) : (
                     <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 11, color: "#94a3b8", marginTop: 1 }}>
-                      subsidy fully used ✓
+                      All free credit used ✓
                     </div>
                   )}
                 </div>
@@ -841,7 +828,7 @@ function PackageCard({
                 <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#475569" }}>${pkg.maxPrice}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#94a3b8" }}>Free Grocery Credit</span>
+                <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#94a3b8" }}>Free Credit</span>
                 <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: "#16a34a", fontWeight: 700 }}>+${subsidyBudget}</span>
               </div>
               <div style={{
