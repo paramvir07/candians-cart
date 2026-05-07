@@ -1,62 +1,108 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Mail, Percent, Wallet, Store, ShieldCheck, ChevronDown, MessageCircle, ArrowRight, Sparkles } from 'lucide-react'
-import Link from 'next/link'
+import { useState } from "react";
+import {
+  UserPlus,
+  Mail,
+  Percent,
+  Wallet,
+  Store,
+  ShieldCheck,
+  ChevronDown,
+  MessageCircle,
+  ArrowRight,
+  Sparkles,
+  Coins,
+  PackageCheck,
+  ShoppingCart,
+  BadgePercent,
+  PiggyBank,
+} from "lucide-react";
+import Link from "next/link";
 
 type FAQItem = {
-  id: string
-  icon: React.ReactNode
-  question: string
-  answer: string
-  tag?: string
-}
+  id: string;
+  icon: React.ReactNode;
+  question: string;
+  answer: string;
+  tag?: string;
+};
 
 const faqItems: FAQItem[] = [
   {
-    id: 'item-1',
-    icon: <Mail size={16} strokeWidth={1.75} />,
-    question: "How do I get access to Candian's Cart?",
-    answer: "Candian's Cart is an invite-only platform. You'll need a referral from an existing member or a direct invite from our team. Once invited, you can sign up at no cost and get connected to your nearest local store right away.",
-    tag: 'Getting started',
+    id: "item-1",
+    icon: <UserPlus size={16} strokeWidth={1.75} />,
+    question: "How do I create an account?",
+    answer:
+      "Tap Sign Up, choose your city, and select your store. Then enter your details and referral code. After you verify your email, your account will be ready to use. Your selected store cannot be changed later.",
+    tag: "Account",
   },
   {
-    id: 'item-2',
-    icon: <Percent size={16} strokeWidth={1.75} />,
-    question: 'How does subsidised pricing work?',
-    answer: "When you join, eligible grocery items at your local partner store are automatically discounted at checkout through our subsidy program. Your monthly subsidy balance is tracked in real-time as you shop — no coupon codes or manual claims needed.",
-    tag: 'Savings',
+    id: "item-2",
+    icon: <BadgePercent size={16} strokeWidth={1.75} />,
+    question: "Which items are subsidized",
+    answer:
+      "Milk, vegetables, fruits, and some daily grocery subsidized on which the credits can be used.",
+    tag: "Savings",
   },
   {
-    id: 'item-3',
+    id: "item-3",
+    icon: <ShoppingCart size={16} strokeWidth={1.75} />,
+    question: "How does ordering work?",
+    answer:
+      "Add items to your cart and go to checkout. You can use your credits to lower the price, or save them for later. Then press Pay at Store to place the order.",
+    tag: "Orders",
+  },
+  {
+    id: "item-4",
+    icon: <Coins size={16} strokeWidth={1.75} />,
+    question: "What are credits?",
+    answer:
+      "Credits are reward money you earn from orders. You can use them to pay less for subsidized items.",
+    tag: "Credits",
+  },
+  {
+    id: "item-5",
     icon: <Wallet size={16} strokeWidth={1.75} />,
-    question: 'What is the Gift Wallet and how do I earn credits?',
-    answer: "The Gift Wallet is your personal rewards balance inside Candian's Cart. You earn credits automatically with every order you place. Credits accumulate over time and can be spent on any item available in your connected store — there's no minimum redemption amount.",
-    tag: 'Rewards',
+    question: "How do I earn credits?",
+    answer:
+      "Place an order with at least C$21 of regular items before tax. After the order is completed, credits will be added to your wallet automatically.",
+    tag: "Rewards",
   },
   {
-    id: 'item-4',
+    id: "item-6",
     icon: <Store size={16} strokeWidth={1.75} />,
-    question: 'Which store will I be connected to?',
-    answer: "When you join, our platform automatically pairs you with the closest participating local store in your area. You'll be able to browse their live inventory, see which items are subsidised, and place orders directly through the app.",
-    tag: 'Store',
+    question: "Where can I use my credits?",
+    answer:
+      "You can use your credits on subsidized items to reduce the total price.",
+    tag: "Credits",
   },
   {
-    id: 'item-5',
-    icon: <ShieldCheck size={16} strokeWidth={1.75} />,
-    question: "Is Candian's Cart available to everyone?",
-    answer: "Candian's Cart is currently exclusive to families who receive an invite. This keeps the platform community-driven and ensures every member gets a high-quality, personalised experience. If you're interested in joining, reach out to an existing member or contact us to get on the waitlist.",
-    tag: 'Eligibility',
+    id: "item-7",
+    icon: <PackageCheck size={16} strokeWidth={1.75} />,
+    question: "How do I place an order?",
+    answer:
+      "Choose the items you want, add them to your cart, and checkout. You can use your credits or save them for later. Then press Pay at Store.",
+    tag: "Orders",
   },
-]
+  {
+    id: "item-8",
+    icon: <PiggyBank size={16} strokeWidth={1.75} />,
+    question: "What happens if I don’t use my credits?",
+    answer:
+      "Your credits stay safely in your wallet and can be used on future orders.",
+    tag: "Wallet",
+  },
+];
 
 export default function FAQsSection() {
-  const [openId, setOpenId] = useState<string | null>('item-1')
+  const [openId, setOpenId] = useState<string | null>("item-1");
 
-  const toggle = (id: string) => setOpenId(prev => prev === id ? null : id)
+  const toggle = (id: string) => setOpenId((prev) => (prev === id ? null : id));
 
   return (
-    <section id='faq'
+    <section
+      id="faq"
       className="relative py-20 md:py-32 overflow-hidden"
       style={{
         background: "linear-gradient(180deg, #fef5e4 0%, #fff 100%)",
@@ -188,7 +234,6 @@ export default function FAQsSection() {
 
       <div className="faq-section relative max-w-5xl mx-auto px-5 sm:px-6">
         <div className="flex flex-col md:flex-row gap-10 md:gap-16">
-
           {/* ── LEFT: sticky header ── */}
           <div className="faq-left md:w-80 flex-shrink-0">
             <div className="section-pill">
@@ -205,11 +250,15 @@ export default function FAQsSection() {
                 marginBottom: 12,
               }}
             >
-              Got questions?<br />
+              Got questions?
+              <br />
               <span style={{ color: "#16a34a" }}>We've got answers.</span>
             </h2>
-            <p style={{ color: "#78716c", fontSize: "0.9rem", lineHeight: 1.7 }}>
-              Everything you need to know about Candian's Cart and how it works for your family.
+            <p
+              style={{ color: "#78716c", fontSize: "0.9rem", lineHeight: 1.7 }}
+            >
+              Everything you need to know about Candian's Cart and how it works
+              for your family.
             </p>
 
             {/* Contact card */}
@@ -229,10 +278,24 @@ export default function FAQsSection() {
               >
                 <MessageCircle size={18} color="#fff" strokeWidth={1.5} />
               </div>
-              <p style={{ fontWeight: 700, color: "#fff", fontSize: "0.92rem", marginBottom: 4 }}>
+              <p
+                style={{
+                  fontWeight: 700,
+                  color: "#fff",
+                  fontSize: "0.92rem",
+                  marginBottom: 4,
+                }}
+              >
                 Still have questions?
               </p>
-              <p style={{ color: "rgba(255,255,255,0.72)", fontSize: "0.8rem", lineHeight: 1.6, marginBottom: 14 }}>
+              <p
+                style={{
+                  color: "rgba(255,255,255,0.72)",
+                  fontSize: "0.8rem",
+                  lineHeight: 1.6,
+                  marginBottom: 14,
+                }}
+              >
                 Our support team is happy to help you get started.
               </p>
               <Link
@@ -258,19 +321,24 @@ export default function FAQsSection() {
           {/* ── RIGHT: accordion ── */}
           <div className="flex-1 min-w-0 space-y-3">
             {faqItems.map((item) => {
-              const isOpen = openId === item.id
+              const isOpen = openId === item.id;
               return (
                 <div
                   key={item.id}
-                  className={`faq-item ${isOpen ? 'open' : ''}`}
+                  className={`faq-item ${isOpen ? "open" : ""}`}
                 >
                   {/* Trigger */}
-                  <button className="faq-trigger" onClick={() => toggle(item.id)}>
+                  <button
+                    className="faq-trigger"
+                    onClick={() => toggle(item.id)}
+                  >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="faq-icon">{item.icon}</div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                          {item.tag && <span className="faq-tag">{item.tag}</span>}
+                          {item.tag && (
+                            <span className="faq-tag">{item.tag}</span>
+                          )}
                         </div>
                         <span
                           style={{
@@ -287,27 +355,34 @@ export default function FAQsSection() {
                     </div>
                     <ChevronDown
                       size={18}
-                      className={`faq-chevron ${isOpen ? 'rotated' : ''}`}
+                      className={`faq-chevron ${isOpen ? "rotated" : ""}`}
                     />
                   </button>
 
                   {/* Answer panel — grid trick for smooth expand */}
-                  <div className={`faq-body ${isOpen ? 'open' : ''}`}>
+                  <div className={`faq-body ${isOpen ? "open" : ""}`}>
                     <div className="faq-body-inner">
                       <div
                         style={{
                           padding: "0 20px 20px 20px",
-                          paddingLeft: "calc(20px + 32px + 12px)", /* align under question text */
+                          paddingLeft:
+                            "calc(20px + 32px + 12px)" /* align under question text */,
                         }}
                       >
-                        <p style={{ color: "#57534e", fontSize: "0.88rem", lineHeight: 1.75 }}>
+                        <p
+                          style={{
+                            color: "#57534e",
+                            fontSize: "0.88rem",
+                            lineHeight: 1.75,
+                          }}
+                        >
                           {item.answer}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
-              )
+              );
             })}
 
             {/* Bottom CTA strip */}
@@ -351,9 +426,8 @@ export default function FAQsSection() {
               </Link>
             </div> */}
           </div>
-
         </div>
       </div>
     </section>
-  )
+  );
 }

@@ -58,6 +58,7 @@ export function SignupCarousel() {
                 <Image
                   src={slide.image}
                   alt={slide.title}
+                  sizes="(max-width: 1024px) 100vw, 340px"
                   fill
                   className="object-cover"
                   priority={index === 0}

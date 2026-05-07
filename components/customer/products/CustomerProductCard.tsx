@@ -294,7 +294,7 @@ export function CustomerProductCard({
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (
-            <div className="h-full w-full overflow-hidden">
+            <div className="h-full relative w-full overflow-hidden">
               <CategoryIllustration
                 category={product.category}
                 className="h-full w-full object-cover"

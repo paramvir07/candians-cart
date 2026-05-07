@@ -89,6 +89,7 @@ export function StoreInfoDialog({
             <Image
               src={heroImage}
               alt={store.name}
+              sizes="(max-width: 1024px) 100vw, 340px"
               fill
               className="object-cover"
               priority

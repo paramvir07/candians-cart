@@ -342,7 +342,7 @@ function SavingsCalculator() {
               <div className="flex items-center justify-between px-4 py-3">
                 <div>
                   <p className="text-xs font-semibold text-foreground">
-                    Discount applied (upto 21%)
+                    Discount applied (upto 30%)
                   </p>
                 </div>
                 <span
@@ -572,7 +572,7 @@ export default function AnalyticsDashboard({
         <MetricCard
           label="Subsidy Saved"
           value={fmt(totalSubsidy)}
-          sub="Saved upto 21%"
+          sub="Saved upto 30%"
           icon={Gift}
           accent
         />

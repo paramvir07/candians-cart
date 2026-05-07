@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
+import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 
 export const metadata: Metadata = {
   title: {
@@ -45,6 +46,7 @@ export default async function RootLayout({
         <div className="min-h-screen bg-gray-50">
           <StoreSidebar name={name} />
           <main className="md:ml-64 pt-14 md:pt-0 min-h-screen m-4">
+            <CustomerAdvertisements maxHeight={250}/>
             {children}
           </main>
         </div>

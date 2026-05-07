@@ -61,6 +61,7 @@ export function LoginCarousel() {
                   src={slide.image}
                   alt={slide.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                   priority={index === 0}
                 />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Save } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -14,6 +14,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Server actions
@@ -34,6 +45,7 @@ import { FormTopBar } from "./Formtopbar";
 import { BasicInfoSection } from "./Basicinfosection";
 import { FinancialsSection } from "./Financialssection";
 import { RightSidebar } from "./Rightsidebar";
+import { deleteProduct } from "@/actions/store/products/deleteProduct";
 
 interface ProductFormProps {
   initialData?: IProduct | null;
@@ -47,9 +59,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
 
   // Duplicate Check State
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
-  const [potentialDuplicates, setPotentialDuplicates] = useState<IProduct[]>(
-    [],
-  );
+  const [potentialDuplicates, setPotentialDuplicates] = useState<IProduct[]>([]);
 
   // Image state
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -57,6 +67,9 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
     initialData?.images?.[0]?.url || null,
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // delete products
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form state — single source of truth
   const [formData, setFormData] = useState({
@@ -99,7 +112,6 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
 
   // Step 1: Pre-Submit Validation and Duplicate Check
   const handlePreSubmitValidation = async () => {
-    // Basic validation check before hitting the DB for duplicates
     const rawpayload: ProductFormValues = {
       name: formData.name,
       description: formData.description,
@@ -109,12 +121,12 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
       disposableFee: parseFloat(formData.disposableFee) || 0,
       price: parseFloat(formData.price) || 0,
       stock: formData.stock === "true",
-      images: initialData?.images || [], // Uses existing images temporarily for validation
+      images: initialData?.images || [],
       isFeatured: formData.isFeatured === "true",
       InvoiceId: formData.InvoiceId,
       isMeasuredInWeight: formData.isMeasuredInWeight === "true",
       UOM: formData.UOM || undefined,
-      primaryUPC: parseInt(formData.primaryUPC, 10)
+      primaryUPC: parseInt(formData.primaryUPC, 10),
     };
 
     const schema = createProductFormSchema(role);
@@ -128,11 +140,9 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
     setLoading(true);
 
     try {
-      // Execute Fuzzy Search
       const searchRes = await searchProducts(formData.name, storeId);
 
       if (searchRes.success && searchRes.data && searchRes.data.length > 0) {
-        // Filter out the current product if we are in Edit Mode
         const duplicates = searchRes.data.filter(
           (p) => p._id.toString() !== initialData?._id?.toString(),
         );
@@ -141,15 +151,13 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
           setPotentialDuplicates(duplicates);
           setIsDuplicateModalOpen(true);
           setLoading(false);
-          return; // Pause submission, wait for user confirmation
+          return;
         }
       }
     } catch (err) {
       console.error("Duplicate check failed, proceeding with save", err);
-      // If the search fails, we fail open and allow them to save anyway
     }
 
-    // If no duplicates are found, proceed straight to execution
     await executeSubmit(validationResult.data);
   };
 
@@ -178,7 +186,6 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
         finalImages = uploadData.images;
       }
 
-      // Reconstruct payload with final images
       const rawpayload: ProductFormValues = {
         name: formData.name,
         description: formData.description,
@@ -193,10 +200,9 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
         InvoiceId: formData.InvoiceId,
         isMeasuredInWeight: formData.isMeasuredInWeight === "true",
         UOM: formData.UOM || undefined,
-        primaryUPC: parseInt(formData.primaryUPC, 10)
+        primaryUPC: parseInt(formData.primaryUPC, 10),
       };
 
-      // Final validation pass
       const schema = createProductFormSchema(role);
       const validationResult = schema.safeParse(rawpayload);
 
@@ -235,6 +241,24 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!initialData) return;
+    setIsDeleting(true);
+    try {
+      const result = await deleteProduct(initialData._id);
+      if (result.success) {
+        toast.success("Product deleted.");
+        navigateBack();
+      } else {
+        toast.error(result.message || "Failed to delete product.");
+      }
+    } catch {
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const navigateBack = () =>
     router.push(
       storeId ? `/admin/store/${storeId}/products` : "/store/products",
@@ -253,8 +277,11 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
         isEditMode={isEditMode}
         loading={loading}
         buttonText={buttonText}
+        productName={initialData?.name}
+        isDeleting={isDeleting}
         onBack={navigateBack}
         onSubmit={handlePreSubmitValidation}
+        onDelete={isEditMode ? handleDelete : undefined}
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -301,14 +328,48 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
 
       {/* Mobile sticky save bar */}
       <div className="lg:hidden sticky bottom-0 z-20 bg-background/90 backdrop-blur-md border-t border-border/60 px-4 py-3">
-        <Button
-          onClick={handlePreSubmitValidation}
-          disabled={loading}
-          className="w-full gap-2 py-5 text-sm font-semibold"
-        >
-          <Save className="w-4 h-4" />
-          {buttonText}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handlePreSubmitValidation}
+            disabled={loading}
+            className="flex-1 gap-2 py-5 text-sm font-semibold"
+          >
+            <Save className="w-4 h-4" />
+            {buttonText}
+          </Button>
+          {isEditMode && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={isDeleting}
+                  className="gap-2 py-5 text-sm font-semibold"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {isDeleting ? "Deleting…" : "Delete"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete "{initialData?.name}"?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. The product will be permanently removed.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete Product
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </div>
 
       {/* Duplicate Check Dialog */}

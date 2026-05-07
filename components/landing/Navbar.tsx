@@ -89,23 +89,23 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
    * Works whether we're already on "/" or navigating from another page.
    */
   const handleSectionClick = (
-    e: React.MouseEvent,
-    sectionId: string,
-  ) => {
-    e.preventDefault();
-    closeMobile();
+  e: React.MouseEvent,
+  sectionId: string,
+) => {
+  e.preventDefault();
+  closeMobile();
 
-    if (pathname === "/") {
-      // Already on home — just scroll
-      const el = document.getElementById(sectionId);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    } else {
-      // Navigate to home, pass the target section as a query param
-      router.push(`/?scrollTo=${sectionId}`);
+  if (pathname === "/") {
+    const navbarHeight = 72;
+    const el = document.getElementById(sectionId);
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight;
+      window.scrollTo({ top, behavior: "smooth" });
     }
-  };
+  } else {
+    router.push(`/?scrollTo=${sectionId}`);
+  }
+};
 
   return (
     <>
