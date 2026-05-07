@@ -116,7 +116,7 @@ export async function editInvoice(
 
     if (oldFileId && newFileId && oldFileId !== newFileId) {
       try {
-        await imagekit.delete(oldFileId);
+        await imagekit.files.delete(oldFileId);
         console.log(
           `Successfully deleted old image ${oldFileId} from ImageKit`,
         );
@@ -143,24 +143,27 @@ export async function editInvoice(
 
 export async function getProductsLinkedToInvoice(invoiceId: string) {
   try {
-    const session = await getUserSession();
-
-    // Security check: Only admins can perform this action
-    if (!session?.user?.id || session.user.role !== "Admin") {
-      return { success: false, message: "Unauthorized" };
-    }
+    console.log("Fetching products linked to invoice:", invoiceId);
 
     await dbConnect();
 
+    console.log("Searching for Invoice ID:", invoiceId);
+
+    const objectId = new mongoose.Types.ObjectId(invoiceId);
+
+    console.log("Searching for Invoice ID (ObjectId):", objectId);
+
     const productsUsingInvoice = await ProductsModel.find({
-      InvoiceId: invoiceId,
+      InvoiceId: objectId,
     })
       .select("_id name")
       .lean();
 
+    console.log("Products: ", productsUsingInvoice);
+
     const serializedProducts = productsUsingInvoice.map((product: any) => ({
-      _id: product._id.toString(),
-      name: product.name,
+      productId: product._id.toString(),
+      productName: product.name,
     }));
     return {
       success: true,
@@ -175,12 +178,52 @@ export async function getProductsLinkedToInvoice(invoiceId: string) {
   }
 }
 
+export async function getInvoiceById(invoiceId: string) {
+  try {
+    const session = await getUserSession();
+    if (!session?.user?.id) {
+      return { success: false, message: "Unauthorized" };
+    }
+
+    await dbConnect();
+
+    const invoice = await ProductInvoice.findById(invoiceId).lean();
+
+    if (!invoice) {
+      return { success: false, message: "Invoice not found" };
+    }
+
+    // Serialize to pass React Client Boundary
+    return {
+      success: true,
+      data: {
+        _id: invoice._id.toString(),
+        vendorName: invoice.vendorName,
+        InvoiceNumber: invoice.InvoiceNumber,
+        // Format date to YYYY-MM-DD for the HTML date input
+        DateInvoiceCame: new Date(invoice.DateInvoiceCame)
+          .toISOString()
+          .split("T")[0],
+        productNameInInvoice: invoice.productNameInInvoice || "",
+        additionalNote: invoice.additionalNote || "",
+        documentId: {
+          url: invoice.documentId.url,
+          fileId: invoice.documentId.fileId,
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Failed to fetch invoice:", error);
+    return { success: false, message: "Server error fetching invoice" };
+  }
+}
+
 export async function deleteInvoice(
   invoiceId: string,
 ): Promise<ActionResponse> {
   try {
     const session = await getUserSession();
-    if (!session?.user?.id || session.user.role !== "Admin") {
+    if (!session?.user?.id || session.user.role !== "admin") {
       return {
         success: false,
         message: "Unauthorized, Only admin can delete an invoice",
@@ -197,7 +240,7 @@ export async function deleteInvoice(
 
     if (fileIdToDelete) {
       try {
-        await imagekit.delete(fileIdToDelete);
+        await imagekit.files.delete(fileIdToDelete);
         console.log(
           `Successfully deleted image ${fileIdToDelete} from ImageKit`,
         );
