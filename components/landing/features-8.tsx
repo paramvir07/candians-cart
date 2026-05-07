@@ -1,8 +1,15 @@
-"use client"
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { ShoppingBag, Wallet, Store, ArrowRight, Sparkles, Calculator } from 'lucide-react'
-import Link from 'next/link'
+"use client";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  ShoppingBag,
+  Wallet,
+  Store,
+  ArrowRight,
+  Sparkles,
+  Calculator,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function FeaturesSection() {
   const storeItems = [
@@ -36,39 +43,47 @@ export default function FeaturesSection() {
     },
   ];
 
-  const [spend, setSpend] = useState(21)
-  const searchParams = useSearchParams()
+  const [spend, setSpend] = useState(21);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const target = searchParams.get("scrollTo")
-    if (!target) return
+    const target = searchParams.get("scrollTo");
+    if (!target) return;
     const timer = setTimeout(() => {
-      document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" })
-    }, 100)
-    return () => clearTimeout(timer)
-  }, [searchParams])
+      const el = document.getElementById(target);
+      if (!el) return;
+      const navbarHeight = 72;
+      const top =
+        el.getBoundingClientRect().top + window.scrollY - navbarHeight;
+      window.scrollTo({ top, behavior: "smooth" });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [searchParams]);
+  const eligible = spend >= 21;
+  const savings = eligible ? spend * 0.35 * 0.6 : 0;
+  const annual = savings * 12;
 
-  const eligible = spend >= 21
-  const savings = eligible ? spend * 0.35 * 0.60 : 0
-  const annual  = savings * 12
-
-  const fmt    = (n: number) => '$' + n.toFixed(2)
-  const fmtInt = (n: number) => '$' + Math.ceil(n).toLocaleString()
+  const fmt = (n: number) => "$" + n.toFixed(2);
+  const fmtInt = (n: number) => "$" + Math.ceil(n).toLocaleString();
 
   const handleInput = (val: string) => {
-    const parsed = parseFloat(val)
-    if (isNaN(parsed) || val === '') { setSpend(0); return }
-    setSpend(Math.min(5000, Math.max(0, parsed)))
-  }
+    const parsed = parseFloat(val);
+    if (isNaN(parsed) || val === "") {
+      setSpend(0);
+      return;
+    }
+    setSpend(Math.min(5000, Math.max(0, parsed)));
+  };
 
   return (
     <section
       className="features-section"
       style={{
-        position: 'relative',
-        padding: 'clamp(48px, 8vw, 96px) 0',
-        overflow: 'hidden',
-        background: 'linear-gradient(180deg, #ffffff 0%, #fef5e4 55%, #fef5e4 100%)',
+        position: "relative",
+        padding: "clamp(48px, 8vw, 96px) 0",
+        overflow: "hidden",
+        background:
+          "linear-gradient(180deg, #ffffff 0%, #fef5e4 55%, #fef5e4 100%)",
         fontFamily: "'Sora', 'DM Sans', sans-serif",
       }}
     >
@@ -406,84 +421,203 @@ export default function FeaturesSection() {
       `}</style>
 
       <div className="fs-inner">
-
         {/* ── Section header ── */}
-        <div id="how-it-works" style={{ textAlign: 'center', marginBottom: 'clamp(32px, 6vw, 56px)' }}>
+        <div
+          id="how-it-works"
+          style={{
+            textAlign: "center",
+            marginBottom: "clamp(32px, 6vw, 56px)",
+          }}
+        >
           <div className="fs-pill">
             <Sparkles size={12} />
             Why families choose us
           </div>
-          <h2 style={{
-            fontWeight: 800,
-            letterSpacing: '-0.5px',
-            lineHeight: 1.12,
-            color: '#1c1917',
-            fontSize: 'clamp(1.75rem, 4.5vw, 2.9rem)',
-            margin: '0 0 14px',
-          }}>
-            Everything your family needs,{' '}
-            <span style={{ color: '#16a34a' }}>for less</span>
+          <h2
+            style={{
+              fontWeight: 800,
+              letterSpacing: "-0.5px",
+              lineHeight: 1.12,
+              color: "#1c1917",
+              fontSize: "clamp(1.75rem, 4.5vw, 2.9rem)",
+              margin: "0 0 14px",
+            }}
+          >
+            Everything your family needs,{" "}
+            <span style={{ color: "#16a34a" }}>for less</span>
           </h2>
-          <p style={{
-            color: '#78716c',
-            maxWidth: 460,
-            margin: '0 auto',
-            lineHeight: 1.7,
-            fontSize: 'clamp(0.85rem, 2vw, 1rem)',
-          }}>
-            From subsidised staples to real-time savings tracking — built exclusively for Canadian families in Abbotsford.
+          <p
+            style={{
+              color: "#78716c",
+              maxWidth: 460,
+              margin: "0 auto",
+              lineHeight: 1.7,
+              fontSize: "clamp(0.85rem, 2vw, 1rem)",
+            }}
+          >
+            From subsidised staples to real-time savings tracking — built
+            exclusively for Canadian families in Abbotsford.
           </p>
         </div>
 
         {/* ── Bento grid ── */}
         <div className="fs-bento">
-
           {/* Card 1 — 30% avg saved */}
-          <div className="fs-card fs-area-stat" style={{ padding: 'clamp(20px, 4vw, 28px)', minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div
+            className="fs-card fs-area-stat"
+            style={{
+              padding: "clamp(20px, 4vw, 28px)",
+              minHeight: 200,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
             <div className="fs-blob" />
             <div
               className="fs-pulse"
               style={{
-                background: 'linear-gradient(135deg,#dcfce7,#bbf7d0)',
-                border: '1px solid #86efac',
+                background: "linear-gradient(135deg,#dcfce7,#bbf7d0)",
+                border: "1px solid #86efac",
                 borderRadius: 18,
-                padding: '14px 20px',
-                display: 'inline-block',
+                padding: "14px 20px",
+                display: "inline-block",
               }}
             >
-              <p style={{ fontSize: 'clamp(2.6rem, 6vw, 3.5rem)', fontWeight: 800, lineHeight: 1, color: '#15803d', margin: 0 }}>30%</p>
-              <p style={{ fontSize: '0.68rem', fontWeight: 700, color: '#166534', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '2px 0 0' }}>avg saved</p>
+              <p
+                style={{
+                  fontSize: "clamp(2.6rem, 6vw, 3.5rem)",
+                  fontWeight: 800,
+                  lineHeight: 1,
+                  color: "#15803d",
+                  margin: 0,
+                }}
+              >
+                30%
+              </p>
+              <p
+                style={{
+                  fontSize: "0.68rem",
+                  fontWeight: 700,
+                  color: "#166534",
+                  letterSpacing: "0.07em",
+                  textTransform: "uppercase",
+                  margin: "2px 0 0",
+                }}
+              >
+                avg saved
+              </p>
             </div>
             <div style={{ marginTop: 18 }}>
-              <h3 style={{ fontWeight: 700, fontSize: '1rem', color: '#1c1917', margin: '0 0 5px' }}>Average Savings</h3>
-              <p style={{ fontSize: '0.82rem', color: '#78716c', lineHeight: 1.6, margin: 0 }}>
-                Families save 30% on subsidised pricing every month.
+              <h3
+                style={{
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                  color: "#1c1917",
+                  margin: "0 0 5px",
+                }}
+              >
+                Average Savings
+              </h3>
+              <p
+                style={{
+                  fontSize: "0.82rem",
+                  color: "#78716c",
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                Families save upto 30% every month.
               </p>
             </div>
           </div>
 
           {/* Card 2 — Gift Wallet */}
-          <div className="fs-card fs-area-wallet" style={{ padding: 'clamp(20px, 4vw, 28px)', minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div
+            className="fs-card fs-area-wallet"
+            style={{
+              padding: "clamp(20px, 4vw, 28px)",
+              minHeight: 200,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
             <div className="fs-icon-ring">
               <Wallet size={22} color="#16a34a" strokeWidth={1.5} />
             </div>
             <div style={{ marginTop: 18 }}>
-              <h3 style={{ fontWeight: 700, fontSize: '1rem', color: '#1c1917', margin: '0 0 5px' }}>Gift Wallet Rewards</h3>
-              <p style={{ fontSize: '0.82rem', color: '#78716c', lineHeight: 1.6, margin: '0 0 14px' }}>
+              <h3
+                style={{
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                  color: "#1c1917",
+                  margin: "0 0 5px",
+                }}
+              >
+                Gift Wallet Rewards
+              </h3>
+              <p
+                style={{
+                  fontSize: "0.82rem",
+                  color: "#78716c",
+                  lineHeight: 1.6,
+                  margin: "0 0 14px",
+                }}
+              >
                 Earn gift credits on every order. Spend it on anything in store.
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#16a34a', fontSize: '0.8rem', fontWeight: 600 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  color: "#16a34a",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                }}
+              >
                 Learn more <ArrowRight size={13} />
               </div>
             </div>
           </div>
 
           {/* Card 3 — Chart */}
-          <div className="fs-card fs-area-chart" style={{ padding: 'clamp(20px, 4vw, 28px)', minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 12, padding: '12px 12px 4px', overflow: 'hidden' }}>
-              <svg viewBox="0 0 260 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', display: 'block' }}>
-                {[20, 40, 60].map(y => (
-                  <line key={y} x1="0" y1={y} x2="260" y2={y} stroke="#d1fae5" strokeWidth="1" />
+          <div
+            className="fs-card fs-area-chart"
+            style={{
+              padding: "clamp(20px, 4vw, 28px)",
+              minHeight: 200,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+            <div
+              style={{
+                background: "#f0fdf4",
+                border: "1px solid #bbf7d0",
+                borderRadius: 12,
+                padding: "12px 12px 4px",
+                overflow: "hidden",
+              }}
+            >
+              <svg
+                viewBox="0 0 260 80"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ width: "100%", display: "block" }}
+              >
+                {[20, 40, 60].map((y) => (
+                  <line
+                    key={y}
+                    x1="0"
+                    y1={y}
+                    x2="260"
+                    y2={y}
+                    stroke="#d1fae5"
+                    strokeWidth="1"
+                  />
                 ))}
                 <defs>
                   <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
@@ -491,76 +625,284 @@ export default function FeaturesSection() {
                     <stop offset="100%" stopColor="#16a34a" stopOpacity="0" />
                   </linearGradient>
                 </defs>
-                <path d="M0 65 C30 58,55 50,80 44 S120 30,150 26 S200 18,230 14 L260 10 L260 80 L0 80Z" fill="url(#chartGrad)" opacity="0.5" />
-                <path className="fs-chart-path" d="M0 65 C30 58,55 50,80 44 S120 30,150 26 S200 18,230 14 L260 10" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" />
-                {([[0,65],[80,44],[150,26],[260,10]] as [number,number][]).map(([x,y], i) => (
+                <path
+                  d="M0 65 C30 58,55 50,80 44 S120 30,150 26 S200 18,230 14 L260 10 L260 80 L0 80Z"
+                  fill="url(#chartGrad)"
+                  opacity="0.5"
+                />
+                <path
+                  className="fs-chart-path"
+                  d="M0 65 C30 58,55 50,80 44 S120 30,150 26 S200 18,230 14 L260 10"
+                  stroke="#16a34a"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+                {(
+                  [
+                    [0, 65],
+                    [80, 44],
+                    [150, 26],
+                    [260, 10],
+                  ] as [number, number][]
+                ).map(([x, y], i) => (
                   <circle key={i} cx={x} cy={y} r="3.5" fill="#16a34a" />
                 ))}
               </svg>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px 4px', fontSize: '0.64rem', color: '#86efac', fontWeight: 600 }}>
-                <span>Jan</span><span>Mar</span><span>Jun</span><span>Now</span>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  padding: "0 4px 4px",
+                  fontSize: "0.64rem",
+                  color: "#86efac",
+                  fontWeight: 600,
+                }}
+              >
+                <span>Jan</span>
+                <span>Mar</span>
+                <span>Jun</span>
+                <span>Now</span>
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
-              <h3 style={{ fontWeight: 700, fontSize: '1rem', color: '#1c1917', margin: '0 0 5px' }}>Subsidy tracked live</h3>
-              <p style={{ fontSize: '0.82rem', color: '#78716c', lineHeight: 1.6, margin: 0 }}>
-                Watch your monthly subsidy balance update as you add items — no surprises at checkout.
+              <h3
+                style={{
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                  color: "#1c1917",
+                  margin: "0 0 5px",
+                }}
+              >
+                Subsidy tracked live
+              </h3>
+              <p
+                style={{
+                  fontSize: "0.82rem",
+                  color: "#78716c",
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                Watch your monthly subsidy balance update as you add items — no
+                surprises at checkout.
               </p>
             </div>
           </div>
 
           {/* Card 4 — Local Store (wide) */}
-          <div className="fs-card fs-area-store" style={{ padding: 'clamp(20px, 4vw, 28px)' }}>
+          <div
+            className="fs-card fs-area-store"
+            style={{ padding: "clamp(20px, 4vw, 28px)" }}
+          >
             <div className="fs-store-inner">
               {/* Left text */}
-              <div className="fs-store-left" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div
+                className="fs-store-left"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
                 <div>
                   <div className="fs-icon-ring" style={{ marginBottom: 16 }}>
                     <Store size={22} color="#16a34a" strokeWidth={1.5} />
                   </div>
-                  <h3 style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1c1917', lineHeight: 1.3, margin: '0 0 8px' }}>
+                  <h3
+                    style={{
+                      fontWeight: 700,
+                      fontSize: "1.1rem",
+                      color: "#1c1917",
+                      lineHeight: 1.3,
+                      margin: "0 0 8px",
+                    }}
+                  >
                     Your local store, online
                   </h3>
-                  <p style={{ fontSize: '0.82rem', color: '#78716c', lineHeight: 1.65, margin: 0 }}>
-                    Browse live inventory, add to cart, and pick up — all from your phone.
+                  <p
+                    style={{
+                      fontSize: "0.82rem",
+                      color: "#78716c",
+                      lineHeight: 1.65,
+                      margin: 0,
+                    }}
+                  >
+                    Browse live inventory, add to cart, and pick up — all from
+                    your phone.
                   </p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#16a34a', fontSize: '0.8rem', fontWeight: 600, marginTop: 16 }}>
+                {/* <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    color: "#16a34a",
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
+                    marginTop: 16,
+                  }}
+                >
                   Browse store <ArrowRight size={13} />
-                </div>
+                </div> */}
               </div>
 
               {/* Mock browser */}
-              <div style={{ flex: 1, border: '1px solid rgba(22,101,52,0.12)', borderRadius: 12, overflow: 'hidden', background: '#fafaf9', minWidth: 0 }}>
+              <div
+                style={{
+                  flex: 1,
+                  border: "1px solid rgba(22,101,52,0.12)",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  background: "#fafaf9",
+                  minWidth: 0,
+                }}
+              >
                 {/* Browser bar */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: '#f5f5f4', borderBottom: '1px solid rgba(22,101,52,0.10)' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fca5a5', display: 'inline-block' }} />
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fde68a', display: 'inline-block' }} />
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#86efac', display: 'inline-block' }} />
-                  <div style={{ flex: 1, background: '#fff', borderRadius: 5, border: '1px solid #e7e5e4', padding: '3px 8px', fontSize: '0.62rem', color: '#a8a29e', textAlign: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                    candianscart.ca · store
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "8px 12px",
+                    background: "#f5f5f4",
+                    borderBottom: "1px solid rgba(22,101,52,0.10)",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "#fca5a5",
+                      display: "inline-block",
+                    }}
+                  />
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "#fde68a",
+                      display: "inline-block",
+                    }}
+                  />
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      background: "#86efac",
+                      display: "inline-block",
+                    }}
+                  />
+                  <div
+                    style={{
+                      flex: 1,
+                      background: "#fff",
+                      borderRadius: 5,
+                      border: "1px solid #e7e5e4",
+                      padding: "3px 8px",
+                      fontSize: "0.62rem",
+                      color: "#a8a29e",
+                      textAlign: "center",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    canadianscart.ca · store
                   </div>
                 </div>
                 {/* Items */}
-                <div style={{ padding: 10, display: 'flex', flexDirection: 'column', gap: 7 }}>
-                  {storeItems.map(item => (
+                <div
+                  style={{
+                    padding: 10,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 7,
+                  }}
+                >
+                  {storeItems.map((item) => (
                     <div key={item.name} className="fs-store-row">
                       {/* emoji + text column */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
-                        <span style={{ fontSize: '1.1rem', flexShrink: 0, lineHeight: 1 }}>{item.emoji}</span>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          minWidth: 0,
+                          flex: 1,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "1.1rem",
+                            flexShrink: 0,
+                            lineHeight: 1,
+                          }}
+                        >
+                          {item.emoji}
+                        </span>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                            minWidth: 0,
+                          }}
+                        >
                           <span className="fs-item-name">{item.name}</span>
                           {item.tag && (
-                            <span className="fs-subsidised-badge" style={{ fontSize: '0.6rem', fontWeight: 700, background: '#dcfce7', color: '#15803d', border: '1px solid #86efac', borderRadius: 999, padding: '2px 7px', whiteSpace: 'nowrap', display: 'inline-block', width: 'fit-content' }}>
+                            <span
+                              className="fs-subsidised-badge"
+                              style={{
+                                fontSize: "0.6rem",
+                                fontWeight: 700,
+                                background: "#dcfce7",
+                                color: "#15803d",
+                                border: "1px solid #86efac",
+                                borderRadius: 999,
+                                padding: "2px 7px",
+                                whiteSpace: "nowrap",
+                                display: "inline-block",
+                                width: "fit-content",
+                              }}
+                            >
                               Subsidised
                             </span>
                           )}
                         </div>
                       </div>
                       {/* price column — always right-aligned */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0, marginLeft: 8 }}>
-                        <span style={{ fontSize: '0.68rem', color: '#a8a29e', textDecoration: 'line-through', whiteSpace: 'nowrap' }}>{item.was}</span>
-                        <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#15803d', whiteSpace: 'nowrap' }}>{item.price}</span>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          flexShrink: 0,
+                          marginLeft: 8,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "0.68rem",
+                            color: "#a8a29e",
+                            textDecoration: "line-through",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {item.was}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "0.88rem",
+                            fontWeight: 800,
+                            color: "#15803d",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {item.price}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -573,30 +915,100 @@ export default function FeaturesSection() {
           <div
             className="fs-card fs-area-family"
             style={{
-              padding: 'clamp(20px, 4vw, 28px)',
-              background: 'linear-gradient(145deg, #166534 0%, #15803d 55%, #16a34a 100%)',
-              border: 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
+              padding: "clamp(20px, 4vw, 28px)",
+              background:
+                "linear-gradient(145deg, #166534 0%, #15803d 55%, #16a34a 100%)",
+              border: "none",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
               minHeight: 200,
             }}
           >
             {/* decorative rings */}
-            <div style={{ position: 'absolute', top: -40, right: -40, width: 150, height: 150, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.12)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', top: -16, right: -16, width: 90, height: 90, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.09)', pointerEvents: 'none' }} />
+            <div
+              style={{
+                position: "absolute",
+                top: -40,
+                right: -40,
+                width: 150,
+                height: 150,
+                borderRadius: "50%",
+                border: "1px solid rgba(255,255,255,0.12)",
+                pointerEvents: "none",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                top: -16,
+                right: -16,
+                width: 90,
+                height: 90,
+                borderRadius: "50%",
+                border: "1px solid rgba(255,255,255,0.09)",
+                pointerEvents: "none",
+              }}
+            />
 
-            <div style={{ width: 46, height: 46, borderRadius: 13, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
+            <div
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: 13,
+                background: "rgba(255,255,255,0.15)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
               <ShoppingBag size={20} color="#fff" strokeWidth={1.5} />
             </div>
 
-            <div style={{ position: 'relative', zIndex: 1, marginTop: 20 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.22)', borderRadius: 999, padding: '3px 10px', fontSize: '0.68rem', fontWeight: 700, color: '#fff', marginBottom: 10, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            <div style={{ position: "relative", zIndex: 1, marginTop: 20 }}>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  background: "rgba(255,255,255,0.14)",
+                  border: "1px solid rgba(255,255,255,0.22)",
+                  borderRadius: 999,
+                  padding: "3px 10px",
+                  fontSize: "0.68rem",
+                  fontWeight: 700,
+                  color: "#fff",
+                  marginBottom: 10,
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase",
+                }}
+              >
                 🇨🇦 Canada-only
               </div>
-              <h3 style={{ fontWeight: 800, fontSize: '1.1rem', color: '#fff', lineHeight: 1.3, margin: '0 0 8px' }}>Family Plans</h3>
-              <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.75)', lineHeight: 1.65, margin: 0 }}>
-                Exclusive access for Canadian families. Apply once — your whole household benefits every week.
+              <h3
+                style={{
+                  fontWeight: 800,
+                  fontSize: "1.1rem",
+                  color: "#fff",
+                  lineHeight: 1.3,
+                  margin: "0 0 8px",
+                }}
+              >
+                Family Plans
+              </h3>
+              <p
+                style={{
+                  fontSize: "0.82rem",
+                  color: "rgba(255,255,255,0.75)",
+                  lineHeight: 1.65,
+                  margin: 0,
+                }}
+              >
+                Exclusive access for Canadian families. Apply once — your whole
+                household benefits every week.
               </p>
               <Link href="/customer/signup">
                 <button className="fs-apply-btn">
@@ -607,41 +1019,84 @@ export default function FeaturesSection() {
           </div>
 
           {/* Card 6 — Savings Calculator */}
-          <div id="calculator" className="fs-card fs-area-calc" style={{ padding: 'clamp(20px, 5vw, 32px)' }}>
+          <div
+            id="calculator"
+            className="fs-card fs-area-calc"
+            style={{ padding: "clamp(20px, 5vw, 32px)" }}
+          >
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                marginBottom: 24,
+              }}
+            >
               <div className="fs-icon-ring" style={{ flexShrink: 0 }}>
                 <Calculator size={22} color="#16a34a" strokeWidth={1.5} />
               </div>
               <div>
-                <h3 style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1c1917', margin: '0 0 3px' }}>Savings Calculator</h3>
-                <p style={{ fontSize: '0.82rem', color: '#78716c', margin: 0 }}>
-                  Enter your monthly grocery spend to see how much you could save.
+                <h3
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "1.1rem",
+                    color: "#1c1917",
+                    margin: "0 0 3px",
+                  }}
+                >
+                  Savings Calculator
+                </h3>
+                <p style={{ fontSize: "0.82rem", color: "#78716c", margin: 0 }}>
+                  Enter your monthly grocery spend to see how much you could
+                  save.
                 </p>
               </div>
             </div>
 
             <div className="fs-calc-body">
-
               {/* Left: controls */}
               <div className="fs-calc-col">
                 {/* Dollar input */}
                 <div style={{ marginBottom: 20 }}>
                   <span className="fs-label">Monthly spend</span>
-                  <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', fontSize: '1rem', fontWeight: 600, color: '#78716c', pointerEvents: 'none' }}>$</span>
+                  <div style={{ position: "relative" }}>
+                    <span
+                      style={{
+                        position: "absolute",
+                        left: 11,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        color: "#78716c",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      $
+                    </span>
                     <input
-                      className={`fs-calc-input${!eligible && spend > 0 ? ' ineligible' : ''}`}
+                      className={`fs-calc-input${!eligible && spend > 0 ? " ineligible" : ""}`}
                       type="number"
                       min="0"
                       max="5000"
                       step="1"
-                      value={spend === 0 ? '' : spend}
-                      onChange={e => handleInput(e.target.value)}
+                      value={spend === 0 ? "" : spend}
+                      onChange={(e) => handleInput(e.target.value)}
                     />
                   </div>
                   {spend > 0 && !eligible && (
-                    <p style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 600, marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <p
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "#dc2626",
+                        fontWeight: 600,
+                        marginTop: 6,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
                       ⚠️ Minimum spend of $21 required to qualify.
                     </p>
                   )}
@@ -649,9 +1104,31 @@ export default function FeaturesSection() {
 
                 {/* Slider */}
                 <div style={{ marginBottom: 22 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: '0.76rem', color: '#a8a29e', fontWeight: 600 }}>$0</span>
-                    <span style={{ fontSize: '0.76rem', color: '#a8a29e', fontWeight: 600 }}>$2,000</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "0.76rem",
+                        color: "#a8a29e",
+                        fontWeight: 600,
+                      }}
+                    >
+                      $0
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.76rem",
+                        color: "#a8a29e",
+                        fontWeight: 600,
+                      }}
+                    >
+                      $2,000
+                    </span>
                   </div>
                   <input
                     className="fs-slider"
@@ -660,18 +1137,18 @@ export default function FeaturesSection() {
                     max="2000"
                     step="1"
                     value={Math.min(2000, Math.max(0, spend))}
-                    onChange={e => handleInput(e.target.value)}
+                    onChange={(e) => handleInput(e.target.value)}
                   />
                 </div>
 
                 {/* Quick picks */}
                 <div>
                   <span className="fs-label">Quick select</span>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                    {[21, 34, 55, 89, 144, 200, 300, 400, 500].map(v => (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                    {[21, 34, 55, 89, 144, 200, 300, 400, 500].map((v) => (
                       <button
                         key={v}
-                        className={`fs-pick-btn${spend === v ? ' active' : ''}`}
+                        className={`fs-pick-btn${spend === v ? " active" : ""}`}
                         onClick={() => setSpend(v)}
                       >
                         ${v}
@@ -685,18 +1162,71 @@ export default function FeaturesSection() {
               <div className="fs-calc-divider" />
 
               {/* Right: results */}
-              <div className="fs-calc-col" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div
+                className="fs-calc-col"
+                style={{ display: "flex", flexDirection: "column", gap: 12 }}
+              >
                 {/* Breakdown */}
-                <div style={{ background: '#f9fafb', border: '1px solid rgba(22,101,52,0.09)', borderRadius: 14, padding: '14px 16px' }}>
-                  <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#a8a29e', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 4 }}>How it works</p>
+                <div
+                  style={{
+                    background: "#f9fafb",
+                    border: "1px solid rgba(22,101,52,0.09)",
+                    borderRadius: 14,
+                    padding: "14px 16px",
+                  }}
+                >
+                  <p
+                    style={{
+                      fontSize: "0.7rem",
+                      fontWeight: 700,
+                      color: "#a8a29e",
+                      letterSpacing: "0.07em",
+                      textTransform: "uppercase",
+                      marginBottom: 4,
+                    }}
+                  >
+                    How it works
+                  </p>
 
                   <div className="fs-calc-row">
-                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1c1917' }}>Your total spend</span>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1c1917' }}>{fmt(spend)}</span>
+                    <span
+                      style={{
+                        fontSize: "0.82rem",
+                        fontWeight: 600,
+                        color: "#1c1917",
+                      }}
+                    >
+                      Your total spend
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.9rem",
+                        fontWeight: 700,
+                        color: "#1c1917",
+                      }}
+                    >
+                      {fmt(spend)}
+                    </span>
                   </div>
                   <div className="fs-calc-row">
-                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1c1917' }}>Discount applied</span>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: eligible ? '#16a34a' : '#a8a29e' }}>{fmt(savings)}</span>
+                    <span
+                      style={{
+                        fontSize: "0.82rem",
+                        fontWeight: 600,
+                        color: "#1c1917",
+                      }}
+                    >
+                      Discount applied
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.9rem",
+                        fontWeight: 700,
+                        color: eligible ? "#16a34a" : "#a8a29e",
+                      }}
+                    >
+                      {fmt(savings)}
+                    </span>
                   </div>
                 </div>
 
@@ -704,56 +1234,121 @@ export default function FeaturesSection() {
                 <div
                   style={{
                     background: eligible
-                      ? 'linear-gradient(135deg, #166534 0%, #16a34a 100%)'
-                      : 'linear-gradient(135deg, #78716c 0%, #a8a29e 100%)',
+                      ? "linear-gradient(135deg, #166534 0%, #16a34a 100%)"
+                      : "linear-gradient(135deg, #78716c 0%, #a8a29e 100%)",
                     borderRadius: 14,
-                    padding: '16px 18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                    padding: "16px 18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
                     gap: 10,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    transition: 'background 0.35s ease',
+                    position: "relative",
+                    overflow: "hidden",
+                    transition: "background 0.35s ease",
                   }}
                 >
-                  <div style={{ position: 'absolute', top: -24, right: -24, width: 90, height: 90, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.12)' }} />
-                  <div style={{ position: 'absolute', top: -8, right: -8, width: 52, height: 52, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.09)' }} />
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: -24,
+                      right: -24,
+                      width: 90,
+                      height: 90,
+                      borderRadius: "50%",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: -8,
+                      right: -8,
+                      width: 52,
+                      height: 52,
+                      borderRadius: "50%",
+                      border: "1px solid rgba(255,255,255,0.09)",
+                    }}
+                  />
 
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 3px' }}>
-                      {eligible ? 'You save up to' : 'Minimum not met'}
+                  <div style={{ position: "relative", zIndex: 1 }}>
+                    <p
+                      style={{
+                        fontSize: "0.68rem",
+                        fontWeight: 700,
+                        color: "rgba(255,255,255,0.65)",
+                        letterSpacing: "0.07em",
+                        textTransform: "uppercase",
+                        margin: "0 0 3px",
+                      }}
+                    >
+                      {eligible ? "You save up to" : "Minimum not met"}
                     </p>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 5,
+                      }}
+                    >
                       <span
                         key={Math.round(savings)}
                         className="fs-savings-num"
-                        style={{ fontSize: 'clamp(1.9rem, 5vw, 2.6rem)', fontWeight: 800, color: '#fff', lineHeight: 1 }}
+                        style={{
+                          fontSize: "clamp(1.9rem, 5vw, 2.6rem)",
+                          fontWeight: 800,
+                          color: "#fff",
+                          lineHeight: 1,
+                        }}
                       >
                         {fmtInt(savings)}
                       </span>
-                      <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.68)', fontWeight: 600 }}>/ mo</span>
+                      <span
+                        style={{
+                          fontSize: "0.78rem",
+                          color: "rgba(255,255,255,0.68)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        / mo
+                      </span>
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'right', position: 'relative', zIndex: 1 }}>
-                    <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.58)', margin: '0 0 2px', fontWeight: 600 }}>Annually</p>
+                  <div
+                    style={{
+                      textAlign: "right",
+                      position: "relative",
+                      zIndex: 1,
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontSize: "0.7rem",
+                        color: "rgba(255,255,255,0.58)",
+                        margin: "0 0 2px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Annually
+                    </p>
                     <span
                       key={Math.round(annual)}
                       className="fs-savings-num"
-                      style={{ fontSize: 'clamp(1.2rem, 3.5vw, 1.5rem)', fontWeight: 800, color: '#fff' }}
+                      style={{
+                        fontSize: "clamp(1.2rem, 3.5vw, 1.5rem)",
+                        fontWeight: 800,
+                        color: "#fff",
+                      }}
                     >
                       {fmtInt(annual)}
                     </span>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
-
         </div>
       </div>
     </section>
-  )
+  );
 }

@@ -1,6 +1,6 @@
 # Caching & Search Strategy (MongoDB Atlas & Next.js Caching)
 
-This document outlines how **Candian Cart** handles heavy database queries, optimizes response times, and prevents server crashes using a combination of MongoDB Atlas Search and Next.js caching mechanisms.
+This document outlines how **Candian's Cart** handles heavy database queries, optimizes response times, and prevents server crashes using a combination of MongoDB Atlas Search and Next.js caching mechanisms.
 
 ## 1. Dual-Layer Caching Architecture
 

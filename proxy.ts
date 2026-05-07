@@ -16,6 +16,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!$|api/auth|store/login|admin/login|customer/login|cashier/login|customer/signup|partner-access|about|contact|terms-and-conditions|forgot-password|reset-password|_next|favicon.ico|icon.png|apple-icon.png|api/stripe/webhook).*)",
+    "/((?!$|api/auth|store/login|admin/login|customer/login|cashier/login|customer/signup|partner-access|about|contact|terms-and-conditions|privacy-policy|forgot-password|reset-password|_next|favicon.ico|icon.png|apple-icon.png|api/stripe/webhook).*)",
   ],
 };

@@ -1,6 +1,6 @@
 # Store Payout Pipeline (Calculations & Receipts)
 
-This document outlines how **Candian Cart** manages the financial relationship between the platform and the individual stores. Because Candian Cart acts as the central marketplace, customer payments are collected centrally. The Payout Pipeline is responsible for calculating owed balances and generating official documentation (receipts) for store settlements.
+This document outlines how **Candian's Cart** manages the financial relationship between the platform and the individual stores. Because Candian's Cart acts as the central marketplace, customer payments are collected centrally. The Payout Pipeline is responsible for calculating owed balances and generating official documentation (receipts) for store settlements.
 
 ## 1. The Payout Ledger (`storePayouts.model.ts`)
 

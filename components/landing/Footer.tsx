@@ -26,8 +26,15 @@ const FOOTER_LINKS: Record<
     { label: "Contact Us", href: "/contact" },
     { label: "FAQ", href: "/#faq", scrollTo: "faq", scrollPage: "/" },
     { label: "Terms and conditions", href: "/terms-and-conditions" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
   ],
   Tools: [
+    {
+      label: "Budget Packs",
+      href: "/#grocery-packs",
+      scrollTo: "grocery-packs",
+      scrollPage: "/",
+    },
     {
       label: "Calculator",
       href: "/#calculator",
@@ -42,31 +49,48 @@ const SOCIAL = [
     label: "Instagram",
     href: "https://www.instagram.com/candianscart",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-        <circle cx="12" cy="12" r="4"/>
-        <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none"/>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        width="18"
+        height="18"
+      >
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none" />
       </svg>
     ),
   },
 ];
 
+// Navbar height offset in px — adjust this if your navbar height changes
+const NAVBAR_OFFSET = 80;
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const router   = useRouter();
+  const router = useRouter();
   const pathname = usePathname();
+
+  const scrollToSection = (sectionId: string) => {
+    const el = document.getElementById(sectionId);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - NAVBAR_OFFSET;
+    window.scrollTo({ top, behavior: "smooth" });
+  };
 
   const handleSectionClick = (
     e: React.MouseEvent,
     sectionId: string,
-    scrollPage: string = "/"
+    scrollPage: string = "/",
   ) => {
     e.preventDefault();
     if (pathname === scrollPage) {
-      // Already on the right page — just scroll
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      scrollToSection(sectionId);
     } else {
-      // Navigate to the correct page and pass the section to scroll to
       router.push(`${scrollPage}?scrollTo=${sectionId}`);
     }
   };
@@ -192,17 +216,26 @@ export default function Footer() {
       `}</style>
 
       <footer className="footer-root">
-
         {/* ── Main grid ── */}
         <div className="footer-main">
-
           {/* Brand col */}
           <div className="footer-brand">
             <Logo variant="full" href="/" />
-            <p>Subsidised grocery pickup for Canadian families in Abbotsford, BC. Save up to 30% on everyday essentials.</p>
+            <p>
+              Subsidised grocery pickup for Canadian families in Abbotsford, BC.
+              Save up to 30% on everyday essentials.
+            </p>
             <div className="footer-social">
               {SOCIAL.map((s) => (
-                <a key={s.label} href={s.href} aria-label={s.label}>{s.icon}</a>
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                >
+                  {s.icon}
+                </a>
               ))}
             </div>
           </div>
@@ -215,7 +248,11 @@ export default function Footer() {
                 {links.map((l) =>
                   l.scrollTo ? (
                     <li key={l.label}>
-                      <button onClick={(e) => handleSectionClick(e, l.scrollTo!, l.scrollPage)}>
+                      <button
+                        onClick={(e) =>
+                          handleSectionClick(e, l.scrollTo!, l.scrollPage)
+                        }
+                      >
                         {l.label}
                       </button>
                     </li>
@@ -223,7 +260,7 @@ export default function Footer() {
                     <li key={l.label}>
                       <a href={l.href}>{l.label}</a>
                     </li>
-                  )
+                  ),
                 )}
               </ul>
             </div>
@@ -239,7 +276,6 @@ export default function Footer() {
             </div>
           </div>
         </div>
-
       </footer>
     </>
   );

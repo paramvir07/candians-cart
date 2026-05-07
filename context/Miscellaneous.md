@@ -1,10 +1,10 @@
 # Miscellaneous Architecture Patterns & Conventions
 
-This final document covers the overarching structural patterns, naming conventions, and UI standards that keep the **Candian Cart** codebase predictable and scalable. While these don't fit into a single feature pipeline, they govern how the entire application is organized.
+This final document covers the overarching structural patterns, naming conventions, and UI standards that keep the **Candian's Cart** codebase predictable and scalable. While these don't fit into a single feature pipeline, they govern how the entire application is organized.
 
 ## 1. Client vs. Server Component Boundaries (`*Client.tsx`)
 
-Candian Cart heavily leverages the Next.js App Router paradigm. To optimize SEO, initial load times, and database security, data fetching happens on the Server, while interactivity happens on the Client.
+Candian's Cart heavily leverages the Next.js App Router paradigm. To optimize SEO, initial load times, and database security, data fetching happens on the Server, while interactivity happens on the Client.
 
 To manage this cleanly, we use the **"Client Wrapper" Pattern**. Page files (`page.tsx`) are strictly Server Components that fetch data and handle auth. They then pass serialized data down to a dedicated client component, usually suffixed with `*Client.tsx`.
 
@@ -36,7 +36,7 @@ To make the codebase instantly navigable for developers and AI agents, file exte
 
 ## 3. Standardized UI & Feedback Loop
 
-Candian Cart relies on a consistent set of tools for its user interface to avoid CSS bloat and maintain a unified design system.
+Candian's Cart relies on a consistent set of tools for its user interface to avoid CSS bloat and maintain a unified design system.
 
 - **UI Components**: Built using **shadcn/ui** (Tailwind CSS + Radix UI primitives). Found in `components/ui/*`.
 - **Icons**: **Lucide React** is the standard icon library. Avoid importing SVGs manually if a Lucide icon exists.

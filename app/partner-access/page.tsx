@@ -110,6 +110,7 @@ export default async function PartnerAccessPortal() {
           <Image
             src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80"
             alt="Fresh groceries"
+            sizes="(max-width: 1024px) 100vw, 340px"
             fill
             className="object-cover"
             priority

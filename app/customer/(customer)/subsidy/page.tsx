@@ -7,7 +7,7 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Subsidized Products | Candian Cart",
+  title: "Subsidized Products | Candian's Cart",
 };
 
 export default async function SubsidizedProductsPage() {
@@ -28,7 +28,7 @@ export default async function SubsidizedProductsPage() {
           <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 max-w-md shadow-sm">
             <h3 className="font-bold text-lg mb-2">Unable to Load Store</h3>
             <p className="text-sm text-red-500">
-              Please verify your account matches a registered Candian Cart store.
+              Please verify your account matches a registered Candian's Cart store.
             </p>
           </div>
         </div>

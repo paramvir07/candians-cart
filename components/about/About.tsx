@@ -9,7 +9,6 @@ import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import Link from "next/link";
 
-/** Isolated component so useSearchParams is inside its own Suspense boundary */
 function ScrollToSection() {
   const searchParams = useSearchParams();
 
@@ -17,12 +16,13 @@ function ScrollToSection() {
     const sectionId = searchParams.get("scrollTo");
     if (!sectionId) return;
 
-    // Retry until the element exists in the DOM (handles SSR/hydration timing)
     let attempts = 0;
+    const navbarHeight = 72;
     const tryScroll = () => {
       const el = document.getElementById(sectionId);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight;
+        window.scrollTo({ top, behavior: "smooth" });
       } else if (attempts < 20) {
         attempts++;
         requestAnimationFrame(tryScroll);
@@ -72,12 +72,10 @@ const About = () => {
   return (
     <div className="min-h-screen w-full relative overflow-x-hidden" style={{ backgroundColor: "#f5f0e8" }}>
 
-      {/* Scroll handler — must be inside Suspense for useSearchParams */}
       <Suspense fallback={null}>
         <ScrollToSection />
       </Suspense>
 
-      {/* Diagonal Cross — top-left origin fade */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -93,12 +91,9 @@ const About = () => {
         }}
       />
 
-      {/* Content */}
       <div className="relative z-10">
 
-        {/* Hero — characters flanking the text */}
         <section className="pt-20 pb-16 flex items-center justify-center gap-0">
-          {/* Left character */}
           <div className="hidden lg:flex flex-shrink-0 items-end justify-end w-[200px] xl:w-[260px] self-end">
             <Image
               src="https://ik.imagekit.io/h7w5h0hou/customer-aboutus-left.png"
@@ -110,7 +105,6 @@ const About = () => {
             />
           </div>
 
-          {/* Hero text */}
           <div className="text-center max-w-2xl px-6">
             <Badge
               variant="outline"
@@ -130,7 +124,6 @@ const About = () => {
             </p>
           </div>
 
-          {/* Right character */}
           <div className="hidden lg:flex flex-shrink-0 items-end justify-start w-[200px] xl:w-[260px] self-end">
             <Image
               src="https://ik.imagekit.io/h7w5h0hou/customer-aboutus-right.png"
@@ -143,7 +136,6 @@ const About = () => {
           </div>
         </section>
 
-        {/* Stats bar */}
         <section className="max-w-4xl mx-auto px-4 mb-16">
           <div className="bg-green-700 rounded-2xl p-6 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center text-white">
             {stats.map((s) => (
@@ -155,7 +147,6 @@ const About = () => {
           </div>
         </section>
 
-        {/* Mission */}
         <section className="max-w-4xl mx-auto px-4 mb-16">
           <div className="grid sm:grid-cols-2 gap-6 items-center">
             <div>
@@ -214,7 +205,6 @@ const About = () => {
           </div>
         </section>
 
-        {/* Values */}
         <section id="values" className="max-w-4xl mx-auto px-4 mb-16">
           <p className="text-green-700 font-semibold uppercase text-xs tracking-widest mb-2 text-center">
             What We Stand For
@@ -242,7 +232,6 @@ const About = () => {
           </div>
         </section>
 
-        {/* CTA */}
         <section className="max-w-4xl mx-auto px-4 pb-20">
           <div className="bg-green-700 rounded-2xl p-8 sm:p-12 text-center text-white">
             <div className="text-2xl sm:text-3xl font-extrabold mb-3">

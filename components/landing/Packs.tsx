@@ -41,12 +41,18 @@ const packs = [
   },
 ];
 
-function PackCard({ pack, isMobile }: { pack: (typeof packs)[0]; isMobile: boolean }) {
+function PackCard({
+  pack,
+  isMobile,
+}: {
+  pack: (typeof packs)[0];
+  isMobile: boolean;
+}) {
   const subsidy = +(pack.retailPrice * SUBSIDY).toFixed(2);
-  const youPay  = +(pack.retailPrice - subsidy).toFixed(2);
+  const youPay = +(pack.retailPrice - subsidy).toFixed(2);
   // On mobile only show 3 items to keep cards short
   const visibleItems = isMobile ? pack.items.slice(0, 3) : pack.items;
-  const hiddenCount  = isMobile
+  const hiddenCount = isMobile
     ? pack.items.length - 3 + pack.extraItems
     : pack.extraItems;
 
@@ -58,72 +64,165 @@ function PackCard({ pack, isMobile }: { pack: (typeof packs)[0]; isMobile: boole
         border: pack.hero
           ? "2px solid #16a34a"
           : "1px solid rgba(22,101,52,0.10)",
-        boxShadow: "0 2px 8px rgba(22,101,52,0.04), 0 8px 28px rgba(22,101,52,0.07)",
+        boxShadow:
+          "0 2px 8px rgba(22,101,52,0.04), 0 8px 28px rgba(22,101,52,0.07)",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
         transition: "transform 0.22s ease, box-shadow 0.22s ease",
       }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 16px rgba(22,101,52,0.09), 0 16px 44px rgba(22,101,52,0.12)";
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLDivElement).style.transform =
+          "translateY(-3px)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow =
+          "0 4px 16px rgba(22,101,52,0.09), 0 16px 44px rgba(22,101,52,0.12)";
       }}
-      onMouseLeave={e => {
+      onMouseLeave={(e) => {
         (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 8px rgba(22,101,52,0.04), 0 8px 28px rgba(22,101,52,0.07)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow =
+          "0 2px 8px rgba(22,101,52,0.04), 0 8px 28px rgba(22,101,52,0.07)";
       }}
     >
       {/* Top accent bar */}
-      <div style={{ height: 3, background: pack.hero ? "#16a34a" : "#f0fdf4" }} />
+      <div
+        style={{ height: 3, background: pack.hero ? "#16a34a" : "#f0fdf4" }}
+      />
 
       {/* Body */}
-      <div style={{ padding: isMobile ? "14px" : "clamp(18px, 3vw, 24px)", display: "flex", flexDirection: "column", gap: isMobile ? 9 : 12, flex: 1 }}>
-
+      <div
+        style={{
+          padding: isMobile ? "14px" : "clamp(18px, 3vw, 24px)",
+          display: "flex",
+          flexDirection: "column",
+          gap: isMobile ? 9 : 12,
+          flex: 1,
+        }}
+      >
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <span style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#16a34a" }}>
+            <span
+              style={{
+                fontSize: "0.62rem",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: "#16a34a",
+              }}
+            >
               {pack.tier}
             </span>
-            <span style={{ fontSize: isMobile ? "0.9rem" : "1.05rem", fontWeight: 800, color: "#1c1917", letterSpacing: "-0.3px" }}>
+            <span
+              style={{
+                fontSize: isMobile ? "0.9rem" : "1.05rem",
+                fontWeight: 800,
+                color: "#1c1917",
+                letterSpacing: "-0.3px",
+              }}
+            >
               {pack.name}
             </span>
             {pack.hero && (
-              <span style={{ alignSelf: "flex-start", fontSize: "0.58rem", fontWeight: 700, background: "#16a34a", color: "#fff", padding: "2px 8px", borderRadius: 999 }}>
+              <span
+                style={{
+                  alignSelf: "flex-start",
+                  fontSize: "0.58rem",
+                  fontWeight: 700,
+                  background: "#16a34a",
+                  color: "#fff",
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                }}
+              >
                 Best value
               </span>
             )}
           </div>
           <div style={{ textAlign: "right", flexShrink: 0 }}>
-            <div style={{ fontSize: "0.65rem", color: "#a8a29e", textDecoration: "line-through" }}>
+            <div
+              style={{
+                fontSize: "0.65rem",
+                color: "#a8a29e",
+                textDecoration: "line-through",
+              }}
+            >
               ${pack.retailPrice.toFixed(2)}
             </div>
-            <div style={{ fontSize: isMobile ? "1.4rem" : "clamp(1.6rem, 3.5vw, 2rem)", fontWeight: 800, color: "#16a34a", lineHeight: 1, letterSpacing: "-1px" }}>
+            <div
+              style={{
+                fontSize: isMobile ? "1.4rem" : "clamp(1.6rem, 3.5vw, 2rem)",
+                fontWeight: 800,
+                color: "#16a34a",
+                lineHeight: 1,
+                letterSpacing: "-1px",
+              }}
+            >
               ${youPay.toFixed(2)}
             </div>
-            <div style={{ fontSize: "0.6rem", color: "#a8a29e", marginTop: 1 }}>after subsidy</div>
+            <div style={{ fontSize: "0.6rem", color: "#a8a29e", marginTop: 1 }}>
+              after subsidy
+            </div>
           </div>
         </div>
 
         {/* Description — hidden on mobile to save space */}
         {!isMobile && (
-          <p style={{ fontSize: "0.8rem", color: "#78716c", lineHeight: 1.65, margin: 0 }}>
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "#78716c",
+              lineHeight: 1.65,
+              margin: 0,
+            }}
+          >
             {pack.desc}
           </p>
         )}
 
         {/* Pills */}
         <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-          <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0" }}>
+          <span
+            style={{
+              fontSize: "0.6rem",
+              fontWeight: 700,
+              padding: "2px 8px",
+              borderRadius: 999,
+              background: "#f0fdf4",
+              color: "#166534",
+              border: "1px solid #bbf7d0",
+            }}
+          >
             Save ${subsidy.toFixed(2)}
           </span>
-          <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "#f9fafb", color: "#78716c", border: "1px solid #e5e7eb" }}>
+          <span
+            style={{
+              fontSize: "0.6rem",
+              fontWeight: 700,
+              padding: "2px 8px",
+              borderRadius: 999,
+              background: "#f9fafb",
+              color: "#78716c",
+              border: "1px solid #e5e7eb",
+            }}
+          >
             {pack.items.length + pack.extraItems} items
           </span>
         </div>
 
         {/* Item list */}
-        <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid rgba(22,101,52,0.08)" }}>
+        <div
+          style={{
+            borderRadius: 8,
+            overflow: "hidden",
+            border: "1px solid rgba(22,101,52,0.08)",
+          }}
+        >
           {visibleItems.map((item, i) => (
             <div
               key={i}
@@ -137,17 +236,38 @@ function PackCard({ pack, isMobile }: { pack: (typeof packs)[0]; isMobile: boole
                 background: i % 2 === 0 ? "#fff" : "#f9fafb",
                 transition: "background 0.12s ease",
               }}
-              onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")}
-              onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "#f9fafb")}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "#f0fdf4")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background =
+                  i % 2 === 0 ? "#fff" : "#f9fafb")
+              }
             >
               <span>{item.name}</span>
-              <span style={{ color: "#16a34a", fontWeight: 700, fontSize: isMobile ? "0.72rem" : "0.8rem" }}>
+              <span
+                style={{
+                  color: "#16a34a",
+                  fontWeight: 700,
+                  fontSize: isMobile ? "0.72rem" : "0.8rem",
+                }}
+              >
                 ${item.price.toFixed(2)}
               </span>
             </div>
           ))}
           {hiddenCount > 0 && (
-            <div style={{ display: "flex", justifyContent: "center", padding: isMobile ? "5px 10px" : "6px 12px", fontSize: "0.68rem", color: "#a8a29e", background: "#f9fafb", fontWeight: 500 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: isMobile ? "5px 10px" : "6px 12px",
+                fontSize: "0.68rem",
+                color: "#a8a29e",
+                background: "#f9fafb",
+                fontWeight: 500,
+              }}
+            >
               + {hiddenCount} more items included
             </div>
           )}
@@ -155,21 +275,74 @@ function PackCard({ pack, isMobile }: { pack: (typeof packs)[0]; isMobile: boole
       </div>
 
       {/* Footer */}
-      <div style={{ padding: isMobile ? "10px 14px 14px" : "12px clamp(18px, 3vw, 24px) clamp(18px, 3vw, 24px)", borderTop: "1px solid rgba(22,101,52,0.08)" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 8 }}>
+      <div
+        style={{
+          padding: isMobile
+            ? "10px 14px 14px"
+            : "12px clamp(18px, 3vw, 24px) clamp(18px, 3vw, 24px)",
+          borderTop: "1px solid rgba(22,101,52,0.08)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            marginBottom: 8,
+          }}
+        >
           {[
             ["Retail total", `$${pack.retailPrice.toFixed(2)}`, false],
-            ["Subsidy (21%)", `− $${subsidy.toFixed(2)}`, true],
+            ["Subsidy", `− $${subsidy.toFixed(2)}`, true],
           ].map(([label, val, green]) => (
-            <div key={label as string} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "#a8a29e" }}>
+            <div
+              key={label as string}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "0.68rem",
+                color: "#a8a29e",
+              }}
+            >
               <span>{label}</span>
-              <span style={{ fontWeight: 600, color: green ? "#16a34a" : undefined }}>{val}</span>
+              <span
+                style={{
+                  fontWeight: 600,
+                  color: green ? "#16a34a" : undefined,
+                }}
+              >
+                {val}
+              </span>
             </div>
           ))}
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f0fdf4", borderRadius: 10, padding: isMobile ? "8px 12px" : "10px 14px" }}>
-          <span style={{ fontSize: isMobile ? "0.75rem" : "0.82rem", fontWeight: 700, color: "#166534" }}>You pay</span>
-          <span style={{ fontSize: isMobile ? "1.1rem" : "clamp(1.2rem, 2.5vw, 1.4rem)", fontWeight: 800, color: "#16a34a", letterSpacing: "-0.5px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            background: "#f0fdf4",
+            borderRadius: 10,
+            padding: isMobile ? "8px 12px" : "10px 14px",
+          }}
+        >
+          <span
+            style={{
+              fontSize: isMobile ? "0.75rem" : "0.82rem",
+              fontWeight: 700,
+              color: "#166534",
+            }}
+          >
+            You pay
+          </span>
+          <span
+            style={{
+              fontSize: isMobile ? "1.1rem" : "clamp(1.2rem, 2.5vw, 1.4rem)",
+              fontWeight: 800,
+              color: "#16a34a",
+              letterSpacing: "-0.5px",
+            }}
+          >
             ${youPay.toFixed(2)}
           </span>
         </div>
@@ -205,7 +378,8 @@ export default function PacksSection() {
         style={{
           position: "absolute",
           inset: 0,
-          backgroundImage: "radial-gradient(circle, #16a34a14 1px, transparent 1px)",
+          backgroundImage:
+            "radial-gradient(circle, #16a34a14 1px, transparent 1px)",
           backgroundSize: "28px 28px",
           pointerEvents: "none",
           zIndex: 0,
@@ -224,7 +398,12 @@ export default function PacksSection() {
         }}
       >
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "clamp(20px, 4vw, 44px)" }}>
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: "clamp(20px, 4vw, 44px)",
+          }}
+        >
           <div
             style={{
               display: "inline-flex",
@@ -242,7 +421,16 @@ export default function PacksSection() {
               marginBottom: 12,
             }}
           >
-            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#16a34a", display: "inline-block", flexShrink: 0 }} />
+            <span
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                background: "#16a34a",
+                display: "inline-block",
+                flexShrink: 0,
+              }}
+            />
             App exclusive packs
           </div>
           <h2
@@ -255,9 +443,8 @@ export default function PacksSection() {
               margin: "0 0 10px",
             }}
           >
-            Groceries that cost{" "}
-            <span style={{ color: "#16a34a" }}>21% less.</span>{" "}
-            Guaranteed.
+            Groceries that cost upto {" "}
+            <span style={{ color: "#16a34a" }}>30% less.</span> Guaranteed.
           </h2>
           <p
             style={{
@@ -286,7 +473,15 @@ export default function PacksSection() {
         </div>
 
         {/* CTA */}
-        <div style={{ marginTop: isMobile ? 20 : 28, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+        <div
+          style={{
+            marginTop: isMobile ? 20 : 28,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
           <Link href="/customer/signup">
             <button
               style={{
@@ -304,25 +499,54 @@ export default function PacksSection() {
                 cursor: "pointer",
                 transition: "background 0.18s ease, transform 0.15s ease",
               }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = "#15803d";
-                (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.03)";
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background =
+                  "#15803d";
+                (e.currentTarget as HTMLButtonElement).style.transform =
+                  "scale(1.03)";
               }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLButtonElement).style.background = "#16a34a";
-                (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background =
+                  "#16a34a";
+                (e.currentTarget as HTMLButtonElement).style.transform =
+                  "scale(1)";
               }}
             >
               <Users size={14} strokeWidth={2} />
               Sign up to unlock all 6 packs
             </button>
           </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
-            {["Free to join", "Subsidy applied instantly", "No vouchers needed"].map((t, i, arr) => (
-              <span key={t} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: "0.65rem", color: "#a8a29e" }}>{t}</span>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              flexWrap: "wrap",
+              justifyContent: "center",
+            }}
+          >
+            {[
+              "Free to join",
+              "Subsidy applied instantly",
+              "No vouchers needed",
+            ].map((t, i, arr) => (
+              <span
+                key={t}
+                style={{ display: "flex", alignItems: "center", gap: 6 }}
+              >
+                <span style={{ fontSize: "0.65rem", color: "#a8a29e" }}>
+                  {t}
+                </span>
                 {i < arr.length - 1 && (
-                  <span style={{ width: 2, height: 2, borderRadius: "50%", background: "#d6d3d1", display: "inline-block" }} />
+                  <span
+                    style={{
+                      width: 2,
+                      height: 2,
+                      borderRadius: "50%",
+                      background: "#d6d3d1",
+                      display: "inline-block",
+                    }}
+                  />
                 )}
               </span>
             ))}

@@ -1,21 +1,38 @@
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface FormTopBarProps {
   isEditMode: boolean;
   loading: boolean;
   buttonText: string;
+  productName?: string;
+  isDeleting?: boolean;
   onBack: () => void;
   onSubmit: () => void;
+  onDelete?: () => void;
 }
 
 export function FormTopBar({
   isEditMode,
   loading,
   buttonText,
+  productName,
+  isDeleting,
   onBack,
   onSubmit,
+  onDelete,
 }: FormTopBarProps) {
   return (
     <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border/60">
@@ -42,6 +59,8 @@ export function FormTopBar({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          
+
           <Button
             variant="outline"
             size="sm"
@@ -50,6 +69,40 @@ export function FormTopBar({
           >
             Cancel
           </Button>
+          {/* Delete — only in edit mode, desktop only (mobile has its own bar) */}
+          {isEditMode && onDelete && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={isDeleting}
+                  className="text-sm hidden sm:flex gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {isDeleting ? "Deleting…" : "Delete"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete "{productName}"?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. The product will be permanently
+                    removed along with all associated data.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={onDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete Product
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <Button
             size="sm"
             disabled={loading}

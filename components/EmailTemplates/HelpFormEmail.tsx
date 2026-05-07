@@ -26,7 +26,7 @@ const categoryMeta: Record<
     color: "#dc2626",
     bgColor: "#fef2f2",
     borderColor: "#fecaca",
-    rewardNote: "If this report identifies a valid bug, $10 will be credited to your Gift Wallet within 3 business days.",
+    // rewardNote: "If this report identifies a valid bug, $10 will be credited to your Gift Wallet within 3 business days.",
   },
   question: { label: "Question", emoji: "❓", color: "#2563eb", bgColor: "#eff6ff", borderColor: "#bfdbfe" },
   feature:  { label: "Feature Request", emoji: "✨", color: "#7c3aed", bgColor: "#f5f3ff", borderColor: "#ddd6fe" },
@@ -203,7 +203,7 @@ export default function HelpFormEmail({
                 Automated confirmation · Do not reply to this email
               </Text>
               <Text style={{ fontSize: "11px", color: "#9ca3af", margin: 0 }}>
-                © {new Date().getFullYear()} Candian Cart · Invite-only family grocery platform
+                © {new Date().getFullYear()} Candian's Cart · Invite-only family grocery platform
               </Text>
             </div>
 

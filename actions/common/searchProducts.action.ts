@@ -118,7 +118,7 @@ const fetchProductsDB = async(query: string, storeId?: string) =>{
     };
 
 /**
- * Role-aware search for Candian Cart.
+ * Role-aware search for Candian's Cart.
  *
  */
 
@@ -148,7 +148,7 @@ export const searchProducts = async (
     const products = await fetchProductsDB(searchQuery, targetStoreId);
 
     if (!products) {
-      return { success: false, error: "No products found in Candian Cart." };
+      return { success: false, error: "No products found in Candian's Cart." };
     }
 
     // JSON Serialization for safe transfer to Client Components
