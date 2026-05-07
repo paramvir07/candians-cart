@@ -36,10 +36,41 @@ export async function getInvoices(storeId: string) {
         _id: product._id?.toString(),
         productId: product.productId?.toString(),
       })),
-      
+
       DateInvoiceCame: invoice.DateInvoiceCame?.toISOString(),
       createdAt: invoice.createdAt?.toISOString(),
       updatedAt: invoice.updatedAt?.toISOString(),
+    }));
+
+    return { success: true, data: serializedInvoices };
+  } catch (error) {
+    console.error(`Error fetching the invoices:`, error);
+    return { success: false, error: "Failed to fetch invoices" };
+  }
+}
+
+export async function getTop5Invoices(storeId?: string) {
+  try {
+    const session = await getUserSession();
+
+    await dbConnect();
+
+    // Fallback: If no storeId is provided (e.g., Store Owner), use their session ID
+    const targetStoreId = storeId || session.user.id;
+
+    const invoices = await ProductInvoice.find({
+      storeId: new mongoose.Types.ObjectId(targetStoreId),
+    })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean()
+      .select("_id InvoiceNumber DateInvoiceCame");
+
+    const serializedInvoices = invoices.map((invoice: any) => ({
+      ...invoice,
+      _id: invoice._id?.toString(),
+      InvoiceNumber: invoice.InvoiceNumber,
+      DateInvoiceCame: invoice.DateInvoiceCame?.toISOString(),
     }));
 
     return { success: true, data: serializedInvoices };
