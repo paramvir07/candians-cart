@@ -1,6 +1,7 @@
-import { RefObject } from "react";
-// React 19 / @types/react v19+ changed useRef to return RefObject<T | null>
-import { Image as ImageIcon, X, Tag, FileText, Save } from "lucide-react";
+"use client";
+
+import { RefObject, useEffect, useState } from "react";
+import { Image as ImageIcon, X, Tag, FileText, Save, Loader2, Check, Copy } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getTop5Invoices } from "@/actions/store/invoice/getInvoices"; 
 
 const CATEGORIES = [
   "Fruits", "Vegetables", "Dairy", "Meat", "Bakery", "Beverages", "Snacks",
@@ -24,25 +26,30 @@ const CATEGORIES = [
   "Personal Care", "Other",
 ];
 
+// 1. Strict Typing to avoid `any`
+interface InvoiceData {
+  _id: string;
+  InvoiceNumber: number;
+  DateInvoiceCame: string;
+}
+
 interface RightSidebarProps {
-  // image
+  storeId?: string; // Optional so it doesn't break for store owners
   imagePreview: string | null;
   fileInputRef: RefObject<HTMLInputElement | null>;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveImage: () => void;
-  // category
   category: string;
   onCategoryChange: (value: string) => void;
-  // invoice
   InvoiceId: string;
   onInvoiceChange: (value: string) => void;
-  // save button
   loading: boolean;
   buttonText: string;
   onSubmit: () => void;
 }
 
 export function RightSidebar({
+  storeId,
   imagePreview,
   fileInputRef,
   onImageChange,
@@ -55,6 +62,35 @@ export function RightSidebar({
   buttonText,
   onSubmit,
 }: RightSidebarProps) {
+  
+  const [recentInvoices, setRecentInvoices] = useState<InvoiceData[]>([]);
+  const [fetchingInvoices, setFetchingInvoices] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true; // Cleanup flag to prevent memory leaks
+
+    const fetchInvoices = async () => {
+      setFetchingInvoices(true);
+      try {
+        // Falls back to session in the backend if storeId is undefined
+        const response = await getTop5Invoices(storeId);
+        if (isMounted && response.success && response.data) {
+          setRecentInvoices(response.data as InvoiceData[]);
+        }
+      } catch (error) {
+        console.error("Candian Cart: Failed to fetch recent invoices", error);
+      } finally {
+        if (isMounted) setFetchingInvoices(false);
+      }
+    };
+
+    fetchInvoices();
+
+    return () => {
+      isMounted = false; // Cleanup on unmount
+    };
+  }, [storeId]);
+
   return (
     <div className="space-y-6">
       {/* ── Image Upload ── */}
@@ -177,6 +213,70 @@ export function RightSidebar({
               Required when creating a product or changing its price.
             </p>
           </div>
+
+          {/* Top 5 Recent Invoices Wrapper */}
+          <div className="space-y-2.5 pt-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Recent Invoices
+              </Label>
+              {fetchingInvoices && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+            </div>
+
+            {!fetchingInvoices && recentInvoices.length === 0 && (
+              <p className="text-xs text-muted-foreground italic">
+                No recent invoices found for this store.
+              </p>
+            )}
+
+            <div className="space-y-2">
+              {recentInvoices.map((invoice) => {
+                const isSelected = InvoiceId === invoice._id;
+                const displayName = invoice.InvoiceNumber || invoice._id;
+                const DateInvoiceCame = invoice.DateInvoiceCame ? new Date(invoice.DateInvoiceCame).toLocaleDateString() : "Unknown date";
+
+                return (
+                  <div 
+                    key={invoice._id} 
+                    className={`flex items-center justify-between p-2.5 rounded-lg border transition-colors ${
+                      isSelected ? "border-primary bg-primary/5" : "border-border/50 bg-muted/20 hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                      <FileText className={`w-3.5 h-3.5 shrink-0 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className={`text-xs font-mono truncate ${isSelected ? "font-semibold text-primary" : "text-foreground/80"}`}>
+                        {displayName}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {DateInvoiceCame}
+                    </p>
+                    <Button
+                      type="button"
+                      variant={isSelected ? "default" : "secondary"}
+                      size="sm"
+                      className="h-6 text-[10px] px-2.5 shrink-0 ml-2"
+                      onClick={() => onInvoiceChange(invoice._id)}
+                      disabled={isSelected}
+                    >
+                      {isSelected ? (
+                        <>
+                          <Check className="w-3 h-3 mr-1" /> Selected
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 mr-1" /> Use ID
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <Separator />
+
           <Link
             href="/store/invoice/add/"
             className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline underline-offset-2 transition-colors"
@@ -194,7 +294,7 @@ export function RightSidebar({
           disabled={loading}
           className="w-full gap-2 py-5 text-sm font-semibold"
         >
-          <Save className="w-4 h-4" />
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {buttonText}
         </Button>
       </div>

@@ -2,12 +2,12 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Receipt, Copy, ExternalLink, Calendar, Building2, Tag } from "lucide-react";
+import { Receipt, Copy, ExternalLink, Calendar, Building2, Tag, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation"; // 1. Import useRouter
 
-// Type definition based on your Mongoose Model
 export interface InvoiceProps {
-  _id: string; // The MongoDB generated ID used for copying
+  _id: string; 
   vendorName: string;
   DateInvoiceCame: string | Date;
   InvoiceNumber: number;
@@ -19,8 +19,14 @@ export interface InvoiceProps {
   additionalNote?: string;
 }
 
-const InvoiceCard = ({ invoice }: { invoice: InvoiceProps }) => {
-  // 1. Copy Invoice ID to Clipboard
+interface InvoiceCardProps {
+  invoice: InvoiceProps;
+  onEdit?: (id: string) => void;
+}
+
+const InvoiceCard = ({ invoice, onEdit }: InvoiceCardProps) => {
+  const router = useRouter(); // 2. Initialize router
+
   const handleCopyId = () => {
     navigator.clipboard.writeText(invoice._id);
     toast.success("Invoice ID copied!", {
@@ -28,7 +34,6 @@ const InvoiceCard = ({ invoice }: { invoice: InvoiceProps }) => {
     });
   };
 
-  // 2. Open Document in New Tab
   const handleViewDocument = () => {
     if (invoice.documentId?.url) {
       window.open(invoice.documentId.url, "_blank", "noopener,noreferrer");
@@ -37,7 +42,15 @@ const InvoiceCard = ({ invoice }: { invoice: InvoiceProps }) => {
     }
   };
 
-  // 3. Format Date safely
+  // 3. Create a handler that uses the prop IF provided, otherwise routes automatically
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(invoice._id);
+    } else {
+      router.push(`/store/invoice/${invoice._id}/edit`);
+    }
+  };
+
   const formattedDate = new Date(invoice.DateInvoiceCame).toLocaleDateString("en-CA", {
     year: "numeric",
     month: "long",
@@ -47,7 +60,7 @@ const InvoiceCard = ({ invoice }: { invoice: InvoiceProps }) => {
   return (
     <Card className="hover:shadow-md transition-shadow duration-200 border-slate-200 bg-white group">
       <CardContent className="p-5 flex flex-col gap-4">
-        {/* Header: Invoice Number & Copy Button */}
+        {/* Header: Invoice Number & Actions */}
         <div className="flex justify-between items-start gap-2">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg">
@@ -62,19 +75,34 @@ const InvoiceCard = ({ invoice }: { invoice: InvoiceProps }) => {
               </h3>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
-            onClick={handleCopyId}
-            title="Copy Invoice id"
-          >
-            <Copy className="h-4 w-4" />
-            <span className="sr-only">Copy ID</span>
-          </Button>
+          
+          {/* Action Buttons: Edit & Copy */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+              onClick={handleEdit} // 4. Attach the new handler here
+              title="Edit Invoice"
+            >
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">Edit Invoice</span>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+              onClick={handleCopyId}
+              title="Copy Invoice ID"
+            >
+              <Copy className="h-4 w-4" />
+              <span className="sr-only">Copy ID</span>
+            </Button>
+          </div>
         </div>
 
-        {/* Middle Details: Vendor & Date */}
+        {/* ... Rest of your component remains exactly the same ... */}
         <div className="space-y-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
           <div className="flex items-center gap-3 text-sm text-slate-700">
             <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
@@ -88,7 +116,6 @@ const InvoiceCard = ({ invoice }: { invoice: InvoiceProps }) => {
             <span>{formattedDate}</span>
           </div>
 
-          {/* Optional: Show product name if it was explicitly mapped on the invoice */}
           {invoice.productNameInInvoice && (
             <div className="flex items-center gap-3 text-sm text-slate-600">
               <Tag className="h-4 w-4 text-slate-400 shrink-0" />
@@ -97,7 +124,6 @@ const InvoiceCard = ({ invoice }: { invoice: InvoiceProps }) => {
           )}
         </div>
 
-        {/* Bottom Actions: View Document */}
         <div className="pt-1 mt-auto">
           <Button
             variant="outline"

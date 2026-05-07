@@ -71,3 +71,23 @@ actions/store/products/addProducts.ts
 zod/schemas/store/addProductsValidation.ts
 
 app/imagekit/route.ts
+
+# Imagekit
+
+We are using imagekit 7.3.0, so file upload and deletion have changed like this -:
+
+```ts
+const fileIdToDelete = deletedInvoice.documentId?.fileId;
+
+if (fileIdToDelete) {
+  try {
+    await imagekit.files.delete(fileIdToDelete);
+    console.log(`Successfully deleted image ${fileIdToDelete} from ImageKit`);
+  } catch (imageKitError) {
+    console.error(
+      `Failed to delete image ${fileIdToDelete} from ImageKit:`,
+      imageKitError,
+    );
+  }
+}
+```
