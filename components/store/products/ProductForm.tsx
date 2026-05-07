@@ -283,6 +283,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
 
           {/* RIGHT */}
           <RightSidebar
+            storeId={storeId}
             imagePreview={imagePreview}
             fileInputRef={fileInputRef}
             onImageChange={handleImageChange}

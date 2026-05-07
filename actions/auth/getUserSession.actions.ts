@@ -20,7 +20,8 @@ import { cache } from "react";
  * Usage:
  * ```ts
  * const session = await getUserSession();
- * const userId = session.user.id;
+ * const userId = session.user.id; // this is auth Id
+ * const userRole = session.user.role; // e.g., "admin", "customer", "store", "cashier" etc.
  * ```
  *
  * @returns Promise<Session> The authenticated session
