@@ -1,463 +1,394 @@
 "use client";
 
-// app/customer/(customer)/budget-packs/subsidy-items/SubsidyItemsClient.tsx
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
   ArrowLeft, Search, Sparkles, ShieldCheck,
   ArrowUpDown, ArrowUp, ArrowDown, ChevronRight,
-  Package, Leaf, Milk, Apple, ShoppingBasket, Wheat, Fish, Beef, Cookie, Droplets,
-  Tag,
+  Package, Leaf, Milk, Apple, ShoppingBasket,
+  Wheat, Fish, Beef, Cookie, Droplets, FlameKindling,
+  Salad, Bean, Tag,
 } from "lucide-react";
 import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface Product {
+interface SubsidyItem {
   _id: string;
   name: string;
   category: string;
-  price: number;
-  stock: boolean;
-  subsidised: boolean;
-  images?: { url: string; fileId: string }[];
 }
 
-type SortOrder = "default" | "asc" | "desc";
+type SortOrder = "az" | "za" | "default";
 
-function formatPrice(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`;
-}
+// ─── Category config ──────────────────────────────────────────────────────────
 
-// ─── Category fallback stock images (stable Unsplash photo IDs) ───────────────
-// Format: https://images.unsplash.com/photo-{id}?w=300&h=220&fit=crop&auto=format&q=70
-
-const CATEGORY_FALLBACK_IMAGES: Record<string, string> = {
-  fruits:
-    "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=300&h=220&fit=crop&auto=format&q=70",
-  fruit:
-    "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=300&h=220&fit=crop&auto=format&q=70",
-  vegetables:
-    "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=300&h=220&fit=crop&auto=format&q=70",
-  vegetable:
-    "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=300&h=220&fit=crop&auto=format&q=70",
-  dairy:
-    "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=300&h=220&fit=crop&auto=format&q=70",
-  meat:
-    "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=300&h=220&fit=crop&auto=format&q=70",
-  seafood:
-    "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=300&h=220&fit=crop&auto=format&q=70",
-  fish:
-    "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=300&h=220&fit=crop&auto=format&q=70",
-  grains:
-    "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=220&fit=crop&auto=format&q=70",
-  grain:
-    "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=220&fit=crop&auto=format&q=70",
-  bakery:
-    "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&h=220&fit=crop&auto=format&q=70",
-  bread:
-    "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&h=220&fit=crop&auto=format&q=70",
-  beverages:
-    "https://images.unsplash.com/photo-1625772452859-1c03d884dcd7?w=300&h=220&fit=crop&auto=format&q=70",
-  beverage:
-    "https://images.unsplash.com/photo-1625772452859-1c03d884dcd7?w=300&h=220&fit=crop&auto=format&q=70",
-  drinks:
-    "https://images.unsplash.com/photo-1625772452859-1c03d884dcd7?w=300&h=220&fit=crop&auto=format&q=70",
-  snacks:
-    "https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=300&h=220&fit=crop&auto=format&q=70",
-  snack:
-    "https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=300&h=220&fit=crop&auto=format&q=70",
-  frozen:
-    "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=300&h=220&fit=crop&auto=format&q=70",
-  canned:
-    "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=300&h=220&fit=crop&auto=format&q=70",
-  condiments:
-    "https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=300&h=220&fit=crop&auto=format&q=70",
-  spices:
-    "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=300&h=220&fit=crop&auto=format&q=70",
-  herbs:
-    "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=300&h=220&fit=crop&auto=format&q=70",
-  eggs:
-    "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=300&h=220&fit=crop&auto=format&q=70",
-  nuts:
-    "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&h=220&fit=crop&auto=format&q=70",
-  oils:
-    "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=300&h=220&fit=crop&auto=format&q=70",
-  // generic grocery fallback
-  default:
-    "https://images.unsplash.com/photo-1542838132-92c53300491e?w=300&h=220&fit=crop&auto=format&q=70",
+const CATEGORY_CONFIG: Record<string, { icon: React.ReactNode; img: string }> = {
+  "oil & ghee": {
+    icon: <FlameKindling size={15} />,
+    img: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  "flour & atta": {
+    icon: <Wheat size={15} />,
+    img: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  fruits: {
+    icon: <Apple size={15} />,
+    img: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  vegetables: {
+    icon: <Leaf size={15} />,
+    img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  dairy: {
+    icon: <Milk size={15} />,
+    img: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  meat: {
+    icon: <Beef size={15} />,
+    img: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  seafood: {
+    icon: <Fish size={15} />,
+    img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  grains: {
+    icon: <Wheat size={15} />,
+    img: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  bakery: {
+    icon: <Cookie size={15} />,
+    img: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  beverages: {
+    icon: <Droplets size={15} />,
+    img: "https://images.unsplash.com/photo-1625772452859-1c03d884dcd7?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  snacks: {
+    icon: <Cookie size={15} />,
+    img: "https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  lentils: {
+    icon: <Bean size={15} />,
+    img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400&h=240&fit=crop&auto=format&q=75",
+  },
+  salads: {
+    icon: <Salad size={15} />,
+    img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=240&fit=crop&auto=format&q=75",
+  },
 };
 
-function getCategoryFallbackImage(category: string): string {
-  const lower = category.toLowerCase();
-  for (const [key, url] of Object.entries(CATEGORY_FALLBACK_IMAGES)) {
-    if (lower.includes(key)) return url;
-  }
-  return CATEGORY_FALLBACK_IMAGES.default;
-}
-
-// ─── Category Icon Map ────────────────────────────────────────────────────────
-
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  fruits:     <Apple size={14} />,
-  fruit:      <Apple size={14} />,
-  vegetables: <Leaf size={14} />,
-  vegetable:  <Leaf size={14} />,
-  dairy:      <Milk size={14} />,
-  meat:       <Beef size={14} />,
-  seafood:    <Fish size={14} />,
-  fish:       <Fish size={14} />,
-  grains:     <Wheat size={14} />,
-  grain:      <Wheat size={14} />,
-  bakery:     <Wheat size={14} />,
-  beverages:  <Droplets size={14} />,
-  beverage:   <Droplets size={14} />,
-  drinks:     <Droplets size={14} />,
-  snacks:     <Cookie size={14} />,
-  snack:      <Cookie size={14} />,
-};
-
-function getCategoryIcon(cat: string) {
+function getCategoryConfig(cat: string) {
   const lower = cat.toLowerCase();
-  for (const [key, icon] of Object.entries(CATEGORY_ICONS)) {
-    if (lower.includes(key)) return icon;
+  for (const [key, cfg] of Object.entries(CATEGORY_CONFIG)) {
+    if (lower.includes(key)) return cfg;
   }
-  return <ShoppingBasket size={14} />;
+  return {
+    icon: <ShoppingBasket size={15} />,
+    img: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=240&fit=crop&auto=format&q=75",
+  };
 }
 
-// ─── Item Card ────────────────────────────────────────────────────────────────
+// ─── Item Chip ────────────────────────────────────────────────────────────────
 
-function ItemCard({ item, index }: { item: Product; index: number }) {
-  const [visible, setVisible]       = useState(false);
-  const [imgErr, setImgErr]         = useState(false);
-  const [fallbackErr, setFbErr]     = useState(false);
-
-  // Priority: product image → category stock image → solid fallback bg
-  const hasProductImg = !imgErr && !!item.images?.[0]?.url;
-  const fallbackUrl   = getCategoryFallbackImage(item.category);
-  const imgSrc        = hasProductImg
-    ? item.images![0].url
-    : !fallbackErr ? fallbackUrl : null;
+function ItemChip({ name, index }: { name: string; index: number }) {
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 40 + index * 50);
+    const t = setTimeout(() => setVisible(true), index * 35);
     return () => clearTimeout(t);
   }, [index]);
 
   return (
-    <div style={{
-      width: 152,
-      flexShrink: 0,
-      borderRadius: "var(--radius)",
-      background: item.stock ? "var(--card)" : "var(--muted)",
-      border: "1.5px solid var(--border)",
-      overflow: "hidden",
-      opacity: visible ? (item.stock ? 1 : 0.45) : 0,
-      transform: visible ? "translateY(0) scale(1)" : "translateY(10px) scale(0.97)",
-      transition: "opacity 0.35s ease, transform 0.35s cubic-bezier(0.34,1.3,0.64,1)",
-      boxShadow: item.stock ? "var(--shadow-sm)" : "none",
-    }}>
-      {/* Image */}
-      <div style={{
-        width: "100%", height: 112,
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 7,
         background: "var(--secondary)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        position: "relative", overflow: "hidden",
+        border: "1px solid var(--border)",
+        borderRadius: 999,
+        padding: "6px 12px 6px 8px",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0) scale(1)" : "translateY(6px) scale(0.95)",
+        transition: "opacity 0.3s ease, transform 0.3s cubic-bezier(0.34,1.4,0.64,1)",
+      }}
+    >
+      <div style={{
+        width: 6, height: 6, borderRadius: "50%",
+        background: "var(--primary)", flexShrink: 0,
+      }} />
+      <span style={{
+        fontSize: 12, fontWeight: 500,
+        color: "var(--foreground)",
+        textTransform: "capitalize",
+        whiteSpace: "nowrap",
+        maxWidth: 200,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
       }}>
-        {imgSrc ? (
+        {name.toLowerCase()}
+      </span>
+    </div>
+  );
+}
+
+// ─── Category Card ────────────────────────────────────────────────────────────
+
+function CategoryCard({
+  category,
+  items,
+  sort,
+  index,
+}: {
+  category: string;
+  items: SubsidyItem[];
+  sort: SortOrder;
+  index: number;
+}) {
+  const [expanded, setExpanded]     = useState(true);
+  const [imgErr, setImgErr]         = useState(false);
+  const [cardVisible, setCardVisible] = useState(false);
+  const cfg = getCategoryConfig(category);
+
+  useEffect(() => {
+    const t = setTimeout(() => setCardVisible(true), 60 + index * 80);
+    return () => clearTimeout(t);
+  }, [index]);
+
+  const sorted = useMemo(() => {
+    const copy = [...items];
+    if (sort === "az") copy.sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === "za") copy.sort((a, b) => b.name.localeCompare(a.name));
+    return copy;
+  }, [items, sort]);
+
+  return (
+    <div
+      style={{
+        background: "var(--card)",
+        borderRadius: "var(--radius-lg)",
+        border: "1.5px solid var(--border)",
+        overflow: "hidden",
+        boxShadow: "var(--shadow-md)",
+        opacity: cardVisible ? 1 : 0,
+        transform: cardVisible ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.5s ease, transform 0.5s cubic-bezier(0.34,1.2,0.64,1)",
+      }}
+    >
+      {/* Image header */}
+      <div style={{ position: "relative", height: 100, overflow: "hidden" }}>
+        {!imgErr ? (
           <img
-            src={imgSrc}
-            alt={item.name}
-            onError={() => {
-              if (hasProductImg) setImgErr(true);
-              else setFbErr(true);
-            }}
+            src={cfg.img}
+            alt={category}
+            onError={() => setImgErr(true)}
             style={{
-              width: "100%", height: "100%", objectFit: "cover",
-              filter: item.stock ? "none" : "grayscale(0.7) opacity(0.5)",
+              width: "100%", height: "100%",
+              objectFit: "cover",
+              filter: "brightness(0.72) saturate(1.1)",
             }}
           />
         ) : (
-          // Final fallback: icon on tinted bg
           <div style={{
-            display: "flex", flexDirection: "column",
-            alignItems: "center", gap: 5,
-            color: "var(--muted-foreground)",
-          }}>
-            <Package size={26} strokeWidth={1.5} />
-          </div>
-        )}
-
-        {/* Subsidised badge */}
-        {item.stock && item.price > 0 && (
-          <div style={{
-            position: "absolute", top: 7, right: 7,
-            background: "var(--primary)",
-            borderRadius: 999, padding: "2px 7px",
-            display: "flex", alignItems: "center", gap: 3,
-          }}>
-            <Sparkles size={8} color="var(--primary-foreground)" />
-            <span style={{
-              fontSize: 9, color: "var(--primary-foreground)",
-              fontWeight: 700, letterSpacing: 0.3,
-            }}>Subsidised</span>
-          </div>
-        )}
-
-        {!item.stock && (
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "oklch(0.9719 0.0055 158.5966 / 0.65)",
+            width: "100%", height: "100%",
+            background: "var(--secondary)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <span style={{
-              fontSize: 10, color: "var(--muted-foreground)", fontWeight: 700,
-              background: "var(--card)", padding: "3px 9px",
-              borderRadius: "var(--radius-sm)", border: "1px solid var(--border)",
-            }}>Out of stock</span>
+            <Package size={32} strokeWidth={1.2} color="var(--muted-foreground)" />
           </div>
         )}
-      </div>
 
-      {/* Info */}
-      <div style={{ padding: "9px 10px 11px" }}>
+        {/* Gradient overlay */}
         <div style={{
-          fontWeight: 600, fontSize: 12,
-          color: item.stock ? "var(--foreground)" : "var(--muted-foreground)",
-          lineHeight: 1.35,
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-          marginBottom: 5,
-          textTransform: "capitalize",
-          minHeight: 32,
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to top, var(--card) 0%, transparent 60%)",
+        }} />
+
+        {/* Category label over image */}
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0,
+          padding: "10px 16px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          {item.name.toLowerCase()}
-        </div>
-
-        {item.stock && item.price > 0 ? (
-          <div style={{
-            fontWeight: 800, fontSize: 14,
-            color: "var(--primary)", letterSpacing: -0.4,
-          }}>
-            {formatPrice(item.price)}
-          </div>
-        ) : (
-          <span style={{ fontSize: 12, color: "var(--muted-foreground)" }}>—</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Category Row ─────────────────────────────────────────────────────────────
-
-function CategoryRow({ category, items, sort }: {
-  category: string; items: Product[]; sort: SortOrder;
-}) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canRight, setCanRight] = useState(false);
-
-  const sorted = [...items].sort((a, b) => {
-    if (sort === "asc")  return a.price - b.price;
-    if (sort === "desc") return b.price - a.price;
-    if (a.stock && !b.stock) return -1;
-    if (!a.stock && b.stock)  return 1;
-    return 0;
-  });
-
-  const inStock = items.filter(i => i.stock && i.price > 0).length;
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const check = () => setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-    check();
-    el.addEventListener("scroll", check);
-    window.addEventListener("resize", check);
-    return () => {
-      el.removeEventListener("scroll", check);
-      window.removeEventListener("resize", check);
-    };
-  }, [items]);
-
-  return (
-    <div style={{
-      background: "var(--card)",
-      borderRadius: "var(--radius-lg)",
-      border: "1.5px solid var(--border)",
-      overflow: "hidden",
-      boxShadow: "var(--shadow-sm)",
-    }}>
-      {/* Header */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "13px 18px 11px",
-        borderBottom: "1px solid var(--border)",
-        background: "var(--secondary)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: "var(--radius-sm)",
-            background: "var(--accent)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "var(--accent-foreground)",
-          }}>
-            {getCategoryIcon(category)}
-          </div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 14, color: "var(--foreground)" }}>
-              {category}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: "var(--radius-sm)",
+              background: "var(--primary)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--primary-foreground)",
+              flexShrink: 0,
+              boxShadow: "0 2px 8px oklch(0.6271 0.1699 149.2138 / 0.4)",
+            }}>
+              {cfg.icon}
             </div>
-            <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 1 }}>
-              {inStock} item{inStock !== 1 ? "s" : ""} available
+            <div>
+              <div style={{
+                fontWeight: 700, fontSize: 14,
+                color: "var(--foreground)", lineHeight: 1.2,
+              }}>
+                {category}
+              </div>
+              <div style={{
+                fontSize: 11, color: "var(--muted-foreground)", marginTop: 1,
+              }}>
+                {items.length} item{items.length !== 1 ? "s" : ""}
+              </div>
             </div>
           </div>
-        </div>
 
-        {canRight && (
           <button
-            onClick={() => scrollRef.current?.scrollBy({ left: 340, behavior: "smooth" })}
+            onClick={() => setExpanded(e => !e)}
             style={{
-              display: "flex", alignItems: "center", gap: 4,
-              background: "var(--accent)", border: "1px solid var(--border)",
-              borderRadius: "var(--radius-sm)", padding: "5px 10px",
-              fontWeight: 600, fontSize: 11,
-              color: "var(--accent-foreground)", cursor: "pointer",
-              transition: "all 0.15s",
+              width: 28, height: 28, borderRadius: "50%",
+              background: "var(--secondary)",
+              border: "1px solid var(--border)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", flexShrink: 0,
+              transition: "all 0.2s",
             }}
+            aria-label={expanded ? "Collapse" : "Expand"}
           >
-            More <ChevronRight size={12} />
+            <ChevronRight
+              size={13}
+              color="var(--muted-foreground)"
+              style={{
+                transition: "transform 0.25s ease",
+                transform: expanded ? "rotate(90deg)" : "rotate(0deg)",
+              }}
+            />
           </button>
-        )}
+        </div>
       </div>
 
-      {/* Scroll track */}
-      <div style={{ position: "relative" }}>
-        <div
-          ref={scrollRef}
-          className="no-scrollbar"
-          style={{
-            display: "flex", gap: 10,
-            overflowX: "auto", padding: "14px 18px 16px",
-          }}
-        >
+      {/* Items */}
+      {expanded && (
+        <div style={{
+          padding: "12px 16px 16px",
+          display: "flex", flexWrap: "wrap", gap: 7,
+          borderTop: "1px solid var(--border)",
+        }}>
           {sorted.map((item, i) => (
-            <ItemCard key={item._id} item={item} index={i} />
+            <ItemChip key={item._id} name={item.name} index={i} />
           ))}
         </div>
-
-        {canRight && (
-          <div style={{
-            position: "absolute", right: 0, top: 0, bottom: 0, width: 52,
-            background: "linear-gradient(to left, var(--card) 40%, transparent)",
-            pointerEvents: "none",
-          }} />
-        )}
-      </div>
+      )}
     </div>
   );
 }
 
-// ─── Fully Covered Banner ─────────────────────────────────────────────────────
+// ─── Banner ───────────────────────────────────────────────────────────────────
 
-function FullyCoveredBanner() {
+function SubsidyBanner({ total, cats }: { total: number; cats: number }) {
   return (
     <div style={{
       background: "var(--primary)",
       borderRadius: "var(--radius-lg)",
-      padding: "16px 20px",
-      display: "flex", alignItems: "flex-start", gap: 14,
-      boxShadow: "var(--shadow-md)",
-      position: "relative", overflow: "hidden",
+      padding: "20px 24px",
+      display: "grid",
+      gridTemplateColumns: "1fr auto",
+      alignItems: "center",
+      gap: 16,
+      boxShadow: "var(--shadow-lg)",
+      position: "relative",
+      overflow: "hidden",
     }}>
+      {/* decorative circles */}
       <div style={{
-        position: "absolute", right: -24, top: -24,
-        width: 96, height: 96, borderRadius: "50%",
-        background: "oklch(1 0 0 / 0.06)", pointerEvents: "none",
+        position: "absolute", right: -32, top: -32,
+        width: 110, height: 110, borderRadius: "50%",
+        background: "oklch(1 0 0 / 0.07)", pointerEvents: "none",
       }} />
       <div style={{
-        width: 40, height: 40, borderRadius: "var(--radius-sm)",
-        background: "oklch(1 0 0 / 0.12)",
-        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-      }}>
-        <ShieldCheck size={20} color="var(--primary-foreground)" />
-      </div>
-      <div>
-        <div style={{ fontWeight: 800, fontSize: 13, color: "var(--primary-foreground)", marginBottom: 4 }}>
-          Fruits, Vegetables &amp; Dairy — 100% subsidised
+        position: "absolute", right: 40, bottom: -40,
+        width: 80, height: 80, borderRadius: "50%",
+        background: "oklch(1 0 0 / 0.05)", pointerEvents: "none",
+      }} />
+
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+        <div style={{
+          width: 42, height: 42, borderRadius: "var(--radius-sm)",
+          background: "oklch(1 0 0 / 0.14)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+        }}>
+          <ShieldCheck size={21} color="var(--primary-foreground)" />
         </div>
-        <div style={{ fontSize: 13, color: "oklch(1 0 0 / 0.8)", lineHeight: 1.6 }}>
-          Every item in these sections is fully covered by your gift wallet credit. Shop freely.
+        <div>
+          <div style={{
+            fontWeight: 800, fontSize: 14,
+            color: "var(--primary-foreground)", marginBottom: 4,
+            letterSpacing: -0.3,
+          }}>
+            Your subsidy covers all items below
+          </div>
+          <div style={{
+            fontSize: 13, lineHeight: 1.6,
+            color: "oklch(1 0 0 / 0.75)",
+          }}>
+            Use your pack's free credit on any of these products at checkout.
+          </div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{
+        display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4,
+        flexShrink: 0,
+      }}>
+        <div style={{
+          fontWeight: 900, fontSize: 28,
+          color: "var(--primary-foreground)",
+          letterSpacing: -1, lineHeight: 1,
+        }}>{total}</div>
+        <div style={{
+          fontSize: 11, color: "oklch(1 0 0 / 0.65)",
+          fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5,
+        }}>
+          items · {cats} categories
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Sort Button ──────────────────────────────────────────────────────────────
+// ─── Sort Toggle ──────────────────────────────────────────────────────────────
 
-function SortButton({ sort, onChange }: { sort: SortOrder; onChange: (s: SortOrder) => void }) {
-  const cycle = () => {
-    if (sort === "default") onChange("asc");
-    else if (sort === "asc") onChange("desc");
-    else onChange("default");
-  };
-  const Icon  = sort === "asc" ? ArrowUp : sort === "desc" ? ArrowDown : ArrowUpDown;
-  const label = sort === "asc" ? "Low → High" : sort === "desc" ? "High → Low" : "Sort";
-  const active = sort !== "default";
+function SortToggle({ sort, onChange }: { sort: SortOrder; onChange: (s: SortOrder) => void }) {
+  const options: { value: SortOrder; label: string; icon: React.ReactNode }[] = [
+    { value: "default", label: "Default",   icon: <Tag size={12} /> },
+    { value: "az",      label: "A → Z",     icon: <ArrowUp size={12} /> },
+    { value: "za",      label: "Z → A",     icon: <ArrowDown size={12} /> },
+  ];
 
   return (
-    <button
-      onClick={cycle}
-      style={{
-        display: "flex", alignItems: "center", gap: 6,
-        background: active ? "var(--secondary)" : "var(--card)",
-        border: `1.5px solid ${active ? "var(--primary)" : "var(--border)"}`,
-        borderRadius: "var(--radius-sm)", padding: "9px 14px",
-        fontWeight: 600, fontSize: 13,
-        color: active ? "var(--primary)" : "var(--muted-foreground)",
-        cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap",
-      }}
-    >
-      <Icon size={14} />
-      {label}
-    </button>
-  );
-}
-
-// ─── Stats Bar ────────────────────────────────────────────────────────────────
-
-function StatsBar({ grouped, categoryKeys }: {
-  grouped: Record<string, Product[]>; categoryKeys: string[];
-}) {
-  const total   = Object.values(grouped).flat().length;
-  const inStock = Object.values(grouped).flat().filter(i => i.stock).length;
-  const cats    = categoryKeys.length;
-
-  return (
-    <div style={{ display: "flex", gap: 8 }}>
-      {([
-        { label: "Total items", value: `${total}+` },
-        { label: "In stock",    value: inStock },
-        { label: "Categories",  value: cats },
-      ] as const).map(s => (
-        <div key={s.label} style={{
-          flex: 1,
-          background: "var(--card)", border: "1.5px solid var(--border)",
-          borderRadius: "var(--radius)", padding: "10px 12px",
-          textAlign: "center", boxShadow: "var(--shadow-xs)",
-        }}>
-          <div style={{
-            fontWeight: 800, fontSize: 20,
-            color: "var(--primary)", letterSpacing: -0.6,
-          }}>{s.value}</div>
-          <div style={{
-            fontSize: 11, color: "var(--muted-foreground)",
-            fontWeight: 500, marginTop: 2,
-          }}>{s.label}</div>
-        </div>
+    <div style={{
+      display: "flex",
+      background: "var(--secondary)",
+      border: "1.5px solid var(--border)",
+      borderRadius: "var(--radius-sm)",
+      padding: 3, gap: 2,
+    }}>
+      {options.map(o => (
+        <button
+          key={o.value}
+          onClick={() => onChange(o.value)}
+          style={{
+            display: "flex", alignItems: "center", gap: 5,
+            padding: "6px 11px",
+            borderRadius: "calc(var(--radius-sm) - 2px)",
+            border: "none",
+            background: sort === o.value ? "var(--card)" : "transparent",
+            boxShadow: sort === o.value ? "var(--shadow-xs)" : "none",
+            color: sort === o.value ? "var(--primary)" : "var(--muted-foreground)",
+            fontWeight: sort === o.value ? 700 : 500,
+            fontSize: 12, cursor: "pointer",
+            transition: "all 0.2s",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {o.icon}
+          {o.label}
+        </button>
       ))}
     </div>
   );
@@ -465,131 +396,138 @@ function StatsBar({ grouped, categoryKeys }: {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export default function SubsidyItemsClient({
-  grouped,
-  categoryKeys,
-}: {
-  grouped: Record<string, Product[]>;
-  categoryKeys: string[];
-}) {
+export default function SubsidyItemsClient({ items }: { items: SubsidyItem[] }) {
   const [search, setSearch] = useState("");
   const [sort, setSort]     = useState<SortOrder>("default");
   const [ready, setReady]   = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setReady(true), 30);
+    const t = setTimeout(() => setReady(true), 40);
     return () => clearTimeout(t);
   }, []);
 
-  const q = search.toLowerCase();
+  // Group by category
+  const grouped = useMemo(() => {
+    const g: Record<string, SubsidyItem[]> = {};
+    for (const item of items) {
+      if (!g[item.category]) g[item.category] = [];
+      g[item.category].push(item);
+    }
+    return g;
+  }, [items]);
 
-  const filteredCategories = categoryKeys.filter(cat => {
-    if (!q) return true;
-    if (cat.toLowerCase().includes(q)) return true;
-    return grouped[cat].some(item => item.name.toLowerCase().includes(q));
-  });
+  const categoryKeys = useMemo(() => Object.keys(grouped).sort(), [grouped]);
 
-  const getItems = (cat: string) => {
+  const q = search.toLowerCase().trim();
+
+  const filteredKeys = useMemo(() => {
+    if (!q) return categoryKeys;
+    return categoryKeys.filter(cat => {
+      if (cat.toLowerCase().includes(q)) return true;
+      return grouped[cat].some(i => i.name.toLowerCase().includes(q));
+    });
+  }, [q, categoryKeys, grouped]);
+
+  const getItems = (cat: string): SubsidyItem[] => {
     if (!q) return grouped[cat];
-    return grouped[cat].filter(item =>
-      item.name.toLowerCase().includes(q) || cat.toLowerCase().includes(q)
+    return grouped[cat].filter(i =>
+      i.name.toLowerCase().includes(q) || cat.toLowerCase().includes(q)
     );
   };
 
   const fade = (delay = 0): React.CSSProperties => ({
     opacity: ready ? 1 : 0,
-    transform: ready ? "translateY(0)" : "translateY(12px)",
-    transition: `opacity 0.45s ease ${delay}s, transform 0.45s cubic-bezier(0.34,1.2,0.64,1) ${delay}s`,
+    transform: ready ? "translateY(0)" : "translateY(14px)",
+    transition: `opacity 0.5s ease ${delay}s, transform 0.5s cubic-bezier(0.34,1.2,0.64,1) ${delay}s`,
   });
 
   return (
     <main style={{
       minHeight: "100vh",
       background: "var(--background)",
-      maxWidth: 1060, margin: "0 auto",
-      padding: "28px 14px 72px",
+      maxWidth: 900, margin: "0 auto",
+      padding: "28px 16px 80px",
     }}>
 
       {/* Back */}
-      <div style={{ marginBottom: 28, ...fade(0) }}>
+      <div style={{ marginBottom: 24, ...fade(0) }}>
         <Link href="/customer/budget-packs" style={{ textDecoration: "none" }}>
           <button style={{
-            display: "flex", alignItems: "center", gap: 7,
+            display: "inline-flex", alignItems: "center", gap: 7,
             background: "var(--card)", border: "1.5px solid var(--border)",
-            borderRadius: "var(--radius-sm)", padding: "9px 16px",
+            borderRadius: "var(--radius-sm)", padding: "8px 15px",
             fontWeight: 600, fontSize: 13,
             color: "var(--foreground)", cursor: "pointer",
             boxShadow: "var(--shadow-xs)", transition: "all 0.2s",
           }}>
-            <ArrowLeft size={15} />
+            <ArrowLeft size={14} />
             Back to Packs
           </button>
         </Link>
       </div>
 
       {/* Hero */}
-      <div style={{ marginBottom: 26, ...fade(0.05) }}>
+      <div style={{ marginBottom: 22, ...fade(0.06) }}>
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 6,
           background: "var(--secondary)", border: "1px solid var(--border)",
-          borderRadius: 999, padding: "5px 14px", marginBottom: 14,
+          borderRadius: 999, padding: "4px 13px", marginBottom: 12,
         }}>
-          <Tag size={12} color="var(--primary)" />
+          <Sparkles size={11} color="var(--primary)" />
           <span style={{
-            fontWeight: 700, fontSize: 11,
+            fontWeight: 700, fontSize: 10,
             color: "var(--secondary-foreground)",
-            letterSpacing: 0.8, textTransform: "uppercase",
-          }}>Subsidised Items</span>
+            letterSpacing: 1, textTransform: "uppercase",
+          }}>Subsidy Programme</span>
         </div>
 
         <h1 style={{
-          fontWeight: 800, fontSize: "clamp(24px,4vw,36px)",
+          fontWeight: 800,
+          fontSize: "clamp(26px, 4vw, 38px)",
           color: "var(--foreground)",
-          margin: "0 0 10px", letterSpacing: -1, lineHeight: 1.1,
+          margin: "0 0 8px",
+          letterSpacing: -1.2, lineHeight: 1.05,
         }}>
-          All Subsidised Items
+          Subsidised Items
         </h1>
 
         <p style={{
           color: "var(--muted-foreground)",
-          fontSize: "clamp(13px,2vw,15px)",
-          margin: 0, maxWidth: 440, lineHeight: 1.7,
+          fontSize: 14, margin: 0,
+          maxWidth: 420, lineHeight: 1.7,
         }}>
-          Your gift wallet credit applies to everything listed below.
+          Every item listed here is eligible for your pack's free credit at checkout.
         </p>
       </div>
 
-      {/* Stats */}
-      <div style={{ marginBottom: 14, ...fade(0.1) }}>
-        <StatsBar grouped={grouped} categoryKeys={categoryKeys} />
-      </div>
-
       {/* Banner */}
-      <div style={{ marginBottom: 16, ...fade(0.13) }}>
-        <FullyCoveredBanner />
+      <div style={{ marginBottom: 18, ...fade(0.1) }}>
+        <SubsidyBanner total={items.length} cats={categoryKeys.length} />
       </div>
 
       {/* Search + Sort */}
       <div style={{
-        display: "flex", gap: 10, marginBottom: 18, flexWrap: "wrap",
-        ...fade(0.16),
+        display: "flex", gap: 10, marginBottom: 22,
+        flexWrap: "wrap", alignItems: "center",
+        ...fade(0.14),
       }}>
-        <div style={{ flex: 1, minWidth: 180, position: "relative" }}>
+        <div style={{ flex: 1, minWidth: 200, position: "relative" }}>
           <Search size={14} color="var(--muted-foreground)" style={{
             position: "absolute", left: 12, top: "50%",
             transform: "translateY(-50%)", pointerEvents: "none",
           }} />
           <input
-            placeholder="Search items or categories..."
+            placeholder="Search items or categories…"
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{
-              width: "100%", padding: "10px 14px 10px 35px",
+              width: "100%", padding: "10px 14px 10px 36px",
               borderRadius: "var(--radius-sm)",
               border: "1.5px solid var(--input)",
-              fontSize: 14, color: "var(--foreground)",
+              fontSize: 13, color: "var(--foreground)",
               background: "var(--card)", outline: "none",
               transition: "border-color 0.2s, box-shadow 0.2s",
+              boxSizing: "border-box",
             }}
             onFocus={e => {
               e.target.style.borderColor = "var(--ring)";
@@ -601,25 +539,43 @@ export default function SubsidyItemsClient({
             }}
           />
         </div>
-        <SortButton sort={sort} onChange={setSort} />
+        <SortToggle sort={sort} onChange={setSort} />
       </div>
 
-      {/* Empty */}
-      {filteredCategories.length === 0 && (
+      {/* Empty state */}
+      {filteredKeys.length === 0 && (
         <div style={{
-          textAlign: "center", padding: "60px 0",
-          color: "var(--muted-foreground)", fontSize: 15,
+          textAlign: "center", padding: "64px 0",
+          color: "var(--muted-foreground)",
         }}>
-          No items found for "<strong style={{ color: "var(--foreground)" }}>{search}</strong>"
+          <ShoppingBasket size={36} strokeWidth={1.2} style={{ marginBottom: 12, opacity: 0.4 }} />
+          <div style={{ fontSize: 15, fontWeight: 600, color: "var(--foreground)", marginBottom: 4 }}>
+            No results
+          </div>
+          <div style={{ fontSize: 13 }}>
+            Nothing matched "<strong style={{ color: "var(--foreground)" }}>{search}</strong>"
+          </div>
         </div>
       )}
 
-      {/* Rows */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {filteredCategories.map(cat => {
-          const items = getItems(cat);
-          if (!items.length) return null;
-          return <CategoryRow key={cat} category={cat} items={items} sort={sort} />;
+      {/* Category cards grid */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))",
+        gap: 14,
+      }}>
+        {filteredKeys.map((cat, i) => {
+          const catItems = getItems(cat);
+          if (!catItems.length) return null;
+          return (
+            <CategoryCard
+              key={cat}
+              category={cat}
+              items={catItems}
+              sort={sort}
+              index={i}
+            />
+          );
         })}
       </div>
 

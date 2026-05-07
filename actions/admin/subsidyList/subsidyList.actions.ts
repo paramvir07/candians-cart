@@ -14,14 +14,6 @@ import { formDataToObject } from "@/zod/validation/form";
 
 export const getSubsidisedList = async () => {
   try {
-    const session = await getUserSession();
-    if (
-      session.user.role !== "cashier" &&
-      session.user.role !== "store" &&
-      session.user.role !== "admin"
-    )
-      return { success: false, message: "Unauthorized", subsidisedList: [] };
-
     await dbConnect();
     const subsidisedList = await SubsidisedList.find().lean();
     return {
