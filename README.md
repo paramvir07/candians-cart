@@ -3,7 +3,7 @@
 Candian's cart is a grocery shopping app, designed to give people subsidy on products.
 
 Check out the website in action by visiting -:
-http://candian-cart.vercel.app/
+https://www.canadianscart.ca/
 
 # Testing to be implemented using **clinic.js**
 https://clinicjs.org/documentation/
