@@ -418,6 +418,7 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
                 <p className="text-xs text-muted-foreground mt-1 truncate">
                   {trimmed.email}
                 </p>
+                
               </div>
             </div>
 
@@ -433,6 +434,7 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
                     disabled
                     className="pl-10 h-11 rounded-xl border-border/40 bg-secondary/40 text-muted-foreground cursor-not-allowed"
                   />
+                  <Link className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] font-bold uppercase tracking-widest text-white bg-primary px-2 py-1 rounded-full" href={"/customer/change-email"}>Change email</Link>
                 </div>
               </div>
 
