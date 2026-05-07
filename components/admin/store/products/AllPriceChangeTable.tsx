@@ -39,6 +39,10 @@ import {
   Store,
   Trash2,
   AlertTriangle,
+  ArrowRight,
+  Check,
+  X,
+  ExternalLink,
 } from "lucide-react";
 
 // Assuming these actions exist in your codebase based on your instructions
@@ -46,7 +50,10 @@ import {
   resolvePriceChange,
   SerializedGlobalInvoiceWithChanges,
 } from "@/actions/admin/invoice/getPriceChange";
-import { deleteInvoice, getProductsLinkedToInvoice } from "@/actions/store/invoice/createInvoice";
+import {
+  deleteInvoice,
+  getProductsLinkedToInvoice,
+} from "@/actions/store/invoice/createInvoice";
 
 interface AllPriceChangesTableProps {
   invoices: SerializedGlobalInvoiceWithChanges[];
@@ -416,9 +423,180 @@ export default function AllPriceChangesTable({
         </DialogContent>
       </Dialog>
 
-      {/* REVIEW SHEET ... (Remains exactly the same as your original code) ... */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        {/* ... Keep the exact same Sheet content from your original snippet ... */}
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetContent className="w-full sm:max-w-2xl h-screen flex flex-col p-0">
+            {/* HEADER */}
+            <div className="p-6 pb-4 border-b">
+              <SheetHeader>
+                <SheetTitle>Review Global Price Changes</SheetTitle>
+                <SheetDescription>
+                  View, approve, or reject updates for{" "}
+                  <strong className="text-primary">
+                    {selectedInvoice?.store?.name}
+                  </strong>
+                  .
+                </SheetDescription>
+              </SheetHeader>
+            </div>
+
+            {/* CONTENT */}
+            {selectedInvoice && (
+              <div className="flex-1 overflow-hidden flex flex-col">
+                {/* META */}
+                <div className="p-6 pb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm bg-muted/50 p-4 rounded-lg">
+                    <div>
+                      <span className="text-muted-foreground">Vendor: </span>
+                      <span className="font-medium">
+                        {selectedInvoice.vendorName}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Invoice #: </span>
+                      <span className="font-medium">
+                        {selectedInvoice.InvoiceNumber}
+                      </span>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <Button
+                        asChild
+                        variant="secondary"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                      >
+                        {/* Using a standard <a> tag here just in case the URL needs external routing */}
+                        <a
+                          href={selectedInvoice.documentId.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Open Full Invoice Document
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* PRODUCTS (SCROLL AREA) */}
+                <div className="flex-1 overflow-y-auto px-6 pb-6 no-scrollbar">
+                  <div className="space-y-3">
+                    {selectedInvoice.products.map((log) => {
+                      const isNewProduct = typeof log.oldPrice !== "number";
+                      const productName =
+                        log.productId?.name || "Deleted Product";
+                      // Ensure the nested structure for images exists before trying to access url
+                      const productImageUrl = log.productId?.images?.[0]?.url;
+
+                      return (
+                        <div
+                          key={log._id}
+                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-card gap-4"
+                        >
+                          {/* LEFT */}
+                          <div className="flex items-center gap-4 w-full sm:w-auto">
+                            {productImageUrl ? (
+                              <div className="relative w-12 h-12 rounded-md overflow-hidden border shrink-0">
+                                <img
+                                  src={productImageUrl}
+                                  alt={productName}
+                                  className="object-cover w-full h-full"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center text-xs shrink-0">
+                                No Img
+                              </div>
+                            )}
+
+                            <div>
+                              <p className="font-medium">{productName}</p>
+
+                              <div className="flex items-center gap-2 mt-1 text-sm flex-wrap">
+                                {isNewProduct ? (
+                                  <Badge className="bg-green-50 text-green-700">
+                                    New Product
+                                  </Badge>
+                                ) : (
+                                  <span className="line-through text-muted-foreground">
+                                    {formatPrice(log.oldPrice)}
+                                  </span>
+                                )}
+
+                                {!isNewProduct && (
+                                  <ArrowRight className="w-4 h-4" />
+                                )}
+
+                                <span className="font-semibold text-primary">
+                                  {formatPrice(log.newPrice)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* ACTIONS */}
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                            {log.status === "PENDING" ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="w-full sm:w-auto text-red-600 hover:bg-red-50"
+                                  disabled={isPending}
+                                  onClick={() =>
+                                    handleResolve(
+                                      selectedInvoice._id,
+                                      log._id,
+                                      "REJECTED",
+                                    )
+                                  }
+                                >
+                                  <X className="w-4 h-4 mr-1" /> Reject
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+                                  disabled={isPending}
+                                  onClick={() =>
+                                    handleResolve(
+                                      selectedInvoice._id,
+                                      log._id,
+                                      "APPROVED",
+                                    )
+                                  }
+                                >
+                                  {isPending ? (
+                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                  ) : (
+                                    <Check className="w-4 h-4 mr-1" />
+                                  )}
+                                  Approve
+                                </Button>
+                              </>
+                            ) : (
+                              <Badge
+                                className={
+                                  log.status === "APPROVED"
+                                    ? "bg-green-600 text-white"
+                                    : "bg-gray-200 text-gray-700"
+                                }
+                              >
+                                {log.status}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </SheetContent>
+        </Sheet>
       </Sheet>
     </>
   );
