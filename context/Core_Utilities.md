@@ -1,6 +1,6 @@
 # Core Utilities & Developer Ergonomics (Auth, Errors, Roles)
 
-This document outlines the foundational utilities for validation, session handling, and role-based access in **Candian Cart**. These patterns are standardized across the app to reduce boilerplate, ensure type safety, and prevent redundant security checks.
+This document outlines the foundational utilities for validation, session handling, and role-based access in **Candian's Cart**. These patterns are standardized across the app to reduce boilerplate, ensure type safety, and prevent redundant security checks.
 
 ## 1. Automated Session Handling (`getUserSession`)
 
@@ -47,7 +47,7 @@ const validPayload = validationResult.data;
 
 ## 3. Implicit Role-Based Access (`lib/auth/roles.ts`)
 
-Candian Cart operates on a strict multi-tenant role system: `admin`, `store`, `cashier`, and `customer`. 
+Candian's Cart operates on a strict multi-tenant role system: `admin`, `store`, `cashier`, and `customer`. 
 
 Role enforcement is handled *implicitly* at the query level to prevent data leaks. Instead of just returning unauthorized errors, the system actively overrides query targets based on the user's role.
 

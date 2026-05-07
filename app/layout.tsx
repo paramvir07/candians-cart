@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || "https://www.canadianscart.ca",
   ),
+  alternates: {
+    canonical: "https://www.canadianscart.ca",
+  },
   title: {
     default: "Candian's Cart | Smart grocery shopping for families",
     template: "%s | Candian's Cart",
@@ -77,7 +80,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-}; // <-- THIS was missing
+};
 
 export default function RootLayout({
   children,

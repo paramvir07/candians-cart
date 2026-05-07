@@ -1,6 +1,6 @@
 # Complex Form Submission & UI Pipeline (Validation, Images, & Duplicates)
 
-This document outlines how **Candian Cart** handles complex data entry (like adding or editing products). Because product creation involves file uploads (images), complex types (numbers, booleans, ObjectIds), and database checks, we use a strict, phased pipeline.
+This document outlines how **Candian's Cart** handles complex data entry (like adding or editing products). Because product creation involves file uploads (images), complex types (numbers, booleans, ObjectIds), and database checks, we use a strict, phased pipeline.
 
 This pipeline prevents "orphaned files" (uploading an image to ImageKit but the database save fails) and protects the user from losing their form state.
 

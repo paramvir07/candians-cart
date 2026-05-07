@@ -11,7 +11,7 @@ import Store from "@/db/models/store/store.model";
 import { StoreDocument } from "@/types/store/store";
 
 export const metadata: Metadata = {
-  title: "Home | Candian Cart",
+  title: "Home | Candian's Cart",
   description: "Browse our fresh selection of groceries, exclusive subsidized items, and everyday essentials.",
 };
 
@@ -36,7 +36,7 @@ export default async function CustomerPage() {
           <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 max-w-md shadow-sm">
             <h3 className="font-bold text-lg mb-2">Unable to Load Store</h3>
             <p className="text-sm text-red-500">
-              {storeResponse.error || "Please verify your account matches a registered Candian Cart store."}
+              {storeResponse.error || "Please verify your account matches a registered Candian's Cart store."}
             </p>
           </div>
         </div>

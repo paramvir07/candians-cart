@@ -24,7 +24,7 @@ export interface PaginatedProductsResponse {
 }
 
 /**
- * Highly optimized caching layer for Candian Cart products.
+ * Highly optimized caching layer for Candian's Cart products.
  * Uses next/cache unstable_cache to persist results across requests.
  * Executes query and count in parallel to eliminate waterfalls.
  */

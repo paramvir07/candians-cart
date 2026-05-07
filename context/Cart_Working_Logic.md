@@ -1,6 +1,6 @@
 # Cart Working Logic (State, Limits & DB Syncing)
 
-This document outlines how **Candian Cart** manages the customer shopping experience. Because the platform includes complex business rules—like tying customers to specific stores and enforcing subsidy limits—the cart logic uses a synchronized approach between Client-Side global state (Atoms) and Server-Side persistence (MongoDB).
+This document outlines how **Candian's Cart** manages the customer shopping experience. Because the platform includes complex business rules—like tying customers to specific stores and enforcing subsidy limits—the cart logic uses a synchronized approach between Client-Side global state (Atoms) and Server-Side persistence (MongoDB).
 
 ## 1. Cart Isolation & Database Model (`cart.model.ts`)
 

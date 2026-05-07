@@ -1,6 +1,6 @@
 # Order Working Logic & Stripe Checkout
 
-This document outlines how **Candian Cart** handles the transition from a user's shopping cart to a finalized order, ensures historical data integrity, and securely processes payments using Stripe.
+This document outlines how **Candian's Cart** handles the transition from a user's shopping cart to a finalized order, ensures historical data integrity, and securely processes payments using Stripe.
 
 ## 1. Point-in-Time Pricing Locks (`Orders.Model.ts`)
 
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
         {
           price_data: {
             currency: "cad",
-            product_data: { name: "Candian Cart Order" },
+            product_data: { name: "Candian's Cart Order" },
             unit_amount: amount, // In cents
           },
           quantity: 1,

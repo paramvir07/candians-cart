@@ -1,4 +1,4 @@
-# Candian Cart
+# Candian's Cart
 
 Candian's cart is a grocery shopping app, designed to give people subsidy on products.
 
