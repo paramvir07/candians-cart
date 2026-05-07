@@ -389,7 +389,7 @@ function FullyCoveredBanner() {
           Fruits, Vegetables &amp; Dairy — 100% subsidised
         </div>
         <div style={{ fontSize: 13, color: "oklch(1 0 0 / 0.8)", lineHeight: 1.6 }}>
-          Every item in these sections is fully covered by your free credit. Shop freely.
+          Every item in these sections is fully covered by your gift wallet credit. Shop freely.
         </div>
       </div>
     </div>
@@ -539,7 +539,7 @@ export default function SubsidyItemsClient({
             fontWeight: 700, fontSize: 11,
             color: "var(--secondary-foreground)",
             letterSpacing: 0.8, textTransform: "uppercase",
-          }}>Free Credit Items</span>
+          }}>Subsidised Items</span>
         </div>
 
         <h1 style={{
@@ -555,7 +555,7 @@ export default function SubsidyItemsClient({
           fontSize: "clamp(13px,2vw,15px)",
           margin: 0, maxWidth: 440, lineHeight: 1.7,
         }}>
-          Your pack's free credit applies to everything listed below.
+          Your gift wallet credit applies to everything listed below.
         </p>
       </div>
 
