@@ -527,7 +527,7 @@ export default function FeaturesSection() {
                   margin: 0,
                 }}
               >
-                Families save 30% on subsidised pricing every month.
+                Families save upto 30% every month.
               </p>
             </div>
           </div>

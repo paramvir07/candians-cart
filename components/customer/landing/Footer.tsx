@@ -10,15 +10,17 @@ const LINKS = {
   ],
   Account: [
     { label: "My Profile", href: "/customer/profile" },
-    { label: "Order History", href: "/customer/orders" },
+    { label: "Budget Packs", href: "/customer/budget-packs" },
     { label: "My Wallet", href: "/customer/wallet" },
+    { label: "Order History", href: "/customer/orders" },
     { label: "Edit Profile", href: "/customer/profile/edit" },
-    { label: "Change Password", href: "/customer/chnage-password" },
+    { label: "Change Password", href: "/customer/change-password" },
   ],
   Company: [
     { label: "About Us", href: "/about" },
     { label: "Contact", href: "/contact" },
     { label: "Terms and Conditions", href: "/terms-and-conditions" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
   ],
 };
 

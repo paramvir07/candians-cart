@@ -26,6 +26,7 @@ const FOOTER_LINKS: Record<
     { label: "Contact Us", href: "/contact" },
     { label: "FAQ", href: "/#faq", scrollTo: "faq", scrollPage: "/" },
     { label: "Terms and conditions", href: "/terms-and-conditions" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
   ],
   Tools: [
     {

@@ -31,67 +31,83 @@ type FAQItem = {
 const faqItems: FAQItem[] = [
   {
     id: "item-1",
-    icon: <UserPlus size={16} strokeWidth={1.75} />,
-    question: "How do I create an account?",
+    icon: <PiggyBank size={16} strokeWidth={1.75} />,
+    question: "How do I save money with this app?",
     answer:
-      "Tap Sign Up, choose your city, and select your store. Then enter your details and referral code. After you verify your email, your account will be ready to use. Your selected store cannot be changed later.",
-    tag: "Account",
-  },
-  {
-    id: "item-2",
-    icon: <BadgePercent size={16} strokeWidth={1.75} />,
-    question: "Which items are subsidized",
-    answer:
-      "Milk, vegetables, fruits, and some daily grocery subsidized on which the credits can be used.",
+      "You save money by using credits on subsidized items. When your order has at least C$21 of regular items before tax, the app shows credits you can use. The more money you spend on regular items, the more credits you can receive. You can use those credits right away on subsidized items in the same order, or save them in your Gift Wallet for later. When you use credits, your total becomes lower and you pay less at the store.",
     tag: "Savings",
   },
   {
-    id: "item-3",
-    icon: <ShoppingCart size={16} strokeWidth={1.75} />,
-    question: "How does ordering work?",
-    answer:
-      "Add items to your cart and go to checkout. You can use your credits to lower the price, or save them for later. Then press Pay at Store to place the order.",
-    tag: "Orders",
-  },
-  {
-    id: "item-4",
-    icon: <Coins size={16} strokeWidth={1.75} />,
-    question: "What are credits?",
-    answer:
-      "Credits are reward money you earn from orders. You can use them to pay less for subsidized items.",
-    tag: "Credits",
-  },
-  {
-    id: "item-5",
+    id: "item-2",
     icon: <Wallet size={16} strokeWidth={1.75} />,
     question: "How do I earn credits?",
     answer:
-      "Place an order with at least C$21 of regular items before tax. After the order is completed, credits will be added to your wallet automatically.",
+      "You earn credits when your order has at least C$21 of regular items before tax. Regular items are items that are not subsidized. Once your order reaches C$21 before tax, the app shows the credits you can receive. If you spend more on regular items, your credits can also increase.",
     tag: "Rewards",
   },
   {
-    id: "item-6",
+    id: "item-3",
+    icon: <Coins size={16} strokeWidth={1.75} />,
+    question: "What are credits?",
+    answer:
+      "Credits are like reward money in the app. They help you pay less for subsidized items. You receive credits based on how much you spend on regular items. You can use credits right away when they are shown in your order, or keep them saved in your Gift Wallet for a future order.",
+    tag: "Credits",
+  },
+  {
+    id: "item-4",
+    icon: <BadgePercent size={16} strokeWidth={1.75} />,
+    question: "Which items can I use credits on?",
+    answer:
+      "Credits can be used only on subsidized items. These are special items where you can pay less using credits. Subsidized items may include milk, vegetables, fruits, and selected daily grocery items.",
+    tag: "Savings",
+  },
+  {
+    id: "item-5",
     icon: <Store size={16} strokeWidth={1.75} />,
     question: "Where can I use my credits?",
     answer:
-      "You can use your credits on subsidized items to reduce the total price.",
+      "You can use your credits at your selected store on subsidized items only. Credits do not work on every item. They only work on items that are marked as subsidized.",
     tag: "Credits",
+  },
+  {
+    id: "item-6",
+    icon: <ShoppingCart size={16} strokeWidth={1.75} />,
+    question: "Can I order from the app or shop in store?",
+    answer:
+      "Yes. You can shop in two ways. You can add items to your cart in the app and tap Pay at Store to place your order. You can also go directly to your selected store and shop like regular grocery shopping. At checkout, the cashier can scan your ID and place the order for you.",
+    tag: "Orders",
   },
   {
     id: "item-7",
     icon: <PackageCheck size={16} strokeWidth={1.75} />,
-    question: "How do I place an order?",
+    question: "How do I place an order from the app?",
     answer:
-      "Choose the items you want, add them to your cart, and checkout. You can use your credits or save them for later. Then press Pay at Store.",
+      "Choose the items you want and add them to your cart. At checkout, the app shows any credits you can use on subsidized items. If you use credits, your price becomes lower. If you do not use your credits, they will stay saved in your Gift Wallet for later. Then tap Pay at Store and pay when you visit the store.",
     tag: "Orders",
   },
   {
     id: "item-8",
-    icon: <PiggyBank size={16} strokeWidth={1.75} />,
-    question: "What happens if I don’t use my credits?",
+    icon: <Store size={16} strokeWidth={1.75} />,
+    question: "Can I shop directly at the store?",
     answer:
-      "Your credits stay safely in your wallet and can be used on future orders.",
-    tag: "Wallet",
+      "Yes. You can go directly to your selected store and shop like you normally do for groceries. At checkout, the cashier can scan your ID and place the order for you. If you have credits in your Gift Wallet, they can be used on subsidized items.",
+    tag: "Store",
+  },
+  {
+    id: "item-9",
+    icon: <PiggyBank size={16} strokeWidth={1.75} />,
+    question: "What happens if I do not use my credits?",
+    answer:
+      "Your credits do not disappear. If you do not use them, they stay safely saved in your Gift Wallet. You can use them later on future orders when you buy subsidized items.",
+    tag: "Gift Wallet",
+  },
+  {
+    id: "item-10",
+    icon: <UserPlus size={16} strokeWidth={1.75} />,
+    question: "How do I create an account?",
+    answer:
+      "Tap Sign Up and choose your city. Then select the store you want to shop from, enter your details, and add your referral code if you have one. After you verify your email, your account will be ready. Please choose your store carefully because it cannot be changed later.",
+    tag: "Account",
   },
 ];
 
