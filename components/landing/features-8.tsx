@@ -731,7 +731,7 @@ export default function FeaturesSection() {
                     your phone.
                   </p>
                 </div>
-                <div
+                {/* <div
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -743,7 +743,7 @@ export default function FeaturesSection() {
                   }}
                 >
                   Browse store <ArrowRight size={13} />
-                </div>
+                </div> */}
               </div>
 
               {/* Mock browser */}
@@ -810,7 +810,7 @@ export default function FeaturesSection() {
                       textOverflow: "ellipsis",
                     }}
                   >
-                    candianscart.ca · store
+                    canadianscart.ca · store
                   </div>
                 </div>
                 {/* Items */}

@@ -6,29 +6,29 @@ import Logo from "../shared/Logo";
 
 const TABS = [
   { icon: "🛒", label: "Order Online" },
-  { icon: "💸", label: "Save 30%" },
+  { icon: "💸", label: "Save Upto 30%" },
   { icon: "🌾", label: "Fresh Produce" },
 ];
 
 const ORDER_ITEMS = [
-  { emoji: "🌾", name: "Sher Atta 20lb",    was: "$18.90", now: "$14.93", save: "21%" },
-  { emoji: "🍚", name: "Basmati Rice 1kg", was: "$4.58", now: "$3.62", save: "21%" },
-  { emoji: "🍞", name: "White Bread 480g", was: "$3.36",  now: "$2.65",  save: "21%" },
-  { emoji: "🍫", name: "Dairy Milk 38g",     was: "$1.15",  now: "$0.91",  save: "21%" },
+  { emoji: "🌾", name: "Sher Atta 20lb",    was: "$18.90", now: "$14.93", save: "30%" },
+  { emoji: "🍚", name: "Basmati Rice 1kg", was: "$4.58", now: "$3.62", save: "30%" },
+  { emoji: "🍞", name: "White Bread 480g", was: "$3.36",  now: "$2.65",  save: "30%" },
+  { emoji: "🍫", name: "Dairy Milk 38g",     was: "$1.15",  now: "$0.91",  save: "30%" },
 ];
 
 const PRODUCE_ITEMS = [
-  { emoji: "🍅", name: "Roma Tomatoes 2lb",  was: "$3.99",  now: "$3.15",  save: "21%" },
-  { emoji: "🧅", name: "Yellow Onions 50lb",      was: "$45.90",  now: "$36.26",  save: "21%" },
-  { emoji: "🥕", name: "Baby Carrots 1kg",   was: "$3.49",  now: "2.76",  save: "21%" },
-  { emoji: "🌽", name: "Sweet Corn 4-pack",  was: "$4.99",  now: "$3.94",  save: "21%" },
+  { emoji: "🍅", name: "Roma Tomatoes 2lb",  was: "$3.99",  now: "$3.15",  save: "30%" },
+  { emoji: "🧅", name: "Yellow Onions 50lb",      was: "$45.90",  now: "$36.26",  save: "30%" },
+  { emoji: "🥕", name: "Baby Carrots 1kg",   was: "$3.49",  now: "2.76",  save: "30%" },
+  { emoji: "🌽", name: "Sweet Corn 4-pack",  was: "$4.99",  now: "$3.94",  save: "30%" },
 ];
 
 const SAVINGS_ITEMS = [
-  { emoji: "🛢️", name: "Canola Oil 16l",    was: "$53.72", now: "$42.43", save: "21%", highlight: true },
-  { emoji: "🍚", name: "Maggi Masala Noodles 280g", was: "$2.03", now: "$1.60", save: "21%", highlight: true },
-  { emoji: "🧅", name: "Yellow Onions 5lb", was: "$4.49",  now: "$3.55",  save: "21%", highlight: true },
-  { emoji: "🥛", name: "MDH Chana Masala 500g",     was: "$9.44",  now: "$7.46",  save: "21%", highlight: true },
+  { emoji: "🛢️", name: "Canola Oil 16l",    was: "$53.72", now: "$42.43", save: "30%", highlight: true },
+  { emoji: "🍚", name: "Maggi Masala Noodles 280g", was: "$2.03", now: "$1.60", save: "30%", highlight: true },
+  { emoji: "🧅", name: "Yellow Onions 5lb", was: "$4.49",  now: "$3.55",  save: "30%", highlight: true },
+  { emoji: "🥛", name: "MDH Chana Masala 500g",     was: "$9.44",  now: "$7.46",  save: "30%", highlight: true },
 ];
 
 interface HeroSectionProps {
@@ -75,8 +75,8 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
 
   const savingsBanner = isSavings ? "$55.04 saved" : "$22.91 saved";
   const savingsDesc = isSavings
-    ? "Total savings this month · 21% avg off"
-    : "On your 4-item cart · 21% avg off";
+    ? "Total savings this month · Upto 30% off"
+    : "On your 4-item cart · Upto 30% off";
 
   return (
     <div className="min-h-screen w-full bg-white relative overflow-hidden">
@@ -256,7 +256,7 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
                 <span className="w-2.5 h-2.5 rounded-full bg-yellow-300" />
                 <span className="w-2.5 h-2.5 rounded-full bg-green-300" />
                 <div className="flex-1 mx-3 bg-white border border-stone-200 rounded-md px-3 py-1 text-xs text-stone-400 text-center truncate">
-                  candianscart.ca · {isProduce ? "fresh produce" : "your cart"}
+                  canadianscart.ca · {isProduce ? "fresh produce" : "your cart"}
                 </div>
               </div>
 
@@ -323,7 +323,7 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
                           className="text-xs font-bold rounded-full px-2 py-0.5 w-fit"
                           style={{ background: isSavings ? "#dcfce7" : "#f0fdf4", color: isSavings ? "#15803d" : "#16a34a" }}
                         >
-                          Save {item.save}
+                          Save upto {item.save}
                         </span>
                       </div>
                     ))}

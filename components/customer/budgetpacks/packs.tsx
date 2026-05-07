@@ -993,8 +993,8 @@ export default function BudgetPacks() {
             fontSize: "clamp(14px,2vw,16px)", margin: "0 auto 16px",
             maxWidth: 540, lineHeight: 1.7,
           }}>
-            Pay for a grocery pack and get an instant{" "}
-            <span className="savings-pill">21% back</span>
+            Pay for a grocery pack and get upto {" "}
+            <span className="savings-pill">30% back</span>
             {" "}as free groceries on top. Unused credit boosts your spending power automatically.
           </p>
 

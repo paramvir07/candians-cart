@@ -293,7 +293,7 @@ function PackCard({
         >
           {[
             ["Retail total", `$${pack.retailPrice.toFixed(2)}`, false],
-            ["Subsidy (21%)", `− $${subsidy.toFixed(2)}`, true],
+            ["Subsidy", `− $${subsidy.toFixed(2)}`, true],
           ].map(([label, val, green]) => (
             <div
               key={label as string}
@@ -443,7 +443,7 @@ export default function PacksSection() {
               margin: "0 0 10px",
             }}
           >
-            Groceries that cost{" "}
+            Groceries that cost upto {" "}
             <span style={{ color: "#16a34a" }}>30% less.</span> Guaranteed.
           </h2>
           <p
