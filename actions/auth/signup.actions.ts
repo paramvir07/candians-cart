@@ -33,6 +33,32 @@ export const signupAction = async (
       }
 
       const data = result.data;
+      if (data.province !== "BC") {
+        return { success: false, message: "Province must be BC" };
+      }
+
+      const allowedCities = [
+        "Vancouver",
+        "Burnaby",
+        "New Westminster",
+        "Coquitlam",
+        "Port Coquitlam",
+        "Port Moody",
+        "Surrey",
+        "Delta",
+        "Langley",
+        "Maple Ridge",
+        "Pitt Meadows",
+        "Abbotsford",
+        "Mission",
+        "Chilliwack",
+        "Agassiz",
+        "Hope",
+      ];
+
+      if (!allowedCities.includes(data.city)) {
+        return { success: false, message: "Invalid city selected" };
+      }
       await dbConnect();
 
       // Validate referral code before starting the transaction
@@ -87,7 +113,7 @@ export const signupAction = async (
               address: data.address,
               city: data.city,
               province: data.province,
-              monthlyBudget: data.monthlyBudget*100,
+              monthlyBudget: data.monthlyBudget * 100,
               associatedStoreId: data.associatedStore,
               referralCode: data.referralCode,
             },
@@ -128,12 +154,11 @@ export const signupAction = async (
       } finally {
         session.endSession();
       }
-    return {
-      success: true,
-      message:
-        "Your account has been created. We’ve sent a verification link to your email. Please verify your email and then log in.",
-    };
-
+      return {
+        success: true,
+        message:
+          "Your account has been created. We’ve sent a verification link to your email. Please verify your email and then log in.",
+      };
     } else if (userRole === "store") {
       const session = await getUserSession();
       const adminRole = session.user.role === "admin";
@@ -169,12 +194,11 @@ export const signupAction = async (
         mobile: data.mobile,
         address: data.address,
       });
-    return {
-      success: true,
-      message:
-        "Store account created successfully. The user can now verify their email and log in using the provided credentials.",
-    };
-
+      return {
+        success: true,
+        message:
+          "Store account created successfully. The user can now verify their email and log in using the provided credentials.",
+      };
     } else if (userRole === "cashier") {
       const session = await getUserSession();
       const adminRole = session.user.role === "admin";
@@ -239,7 +263,11 @@ export const signupAction = async (
           role: "admin",
         },
       });
-      return { success: true, message: "Admin account created successfully. The user can now verify their email and log in using the provided credentials." };
+      return {
+        success: true,
+        message:
+          "Admin account created successfully. The user can now verify their email and log in using the provided credentials.",
+      };
     } else {
       return {
         success: false,

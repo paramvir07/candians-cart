@@ -12,6 +12,15 @@ import { formDataToObject } from "@/zod/validation/form";
 
 // ─── GET ────────────────────────────────────────────────────────────────────
 
+const isDuplicateSubsidyItemError = (error: unknown) => {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === 11000
+  );
+};
+
 export const getSubsidisedList = async () => {
   try {
     await dbConnect();
@@ -44,6 +53,7 @@ export const createSubsidyListItemAction = async (
 
     const rawData = formDataToObject(formData);
     const result = createSubsidyListItemSchema.safeParse(rawData);
+
     if (!result.success)
       return {
         success: false,
@@ -51,13 +61,23 @@ export const createSubsidyListItemAction = async (
       };
 
     await dbConnect();
+
     await SubsidisedList.create({
       name: result.data.name,
       category: result.data.category,
     });
+
     return { success: true, message: "Subsidy item created successfully" };
   } catch (error) {
     console.error("Error creating subsidy item:", error);
+
+    if (isDuplicateSubsidyItemError(error)) {
+      return {
+        success: false,
+        message: "This product has already been added to this category.",
+      };
+    }
+
     return {
       success: false,
       message: "Something went wrong while creating subsidy item",
@@ -78,6 +98,7 @@ export const updateSubsidyListItemAction = async (
 
     const rawData = formDataToObject(formData);
     const result = updateSubsidyListItemSchema.safeParse(rawData);
+
     if (!result.success)
       return {
         success: false,
@@ -85,15 +106,34 @@ export const updateSubsidyListItemAction = async (
       };
 
     await dbConnect();
+
     const updated = await SubsidisedList.findByIdAndUpdate(
       result.data.id,
-      { name: result.data.name, category: result.data.category },
-      { returnDocument: "after" },
+      {
+        name: result.data.name,
+        category: result.data.category,
+      },
+      {
+        returnDocument: "after",
+        runValidators: true,
+      },
     );
-    if (!updated) return { success: false, message: "Item not found" };
+
+    if (!updated) {
+      return { success: false, message: "Item not found" };
+    }
+
     return { success: true, message: "Subsidy item updated successfully" };
   } catch (error) {
     console.error("Error updating subsidy item:", error);
+
+    if (isDuplicateSubsidyItemError(error)) {
+      return {
+        success: false,
+        message: "This product has already been added to this category.",
+      };
+    }
+
     return {
       success: false,
       message: "Something went wrong while updating subsidy item",
