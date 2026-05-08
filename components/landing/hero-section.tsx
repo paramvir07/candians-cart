@@ -6,29 +6,105 @@ import Logo from "../shared/Logo";
 
 const TABS = [
   { icon: "🛒", label: "Order Online" },
-  { icon: "💸", label: "Save Upto 30%" },
+  { icon: "💸", label: "Save up to 30%" },
   { icon: "🌾", label: "Fresh Produce" },
 ];
 
 const ORDER_ITEMS = [
-  { emoji: "🌾", name: "Sher Atta 20lb",    was: "$18.90", now: "$14.93", save: "30%" },
-  { emoji: "🍚", name: "Basmati Rice 1kg", was: "$4.58", now: "$3.62", save: "30%" },
-  { emoji: "🍞", name: "White Bread 480g", was: "$3.36",  now: "$2.65",  save: "30%" },
-  { emoji: "🍫", name: "Dairy Milk 38g",     was: "$1.15",  now: "$0.91",  save: "30%" },
+  {
+    emoji: "🌾",
+    name: "Sher Atta 20lb",
+    was: "$18.90",
+    now: "$14.93",
+    save: "30%",
+  },
+  {
+    emoji: "🍚",
+    name: "Basmati Rice 1kg",
+    was: "$4.58",
+    now: "$3.62",
+    save: "30%",
+  },
+  {
+    emoji: "🍞",
+    name: "White Bread 480g",
+    was: "$3.36",
+    now: "$2.65",
+    save: "30%",
+  },
+  {
+    emoji: "🍫",
+    name: "Dairy Milk 38g",
+    was: "$1.15",
+    now: "$0.91",
+    save: "30%",
+  },
 ];
 
 const PRODUCE_ITEMS = [
-  { emoji: "🍅", name: "Roma Tomatoes 2lb",  was: "$3.99",  now: "$3.15",  save: "30%" },
-  { emoji: "🧅", name: "Yellow Onions 50lb",      was: "$45.90",  now: "$36.26",  save: "30%" },
-  { emoji: "🥕", name: "Baby Carrots 1kg",   was: "$3.49",  now: "2.76",  save: "30%" },
-  { emoji: "🌽", name: "Sweet Corn 4-pack",  was: "$4.99",  now: "$3.94",  save: "30%" },
+  {
+    emoji: "🍅",
+    name: "Roma Tomatoes 2lb",
+    was: "$3.99",
+    now: "$3.15",
+    save: "30%",
+  },
+  {
+    emoji: "🧅",
+    name: "Yellow Onions 50lb",
+    was: "$45.90",
+    now: "$36.26",
+    save: "30%",
+  },
+  {
+    emoji: "🥕",
+    name: "Baby Carrots 1kg",
+    was: "$3.49",
+    now: "2.76",
+    save: "30%",
+  },
+  {
+    emoji: "🌽",
+    name: "Sweet Corn 4-pack",
+    was: "$4.99",
+    now: "$3.94",
+    save: "30%",
+  },
 ];
 
 const SAVINGS_ITEMS = [
-  { emoji: "🛢️", name: "Canola Oil 16l",    was: "$53.72", now: "$42.43", save: "30%", highlight: true },
-  { emoji: "🍚", name: "Maggi Masala Noodles 280g", was: "$2.03", now: "$1.60", save: "30%", highlight: true },
-  { emoji: "🧅", name: "Yellow Onions 5lb", was: "$4.49",  now: "$3.55",  save: "30%", highlight: true },
-  { emoji: "🥛", name: "MDH Chana Masala 500g",     was: "$9.44",  now: "$7.46",  save: "30%", highlight: true },
+  {
+    emoji: "🛢️",
+    name: "Canola Oil 16l",
+    was: "$53.72",
+    now: "$42.43",
+    save: "30%",
+    highlight: true,
+  },
+  {
+    emoji: "🍚",
+    name: "Maggi Masala Noodles 280g",
+    was: "$2.03",
+    now: "$1.60",
+    save: "30%",
+    highlight: true,
+  },
+  {
+    emoji: "🧅",
+    name: "Yellow Onions 5lb",
+    was: "$4.49",
+    now: "$3.55",
+    save: "30%",
+    highlight: true,
+  },
+  {
+    emoji: "🥛",
+    name: "MDH Chana Masala 500g",
+    was: "$9.44",
+    now: "$7.46",
+    save: "30%",
+    highlight: true,
+  },
 ];
 
 interface HeroSectionProps {
@@ -53,7 +129,10 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
     setActiveTab(idx);
     setAnimKey((k) => k + 1);
     setTimeout(() => {
-      mockupRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      mockupRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     }, 80);
   };
 
@@ -64,7 +143,11 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
   });
 
   const items =
-    activeTab === 2 ? PRODUCE_ITEMS : activeTab === 1 ? SAVINGS_ITEMS : ORDER_ITEMS;
+    activeTab === 2
+      ? PRODUCE_ITEMS
+      : activeTab === 1
+        ? SAVINGS_ITEMS
+        : ORDER_ITEMS;
 
   const isSavings = activeTab === 1;
   const isProduce = activeTab === 2;
@@ -75,12 +158,11 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
 
   const savingsBanner = isSavings ? "$55.04 saved" : "$22.91 saved";
   const savingsDesc = isSavings
-    ? "Total savings this month · Upto 30% off"
-    : "On your 4-item cart · Upto 30% off";
+    ? "Total savings this month · up to 30% off"
+    : "On your 4-item cart · up to 30% off";
 
   return (
     <div className="min-h-screen w-full bg-white relative overflow-hidden">
-
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -89,8 +171,10 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
             linear-gradient(-45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%)
           `,
           backgroundSize: "40px 40px",
-          WebkitMaskImage: "radial-gradient(ellipse 80% 80% at 0% 0%, #000 50%, transparent 90%)",
-          maskImage: "radial-gradient(ellipse 80% 80% at 0% 0%, #000 50%, transparent 90%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 80% 80% at 0% 0%, #000 50%, transparent 90%)",
+          maskImage:
+            "radial-gradient(ellipse 80% 80% at 0% 0%, #000 50%, transparent 90%)",
         }}
       />
 
@@ -122,7 +206,6 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
       `}</style>
 
       <section style={{ position: "relative" }}>
-
         <div className="max-w-3xl mx-auto px-5 pt-16 sm:pt-20 pb-6 sm:pb-8 text-center">
           <div
             style={fade("0.05s")}
@@ -158,18 +241,24 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
             }}
             className="sm:text-lg"
           >
-            Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.
+            Purchase items and save up to 30% on everyday groceries — subsidised
+            exclusively for Canadian families.
           </p>
 
           {/* ── CTA buttons: swap based on auth state ── */}
-          <div style={fade("0.44s")} className="flex flex-wrap gap-3 justify-center mb-5">
+          <div
+            style={fade("0.44s")}
+            className="flex flex-wrap gap-3 justify-center mb-5"
+          >
             {isLoggedIn ? (
               <Link href="/customer">
                 <button
                   className="px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold text-white text-sm sm:text-base transition-transform active:scale-95"
                   style={{
-                    background: "linear-gradient(180deg,#22c55e 0%,#16a34a 100%)",
-                    boxShadow: "0 1px 2px rgba(0,0,0,.1),0 4px 12px rgba(22,101,52,.3)",
+                    background:
+                      "linear-gradient(180deg,#22c55e 0%,#16a34a 100%)",
+                    boxShadow:
+                      "0 1px 2px rgba(0,0,0,.1),0 4px 12px rgba(22,101,52,.3)",
                     border: "1px solid rgba(0,0,0,.1)",
                   }}
                 >
@@ -182,8 +271,10 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
                   <button
                     className="px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold text-white text-sm sm:text-base transition-transform active:scale-95"
                     style={{
-                      background: "linear-gradient(180deg,#22c55e 0%,#16a34a 100%)",
-                      boxShadow: "0 1px 2px rgba(0,0,0,.1),0 4px 12px rgba(22,101,52,.3)",
+                      background:
+                        "linear-gradient(180deg,#22c55e 0%,#16a34a 100%)",
+                      boxShadow:
+                        "0 1px 2px rgba(0,0,0,.1),0 4px 12px rgba(22,101,52,.3)",
                       border: "1px solid rgba(0,0,0,.1)",
                     }}
                   >
@@ -214,7 +305,10 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
         </div>
 
         {/* ── TAB STRIP ── */}
-        <div style={fade("0.6s")} className="max-w-2xl mx-auto px-4 mb-6 sm:mb-8">
+        <div
+          style={fade("0.6s")}
+          className="max-w-2xl mx-auto px-4 mb-6 sm:mb-8"
+        >
           <div className="tab-strip">
             {TABS.map((t, i) => (
               <button
@@ -235,9 +329,11 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
 
         {/* ── STAGE ── */}
         <div className="stage" style={fade("0.72s")}>
-
           <div className="stage-char stage-char--left">
-            <img src="https://ik.imagekit.io/h7w5h0hou/customer-left.png" alt="Customer shopping" />
+            <img
+              src="https://ik.imagekit.io/h7w5h0hou/customer-left.png"
+              alt="Customer shopping"
+            />
           </div>
 
           <div className="stage-mockup" ref={mockupRef}>
@@ -245,7 +341,8 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
               className="rounded-2xl overflow-hidden"
               style={{
                 border: "1px solid rgba(68,25,6,0.12)",
-                boxShadow: "0 1px 2px rgba(68,25,6,0.04),0 4px 12px rgba(68,25,6,0.06),0 28px 56px rgba(68,25,6,0.13)",
+                boxShadow:
+                  "0 1px 2px rgba(68,25,6,0.04),0 4px 12px rgba(68,25,6,0.06),0 28px 56px rgba(68,25,6,0.13)",
               }}
             >
               <div
@@ -260,16 +357,28 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
                 </div>
               </div>
 
-              <div key={animKey} className="mockup-animate" style={{ background: "#fff" }}>
+              <div
+                key={animKey}
+                className="mockup-animate"
+                style={{ background: "#fff" }}
+              >
                 <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"><Logo href="#" /></div>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                      <Logo href="#" />
+                    </div>
                     <div>
-                      <p className="text-xs text-stone-400 leading-none mb-0.5">Shopping at</p>
-                      <p className="text-sm font-bold text-stone-800">Abbotsford Store ▾</p>
+                      <p className="text-xs text-stone-400 leading-none mb-0.5">
+                        Shopping at
+                      </p>
+                      <p className="text-sm font-bold text-stone-800">
+                        Abbotsford Store ▾
+                      </p>
                     </div>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-sm">👤</div>
+                  <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-sm">
+                    👤
+                  </div>
                 </div>
 
                 <div
@@ -284,13 +393,19 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
                 >
                   <div>
                     <p className="text-xs font-semibold text-green-800 uppercase tracking-wide">
-                      {isSavings ? "💸 Your Total Savings" : isProduce ? "🌾 Fresh This Week" : "This Week's Savings"}
+                      {isSavings
+                        ? "💸 Your Total Savings"
+                        : isProduce
+                          ? "🌾 Fresh This Week"
+                          : "This Week's Savings"}
                     </p>
                     <p className="text-2xl font-black text-green-700">
                       {isProduce ? "Just Restocked" : savingsBanner}
                     </p>
                     <p className="text-xs text-green-600">
-                      {isProduce ? "Straight from local farms · Abbotsford" : savingsDesc}
+                      {isProduce
+                        ? "Straight from local farms · Abbotsford"
+                        : savingsDesc}
                     </p>
                   </div>
                   <div className="text-4xl">{isProduce ? "🥦" : "🎉"}</div>
@@ -298,10 +413,18 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
 
                 <div className="px-3 mt-3 mb-2 flex items-center justify-between">
                   <p className="text-sm font-bold text-stone-700">
-                    {isProduce ? "Fresh Produce" : isSavings ? "Your Biggest Savings" : "Your Subsidised Cart"}
+                    {isProduce
+                      ? "Fresh Produce"
+                      : isSavings
+                        ? "Your Biggest Savings"
+                        : "Your Subsidised Cart"}
                   </p>
                   <span className="text-xs text-green-600 font-semibold">
-                    {isProduce ? "4 items" : isSavings ? "This month" : "4 items"}
+                    {isProduce
+                      ? "4 items"
+                      : isSavings
+                        ? "This month"
+                        : "4 items"}
                   </span>
                 </div>
 
@@ -311,19 +434,34 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
                       <div
                         key={item.name}
                         className={`bg-white rounded-xl border border-stone-100 p-3 flex flex-col gap-1.5 ${isSavings ? "savings-highlight" : ""}`}
-                        style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)", transition: "border 0.3s, box-shadow 0.3s" }}
+                        style={{
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                          transition: "border 0.3s, box-shadow 0.3s",
+                        }}
                       >
                         <span className="text-3xl">{item.emoji}</span>
-                        <p className="text-xs font-semibold text-stone-700 leading-tight">{item.name}</p>
+                        <p className="text-xs font-semibold text-stone-700 leading-tight">
+                          {item.name}
+                        </p>
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-xs text-stone-400 line-through">{item.was}</span>
-                          <span className="text-sm font-bold" style={{ color: isSavings ? "#15803d" : "#16a34a" }}>{item.now}</span>
+                          <span className="text-xs text-stone-400 line-through">
+                            {item.was}
+                          </span>
+                          <span
+                            className="text-sm font-bold"
+                            style={{ color: isSavings ? "#15803d" : "#16a34a" }}
+                          >
+                            {item.now}
+                          </span>
                         </div>
                         <span
                           className="text-xs font-bold rounded-full px-2 py-0.5 w-fit"
-                          style={{ background: isSavings ? "#dcfce7" : "#f0fdf4", color: isSavings ? "#15803d" : "#16a34a" }}
+                          style={{
+                            background: isSavings ? "#dcfce7" : "#f0fdf4",
+                            color: isSavings ? "#15803d" : "#16a34a",
+                          }}
                         >
-                          Save upto {item.save}
+                          Save up to {item.save}
                         </span>
                       </div>
                     ))}
@@ -333,7 +471,9 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
                 <div className="mx-3 mb-3 mt-2 rounded-xl px-4 py-3 flex items-center justify-between bg-green-700">
                   <div>
                     <p className="text-xs text-green-200">{bottomBarLabel}</p>
-                    <p className="text-sm font-bold text-white">{bottomBarSub}</p>
+                    <p className="text-sm font-bold text-white">
+                      {bottomBarSub}
+                    </p>
                   </div>
                   <button className="bg-white text-green-700 font-bold text-xs px-4 py-2 rounded-lg whitespace-nowrap hover:bg-green-50 transition-colors">
                     {bottomBarBtn}
@@ -344,10 +484,12 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
           </div>
 
           <div className="stage-char stage-char--right">
-            <img src="https://ik.imagekit.io/h7w5h0hou/customer-right.png" alt="Happy customer" />
+            <img
+              src="https://ik.imagekit.io/h7w5h0hou/customer-right.png"
+              alt="Happy customer"
+            />
           </div>
         </div>
-
       </section>
     </div>
   );

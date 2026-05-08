@@ -233,7 +233,7 @@ function CreditTierTable() {
             color: "#15803d",
           }}
         >
-          How much gift credit do I get?
+          How much subsidy do I get?
         </span>
         <span
           style={{

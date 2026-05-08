@@ -247,14 +247,30 @@ export async function updateProduct(
         }
 
         if (adminRole) {
-          updatedProduct = await Product.findByIdAndUpdate(
-            productId,
-            { $set: dbPayload },
-            {
-              returnDocument: "after",
-              session: mongoSession,
-            },
-          );
+           const adminDbPayload: any = { ...dbPayload };
+
+           const adminUpdateQuery =
+             InvoiceId === ""
+               ? {
+                   $set: adminDbPayload,
+                   $unset: { InvoiceId: "" },
+                 }
+               : {
+                   $set: adminDbPayload,
+                 };
+
+           if (InvoiceId === "") {
+             delete adminDbPayload.InvoiceId;
+           }
+
+           updatedProduct = await Product.findByIdAndUpdate(
+             productId,
+             adminUpdateQuery,
+             {
+               returnDocument: "after",
+               session: mongoSession,
+             },
+           );
         } else if (storeRole) {
           updatedProduct = await Product.findOneAndUpdate(
             {

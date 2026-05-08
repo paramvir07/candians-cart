@@ -54,8 +54,11 @@ export async function getStoreCustomers(
       success: true,
       data: data.map((c: any) => ({
         ...c,
-        _id: c._id.toString(),
+        _id: c._id?.toString(),
+        userId: c.userId?.toString() ?? "",
         associatedStoreId: c.associatedStoreId?.toString() ?? "",
+        createdAt: c.createdAt ? new Date(c.createdAt).toISOString() : "",
+        updatedAt: c.updatedAt ? new Date(c.updatedAt).toISOString() : "",
       })),
     };
   } catch (error: any) {

@@ -443,7 +443,7 @@ export default function PacksSection() {
               margin: "0 0 10px",
             }}
           >
-            Groceries that cost upto {" "}
+            Groceries that cost up to{" "}
             <span style={{ color: "#16a34a" }}>30% less.</span> Guaranteed.
           </h2>
           <p

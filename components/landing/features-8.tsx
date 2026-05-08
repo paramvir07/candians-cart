@@ -527,7 +527,7 @@ export default function FeaturesSection() {
                   margin: 0,
                 }}
               >
-                Families save upto 30% every month.
+                Families save up to 30% every month.
               </p>
             </div>
           </div>
@@ -565,7 +565,7 @@ export default function FeaturesSection() {
                   margin: "0 0 14px",
                 }}
               >
-                Earn gift credits on every order. Spend it on anything in store.
+                Earn subsidies on every order. Spend it on anything in store.
               </p>
               <div
                 style={{
