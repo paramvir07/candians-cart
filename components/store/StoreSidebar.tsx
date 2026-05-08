@@ -11,6 +11,7 @@ import {
   Receipt,
   ShoppingCart,
   Store,
+  UserRoundPen,
   Users2,
   X,
 } from "lucide-react";
@@ -37,6 +38,7 @@ const NAV_GROUPS = [
       { href: "/store/products", label: "Products", icon: Package },
       { href: "/store/subsidy-list", label: "Subsidy List", icon: List },
       { href: "/store/customers", label: "Customers", icon: Users2 },
+      { href: "/store/profile", label: "Profile", icon: UserRoundPen },
     ],
   },
   {
@@ -139,7 +141,7 @@ function SidebarContent({ onNav, name }: { onNav?: () => void; name: string }) {
         >
           <Avatar className="h-8 w-8 shrink-0">
             <AvatarImage 
-            src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(name?name : "User")}`}
+            src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(name?name : "User")}`}
             />
             <AvatarFallback className="text-xs bg-emerald-100 text-emerald-700 font-semibold">
               JK
