@@ -4,7 +4,6 @@ import MainOverviewUser from "@/components/shared/users/MainOverviewUser";
 import UserList from "@/components/shared/users/UserList";
 
 const AdminAllCustomersPage = async () => {
-  // No storeId = platform-wide stats
   const stats = await getCustomerStats();
 
   return (
@@ -31,8 +30,7 @@ const AdminAllCustomersPage = async () => {
         avgBudgetUp={stats.avgBudgetUp}
       />
 
-      {/* adminMode=true → UserList fetches its own data, no storeId = all stores */}
-      <UserList adminMode={true} />  {/* http://localhost:3000/admin/customers */}
+      <UserList adminMode={true} /> 
     </div>
   );
 };

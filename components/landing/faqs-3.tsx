@@ -3,11 +3,8 @@
 import { useState } from "react";
 import {
   UserPlus,
-  Mail,
-  Percent,
   Wallet,
   Store,
-  ShieldCheck,
   ChevronDown,
   MessageCircle,
   ArrowRight,
@@ -34,40 +31,40 @@ const faqItems: FAQItem[] = [
     icon: <PiggyBank size={16} strokeWidth={1.75} />,
     question: "How do I save money with this app?",
     answer:
-      "You save money by using credits on subsidized items. When your order has at least C$21 of regular items before tax, the app shows credits you can use. The more money you spend on regular items, the more credits you can receive. You can use those credits right away on subsidized items in the same order, or save them in your Gift Wallet for later. When you use credits, your total becomes lower and you pay less at the store.",
+      "You save money by using subsidies on subsidized items. When your order has at least C$21 of regular items before tax, the app shows subsidies you can use. The more money you spend on regular items, the more subsidies you can receive. You can use those subsidies right away on subsidized items in the same order, or save them in your Gift Wallet for later. When you use subsidies, your total becomes lower and you pay less at the store.",
     tag: "Savings",
   },
   {
     id: "item-2",
     icon: <Wallet size={16} strokeWidth={1.75} />,
-    question: "How do I earn credits?",
+    question: "How do I earn subsidies?",
     answer:
-      "You earn credits when your order has at least C$21 of regular items before tax. Regular items are items that are not subsidized. Once your order reaches C$21 before tax, the app shows the credits you can receive. If you spend more on regular items, your credits can also increase.",
+      "You earn subsidies when your order has at least C$21 of regular items before tax. Regular items are items that are not subsidized. Once your order reaches C$21 before tax, the app shows the subsidies you can receive. If you spend more on regular items, your subsidies can also increase.",
     tag: "Rewards",
   },
   {
     id: "item-3",
     icon: <Coins size={16} strokeWidth={1.75} />,
-    question: "What are credits?",
+    question: "What are subsidies?",
     answer:
-      "Credits are like reward money in the app. They help you pay less for subsidized items. You receive credits based on how much you spend on regular items. You can use credits right away when they are shown in your order, or keep them saved in your Gift Wallet for a future order.",
-    tag: "Credits",
+      "Subsidies are like reward money in the app. They help you pay less for subsidized items. You receive subsidies based on how much you spend on regular items. You can use subsidies right away when they are shown in your order, or keep them saved in your Gift Wallet for a future order.",
+    tag: "Subsidies",
   },
   {
     id: "item-4",
     icon: <BadgePercent size={16} strokeWidth={1.75} />,
-    question: "Which items can I use credits on?",
+    question: "Which items can I use subsidies on?",
     answer:
-      "Credits can be used only on subsidized items. These are special items where you can pay less using credits. Subsidized items may include milk, vegetables, fruits, and selected daily grocery items.",
+      "Subsidies can be used only on subsidized items. These are special items where you can pay less using subsidies. Subsidized items may include milk, vegetables, fruits, and selected daily grocery items.",
     tag: "Savings",
   },
   {
     id: "item-5",
     icon: <Store size={16} strokeWidth={1.75} />,
-    question: "Where can I use my credits?",
+    question: "Where can I use my subsidies?",
     answer:
-      "You can use your credits at your selected store on subsidized items only. Credits do not work on every item. They only work on items that are marked as subsidized.",
-    tag: "Credits",
+      "You can use your subsidies at your selected store on subsidized items only. Subsidies do not work on every item. They only work on items that are marked as subsidized.",
+    tag: "Subsidies",
   },
   {
     id: "item-6",
@@ -82,7 +79,7 @@ const faqItems: FAQItem[] = [
     icon: <PackageCheck size={16} strokeWidth={1.75} />,
     question: "How do I place an order from the app?",
     answer:
-      "Choose the items you want and add them to your cart. At checkout, the app shows any credits you can use on subsidized items. If you use credits, your price becomes lower. If you do not use your credits, they will stay saved in your Gift Wallet for later. Then tap Pay at Store and pay when you visit the store.",
+      "Choose the items you want and add them to your cart. At checkout, the app shows any subsidies you can use on subsidized items. If you use subsidies, your price becomes lower. If you do not use your subsidies, they will stay saved in your Gift Wallet for later. Then tap Pay at Store and pay when you visit the store.",
     tag: "Orders",
   },
   {
@@ -90,15 +87,15 @@ const faqItems: FAQItem[] = [
     icon: <Store size={16} strokeWidth={1.75} />,
     question: "Can I shop directly at the store?",
     answer:
-      "Yes. You can go directly to your selected store and shop like you normally do for groceries. At checkout, the cashier can scan your ID and place the order for you. If you have credits in your Gift Wallet, they can be used on subsidized items.",
+      "Yes. You can go directly to your selected store and shop like you normally do for groceries. At checkout, the cashier can scan your ID and place the order for you. If you have subsidies in your Gift Wallet, they can be used on subsidized items.",
     tag: "Store",
   },
   {
     id: "item-9",
     icon: <PiggyBank size={16} strokeWidth={1.75} />,
-    question: "What happens if I do not use my credits?",
+    question: "What happens if I do not use my subsidies?",
     answer:
-      "Your credits do not disappear. If you do not use them, they stay safely saved in your Gift Wallet. You can use them later on future orders when you buy subsidized items.",
+      "Your subsidies do not disappear. If you do not use them, they stay safely saved in your Gift Wallet. You can use them later on future orders when you buy subsidized items.",
     tag: "Gift Wallet",
   },
   {
