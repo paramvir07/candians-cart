@@ -28,7 +28,7 @@ export const auth = betterAuth({
           "/api/auth/email-change"
         );
 
-        await sendEmail({
+        void sendEmail({
           to: user.email,
           subject: "Verify email change",
           react: (
@@ -65,7 +65,7 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     sendOnSignIn: true,
     sendVerificationEmail: async ({ user, url }) => {
-      await sendEmail({
+      void sendEmail({
         to: user.email,
         subject: "Verify your email address",
         react: (
