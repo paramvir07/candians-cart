@@ -87,25 +87,33 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
   /**
    * Smooth-scroll to a section by id.
    * Works whether we're already on "/" or navigating from another page.
+   * Exception: if logged in and sectionId is "grocery-packs", navigate to the
+   * dedicated customer page instead.
    */
   const handleSectionClick = (
-  e: React.MouseEvent,
-  sectionId: string,
-) => {
-  e.preventDefault();
-  closeMobile();
+    e: React.MouseEvent,
+    sectionId: string,
+  ) => {
+    e.preventDefault();
+    closeMobile();
 
-  if (pathname === "/") {
-    const navbarHeight = 72;
-    const el = document.getElementById(sectionId);
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight;
-      window.scrollTo({ top, behavior: "smooth" });
+    // Logged-in users go to the dedicated Budget Packs page
+    if (isLoggedIn && sectionId === "grocery-packs") {
+      router.push("/customer/budget-packs");
+      return;
     }
-  } else {
-    router.push(`/?scrollTo=${sectionId}`);
-  }
-};
+
+    if (pathname === "/") {
+      const navbarHeight = 72;
+      const el = document.getElementById(sectionId);
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+    } else {
+      router.push(`/?scrollTo=${sectionId}`);
+    }
+  };
 
   return (
     <>

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -106,6 +105,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
       if (result.success) {
         toast.success("Product deleted.");
         onDelete?.(product._id);
+        setDialogOpen(false);
       } else {
         toast.error(result.message || "Failed to delete product.");
       }
@@ -124,6 +124,9 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
         isSubsidised={isSubsidised}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        onDelete={onDelete}
+        isDeleting={isDeleting}
+        onDeleteConfirm={handleDelete}
       />
 
       <div className="group bg-card rounded-2xl border border-border shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col overflow-hidden">
@@ -228,7 +231,10 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
                 Price
               </p>
               <p className="text-xl font-bold text-foreground tracking-tight">
-                {fmt(product.price + product.price * (product.markup / 100))} <span className="text-sm text-gray-500">({fmt(product.price)})</span> 
+                {fmt(product.price + product.price * (product.markup / 100))}{" "}
+                <span className="text-sm text-gray-500">
+                  ({fmt(product.price)})
+                </span>
               </p>
             </div>
             <div className="flex flex-col items-end gap-1">

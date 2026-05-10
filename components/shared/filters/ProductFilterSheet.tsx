@@ -21,7 +21,7 @@ import { ProductFilters } from "@/actions/admin/products/getProductsFiltered.act
 
 // ── Constants ─────────────────────────────────────────────────────
 const CATEGORIES: { label: ProductCategory; emoji: string }[] = [
-  { label: "Fruits", emoji: "🍎" },
+  { label: "Fruits", emoji: "🥭" },
   { label: "Vegetables", emoji: "🥦" },
   { label: "Dairy", emoji: "🥛" },
   { label: "Meat", emoji: "🥩" },

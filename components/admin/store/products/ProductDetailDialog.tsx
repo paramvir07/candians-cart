@@ -6,11 +6,24 @@ interface ProductDialogProps {
   isSubsidised: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onDelete?: (id: string) => void;
+  isDeleting?: boolean;
+  onDeleteConfirm?: () => void;
 }
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
-  ImageIcon,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Sparkles,
   PackageX,
   PackageCheck,
@@ -18,10 +31,13 @@ import {
   Tag,
   TrendingUp,
   X,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import { ProductCardRole } from "./ProductCard";
 import { IProduct } from "@/types/store/products.types";
 import Image from "next/image";
+import Link from "next/link";
 import { fmt } from "@/lib/fomatPrice";
 import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
 
@@ -31,8 +47,14 @@ export const ProductDetailDialog = ({
   isSubsidised,
   open,
   onOpenChange,
+  onDelete,
+  isDeleting,
+  onDeleteConfirm,
 }: ProductDialogProps) => {
   const hasImage = product.images && product.images.length > 0;
+
+  const canEdit = role === "admin" || role === "store";
+  const canDelete = role === "admin" || role === "store";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -126,9 +148,9 @@ export const ProductDetailDialog = ({
               </p>
               <p className="text-2xl font-bold text-gray-900 tracking-tight">
                 {fmt(product.price + product.price * (product.markup / 100))}{" "}
-                <span className="text-sm text-gray-500">
-                  ({fmt(product.price)})
-                </span>
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Base: {fmt(product.price)}
               </p>
             </div>
 
@@ -196,6 +218,59 @@ export const ProductDetailDialog = ({
                     : "This product is currently marked as subsidised."}
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* ── Edit + Delete footer ─────────────────────────────────────────── */}
+          {(canEdit || canDelete) && (
+            <div className="grid grid-cols-2 gap-3 pt-1 border-t border-gray-100">
+              {canEdit && (
+                <Link
+                  href={
+                    role === "store"
+                      ? `/store/products/${product._id}/edit`
+                      : `/admin/product/${product._id}/edit`
+                  }
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-foreground bg-muted hover:bg-muted/80 border border-border rounded-xl transition-colors"
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                  Edit Product
+                </Link>
+              )}
+              {canDelete && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button
+                      disabled={isDeleting}
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-destructive bg-destructive/5 hover:bg-destructive/10 border border-destructive/20 rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {isDeleting ? "Deleting…" : "Delete Product"}
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Delete "{product.name}"?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. The product will be
+                        permanently removed from your store along with all
+                        associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={onDeleteConfirm}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete Product
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           )}
         </div>
