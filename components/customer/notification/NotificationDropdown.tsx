@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { BellIcon, CheckCheck } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { markNotificationsAsRead } from "@/actions/common/notification.action";
 
-// We define the type locally to avoid importing from a "use server" file
 export interface DropdownNotification {
   _id: string;
   title: string;
@@ -21,10 +21,60 @@ interface NotificationDropdownProps {
 }
 
 export function NotificationDropdown({
-  unreadCount,
-  notifications,
+  unreadCount: initialUnreadCount,
+  notifications: initialNotifications,
 }: NotificationDropdownProps) {
   const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+
+  // Track which IDs are already queued to be marked read (avoid duplicate calls)
+  const pendingReadIds = useRef<Set<string>>(new Set());
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const markAsRead = useCallback(async (id: string) => {
+    if (pendingReadIds.current.has(id)) return;
+    pendingReadIds.current.add(id);
+
+    // Optimistically update UI
+    setNotifications((prev) =>
+      prev.map((n) => (n._id === id ? { ...n, status: "READ" } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+
+    // Persist to DB — fire and forget, errors don't need to revert UI
+    await markNotificationsAsRead([id]).catch(console.error);
+  }, []);
+
+  // Build the observer once; re-build whenever markAsRead or open changes
+  useEffect(() => {
+    if (!open) return;
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const id = (entry.target as HTMLElement).dataset.notificationId;
+          const status = (entry.target as HTMLElement).dataset.status;
+          if (id && status === "UNREAD") {
+            markAsRead(id);
+          }
+        });
+      },
+      { threshold: 0.5 } // 50% of the item must be visible
+    );
+
+    return () => {
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+    };
+  }, [open, markAsRead]);
+
+  // Callback ref: attach/detach observer as each item mounts/unmounts
+  const observeItem = useCallback((el: HTMLDivElement | null) => {
+    if (!el || !observerRef.current) return;
+    observerRef.current.observe(el);
+  }, []);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -38,7 +88,7 @@ export function NotificationDropdown({
           )}
         </button>
       </PopoverTrigger>
-      
+
       <PopoverContent className="w-80 p-0 mr-4 mt-2" align="end">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h4 className="font-semibold text-sm">Notifications</h4>
@@ -48,7 +98,7 @@ export function NotificationDropdown({
             </div>
           )}
         </div>
-        
+
         <ScrollArea className="h-[350px]">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-6 text-center text-sm text-muted-foreground">
@@ -60,6 +110,9 @@ export function NotificationDropdown({
               {notifications.map((notification) => (
                 <div
                   key={notification._id}
+                  ref={notification.status === "UNREAD" ? observeItem : undefined}
+                  data-notification-id={notification._id}
+                  data-status={notification.status}
                   className={`flex flex-col gap-1 p-4 border-b border-border last:border-0 hover:bg-secondary/50 transition-colors ${
                     notification.status === "UNREAD" ? "bg-primary/5" : ""
                   }`}

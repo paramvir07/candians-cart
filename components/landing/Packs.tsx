@@ -67,7 +67,17 @@ const packages: Package[] = [
   },
 ];
 
-function PackCard({ pkg, index, isLocked }: { pkg: Package; index: number; isLocked: boolean }) {
+function PackCard({
+  pkg,
+  index,
+  isLocked,
+  isLoggedIn,
+}: {
+  pkg: Package;
+  index: number;
+  isLocked: boolean;
+  isLoggedIn: boolean;
+}) {
   const packTotal = pkg.combo.reduce((s: number, i: ComboItem) => s + i.price, 0);
   const subsidy = +(packTotal * SUBSIDY_RATE).toFixed(2);
   const visibleItems = pkg.combo.slice(0, 4);
@@ -178,8 +188,19 @@ function PackCard({ pkg, index, isLocked }: { pkg: Package; index: number; isLoc
           </span>
         </div>
 
-        <Link href="/customer/signup" className="no-underline block">
-          {!isLocked ? (
+        {isLoggedIn ? (
+          <Link href="/customer/budget-packs" className="no-underline block">
+            <button
+              className="pack-cta-green w-full flex items-center justify-center gap-1.5 py-3 rounded-xl border-none bg-linear-to-br from-green-400 to-green-600 text-white text-[13.5px] font-bold cursor-pointer"
+              style={{ fontFamily: "'Sora', sans-serif" }}
+            >
+              <Gift size={14} />
+              View this budget pack
+              <ArrowRight size={13} />
+            </button>
+          </Link>
+        ) : !isLocked ? (
+          <Link href="/customer/signup" className="no-underline block">
             <button
               className="pack-cta-green w-full flex items-center justify-center gap-1.5 py-3 rounded-xl border-none bg-linear-to-br from-green-400 to-green-600 text-white text-[13.5px] font-bold cursor-pointer"
               style={{ fontFamily: "'Sora', sans-serif" }}
@@ -188,7 +209,9 @@ function PackCard({ pkg, index, isLocked }: { pkg: Package; index: number; isLoc
               Get ${subsidy} free — Sign up
               <ArrowRight size={13} />
             </button>
-          ) : (
+          </Link>
+        ) : (
+          <Link href="/customer/signup" className="no-underline block">
             <button
               className="pack-cta-lock w-full flex items-center justify-center gap-1.5 py-3 rounded-xl border border-green-200 bg-green-50 text-green-700 text-[13.5px] font-bold cursor-pointer"
               style={{ fontFamily: "'Sora', sans-serif" }}
@@ -197,14 +220,14 @@ function PackCard({ pkg, index, isLocked }: { pkg: Package; index: number; isLoc
               Sign up to unlock all 6 packs
               <ChevronRight size={13} />
             </button>
-          )}
-        </Link>
+          </Link>
+        )}
       </div>
     </div>
   );
 }
 
-export default function PacksSection() {
+export default function PacksSection({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   return (
     <>
       <style>{`
@@ -367,31 +390,49 @@ export default function PacksSection() {
           {/* ── single card grid — 3 cols on desktop, horizontal scroll on mobile ── */}
           <div className="packs-grid">
             {packages.map((pkg, i) => (
-              <PackCard key={pkg.id} pkg={pkg} index={i} isLocked={false} />
+              <PackCard key={pkg.id} pkg={pkg} index={i} isLocked={false} isLoggedIn={isLoggedIn} />
             ))}
           </div>
 
           {/* ── bottom CTA ── */}
           <div className="mt-10 sm:mt-12 flex flex-col items-center gap-3">
-            <Link href="/customer/signup" className="no-underline">
-              <button
-                className="bottom-cta inline-flex items-center gap-2 bg-green-600 text-white font-bold border-none cursor-pointer rounded-[10px] px-6 sm:px-8 py-3 sm:py-3.5"
-                style={{
-                  fontFamily: "'Sora', sans-serif",
-                  fontSize: "clamp(0.8rem, 2vw, 0.88rem)",
-                }}
+            {isLoggedIn ? (
+              <Link href="/customer/budget-packs" className="no-underline">
+                <button
+                  className="bottom-cta inline-flex items-center gap-2 bg-green-600 text-white font-bold border-none cursor-pointer rounded-[10px] px-6 sm:px-8 py-3 sm:py-3.5"
+                  style={{
+                    fontFamily: "'Sora', sans-serif",
+                    fontSize: "clamp(0.8rem, 2vw, 0.88rem)",
+                  }}
+                >
+                  <Gift size={15} />
+                  View all 6 packs
+                  <ArrowRight size={14} />
+                </button>
+              </Link>
+            ) : (
+              <Link href="/customer/signup" className="no-underline">
+                <button
+                  className="bottom-cta inline-flex items-center gap-2 bg-green-600 text-white font-bold border-none cursor-pointer rounded-[10px] px-6 sm:px-8 py-3 sm:py-3.5"
+                  style={{
+                    fontFamily: "'Sora', sans-serif",
+                    fontSize: "clamp(0.8rem, 2vw, 0.88rem)",
+                  }}
+                >
+                  <Gift size={15} />
+                  Sign up to unlock all 6 packs
+                  <ArrowRight size={14} />
+                </button>
+              </Link>
+            )}
+            {!isLoggedIn && (
+              <p
+                className="text-[12px] text-[#a8a29e]"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
-                <Gift size={15} />
-                Sign up to unlock all 6 packs
-                <ArrowRight size={14} />
-              </button>
-            </Link>
-            <p
-              className="text-[12px] text-[#a8a29e]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
-            >
-              Free to join · No credit card required
-            </p>
+                Free to join · No credit card required
+              </p>
+            )}
           </div>
 
         </div>
