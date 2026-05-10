@@ -337,7 +337,7 @@ export default function PacksSection({ isLoggedIn = false }: { isLoggedIn?: bool
 
           {/* ── header ── */}
           <div className="text-center mb-10 sm:mb-14">
-            <div className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3.5 py-1 mb-4">
+            <div id="grocery-packs" className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3.5 py-1 mb-4">
               <Sparkles size={11} className="text-green-600" />
               <span
                 className="text-[11px] font-bold text-green-700 uppercase tracking-widest"
