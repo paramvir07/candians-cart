@@ -5,16 +5,32 @@ import Link from "next/link";
 import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { Customer } from "@/types/customer/customer";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
-import { fmtShort } from "@/lib/fomatPrice";
 import { NavAvatarMenu } from "./NavMenu";
+import { getCustomerNotifications, getUnreadNotificationCount } from "@/actions/common/notification.action";
+import { NotificationDropdown } from "../notification/NotificationDropdown";
+
+// NEW IMPORTS
+// import { getCustomerNotifications, getUnreadNotificationCount } from "@/actions/notification"; // Adjust path
+// import { NotificationDropdown } from "./NotificationDropdown"; 
 
 const Navbar = async () => {
-  const [customerDataResponse, cartCount] = await Promise.all([
+  // Add the notification fetches to your Promise.all
+  const [
+    customerDataResponse, 
+    cartCount,
+    unreadCountResponse,
+    notificationsResponse
+  ] = await Promise.all([
     getCustomerDataAction(),
     getCartItemsCount(),
+    getUnreadNotificationCount(),
+    getCustomerNotifications(),
   ]);
 
   const customerData: Customer = customerDataResponse.customerData;
+  const unreadCount = unreadCountResponse.count ?? 0;
+  const notifications = notificationsResponse.data ?? [];
+
   const initials = customerData.name
     .split(" ")
     .map((w) => w[0])
@@ -45,6 +61,12 @@ const Navbar = async () => {
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
           
+          {/* Notifications Dropdown (Replaced Link block) */}
+          <NotificationDropdown 
+            unreadCount={unreadCount} 
+            notifications={notifications} 
+          />
+
           {/* Cart */}
           <Link href="/customer/cart">
             <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary/80 active:scale-[0.97] transition-all">

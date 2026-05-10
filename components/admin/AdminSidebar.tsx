@@ -3,6 +3,7 @@
 import {
   Banknote,
   BarChart,
+  BellIcon,
   HandCoins,
   Handshake,
   HomeIcon,
@@ -61,6 +62,7 @@ const NAV_GROUPS = [
       { href: "/admin/new-user", label: "New User", icon: UserPlus },
       { href: "/admin/referral-codes", label: "Referrals", icon: LinkIcon },
       { href: "/admin/subsidy-list", label: "Subsidy List", icon: List },
+      { href: "/admin/notifications", label: "Notifications", icon: BellIcon },
     ],
   },
 ] as const;
