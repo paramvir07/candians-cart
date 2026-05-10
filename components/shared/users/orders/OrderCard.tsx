@@ -9,10 +9,10 @@ import {
   Banknote,
   CreditCard,
   Wallet,
-  Gift,
   X,
+  ChevronRight,
+  Package,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
 import OrderDetail from "./OrderDetail";
 import {
@@ -27,58 +27,52 @@ const fmt = (cents: number) => `CA$${(cents / 100).toFixed(2)}`;
 function StatusBadge({ status }: { status?: string }) {
   if (status === "completed") {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 border border-green-200">
-        <CheckCircle2 className="w-3 h-3" />
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 tracking-wide uppercase">
+        <CheckCircle2 className="w-2.5 h-2.5" />
         Completed
       </span>
     );
   }
-
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-700 border border-amber-200">
-      <Clock className="w-3 h-3" />
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 tracking-wide uppercase">
+      <Clock className="w-2.5 h-2.5" />
       Pending
     </span>
   );
 }
 
 function PaymentBadge({ mode }: { mode?: string }) {
-  const map: Record<
-    string,
-    { label: string; className: string; icon: React.ReactNode }
-  > = {
+  const map: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
     wallet: {
       label: "Wallet",
-      className: "bg-violet-100 text-violet-700 border-violet-200",
-      icon: <Wallet className="w-3 h-3" />,
+      className: "bg-violet-50 text-violet-700 border-violet-200",
+      icon: <Wallet className="w-2.5 h-2.5" />,
     },
     cash: {
       label: "Cash",
-      className: "bg-emerald-100 text-emerald-700 border-emerald-200",
-      icon: <Banknote className="w-3 h-3" />,
+      className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      icon: <Banknote className="w-2.5 h-2.5" />,
     },
     card: {
       label: "Card",
-      className: "bg-blue-100 text-blue-700 border-blue-200",
-      icon: <CreditCard className="w-3 h-3" />,
+      className: "bg-blue-50 text-blue-700 border-blue-200",
+      icon: <CreditCard className="w-2.5 h-2.5" />,
     },
     pending: {
-      label: "Pending",
-      className: "bg-amber-100 text-amber-700 border-amber-200",
-      icon: <Clock className="w-3 h-3" />,
+      label: "Not paid",
+      className: "bg-stone-100 text-stone-500 border-stone-200 whitespace-nowrap",
+      icon: <Clock className="w-2.5 h-2.5" />,
     },
   };
 
   const m = map[mode ?? ""] ?? {
     label: mode ?? "—",
-    className: "bg-gray-100 text-gray-600 border-gray-200",
+    className: "bg-stone-50 text-stone-500 border-stone-200",
     icon: null,
   };
 
   return (
-    <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${m.className}`}
-    >
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border tracking-wide uppercase ${m.className}`}>
       {m.icon}
       {m.label}
     </span>
@@ -91,11 +85,7 @@ interface OrderCardProps {
   allOrders?: boolean;
 }
 
-export default function OrderCard({
-  order,
-  customerId,
-  allOrders,
-}: OrderCardProps) {
+export default function OrderCard({ order, customerId, allOrders }: OrderCardProps) {
   const [open, setOpen] = useState(false);
 
   const orderId = order._id.toString().slice(-7).toUpperCase();
@@ -110,168 +100,180 @@ export default function OrderCard({
 
   const subsidyUsed = order.subsidyUsed ?? 0;
   const subsidyGenerated = order.subsidy ?? 0;
-
   const hasSubsidyUsed = subsidyUsed > 0;
   const hasSubsidyGenerated = subsidyGenerated > 0;
 
-  const totalItems =
-    (order.products?.length ?? 0) + (order.subsidyItems?.length ?? 0);
+  const totalItems = (order.products?.length ?? 0) + (order.subsidyItems?.length ?? 0);
+  const isCompleted = order.status === "completed";
+  const isPendingPayment = order.paymentMode === "pending";
+
+  const accentColor = isCompleted ? "#10b981" : "#f59e0b";
+  const accentGradient = isCompleted
+    ? "linear-gradient(to bottom, #10b981, #059669)"
+    : "linear-gradient(to bottom, #f59e0b, #d97706)";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Card className="overflow-hidden border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-          <button
-            type="button"
-            className="w-full text-left hover:bg-muted/40 transition-colors"
+        <button type="button" className="w-full text-left group focus:outline-none">
+          <div
+            className="relative overflow-hidden rounded-2xl border bg-white"
+            style={{
+              borderColor: isCompleted ? "rgba(16,185,129,0.2)" : "rgba(245,158,11,0.25)",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)",
+              transition: "box-shadow 0.18s ease, transform 0.18s ease",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLDivElement;
+              el.style.boxShadow = "0 4px 12px rgba(0,0,0,0.07), 0 12px 32px rgba(0,0,0,0.07)";
+              el.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLDivElement;
+              el.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)";
+              el.style.transform = "translateY(0)";
+            }}
           >
-            <CardContent className="p-0">
-              <div className="flex items-center gap-3 px-4 sm:px-5 py-4">
-                {/* Thumbnail */}
-                <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0 ring-2 ring-primary/10 border border-border">
-                  {thumbUrl ? (
-                    <Image
-                      src={thumbUrl}
-                      alt="Order"
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <CategoryIllustration category={firstCat} />
-                  )}
+            {/* Left accent bar */}
+            <div
+              className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-2xl"
+              style={{ background: accentGradient }}
+            />
 
-                  {(hasSubsidyUsed || hasSubsidyGenerated) && (
-                    <div className="absolute bottom-0 right-0 bg-amber-400 rounded-tl-md p-0.5 shadow-sm">
-                      <Sparkles className="w-2.5 h-2.5 text-white" />
-                    </div>
-                  )}
+            {/* ══════════════════════════════════
+                MOBILE  (hidden on sm+)
+            ══════════════════════════════════ */}
+            <div className="sm:hidden pl-4 pr-4 py-3.5 flex items-center gap-3">
+              {/* Thumbnail */}
+              <div
+                className="relative shrink-0 rounded-xl overflow-hidden"
+                style={{ width: 52, height: 52, border: "1.5px solid rgba(0,0,0,0.07)", background: "#f8f8f6" }}
+              >
+                {thumbUrl ? (
+                  <Image src={thumbUrl} alt="Order" fill className="object-cover" />
+                ) : (
+                  <CategoryIllustration category={firstCat} />
+                )}
+                {(hasSubsidyUsed || hasSubsidyGenerated) && (
+                  <div className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg" style={{ background: "#f59e0b" }}>
+                    <Sparkles className="w-2.5 h-2.5 text-white" />
+                  </div>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                {/* Row 1: ID + total */}
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider">
+                    #{orderId}
+                  </p>
+                  <p className="font-bold text-[15px] tabular-nums" style={{ color: "#16a34a" }}>
+                    {fmt(order.cartTotal)}
+                  </p>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  {/* Mobile */}
-                  <div className="flex items-start justify-between gap-2 sm:hidden">
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                        Order #{orderId}
-                      </p>
+                {/* Row 2: date + item count */}
+                <div className="flex items-center justify-between gap-2 mt-0.5">
+                  <p className="text-[11px] text-stone-400 font-medium">{date}</p>
+                  <p className="text-[11px] text-stone-400 font-medium">
+                    {totalItems} item{totalItems !== 1 ? "s" : ""}
+                  </p>
+                </div>
 
-                      {/* Badges with inline labels so "Pending" is never ambiguous */}
-                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wide">
-                            Status
-                          </span>
-                          <StatusBadge status={order.status} />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wide">
-                            Pay
-                          </span>
-                          <PaymentBadge mode={order.paymentMode} />
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {date}
-                      </p>
-
-                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                        {hasSubsidyGenerated && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
-                            <Gift className="w-3 h-3" />
-                            Generated ${(subsidyGenerated / 100).toFixed(2)}
-                          </span>
-                        )}
-
-                        {hasSubsidyUsed && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                            <Sparkles className="w-3 h-3" />
-                            Used ${(subsidyUsed / 100).toFixed(2)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Total (mobile safe) */}
-                    <div className="text-right ml-2 shrink-0">
-                      <p className="text-base font-bold text-primary tabular-nums">
-                        {fmt(order.cartTotal)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {totalItems} item{totalItems !== 1 ? "s" : ""}
-                      </p>
-                    </div>
+                {/* Row 3: badges — clearly labelled to avoid "PENDING PENDING" confusion */}
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  {/* Order status */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
+                      Order
+                    </span>
+                    <StatusBadge status={order.status} />
                   </div>
-
-                  {/* Desktop (FIXED RESPONSIVE) */}
-                  <div className="hidden sm:flex items-center w-full">
-                    {/* LEFT SIDE */}
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 flex-1 min-w-0">
-                      <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                          Order
-                        </p>
-                        <p className="text-sm font-bold font-mono">
-                          #{orderId}
-                        </p>
-                      </div>
-
-                      <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                          Date
-                        </p>
-                        <p className="text-sm font-semibold">{date}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                          Items
-                        </p>
-                        <p className="text-sm font-semibold">{totalItems}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                          Payment
-                        </p>
-                        <PaymentBadge mode={order.paymentMode} />
-                      </div>
-
-                      <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                          Status
-                        </p>
-                        <StatusBadge status={order.status} />
-                      </div>
-
-                      {hasSubsidyGenerated && (
-                        <div>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                            Subsidy Generated
-                          </p>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-xs font-bold text-amber-700">
-                            ${(subsidyGenerated / 100).toFixed(2)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* RIGHT SIDE (ALWAYS VISIBLE) */}
-                    <div className="ml-auto shrink-0 text-right">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                        Total
-                      </p>
-                      <p className="text-base font-bold text-primary tabular-nums">
-                        {fmt(order.cartTotal)}
-                      </p>
-                    </div>
+                  {/* Payment */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
+                      Pay
+                    </span>
+                    <PaymentBadge mode={order.paymentMode} />
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </button>
-        </Card>
+            </div>
+
+            {/* ══════════════════════════════════
+                DESKTOP  (hidden below sm)
+            ══════════════════════════════════ */}
+            <div className="hidden sm:flex items-center gap-5 pl-5 pr-5 py-4">
+              {/* Thumbnail */}
+              <div
+                className="relative shrink-0 rounded-xl overflow-hidden"
+                style={{ width: 54, height: 54, border: "1.5px solid rgba(0,0,0,0.07)", background: "#f8f8f6", boxShadow: "0 2px 6px rgba(0,0,0,0.06)" }}
+              >
+                {thumbUrl ? (
+                  <Image src={thumbUrl} alt="Order" fill className="object-cover" />
+                ) : (
+                  <CategoryIllustration category={firstCat} />
+                )}
+                {(hasSubsidyUsed || hasSubsidyGenerated) && (
+                  <div className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg" style={{ background: "#f59e0b" }}>
+                    <Sparkles className="w-2.5 h-2.5 text-white" />
+                  </div>
+                )}
+              </div>
+
+              {/* Data columns — flex with auto spacing, chevron is INSIDE this flex */}
+              <div className="flex-1 flex items-center gap-6 min-w-0">
+                {/* Order # */}
+                <div className="min-w-[86px]">
+                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 3 }}>Order</p>
+                  <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider">#{orderId}</p>
+                </div>
+
+                {/* Date */}
+                <div className="min-w-[84px]">
+                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 3 }}>Date</p>
+                  <p className="text-[13px] font-semibold text-stone-600">{date}</p>
+                </div>
+
+                {/* Items */}
+                <div className="min-w-[44px]">
+                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 3 }}>Items</p>
+                  <div className="flex items-center gap-1">
+                    <Package className="w-3 h-3 text-stone-400" />
+                    <p className="text-[13px] font-bold text-stone-700">{totalItems}</p>
+                  </div>
+                </div>
+
+                {/* Payment */}
+                <div className="min-w-[72px]">
+                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 5 }}>Payment</p>
+                  <PaymentBadge mode={order.paymentMode} />
+                </div>
+
+                {/* Status */}
+                <div>
+                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 5 }}>Status</p>
+                  <StatusBadge status={order.status} />
+                </div>
+
+                {/* Total — pushed to right, chevron RIGHT AFTER inside same flex */}
+                <div className="ml-auto text-right shrink-0">
+                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 3 }}>Total</p>
+                  <p className="tabular-nums font-bold text-[16px]" style={{ color: "#16a34a", letterSpacing: "-0.3px" }}>
+                    {fmt(order.cartTotal)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Chevron — outside data columns but inside the row, always visible */}
+              <ChevronRight
+                className="shrink-0 w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5"
+                style={{ color: "#d6d3d1" }}
+              />
+            </div>
+          </div>
+        </button>
       </DialogTrigger>
 
       {/* Dialog */}
@@ -281,12 +283,7 @@ export default function OrderCard({
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </DialogClose>
-
-        <OrderDetail
-          order={order}
-          customerId={customerId}
-          allOrders={allOrders}
-        />
+        <OrderDetail order={order} customerId={customerId} allOrders={allOrders} />
       </DialogContent>
     </Dialog>
   );

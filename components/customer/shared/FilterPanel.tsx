@@ -33,7 +33,7 @@ export const DEFAULT_FILTERS: FilterState = {
 // }
 
 const CATEGORY_GROUPS: string[][] = [
-  ["Fruits", "Vegetables", "Produce"],
+  // ["Fruits", "Vegetables", "Produce"],
 ];
 
 export function getActiveFilterCount(filters: FilterState) {
@@ -108,7 +108,7 @@ export function FilterPanel({
   // };
 
   const CATEGORY_GROUPS: string[][] = [
-  ["Fruits", "Vegetables", "Produce"],
+  // ["Fruits", "Vegetables", "Produce"],
 ];
 
 const toggleCategory = (cat: string) => {

@@ -39,7 +39,7 @@ const ITEMS_PER_PAGE = 16;
 
 // ===========================
 const CATEGORY_EXPANSIONS: Record<string, string[]> = {
-  Produce: ["Fruits", "Vegetables"],
+  // Produce: ["Fruits", "Vegetables"],
   // Add more as needed e.g:
   // "Sweets & Mithai": ["Sweets", "Mithai", "Desserts"],
 };

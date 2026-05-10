@@ -67,10 +67,13 @@ const SOCIAL = [
   },
 ];
 
-// Navbar height offset in px — adjust this if your navbar height changes
 const NAVBAR_OFFSET = 80;
 
-export default function Footer() {
+interface FooterProps {
+  isLoggedIn?: boolean;
+}
+
+export default function Footer({ isLoggedIn = false }: FooterProps) {
   const currentYear = new Date().getFullYear();
   const router = useRouter();
   const pathname = usePathname();
@@ -88,6 +91,13 @@ export default function Footer() {
     scrollPage: string = "/",
   ) => {
     e.preventDefault();
+
+    // Logged-in users: Budget Packs goes to the dedicated page
+    if (isLoggedIn && sectionId === "grocery-packs") {
+      router.push("/customer/budget-packs");
+      return;
+    }
+
     if (pathname === scrollPage) {
       scrollToSection(sectionId);
     } else {

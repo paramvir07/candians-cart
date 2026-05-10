@@ -27,6 +27,9 @@ const notificationUserSchema = new Schema<INotificationUser>({
   },
 });
 
+// Add this after the schema definition
+notificationUserSchema.index({ notificationId: 1, customerId: 1 }, { unique: true });
+
 const NotificationUser: Model<INotificationUser> =
   models.NotificationUser ||
   model<INotificationUser>("NotificationUser", notificationUserSchema);

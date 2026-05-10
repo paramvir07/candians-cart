@@ -373,9 +373,10 @@ export function CustomerProductCard({
               className={`self-start inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold opacity-90 ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}
             >
               {catConfig.emoji}{" "}
-              {vegetablesCategory || fruitsCategory
+              {product.category}
+              {/* {vegetablesCategory || fruitsCategory
                 ? "Produce"
-                : product.category}
+                : product.category} */}
             </span>
 
             <h3 className="line-clamp-2 text-sm font-bold leading-tight text-white drop-shadow">

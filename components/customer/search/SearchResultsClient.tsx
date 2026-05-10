@@ -40,9 +40,9 @@ interface SearchResultsClientProps {
 }
 
 const QUICK_SUGGESTIONS = [
-  // { emoji: "🥭", label: "Fruits" },
-  // { emoji: "🥦", label: "Vegetables" },
-  { emoji: "🥕", label: "Produce" },
+  { emoji: "🥭", label: "Fruits" },
+  { emoji: "🥦", label: "Vegetables" },
+  // { emoji: "🥕", label: "Produce" },
   { emoji: "🥛", label: "Dairy" },
   { emoji: "🍗", label: "Meat" },
   { emoji: "🫓", label: "Bakery" },
@@ -196,7 +196,7 @@ export function SearchResultsClient({
         <div className="flex gap-6">
           {/* ── Desktop sidebar ── */}
           {/* {hasSearched && allResults.length > 0 && !customerId && ( */}
-          {hasSearched && activeFilterCount > 0 && !customerId && (
+          {hasSearched && allResults.length > 0 && !customerId && (
             <aside className="hidden lg:flex flex-col w-64 shrink-0">
               <div
                 className="sticky top-18 rounded-2xl border border-border/60 bg-card overflow-hidden flex flex-col"
@@ -265,7 +265,7 @@ export function SearchResultsClient({
                       key={s.label}
                       onClick={async () => {
                         const CATEGORY_MAP: Record<string, string[]> = {
-                          Produce: ["Fruits", "Vegetables", "Produce"],
+                          // Produce: ["Fruits", "Vegetables", "Produce"],
                         };
                         const labelsToAdd = CATEGORY_MAP[s.label] ?? [s.label];
                         // const newCategories = filters.categories.includes(

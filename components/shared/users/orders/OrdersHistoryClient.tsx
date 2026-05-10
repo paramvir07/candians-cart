@@ -147,7 +147,7 @@ export default function OrdersHistoryClient({
       </div>
 
       {/* Order list */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 overflow-y-auto max-h-120 no-scrollbar">
         {filteredOrders.length === 0 ? (
           <div className="py-20 text-center">
             <Package className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />

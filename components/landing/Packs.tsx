@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users } from "lucide-react";
+import { Users, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
 const SUBSIDY = 0.21;
@@ -351,7 +351,11 @@ function PackCard({
   );
 }
 
-export default function PacksSection() {
+interface PacksSectionProps {
+  isLoggedIn?: boolean;
+}
+
+export default function PacksSection({ isLoggedIn = false }: PacksSectionProps) {
   const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile once on mount
@@ -361,6 +365,31 @@ export default function PacksSection() {
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
+
+  const buttonStyle = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 7,
+    background: "#16a34a",
+    color: "#fff",
+    fontFamily: "'Sora', sans-serif",
+    fontWeight: 700,
+    fontSize: isMobile ? "0.8rem" : "0.85rem",
+    padding: isMobile ? "10px 22px" : "11px 28px",
+    borderRadius: 999,
+    border: "none",
+    cursor: "pointer",
+    transition: "background 0.18s ease, transform 0.15s ease",
+  } as const;
+
+  const onEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e.currentTarget as HTMLButtonElement).style.background = "#15803d";
+    (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.03)";
+  };
+  const onLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e.currentTarget as HTMLButtonElement).style.background = "#16a34a";
+    (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+  };
 
   return (
     <section
@@ -482,75 +511,60 @@ export default function PacksSection() {
             gap: 8,
           }}
         >
-          <Link href="/customer/signup">
-            <button
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 7,
-                background: "#16a34a",
-                color: "#fff",
-                fontFamily: "'Sora', sans-serif",
-                fontWeight: 700,
-                fontSize: isMobile ? "0.8rem" : "0.85rem",
-                padding: isMobile ? "10px 22px" : "11px 28px",
-                borderRadius: 999,
-                border: "none",
-                cursor: "pointer",
-                transition: "background 0.18s ease, transform 0.15s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "#15803d";
-                (e.currentTarget as HTMLButtonElement).style.transform =
-                  "scale(1.03)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background =
-                  "#16a34a";
-                (e.currentTarget as HTMLButtonElement).style.transform =
-                  "scale(1)";
-              }}
-            >
-              <Users size={14} strokeWidth={2} />
-              Sign up to unlock all 6 packs
-            </button>
-          </Link>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
-            {[
-              "Free to join",
-              "Subsidy applied instantly",
-              "No vouchers needed",
-            ].map((t, i, arr) => (
-              <span
-                key={t}
-                style={{ display: "flex", alignItems: "center", gap: 6 }}
+          {isLoggedIn ? (
+            /* ── Logged in: go straight to the packs page ── */
+            <Link href="/customer/budget-packs">
+              <button style={buttonStyle} onMouseEnter={onEnter} onMouseLeave={onLeave}>
+                <ShoppingBag size={14} strokeWidth={2} />
+                View all budget packs
+              </button>
+            </Link>
+          ) : (
+            /* ── Logged out: prompt sign-up ── */
+            <>
+              <Link href="/customer/signup">
+                <button style={buttonStyle} onMouseEnter={onEnter} onMouseLeave={onLeave}>
+                  <Users size={14} strokeWidth={2} />
+                  Sign up to unlock all 6 packs
+                </button>
+              </Link>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                }}
               >
-                <span style={{ fontSize: "0.65rem", color: "#a8a29e" }}>
-                  {t}
-                </span>
-                {i < arr.length - 1 && (
+                {[
+                  "Free to join",
+                  "Subsidy applied instantly",
+                  "No vouchers needed",
+                ].map((t, i, arr) => (
                   <span
-                    style={{
-                      width: 2,
-                      height: 2,
-                      borderRadius: "50%",
-                      background: "#d6d3d1",
-                      display: "inline-block",
-                    }}
-                  />
-                )}
-              </span>
-            ))}
-          </div>
+                    key={t}
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
+                    <span style={{ fontSize: "0.65rem", color: "#a8a29e" }}>
+                      {t}
+                    </span>
+                    {i < arr.length - 1 && (
+                      <span
+                        style={{
+                          width: 2,
+                          height: 2,
+                          borderRadius: "50%",
+                          background: "#d6d3d1",
+                          display: "inline-block",
+                        }}
+                      />
+                    )}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </section>
