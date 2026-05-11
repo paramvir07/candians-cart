@@ -4,7 +4,7 @@ import { unstable_cache } from "next/cache";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
 import mongoose from "mongoose";
-import type { QueryFilter } from "mongoose";
+import type { QueryFilter, SortOrder } from "mongoose";
 import { IProduct } from "@/types/store/products.types";
 
 export interface ProductCacheFilters {
@@ -57,19 +57,19 @@ export const getCachedStoreProducts = async (
       }
 
       // sorting logic
-      let sortConfig: Record<string, 1 | -1> = {};
+      let sortConfig: { [key: string]: SortOrder } = {};
       if (filters.sortBy === "price_asc") sortConfig = { price: 1 };
       else if (filters.sortBy === "price_desc") sortConfig = { price: -1 };
       else if (filters.sortBy === "name_asc") sortConfig = { name: 1 };
       // Default: Featured products float to top, followed by newest
-      else sortConfig = { isFeatured: -1, createdAt: -1 };
+      else sortConfig = { isFeatured: -1, createdAt: -1, _id: 1 };
 
       const skipAmount = (page - 1) * limit;
 
       // execute in parallel
       const [products, totalCount] = await Promise.all([
         Product.find(query)
-          .sort(sortConfig as any)
+          .sort(sortConfig)
           .skip(skipAmount)
           .limit(limit)
           .lean(),

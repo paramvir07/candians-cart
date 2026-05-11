@@ -91,7 +91,7 @@ const getPaginatedProductsCached = (
       const [data, totalCount] = await Promise.all([
         productsModel.aggregate<AggregatedProduct>([
           { $match: match },
-          { $sort: { createdAt: -1 } },
+          { $sort: { createdAt: -1, _id: 1 } },
           { $skip: skip },
           { $limit: limit },
           {
