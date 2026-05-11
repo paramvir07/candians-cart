@@ -22,12 +22,15 @@ Keep the name of the index as `ProductSearch` and then use the following data to
         "analyzer": "lucene.standard"
       },
       "primaryUPC": {
-        "type": "number"
+        "type": "string",
+        "analyzer": "lucene.keyword"
       }
     }
   }
 }
 ```
+
+Changed PrimaryUPC to String
 
 Used in `searchProducts.action.ts`
 

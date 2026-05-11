@@ -19,15 +19,18 @@ const getCustomerProfile = reactCache(async (userId: string) => {
   }).lean();
 });
 
-type SearchClause =
-  | {
-      text: {
-        query: string;
-        path: string[];
-        fuzzy: { maxEdits: number; prefixLength: number; maxExpansions: number };
-      };
-    }
-  | { equals: { path: string; value: number } };
+// UPDATED: Make path accept a string or array, and make fuzzy optional
+type SearchClause = {
+  text: {
+    query: string;
+    path: string | string[];
+    fuzzy?: {
+      maxEdits: number;
+      prefixLength: number;
+      maxExpansions: number;
+    };
+  };
+};
 
 /**
  * Searches products using MongoDB Atlas full-text search with optional store filtering.
@@ -45,80 +48,71 @@ type SearchClause =
  * @param {string} [searchQuery=""] - Optional text input for fuzzy search.
  * @param {string} [storeId] - Optional store ID to restrict results to a specific store.
  * @returns {Promise<ProductActionResponse>} Success with matching products or an error message.
- *
- * @example
- * const result = await searchProducts("milk", "65f2c9e8a3d4b123456789ab");
- * if (result.success) {
- *   console.log(result.data);
- * } else {
- *   console.error(result.error);
- * }
  */
 
-const fetchProductsDB = async(query: string, storeId?: string) =>{
-      await dbConnect();
+const fetchProductsDB = async (query: string, storeId?: string) => {
+  await dbConnect();
 
-      // If there is a search query, use MongoDB Atlas Search aggregation
-      if (query && query.trim() !== "") {
-        const cleanQuery = query.trim();
+  // If there is a search query, use MongoDB Atlas Search aggregation
+  if (query && query.trim() !== "") {
+    const cleanQuery = query.trim();
 
-        // 1. Check if the search query can be parsed as a valid number for the UPC check
-        const parsedNumber = Number(cleanQuery);
-        const isNumeric = !isNaN(parsedNumber) && cleanQuery !== "";
+    // 1. Check if the search query can be parsed as a valid number for the UPC check
+    const isNumeric = !isNaN(Number(cleanQuery)) && cleanQuery !== "";
 
-        // 2. Build the 'should' clauses for the compound query
-        const shouldClauses: SearchClause[] = [
-          {
-            text: {
-              query: cleanQuery,
-              path: ["name", "description", "category"],
-              fuzzy: { maxEdits: 2, prefixLength: 1, maxExpansions: 50 },
-            },
+    // 2. Build the 'should' clauses for the compound query
+    const shouldClauses: SearchClause[] = [
+      {
+        text: {
+          query: cleanQuery,
+          path: ["name", "description", "category"],
+          fuzzy: { maxEdits: 2, prefixLength: 1, maxExpansions: 50 },
+        },
+      },
+    ];
+
+    // 3. If it's a number, add a 'text' clause for the primaryUPC
+    if (isNumeric) {
+      shouldClauses.push({
+        text: {
+          path: "primaryUPC",
+          query: cleanQuery,
+        },
+      });
+    }
+
+    const pipeline: PipelineStage[] = [
+      {
+        $search: {
+          index: "ProductSearch",
+          // Use a compound query to match EITHER the text fields OR the UPC
+          compound: {
+            should: shouldClauses,
+            minimumShouldMatch: 1,
           },
-        ];
+        },
+      },
+    ];
 
-        // 3. If it's a number, add an 'equals' clause for the primaryUPC
-        if (isNumeric) {
-          shouldClauses.push({
-            equals: {
-              path: "primaryUPC",
-              value: parsedNumber,
-            },
-          });
-        }
+    if (storeId) {
+      pipeline.push({
+        $match: { storeId: new mongoose.Types.ObjectId(storeId) },
+      });
+    }
 
-        const pipeline: PipelineStage[] = [
-          {
-            $search: {
-              index: "ProductSearch",
-              // Use a compound query to match EITHER the text fields OR the UPC
-              compound: {
-                should: shouldClauses,
-                minimumShouldMatch: 1,
-              },
-            },
-          },
-        ];
+    pipeline.push({ $limit: 20 });
+    return await Product.aggregate(pipeline);
+  }
 
-        if (storeId) {
-          pipeline.push({
-            $match: { storeId: new mongoose.Types.ObjectId(storeId) },
-          });
-        }
-
-        pipeline.push({ $limit: 20 });
-        return await Product.aggregate(pipeline);
-      }
-
-      // Fallback for no query: return all products or store-specific products
-      const findQuery = storeId
-        ? { storeId: new mongoose.Types.ObjectId(storeId) }
-        : {};
-      return await Product.find(findQuery).limit(50).lean();
-    };
+  // Fallback for no query: return all products or store-specific products
+  const findQuery = storeId
+    ? { storeId: new mongoose.Types.ObjectId(storeId) }
+    : {};
+  return await Product.find(findQuery).limit(50).lean();
+};
 
 /**
- * Role-aware search for Candian's Cart.
+ * Role-aware search for Candian Cart.
  *
  */
 
@@ -148,7 +142,7 @@ export const searchProducts = async (
     const products = await fetchProductsDB(searchQuery, targetStoreId);
 
     if (!products) {
-      return { success: false, error: "No products found in Candian's Cart." };
+      return { success: false, error: "No products found in Candian Cart." };
     }
 
     // JSON Serialization for safe transfer to Client Components
