@@ -29,8 +29,9 @@ export async function POST(req: Request) {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!,
     );
-  } catch (err) {
-    console.error("Webhook signature failed", err);
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("Webhook signature failed", error.message);
     return new NextResponse("Invalid signature", { status: 400 });
   }
 
@@ -47,6 +48,14 @@ export async function POST(req: Request) {
   if (successfulEvents.includes(event.type)) {
     // Starting stripe session
     const session = event.data.object as Stripe.Checkout.Session;
+
+    const metadata = session.metadata;
+
+    if (!metadata || !metadata.userId || !metadata.requestedAmount) {
+      console.error("Missing metadata in session: ", session.id);
+      return new NextResponse("Missing session metadata", { status: 400 });
+    }
+
     // Checking if payment happned or not (Ignoring bank transfers delays until paid)
     if (session.payment_status !== "paid") {
       // Telling stripe that message is recieved and we wait for the new webhook to arive (Bank to bank transfer takes 3-5 days)
@@ -56,12 +65,16 @@ export async function POST(req: Request) {
       return new NextResponse("OK", { status: 200 });
     }
 
-    const userId = session.metadata?.userId;
+    const userId = metadata.userId;
 
     if (!userId) {
       console.log("No user found for session ID: " + session.metadata?.userId);
       throw new Error(`No user found with the session Metadata: ${userId}`);
     }
+
+    const topUpAmount = parseInt(metadata.requestedAmount, 10);
+    const totalAmount = session.amount_total || 0;
+    const stripeFee = totalAmount - topUpAmount;
 
     await dbConnect();
 
@@ -102,6 +115,8 @@ export async function POST(req: Request) {
               checkoutSessionId: session.id,
               paymentIntentId: session.payment_intent as string,
               amount: session.amount_total || 0,
+              topUpAmount: topUpAmount || 0,
+              stripeFee: stripeFee || 0,
               currency: session.currency || "cad",
               status: session.payment_status || "pending",
             },
@@ -109,21 +124,19 @@ export async function POST(req: Request) {
           { session: dbSession },
         );
 
-        // amount in user wallet
-        const amountToAdd = session.amount_total ? session.amount_total : 0; // Storing in cents (wallet is in cents too)
-
         await Customer.findByIdAndUpdate(
           UserData._id,
-          { $inc: { walletBalance: amountToAdd } },
+          { $inc: { walletBalance: topUpAmount } },
           { session: dbSession },
         );
 
         console.log(
-          `Successfully added ${amountToAdd} to user ${userId} wallet`,
+          `Successfully added ${topUpAmount} to user ${userId} wallet`,
         );
       });
-    } catch (e) {
-      console.error("Transaction error: ", e);
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error("Transaction error: ", error.message);
       return new NextResponse("Internal Server Error", { status: 500 });
     } finally {
       await dbSession.endSession();

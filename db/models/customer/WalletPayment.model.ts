@@ -7,7 +7,9 @@ export interface IWalletPayment {
   stripeEventId: string;
   checkoutSessionId: string;
   paymentIntentId: string;
-  amount: number;
+  amount: number; // Total amount charged to the customer (including fees)
+  topUpAmount: number; // Actual amount that went in the wallet after fees
+  stripeFee: number;
   currency: string;
   status: PaymentStatus;
 }
@@ -27,6 +29,8 @@ const WalletPaymentSchema = new Schema<IWalletPayment>(
     checkoutSessionId: { type: String, required: true },
     paymentIntentId: { type: String, required: true },
     amount: { type: Number, required: true },
+    topUpAmount: { type: Number, required: true },
+    stripeFee: { type: Number, required: true },
     currency: { type: String, default: "cad" },
     status: {
       type: String,
