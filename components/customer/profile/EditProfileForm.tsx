@@ -144,13 +144,35 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
   });
 
   // Unified handler for both input and select elements
+  // const handleChange = useCallback(
+  //   (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  //     const { name, value } = e.target;
+  //     setFields((prev) => ({ ...prev, [name]: value }));
+  //   },
+  //   [],
+  // );
   const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const { name, value } = e.target;
-      setFields((prev) => ({ ...prev, [name]: value }));
-    },
-    [],
-  );
+  (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    if (name === "mobile") {
+      const digits = value.replace(/\D/g, "").slice(0, 10);
+      let formatted = digits;
+      if (digits.length >= 7) {
+        formatted = `(${digits.slice(0, 3)})${digits.slice(3, 6)}-${digits.slice(6)}`;
+      } else if (digits.length >= 4) {
+        formatted = `(${digits.slice(0, 3)})${digits.slice(3)}`;
+      } else if (digits.length >= 1) {
+        formatted = `(${digits}`;
+      }
+      setFields((prev) => ({ ...prev, mobile: formatted }));
+      return;
+    }
+
+    setFields((prev) => ({ ...prev, [name]: value }));
+  },
+  [],
+);
 
   // Check whether anything actually changed (compare trimmed current vs trimmed original)
   const hasChanges =
@@ -277,9 +299,9 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
                     type="tel"
                     value={fields.mobile}
                     onChange={handleChange}
-                    maxLength={10}
+                    maxLength={14}
                     required
-                    placeholder="6041234567"
+                    placeholder="(604)123-4567"
                     className="font-mono tracking-wider"
                     error={state?.errors?.mobile?.[0]}
                   />

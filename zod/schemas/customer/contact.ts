@@ -9,10 +9,17 @@ export const contactSchema = z.object({
   email: z
     .email("Invalid email address")
     .transform((v) => v.trim().toLowerCase()),
+  // phone: z
+  //   .string()
+  //   .trim()
+  //   .regex(/^\+?[\d\s\-().]{7,20}$/, "Invalid phone number")
+  //   .optional()
+  //   .or(z.literal("")),
   phone: z
     .string()
     .trim()
-    .regex(/^\+?[\d\s\-().]{7,20}$/, "Invalid phone number")
+    .transform((v) => v.replace(/[\s\-().+]/g, ""))
+    .pipe(z.string().regex(/^\d{7,20}$/, "Invalid phone number"))
     .optional()
     .or(z.literal("")),
   topic: z.enum([

@@ -14,9 +14,10 @@ export const CustomerSchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   province: z.string().min(1, "Province is required"),
-  mobile: z
-    .string()
-    .regex(/^\d{10}$/, "Mobile number must be exactly 10 digits"),
+mobile: z
+  .string()
+  .transform((v) => v.replace(/\D/g, ""))
+  .pipe(z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits")),
 
   monthlyBudget: z.coerce
     .number()
