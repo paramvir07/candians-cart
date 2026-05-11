@@ -61,12 +61,7 @@ const Navbar = async () => {
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
           
-          {/* Notifications Dropdown (Replaced Link block) */}
-          <NotificationDropdown 
-            unreadCount={unreadCount} 
-            notifications={notifications} 
-          />
-
+          
           {/* Cart */}
           <Link href="/customer/cart">
             <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary/80 active:scale-[0.97] transition-all">
@@ -99,8 +94,17 @@ const Navbar = async () => {
           {/* Divider */}
           <div className="w-px h-5 bg-border mx-1" />
 
+              {/* Notifications Dropdown (Replaced Link block) */}
+          <NotificationDropdown 
+            unreadCount={unreadCount} 
+            notifications={notifications} 
+          />
+
+
           {/* Avatar dropdown */}
           <NavAvatarMenu name={customerData.name} initials={initials} />
+
+          
         </div>
       </div>
     </nav>
