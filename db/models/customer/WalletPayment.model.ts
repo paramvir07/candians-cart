@@ -9,7 +9,7 @@ export interface IWalletPayment {
   paymentIntentId: string;
   amount: number; // Total amount charged to the customer (including fees)
   topUpAmount: number; // Actual amount that went in the wallet after fees
-  stripeFee: number;
+  stripeFee: number; // Stripe fee amount (totalCharge - topUpAmount)
   currency: string;
   status: PaymentStatus;
 }
