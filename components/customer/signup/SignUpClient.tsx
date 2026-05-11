@@ -191,7 +191,7 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
             <div className="flex items-center gap-2.5 mb-12">
               {/* <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm shadow-primary/20"> */}
                 {/* <ShoppingCart size={17} className="text-primary-foreground" /> */}
-                <Logo variant="full" href="/" />
+                <Logo variant="icon" href="/" />
               {/* </div> */}
               {/* <span className="text-sm font-semibold text-foreground">Candian's Cart</span> */}
             </div>

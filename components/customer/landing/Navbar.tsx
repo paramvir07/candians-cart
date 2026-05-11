@@ -44,7 +44,7 @@ const Navbar = async () => {
         
         {/* Logo */}
         <div className="shrink-0 flex items-center h-full">
-          <Logo />
+          <Logo variant="icon" />
         </div>
 
         {/* Search — tablet+ */}
@@ -60,7 +60,12 @@ const Navbar = async () => {
 
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
-          
+
+    {/* Notifications Dropdown (Replaced Link block) */}
+          <NotificationDropdown 
+            unreadCount={unreadCount} 
+            notifications={notifications} 
+          />          
           
           {/* Cart */}
           <Link href="/customer/cart">
@@ -94,11 +99,7 @@ const Navbar = async () => {
           {/* Divider */}
           <div className="w-px h-5 bg-border mx-1" />
 
-              {/* Notifications Dropdown (Replaced Link block) */}
-          <NotificationDropdown 
-            unreadCount={unreadCount} 
-            notifications={notifications} 
-          />
+          
 
 
           {/* Avatar dropdown */}

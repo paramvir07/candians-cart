@@ -365,7 +365,7 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
                 <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                      <Logo href="#" />
+                      <Logo variant="icon" href="#" />
                     </div>
                     <div>
                       <p className="text-xs text-stone-400 leading-none mb-0.5">

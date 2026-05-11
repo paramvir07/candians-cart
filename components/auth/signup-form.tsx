@@ -80,7 +80,7 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
       {/* Logo + heading */}
       <div className="mb-7">
         <div className="h-12 flex items-center justify-left mb-6">
-          <Logo variant="full" href="/" />
+          <Logo variant="icon" href="/" />
         </div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
           {heading}

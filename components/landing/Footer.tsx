@@ -230,7 +230,7 @@ export default function Footer({ isLoggedIn = false }: FooterProps) {
         <div className="footer-main">
           {/* Brand col */}
           <div className="footer-brand">
-            <Logo variant="full" href="/" />
+            <Logo variant="icon" href="/" />
             <p>
               Subsidised grocery pickup for Canadian families in Abbotsford, BC.
               Save up to 30% on everyday essentials.

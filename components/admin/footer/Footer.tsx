@@ -46,7 +46,7 @@ function LogoPlaceholder() {
     <div className="flex items-center gap-2.5">
       {/* Swap this div for your <Logo /> — use a light/white variant on dark bg */}
       <div className="w-9 h-9 rounded-xlflex items-center justify-center shrink-0">
-        <Logo href="/admin" />
+        <Logo variant="icon" href="/admin" />
       </div>
       <div>
         <p className="text-sm font-bold text-white leading-tight">Admin Panel</p>
@@ -67,7 +67,7 @@ const AdminFooter = () => {
 
           {/* Brand column */}
           <div className="md:w-56 shrink-0 space-y-4">
-            <Logo href="/admin" />
+            <Logo variant="icon" href="/admin" />
             <p className="text-xs text-gray-500 leading-relaxed">
               Internal admin portal for managing stores, orders, products, and
               platform finances.

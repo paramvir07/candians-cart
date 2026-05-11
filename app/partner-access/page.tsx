@@ -42,7 +42,7 @@ function SelectorContent() {
       <div className="mb-8">
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
           {/* <ShoppingCart className="text-primary-foreground" size={22} /> */}
-          <Logo />
+          <Logo variant="icon" />
         </div>
         <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
           Partner Portal

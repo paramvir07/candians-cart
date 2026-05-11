@@ -232,7 +232,7 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
         {/* Brand header */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-            <Logo href="/admin" />
+            <Logo variant="icon" href="/admin" />
           </div>
           <span className="text-[15px] font-bold text-gray-900 tracking-tight">
             Admin Panel
@@ -255,7 +255,7 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
         </button>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
-            <Logo href="/admin" />
+            <Logo variant="icon" href="/admin" />
           </div>
           <span className="text-sm font-bold text-gray-900">Admin Panel</span>
         </div>
@@ -282,7 +282,7 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
         <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center">
-              <Logo href="/admin" />
+              <Logo variant="icon" href="/admin" />
             </div>
             <span className="text-[15px] font-bold text-gray-900">
               Admin Panel

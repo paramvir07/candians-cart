@@ -10,7 +10,7 @@ export const categories = [
   "Snacks",
   "Household",
   "Oil & Ghee",
-  "Pulses & Lentils",
+  "  Lentils",
   "Flour & Atta",
   "Rice",
   "Spices",

@@ -109,7 +109,7 @@ export default function ChangePasswordForm() {
       {/* ── Header ── */}
       <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-border/60">
         <Link
-          href="/customer/profile"
+          href="/customer/profile/edit"
           className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-muted transition-all text-muted-foreground hover:text-foreground shrink-0"
         >
           <ChevronLeft className="h-5 w-5" />
@@ -205,7 +205,7 @@ export default function ChangePasswordForm() {
                   type="button"
                   variant="outline"
                   className="flex-1 sm:flex-none h-10 px-5 rounded-full text-sm font-semibold"
-                  onClick={() => router.push("/customer/profile")}
+                  onClick={() => router.push("/customer/profile/edit")}
                 >
                   Cancel
                 </Button>

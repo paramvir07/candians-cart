@@ -191,7 +191,7 @@ const AdminSidebar = ({ name }: StoreSidebarProps) => {
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
             {/* <Store className="w-4 h-4 text-white" /> */}
-            <Logo />
+            <Logo variant="icon" />
           </div>
           <span className="text-[15px] font-bold text-gray-900 tracking-tight">
             Store Panel
@@ -215,7 +215,7 @@ const AdminSidebar = ({ name }: StoreSidebarProps) => {
         </button>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
-            <Logo />
+            <Logo variant="icon" />
           </div>
           <span className="text-sm font-bold text-gray-900">Store Panel</span>
         </div>
@@ -244,7 +244,7 @@ const AdminSidebar = ({ name }: StoreSidebarProps) => {
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center">
               {/* <Store className="w-4 h-4 text-white" /> */}
-              <Logo />
+              <Logo variant="icon" />
             </div>
             <span className="text-[15px] font-bold text-gray-900">
               Store Panel

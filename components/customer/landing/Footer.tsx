@@ -82,7 +82,7 @@ export function Footer() {
             {/* Left — brand + socials */}
             <div className="md:max-w-[220px] shrink-0 flex flex-col gap-5">
               <div>
-                <Logo variant="full" />
+                <Logo variant="icon" />
                 <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
                   The exclusive family grocery platform for fresh produce and pantry
                   essentials for Canadian families.

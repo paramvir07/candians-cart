@@ -93,7 +93,7 @@ export function SearchNav({
             </Link>
           )}
           <div className="hidden md:flex items-center">
-            <Logo />
+            <Logo variant="icon" />
           </div>
         </div>
 

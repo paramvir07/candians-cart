@@ -318,7 +318,8 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
 
               <input
                 type="file"
-                accept="image/png, image/jpeg, image/webp, application/pdf"
+                accept="image/*,application/pdf"
+                // accept="image/png, image/jpeg, image/webp, application/pdf"
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleDocumentChange}

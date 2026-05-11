@@ -265,7 +265,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
         {/* Brand header */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-            <Logo />
+            <Logo variant="icon" />
           </div>
           <span className="text-[15px] font-bold text-gray-900 tracking-tight">
             Cashier
@@ -289,7 +289,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
         </button>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
-            <Logo />
+            <Logo variant="icon" />
           </div>
           <span className="text-sm font-bold text-gray-900">Cashier</span>
         </div>
@@ -325,7 +325,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center">
               {/* <ShoppingCartIcon className="w-4 h-4 text-white" /> */}
-              <Logo />
+              <Logo variant="icon" />
             </div>
             <span className="text-[15px] font-bold text-gray-900">Cashier</span>
           </div>

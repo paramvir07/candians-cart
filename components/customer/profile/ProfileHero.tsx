@@ -1,7 +1,15 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Customer } from "@/types/customer/customer";
-import { Edit, QrCode, ShieldCheck, MapPin, CalendarDays, X, KeyRound } from "lucide-react";
+import {
+  Edit,
+  QrCode,
+  ShieldCheck,
+  MapPin,
+  CalendarDays,
+  X,
+  KeyRound,
+} from "lucide-react";
 import Link from "next/link";
 import {
   Dialog,
@@ -103,7 +111,7 @@ export default function ProfileHero({ customer }: Props) {
         </div>
 
         {/* ── CTAs ── */}
-        <div className="flex gap-2.5">
+        <div className="flex gap-1 min-w-0">
           <Dialog>
             <DialogTrigger asChild>
               <Button
@@ -176,7 +184,7 @@ export default function ProfileHero({ customer }: Props) {
             </Link>
           </Button>
 
-          <Button
+          {/* <Button
             size="icon"
             variant="outline"
             className="rounded-xl border-green-500 text-green-600 hover:bg-green-50"
@@ -184,8 +192,10 @@ export default function ProfileHero({ customer }: Props) {
             <Link href="/customer/change-password" className="flex">
               <KeyRound className="h-4 w-4" />
             </Link>
-          </Button>
-          <ShareButton />
+          </Button> */}
+          <div className="shrink-0">
+            <ShareButton />
+          </div>
         </div>
       </div>
     </div>

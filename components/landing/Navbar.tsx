@@ -150,7 +150,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
           </button>
 
           {/* ── Logo ── */}
-          <Logo variant="full" href="/" />
+          <Logo variant="icon" href="/" />
 
           {/* ── Desktop nav links ── */}
           <div className="hidden flex-1 items-center gap-0.5 lg:flex">
