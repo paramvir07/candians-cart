@@ -116,6 +116,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const { prev, current, mid } = getFibBracketFrom21(totalInDollars);
   const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
 
+
   const activeMarkup = (() => {
     if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
       return avgMarkup;
@@ -123,6 +124,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       return 30;
     return null;
   })();
+CartItems
 
   const calculateTotalMarkup = (item: ICartItem) => {
     if (activeMarkup === null || item.productId.subsidised) return null;
