@@ -1,9 +1,9 @@
-import { allStoreDataAction }    from "@/actions/admin/analytics/store/allStoresData.action";
-import { getRecentCustomers }    from "@/actions/admin/analytics/getRecentCustomers.action";
-import StoreInfo                 from "@/components/admin/analytics/store/GetStore";
-import RecentPayoutReceipts      from "@/components/admin/analytics/store/RecentPayoutReciepts";
-import RecentOrders              from "@/components/admin/analytics/store/RecentOrders";
-import StatCards                 from "@/components/admin/analytics/store/StatsCards";
+import { allStoreDataAction } from "@/actions/admin/analytics/store/allStoresData.action";
+import { getRecentCustomers } from "@/actions/admin/analytics/getRecentCustomers.action";
+import StoreInfo from "@/components/admin/analytics/store/GetStore";
+import RecentPayoutReceipts from "@/components/admin/analytics/store/RecentPayoutReciepts";
+import RecentOrders from "@/components/admin/analytics/store/RecentOrders";
+import StatCards from "@/components/admin/analytics/store/StatsCards";
 import { getRecentCashActivities } from "@/actions/common/getCashActivities.action";
 import RecentCustomers from "@/components/shared/RecentCustomers";
 import CashActivityWidget from "@/components/shared/cash-collection/CashActivityWidget";
@@ -15,8 +15,8 @@ const AdminDashboardPage = async () => {
     cashActivities,
   ] = await Promise.all([
     allStoreDataAction(),
-    getRecentCustomers(null, 6),       // all stores, 6 most recent
-    getRecentCashActivities(null, 6),  // all stores, 6 most recent
+    getRecentCustomers(null, 6), // all stores, 6 most recent
+    getRecentCashActivities(null, 6), // all stores, 6 most recent
   ]);
 
   return (
@@ -26,9 +26,13 @@ const AdminDashboardPage = async () => {
 
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Admin Dashboard</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+              Admin Dashboard
+            </h1>
             <h2 className="text-xl font-medium mt-4">Overview</h2>
-            <p className="text-sm text-muted-foreground">Snapshot of sales, users, and platform activity.</p>
+            <p className="text-sm text-muted-foreground">
+              Snapshot of sales, users, and platform activity.
+            </p>
           </div>
         </div>
 
@@ -41,22 +45,16 @@ const AdminDashboardPage = async () => {
 
         {/* Recent Customers + Cash Collection side by side */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
-          <RecentCustomers customers={recentCustomers} viewAllHref="/admin/customers" />
+          <RecentCustomers
+            customers={recentCustomers}
+            viewAllHref="/admin/customers"
+          />
           <CashActivityWidget
             activities={cashActivities}
             viewAllHref="/admin/cash-collection"
             showStore={true}
           />
         </div>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-          <div className="relative flex justify-start">
-            <span className="bg-gray-50 pr-4 text-xs font-semibold text-gray-400 uppercase tracking-widest">Store Locations</span>
-          </div>
-        </div>
-
-        <StoreInfo />
       </div>
     </div>
   );

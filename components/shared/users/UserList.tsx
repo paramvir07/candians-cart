@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,7 +77,42 @@ const UserList = (props: UserListProps) => {
   const [isLoading, setIsLoading] = useState(isAdminMode); // only loading when admin fetches
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const scanBufferRef = useRef("");
+  const lastKeyTimeRef = useRef(0);
 
+  useEffect(() => {
+    const THRESHOLD = 50;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const now = Date.now();
+      const gap = now - lastKeyTimeRef.current;
+      lastKeyTimeRef.current = now;
+
+      if (e.key === "Enter") {
+        const buf = scanBufferRef.current;
+        scanBufferRef.current = "";
+
+        if (buf.length >= 6) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Focus, highlight, replace
+          searchInputRef.current?.focus();
+          setSearch(buf);
+          setTimeout(() => searchInputRef.current?.select(), 0);
+        }
+        return;
+      }
+
+      if (e.key.length !== 1) return;
+      if (gap > THRESHOLD) scanBufferRef.current = "";
+      scanBufferRef.current += e.key;
+    };
+
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, []);
   // Resolve which data array to use
   const allCustomers: AnyCustomer[] = isAdminMode
     ? fetchedCustomers
@@ -146,7 +181,9 @@ const UserList = (props: UserListProps) => {
 
   const searchPlaceholder = isAllStores
     ? "Search id, name, email, phone or store…"
-    : cashierRole || storeRole ? "Search id, name or scan QR…" : "Search"
+    : cashierRole || storeRole
+      ? "Search id, name or scan QR…"
+      : "Search";
 
   return (
     <div
@@ -191,6 +228,7 @@ const UserList = (props: UserListProps) => {
             <Search className="w-4 h-4 text-muted-foreground shrink-0" />
             <div className="relative flex-1 bg-accent/70 rounded-xl">
               <Input
+                ref={searchInputRef}
                 type="text"
                 placeholder={searchPlaceholder}
                 value={search}
@@ -247,7 +285,8 @@ const UserList = (props: UserListProps) => {
               onClick={() => {
                 if (cashierRole)
                   router.push(`/cashier/customer/${customer._id}`);
-                if(isAdminMode) router.push(`/admin/customers/${customer._id}`);
+                if (isAdminMode)
+                  router.push(`/admin/customers/${customer._id}`);
               }}
             >
               {/* Store chip — admin all-stores view only */}

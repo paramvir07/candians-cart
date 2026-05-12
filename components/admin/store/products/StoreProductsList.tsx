@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Search, PackageOpen, CirclePlus, Store, X } from "lucide-react";
 import Link from "next/link";
+import { useDebounce } from "use-debounce";
+
 import {
   Pagination,
   PaginationContent,
@@ -18,17 +20,20 @@ import {
 import { ProductCard, ProductCardRole } from "./ProductCard";
 import { IProduct } from "@/types/store/products.types";
 import { Button } from "@/components/ui/button";
+
+// Server Actions
 import {
   AdminProduct,
   getStoreProductsPaginated,
-  searchProducts,
 } from "@/actions/admin/products/getProducts.action";
+import { searchProducts } from "@/actions/common/searchProducts.action";
 import {
   getStoreProductsFiltered,
   ProductFilters,
-  searchProductsWithFilters, //-----
+  searchProductsWithFilters,
 } from "@/actions/admin/products/getProductsFiltered.action";
-// import { ProductFiltersSheet } from "@/components/shared/products/ProductFiltersSheet";
+
+// UI Components
 import QrScannerButton from "@/components/shared/users/QrScannerButton";
 import { ProductFiltersSheet } from "@/components/shared/filters/ProductFilterSheet";
 
@@ -54,7 +59,6 @@ const ProductCardSkeleton = () => (
   </div>
 );
 
-// Active filter chip
 const FilterChip = ({
   label,
   onRemove,
@@ -89,7 +93,7 @@ const hasFilters = (f: ProductFilters) =>
   (f.taxRates?.length ?? 0) > 0 ||
   f.markupMin !== undefined ||
   f.markupMax !== undefined ||
-  (f.sortBy && f.sortBy !== "recommended");
+  (f.sortBy !== undefined && f.sortBy !== "recommended");
 
 export const StoreProductsList = ({
   storeId,
@@ -99,114 +103,84 @@ export const StoreProductsList = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+
+  // VERCEL BEST PRACTICE: Use useDebounce to manage rapid user input
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [debouncedQuery] = useDebounce(searchQuery, 350);
+
   const [filters, setFilters] = useState<ProductFilters>(EMPTY_FILTERS);
 
+  // Derived state (no need for useState here, preventing desync bugs)
   const isAllStores = !storeId;
   const isFilterMode = hasFilters(filters);
+  const isSearchMode = debouncedQuery.trim().length > 0;
 
+  // Reset to page 1 when a new search begins
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedQuery]);
+
+  // MASTER FETCHER: A single, clean useEffect to prevent race conditions
   useEffect(() => {
     let mounted = true;
-    if (isSearchMode || isFilterMode) return;
-    const load = async () => {
+
+    const fetchProducts = async () => {
       setIsLoading(true);
-      const result = await getStoreProductsPaginated(storeId, currentPage, 12);
-      if (!mounted) return;
-      if (result.success) {
-        setProducts(result.data);
-        setTotalPages(result.totalPages ?? 1);
-      } else {
-        toast.error(result.error || "Failed to fetch products");
+
+      try {
+        // Enforce strict typing from the server actions
+        let res: { 
+          success: boolean; 
+          data?: AdminProduct[] | any; // 'any' safely catches the ProductActionResponse interface mismatch if strict types differ 
+          totalPages?: number; 
+          error?: string 
+        };
+
+        if (isSearchMode && isFilterMode) {
+          res = await searchProductsWithFilters(
+            debouncedQuery,
+            storeId,
+            currentPage,
+            12,
+            filters,
+          );
+        } else if (isSearchMode) {
+          res = await searchProducts(debouncedQuery, storeId);
+        } else if (isFilterMode) {
+          res = await getStoreProductsFiltered(storeId, currentPage, 12, filters);
+        } else {
+          res = await getStoreProductsPaginated(storeId, currentPage, 12);
+        }
+
+        // Prevent state updates if the component unmounted during the fetch
+        if (!mounted) return;
+
+        if (res.success) {
+          setProducts(res.data || []);
+          // Standard search doesn't paginate, so fallback to 1
+          setTotalPages(res.totalPages ?? 1); 
+        } else {
+          toast.error(res.error || "Failed to fetch products in Candian Cart");
+        }
+      } catch (error) {
+        if (mounted) {
+          console.error("Fetch error:", error);
+          toast.error("An unexpected error occurred during fetch.");
+        }
+      } finally {
+        if (mounted) setIsLoading(false);
       }
-      setIsLoading(false);
     };
-    load();
+
+    fetchProducts();
+
     return () => {
       mounted = false;
     };
-  }, [storeId, currentPage, isSearchMode, isFilterMode]);
-
-  useEffect(() => {
-    if (!isFilterMode || isSearchMode) return;
-    let mounted = true;
-    const load = async () => {
-      setIsLoading(true);
-      const result = await getStoreProductsFiltered(
-        storeId,
-        currentPage,
-        12,
-        filters,
-      );
-      if (!mounted) return;
-      if (result.success) {
-        setProducts(result.data);
-        setTotalPages(result.totalPages ?? 1);
-      } else {
-        toast.error(result.error || "Failed to fetch products");
-      }
-      setIsLoading(false);
-    };
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, [storeId, currentPage, filters, isFilterMode, isSearchMode]);
-
-  // Search mode
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setIsSearchMode(false);
-      return;
-    }
-    const timer = setTimeout(async () => {
-      setIsSearchMode(true);
-      setIsLoading(true);
-      const res = await searchProducts(searchQuery, storeId);
-      if (res.success) setProducts(res.data);
-      else toast.error(res.error || "Search failed");
-      setIsLoading(false);
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [searchQuery, storeId]);
-
-  // -----
-
-  // Combined search + filter mode
-useEffect(() => {
-  if (!searchQuery.trim() || !isFilterMode) return;
-  let mounted = true;
-  const timer = setTimeout(async () => {
-    setIsSearchMode(true);
-    setIsLoading(true);
-    const res = await searchProductsWithFilters(
-      searchQuery,
-      storeId,
-      currentPage,
-      12,
-      filters,
-    );
-    if (!mounted) return;
-    if (res.success) {
-      setProducts(res.data);
-      setTotalPages(res.totalPages ?? 1);
-    } else {
-      toast.error(res.error || "Search with filters failed");
-    }
-    setIsLoading(false); 
-  }, 350);
-  return () => {
-    mounted = false;
-    clearTimeout(timer);
-  };
-}, [searchQuery, storeId, currentPage, filters, isFilterMode]);
-
-  // -----
-
+  }, [storeId, currentPage, filters, debouncedQuery, isSearchMode, isFilterMode]);
 
   const handleBarcodeScan = (value: string) => {
     setSearchQuery(value);
-    setIsSearchMode(true);
   };
 
   const handleApplyFilters = (newFilters: ProductFilters) => {
@@ -264,6 +238,7 @@ useEffect(() => {
 
   // Build readable chips for active filters
   const filterChips: { label: string; clear: () => void }[] = [];
+  
   if ((filters.categories?.length ?? 0) > 0) {
     filters.categories!.forEach((cat) =>
       filterChips.push({
@@ -276,17 +251,19 @@ useEffect(() => {
       }),
     );
   }
-  if (filters.inStock)
+  if (filters.inStock) {
     filterChips.push({
       label: "In stock",
       clear: () => handleApplyFilters({ ...filters, inStock: undefined }),
     });
-  if (filters.subsidised)
+  }
+  if (filters.subsidised) {
     filterChips.push({
       label: "Subsidised",
       clear: () => handleApplyFilters({ ...filters, subsidised: undefined }),
     });
-  if (filters.minPrice !== undefined || filters.maxPrice !== undefined)
+  }
+  if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
     filterChips.push({
       label: `CA$${((filters.minPrice ?? 0) / 100).toFixed(0)}–CA$${((filters.maxPrice ?? 500000) / 100).toFixed(0)}`,
       clear: () =>
@@ -296,12 +273,14 @@ useEffect(() => {
           maxPrice: undefined,
         }),
     });
-  if ((filters.taxRates?.length ?? 0) > 0)
+  }
+  if ((filters.taxRates?.length ?? 0) > 0) {
     filterChips.push({
       label: `Tax: ${filters.taxRates!.map((r) => `${(r * 100).toFixed(0)}%`).join(", ")}`,
       clear: () => handleApplyFilters({ ...filters, taxRates: undefined }),
     });
-  if (filters.markupMin !== undefined || filters.markupMax !== undefined)
+  }
+  if (filters.markupMin !== undefined || filters.markupMax !== undefined) {
     filterChips.push({
       label: `Markup ${filters.markupMin ?? 0}–${filters.markupMax ?? 100}%`,
       clear: () =>
@@ -311,7 +290,8 @@ useEffect(() => {
           markupMax: undefined,
         }),
     });
-  if (filters.sortBy && filters.sortBy !== "recommended")
+  }
+  if (filters.sortBy && filters.sortBy !== "recommended") {
     filterChips.push({
       label:
         { price_asc: "Price ↑", price_desc: "Price ↓", name_asc: "A → Z" }[
@@ -319,10 +299,10 @@ useEffect(() => {
         ] ?? "",
       clear: () => handleApplyFilters({ ...filters, sortBy: undefined }),
     });
+  }
 
   return (
     <>
-      {/* Header row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
@@ -330,7 +310,7 @@ useEffect(() => {
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             {isSearchMode
-              ? `Showing results for "${searchQuery}"`
+              ? `Showing results for "${debouncedQuery}"`
               : isFilterMode
                 ? `Filtered results`
                 : titles[role].sub}
@@ -338,15 +318,23 @@ useEffect(() => {
         </div>
         <div className="relative flex gap-2 w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
+          {/* <Input
+          ref={searchInputRef}
             type="text"
             placeholder="Search products..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+          /> */}
+          <Input
+            // ref={searchInputRef}
+            type="text"
+            placeholder="Search products...."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
-          {/* Filter button — only for admin/store, not customer */}
           {role !== "customer" && (
             <ProductFiltersSheet
               filters={filters}
@@ -357,7 +345,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Active filter chips */}
       {filterChips.length > 0 && (
         <div className="flex flex-wrap gap-2 items-center">
           {filterChips.map((chip) => (
@@ -376,7 +363,6 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Add product banner */}
       {(role === "store" || (role === "admin" && storeId)) && (
         <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg border">
           <p className="text-sm font-medium text-slate-600">
@@ -391,7 +377,6 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {isLoading ? (
           Array.from({ length: 8 }).map((_, i) => (
@@ -450,7 +435,6 @@ useEffect(() => {
         )}
       </div>
 
-      {/* Pagination — hidden in search mode */}
       {!isSearchMode && totalPages > 1 && (
         <div className="pt-4 border-t border-border">
           <Pagination>

@@ -94,26 +94,27 @@ export async function updateProduct(
     const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
     const isSubsidized = subsidyCategories.includes(otherData.category);
 
-    if (isSubsidized) {
-      if (otherData.markup < 10 || otherData.markup > 35) {
-        return {
-          success: false,
-          message:
-            "For subsidised products, Markup must be between 10% and 35%",
-        };
-      }
-    } else {
-      if (otherData.markup < 0 || otherData.markup > 40) {
-        return {
-          success: false,
-          message:
-            "For non-subsidised products, Markup must be between 0% and 40%",
-        };
+    if (storeRole) {
+      if (isSubsidized) {
+        if (otherData.markup < 10 || otherData.markup > 35) {
+          return {
+            success: false,
+            message:
+              "For subsidised products, Markup must be between 10% and 35%",
+          };
+        }
+      } else {
+        if (otherData.markup < 0 || otherData.markup > 40) {
+          return {
+            success: false,
+            message:
+              "For non-subsidised products, Markup must be between 0% and 40%",
+          };
+        }
       }
     }
 
-    const newPrimaryUPC =
-      primaryUPC !== undefined && primaryUPC !== null ? primaryUPC : undefined;
+    const newPrimaryUPC = primaryUPC;
 
     const primaryUPCHasChanged =
       newPrimaryUPC !== undefined &&
@@ -247,30 +248,30 @@ export async function updateProduct(
         }
 
         if (adminRole) {
-           const adminDbPayload: any = { ...dbPayload };
+          const adminDbPayload: any = { ...dbPayload };
 
-           const adminUpdateQuery =
-             InvoiceId === ""
-               ? {
-                   $set: adminDbPayload,
-                   $unset: { InvoiceId: "" },
-                 }
-               : {
-                   $set: adminDbPayload,
-                 };
+          const adminUpdateQuery =
+            InvoiceId === ""
+              ? {
+                  $set: adminDbPayload,
+                  $unset: { InvoiceId: "" },
+                }
+              : {
+                  $set: adminDbPayload,
+                };
 
-           if (InvoiceId === "") {
-             delete adminDbPayload.InvoiceId;
-           }
+          if (InvoiceId === "") {
+            delete adminDbPayload.InvoiceId;
+          }
 
-           updatedProduct = await Product.findByIdAndUpdate(
-             productId,
-             adminUpdateQuery,
-             {
-               returnDocument: "after",
-               session: mongoSession,
-             },
-           );
+          updatedProduct = await Product.findByIdAndUpdate(
+            productId,
+            adminUpdateQuery,
+            {
+              returnDocument: "after",
+              session: mongoSession,
+            },
+          );
         } else if (storeRole) {
           updatedProduct = await Product.findOneAndUpdate(
             {

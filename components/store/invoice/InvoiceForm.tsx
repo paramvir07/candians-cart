@@ -7,21 +7,39 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-// Your server actions
-import { createInvoice, editInvoice, getInvoiceById } from "@/actions/store/invoice/createInvoice";
-
+// Server actions
+import {
+  createInvoice,
+  editInvoice,
+  getInvoiceById,
+} from "@/actions/store/invoice/createInvoice";
 import { InvoiceFormSchema } from "@/zod/schemas/store/addProductsValidation";
 import { zodErrorResponse } from "@/zod/validation/error";
+import { StoreDocument } from "@/types/store/store";
 
 interface InvoiceFormProps {
-  storeId: string;
-  invoiceId?: string; // Made optional to support both Create and Edit modes
+  storeId?: string; // Optional so admin doesn't require a pre-bound store
+  invoiceId?: string;
+  isAdmin?: boolean; // Flag to enable admin store selection
+  stores?: StoreDocument[]; // Fetched store list for admin dropdown
 }
 
-const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
+const InvoiceForm = ({
+  storeId,
+  invoiceId,
+  isAdmin,
+  stores,
+}: InvoiceFormProps) => {
   const router = useRouter();
   const isEditMode = !!invoiceId;
 
@@ -31,11 +49,15 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
   // Document Upload State
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [documentPreview, setDocumentPreview] = useState<string | null>(null);
-  const [existingDocument, setExistingDocument] = useState<{ url: string; fileId: string } | null>(null);
+  const [existingDocument, setExistingDocument] = useState<{
+    url: string;
+    fileId: string;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
   const [formData, setFormData] = useState({
+    storeId: storeId || "",
     vendorName: "",
     InvoiceNumber: "",
     DateInvoiceCame: "", // (YYYY-MM-DD)
@@ -50,22 +72,27 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
     const loadInvoiceData = async () => {
       try {
         const response = await getInvoiceById(invoiceId);
-        if (response.success && response.data) {
-          setFormData({
-            vendorName: response.data.vendorName,
-            InvoiceNumber: response.data.InvoiceNumber.toString(),
-            DateInvoiceCame: response.data.DateInvoiceCame,
-            productNameInInvoice: response.data.productNameInInvoice || "",
-            additionalNote: response.data.additionalNote || "",
-          });
-          
-          setExistingDocument(response.data.documentId);
-          // Set preview to the existing remote URL initially
-          setDocumentPreview(response.data.documentId.url); 
-        } else {
+
+        // 1. EARLY EXIT: Handle the failure state immediately
+        if (!response.success) {
           toast.error(response.message || "Failed to load invoice");
-          router.push("/store/invoice");
+          router.push(isAdmin ? "/admin/price-invoices" : "/store/invoice");
+          return;
         }
+
+        // 2. TypeScript now GUARANTEES that response.success is true
+        // and response.data exists based on your GetInvoiceResponse type.
+        setFormData({
+          storeId: response.data.storeId || storeId || "",
+          vendorName: response.data.vendorName,
+          InvoiceNumber: response.data.InvoiceNumber.toString(),
+          DateInvoiceCame: response.data.DateInvoiceCame,
+          productNameInInvoice: response.data.productNameInInvoice || "",
+          additionalNote: response.data.additionalNote || "",
+        });
+
+        setExistingDocument(response.data.documentId);
+        setDocumentPreview(response.data.documentId.url);
       } catch (error) {
         toast.error("An error occurred while loading the invoice.");
       } finally {
@@ -74,7 +101,7 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
     };
 
     loadInvoiceData();
-  }, [invoiceId, router]);
+  }, [invoiceId, router, isAdmin, storeId]);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -103,14 +130,20 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
   const handleRemoveDocument = () => {
     setDocumentFile(null);
     setDocumentPreview(null);
-    setExistingDocument(null); // Clear remote document if user removes it
+    setExistingDocument(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
   const handleSubmit = async () => {
-    // Require document only if there is no existing document AND no new file
+    const targetStoreId = isAdmin ? formData.storeId : storeId;
+
+    if (!targetStoreId) {
+      toast.error("Please assign this invoice to a store.");
+      return;
+    }
+
     if (!documentFile && !existingDocument) {
       toast.error("Please upload the invoice document.");
       return;
@@ -121,12 +154,11 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
     try {
       let finalDocumentData = existingDocument;
 
-      // 1. Upload NEW Document if one was selected
       if (documentFile) {
         const documentFormData = new FormData();
         documentFormData.append("file", documentFile);
 
-        const uploadRes = await fetch("/imagekit", { // Check API path! Added /api/ prefix just in case
+        const uploadRes = await fetch("/imagekit", {
           method: "POST",
           body: documentFormData,
         });
@@ -145,17 +177,15 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
         };
       }
 
-      // 2. Prepare Payload
       const payload = {
         vendorName: formData.vendorName,
         invoiceNumber: Number(formData.InvoiceNumber),
         dateInvoiceCame: formData.DateInvoiceCame,
         productNameInInvoice: formData.productNameInInvoice || undefined,
         additionalNote: formData.additionalNote || undefined,
-        document: finalDocumentData, // Uses new upload OR existing DB value
+        document: finalDocumentData,
       };
 
-      // 3. Client-Side Validation
       const validation = InvoiceFormSchema.safeParse(payload);
       if (!validation.success) {
         const errorMessage = zodErrorResponse(validation);
@@ -164,20 +194,18 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
         return;
       }
 
-      // 4. Branch Logic: Submit to Edit OR Create Server Action
       let result;
       if (isEditMode && invoiceId) {
         result = await editInvoice(invoiceId, validation.data);
       } else {
-        result = await createInvoice(validation.data, storeId);
+        result = await createInvoice(validation.data, targetStoreId);
       }
 
-      // 5. Handle Result
       if (result.success) {
         toast.success(`Invoice ${isEditMode ? "Updated" : "Uploaded"}`, {
           description: `Invoice #${formData.InvoiceNumber} has been saved successfully.`,
         });
-        router.push("/store/invoice");
+        router.push(isAdmin ? "/admin/price-invoices" : "/store/invoice");
         router.refresh();
       } else {
         toast.error(result.message || "Failed to save invoice.");
@@ -191,7 +219,7 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
   };
 
   const handleCancel = () => {
-    router.push("/store/invoice");
+    router.push(isAdmin ? "/admin/price-invoices" : "/store/invoice");
   };
 
   if (fetchingData) {
@@ -228,6 +256,35 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
               <h2 className="text-lg font-semibold">Invoice Details</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* ADMIN EXCLUSIVE: Store Selector */}
+                {isAdmin && stores && (
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="storeId">
+                      Assign to Store <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      disabled={isEditMode || loading} // Typically we don't want admins changing the store owner on edit
+                      value={formData.storeId}
+                      onValueChange={(value) => handleChange("storeId", value)}
+                    >
+                      <SelectTrigger className="bg-white">
+                        <SelectValue placeholder="Select the target store..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {stores.map((store) => (
+                          <SelectItem
+                            key={String(store._id)}
+                            value={String(store._id)}
+                          >
+                            {/* Assumes storeName, adapt if your schema uses .name */}
+                            {store.name || "Unnamed Store"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="vendorName">
                     Vendor Name <span className="text-red-500">*</span>
@@ -250,7 +307,9 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
                     type="number"
                     placeholder="e.g. 10452"
                     value={formData.InvoiceNumber}
-                    onChange={(e) => handleChange("InvoiceNumber", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("InvoiceNumber", e.target.value)
+                    }
                     className="bg-white"
                   />
                 </div>
@@ -263,7 +322,9 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
                     id="DateInvoiceCame"
                     type="date"
                     value={formData.DateInvoiceCame}
-                    onChange={(e) => handleChange("DateInvoiceCame", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("DateInvoiceCame", e.target.value)
+                    }
                     className="bg-white text-slate-700"
                   />
                 </div>
@@ -284,11 +345,14 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
                   id="productNameInInvoice"
                   placeholder="e.g. Organic Whole Milk 2L"
                   value={formData.productNameInInvoice}
-                  onChange={(e) => handleChange("productNameInInvoice", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("productNameInInvoice", e.target.value)
+                  }
                   className="bg-white"
                 />
                 <p className="text-[10px] text-slate-500 leading-tight">
-                  If this invoice is specifically for verifying a single product's pricing.
+                  If this invoice is specifically for verifying a single
+                  product's pricing.
                 </p>
               </div>
 
@@ -300,7 +364,9 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
                 <Textarea
                   placeholder="Any extra context for the admin reviewing this invoice..."
                   value={formData.additionalNote}
-                  onChange={(e) => handleChange("additionalNote", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("additionalNote", e.target.value)
+                  }
                   className="min-h-32 bg-white"
                 />
               </div>
@@ -319,7 +385,6 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
               <input
                 type="file"
                 accept="image/*,application/pdf"
-                // accept="image/png, image/jpeg, image/webp, application/pdf"
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleDocumentChange}
@@ -383,8 +448,16 @@ const InvoiceForm = ({ storeId, invoiceId }: InvoiceFormProps) => {
             disabled={loading}
             className="w-full bg-indigo-600 hover:bg-indigo-700 py-6 text-base font-semibold shadow-lg shadow-indigo-100 flex items-center gap-2"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-            {loading ? "Saving..." : isEditMode ? "Save Changes" : "Save Invoice"}
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Save className="w-5 h-5" />
+            )}
+            {loading
+              ? "Saving..."
+              : isEditMode
+                ? "Save Changes"
+                : "Save Invoice"}
           </Button>
         </div>
       </div>
