@@ -88,40 +88,12 @@ export const BaseProductFormSchema = z.object({
     .min(0, "Markup must be between 0% and 40%")
     .max(40, "Markup must be between 0% and 40%"),
 
-  primaryUPC: z.preprocess(
-    (val) => {
-      if (
-        val === "" ||
-        val === null ||
-        val === undefined ||
-        (typeof val === "number" && Number.isNaN(val))
-      ) {
-        return undefined;
-      }
-
-      const parsed = Number(val);
-
-      if (Number.isNaN(parsed)) return undefined;
-
-      return parsed;
-    },
-    z
-      .number("UPC must be a valid number")
-      .int("UPC must be a whole number")
-      .positive("UPC must be a positive number")
-      .optional()
-      .refine(
-        (val) => {
-          if (val === undefined) return true;
-
-          const length = String(val).length;
-          return length >= 1 && length <= 13;
-        },
-        {
-          message: "UPC must be between 1 and 13 digits",
-        },
-      ),
-  ),
+  primaryUPC: z
+    .string()
+    .trim()
+    .regex(/^\d*$/, "UPC must contain digits only")
+    .max(14, "UPC must be atleast 14 digits")
+    .transform((val) => (val === "" ? undefined : val)),
 
   isMeasuredInWeight: z.boolean().optional().default(false),
 

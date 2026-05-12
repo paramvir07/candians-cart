@@ -103,9 +103,9 @@ export async function createProduct(
     /**
      * UPC should be unique inside same store.
      */
-    if (primaryUPC !== undefined && primaryUPC !== null) {
+    if (primaryUPC) {
       const existingProduct = await Product.findOne({
-        primaryUPC: Number(primaryUPC),
+        primaryUPC,
         storeId,
       }).lean();
 
@@ -120,6 +120,8 @@ export async function createProduct(
     }
 
     const newPriceInCents = Math.round(price * 100);
+    const newDisposableFeeInCents = Math.round((disposableFee ?? 0) * 100);
+    const newTaxRate = tax > 0 ? tax / 100 : 0;
 
     const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
     const isSubsidized = subsidyCategories.includes(otherData.category);
@@ -146,17 +148,14 @@ export async function createProduct(
       ...otherData,
       storeId,
       images: images ?? [],
-      tax: tax > 0 ? tax / 100 : 0,
+      tax: newTaxRate,
       price: newPriceInCents,
-      disposableFee: Math.round((disposableFee ?? 0) * 100),
+      disposableFee: newDisposableFeeInCents,
       InvoiceId: InvoiceId || undefined,
       subsidised: isSubsidized,
       isMeasuredInWeight,
       UOM,
-      primaryUPC:
-        primaryUPC !== undefined && primaryUPC !== null
-          ? Number(primaryUPC)
-          : undefined,
+      primaryUPC: primaryUPC,
     };
 
     const mongoSession = await mongoose.startSession();

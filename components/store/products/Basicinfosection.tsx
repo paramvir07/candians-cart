@@ -87,7 +87,8 @@ export function BasicInfoSection({
               <Input
                 type="text"
                 inputMode="numeric"
-                pattern="[0-9]*"
+                pattern="\d*"
+                maxLength={14}
                 placeholder="e.g. 123456789012"
                 value={primaryUPC}
                 onChange={(e) =>
