@@ -20,6 +20,19 @@ import {
 import Link from "next/link";
 import SubsidyItemsClient from "@/components/customer/budgetpacks/subsidyItemsClient";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SubsidyItem {
@@ -42,11 +55,6 @@ function getFibBracket(spend: number): number {
   return bracket;
 }
 
-/**
- * Given a base pack spend, unused subsidy, and the out-of-pocket amount for
- * subsidized items, rolls everything into effective spend and returns the
- * subsidy budget for the (potentially higher) Fibonacci bracket.
- */
 function resolveSubsidyBudget(
   baseSpend: number,
   unusedSubsidy: number,
@@ -240,86 +248,39 @@ function allocateSubsidy(
   };
 }
 
-// ─── subsidyTierTable ──────────────────────────────────────────────────────────
+// ─── SubsidyTierTable ─────────────────────────────────────────────────────────
 
 function SubsidyTierTable() {
   return (
-    <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-2xl overflow-hidden">
-      <div className="flex justify-between items-center px-4.5 py-3 border-b border-[#bbf7d0]">
-        <span
-          style={{
-            fontFamily: "'Sora',sans-serif",
-            fontWeight: 700,
-            fontSize: 13,
-            color: "#15803d",
-          }}
-        >
+    <div className="rounded-2xl border border-green-200 bg-green-50 overflow-hidden">
+      <div className="flex flex-wrap justify-between items-center gap-2 px-4 py-3 border-b border-green-200">
+        <span className="text-sm font-bold text-green-700 font-sora">
           How much gift subsidy do I get?
         </span>
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 12,
-            color: "#64748b",
-          }}
-        >
-          You keep ~21% of what you spend
-        </span>
+        <span className="text-xs text-muted-foreground">You keep ~21% of what you spend</span>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(110px,1fr))] gap-px bg-[#bbf7d0]">
+
+      <div className="grid grid-cols-3 sm:grid-cols-6 divide-x divide-y divide-green-200">
         {subsidyTiers.map((tier, i) => (
           <div
             key={i}
-            className="bg-[#f0fdf4] p-[14px_14px] flex flex-col items-center text-center gap-0.75"
+            className="bg-green-50 p-3 flex flex-col items-center text-center gap-1"
           >
-            <span
-              style={{
-                fontFamily: "'DM Sans',sans-serif",
-                fontSize: 12,
-                color: "#64748b",
-              }}
-            >
-              You spend
-            </span>
-            <span
-              style={{
-                fontFamily: "'Sora',sans-serif",
-                fontWeight: 800,
-                fontSize: 16,
-                color: "#0f172a",
-              }}
-            >
-              ${tier.spend}
-            </span>
-            <div className="flex items-center gap-1 bg-[#dcfce7] rounded-full px-2.5 py-0.75 mt-0.5">
-              <Gift size={10} color="#16a34a" />
-              <span
-                style={{
-                  fontFamily: "'Sora',sans-serif",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  color: "#16a34a",
-                }}
-              >
-                +${tier.subsidy.toFixed(2)} free
-              </span>
-            </div>
+            <span className="text-[11px] text-muted-foreground">You spend</span>
+            <span className="text-base font-extrabold text-foreground font-sora">${tier.spend}</span>
+            <Badge className="bg-green-100 text-green-700 hover:bg-green-100 gap-1 text-[11px] font-bold border-0 px-2 py-0.5">
+              <Gift size={9} />
+              +${tier.subsidy.toFixed(2)} free
+            </Badge>
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-1.5 px-4.5 py-2.5 border-t border-[#bbf7d0]">
-        <Zap size={13} color="#d97706" />
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 12,
-            color: "#92400e",
-            fontWeight: 500,
-          }}
-        >
-          Gift subsidy you don't use is saved to your Gift Wallet — it never
-          disappears.
-        </span>
+
+      <div className="flex items-center gap-2 px-4 py-2.5 border-t border-green-200 bg-amber-50/60">
+        <Zap size={13} className="text-amber-500 shrink-0" />
+        <p className="text-xs text-amber-800 font-medium leading-relaxed">
+          Gift subsidy you don't use is saved to your Gift Wallet — it never disappears.
+        </p>
       </div>
     </div>
   );
@@ -330,99 +291,60 @@ function SubsidyTierTable() {
 function HowItWorksExplainer() {
   const steps = [
     {
-      icon: <ShoppingCart size={20} color="#16a34a" />,
+      icon: <ShoppingCart size={18} className="text-green-600" />,
       title: "Shop for $21 or more",
       body: "Buy any regular grocery items worth at least $21. The more you buy, the bigger your gift subsidy.",
     },
     {
-      icon: <Gift size={20} color="#16a34a" />,
+      icon: <Gift size={18} className="text-green-600" />,
       title: "Get free gift subsidy",
       body: "The app gives you back about 21% of what you spent as gift subsidy. Spend $21 → get $4.41 free. Spend more → get more.",
     },
     {
-      icon: <Tag size={20} color="#16a34a" />,
+      icon: <Tag size={18} className="text-green-600" />,
       title: "Use it on subsidized items",
-      body: "Pick items like milk, eggs, flour, vegetables and more — the app pays for them using your gift subsidy. Any leftover subsidy is saved in your Gift Wallet for next time.",
+      body: "Pick items like milk, eggs, flour, vegetables and more — the app pays for them using your gift subsidy. Leftover subsidy saves to your Gift Wallet.",
     },
   ];
 
   return (
-    <div className="w-full max-w-345 bg-white rounded-[20px] border-2 border-[#dcfce7] p-[28px_28px_24px] mb-5 shadow-[0_2px_16px_rgba(0,0,0,0.05)]">
-      <div className="flex items-center gap-2 mb-1.5">
-        <Sparkles size={16} color="#16a34a" />
-        <span
-          style={{
-            fontFamily: "'Sora',sans-serif",
-            fontWeight: 800,
-            fontSize: 17,
-            color: "#0f172a",
-          }}
-        >
-          How Budget Packs work
-        </span>
-      </div>
-      <p
-        style={{
-          fontFamily: "'DM Sans',sans-serif",
-          fontSize: 14,
-          color: "#64748b",
-          margin: "0 0 22px",
-          lineHeight: 1.6,
-        }}
-        className="mb-5.5"
-      >
-        It's simple — shop for groceries, get free money back, and use it to pay
-        less.
-      </p>
+    <Card className="w-full max-w-5xl mb-6 border-2 border-green-100 shadow-sm">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles size={16} className="text-green-600" />
+          <h2 className="text-lg font-extrabold text-foreground font-sora tracking-tight">
+            How Budget Packs work
+          </h2>
+        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+          It's simple — shop for groceries, get free money back, and use it to pay less.
+        </p>
+      </CardHeader>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3 mb-6">
-        {steps.map((s, i) => (
-          <div
-            key={i}
-            className="bg-[#f8fafc] rounded-2xl border border-[#f1f5f9] p-[16px_18px] flex flex-col gap-2"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#dcfce7] flex items-center justify-center shrink-0">
-                {s.icon}
+      <CardContent className="space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {steps.map((s, i) => (
+            <div
+              key={i}
+              className="bg-muted/40 rounded-xl border border-border/60 p-4 flex flex-col gap-3"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                  {s.icon}
+                </div>
+                <div className="w-5 h-5 rounded-full bg-green-600 text-white flex items-center justify-center text-[11px] font-extrabold font-sora shrink-0">
+                  {i + 1}
+                </div>
               </div>
-              <div className="w-5.5 h-5.5 rounded-full bg-[#16a34a] text-white flex items-center justify-center shrink-0"
-                style={{
-                  fontFamily: "'Sora',sans-serif",
-                  fontWeight: 800,
-                  fontSize: 11,
-                }}
-              >
-                {i + 1}
-              </div>
+              <p className="text-sm font-bold text-foreground font-sora leading-tight">{s.title}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{s.body}</p>
             </div>
-            <p
-              style={{
-                fontFamily: "'Sora',sans-serif",
-                fontWeight: 700,
-                fontSize: 14,
-                color: "#0f172a",
-                margin: 0,
-              }}
-            >
-              {s.title}
-            </p>
-            <p
-              style={{
-                fontFamily: "'DM Sans',sans-serif",
-                fontSize: 13,
-                color: "#64748b",
-                margin: 0,
-                lineHeight: 1.65,
-              }}
-            >
-              {s.body}
-            </p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <SubsidyTierTable/>
-    </div>
+        <SubsidyTierTable />
+      </CardContent>
+    </Card>
   );
 }
 
@@ -438,42 +360,27 @@ function DialogHeader({
   onClose: () => void;
 }) {
   return (
-    <div className="p-[22px_24px_18px] border-b border-[#f1f5f9] relative">
-      <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl bg-[#f0fdf4] flex items-center justify-center">
-          <Gift size={18} color="#16a34a" />
-        </div>
-        <div>
-          <h2
-            style={{
-              fontFamily: "'Sora',sans-serif",
-              fontWeight: 800,
-              fontSize: 17,
-              color: "#0f172a",
-              margin: 0,
-            }}
-          >
-            Pick items to use your gift subsidy on
-          </h2>
-          <p
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              fontSize: 12,
-              color: "#64748b",
-              margin: "2px 0 0",
-            }}
-          >
-            {pkgName} · Your gift subsidy:{" "}
-            <strong style={{ color: "#16a34a" }}>${subsidyBudget}</strong>
-          </p>
-        </div>
+    <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-border relative flex items-start gap-3">
+      <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+        <Gift size={18} className="text-green-600" />
       </div>
-      <button
+      <div className="flex-1 min-w-0 pr-8">
+        <h2 className="text-base font-extrabold text-foreground font-sora leading-tight">
+          Pick items to use your gift subsidy on
+        </h2>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {pkgName} · Your gift subsidy:{" "}
+          <strong className="text-green-600">${subsidyBudget}</strong>
+        </p>
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={onClose}
-        className="absolute top-4.5 right-4.5 bg-[#f1f5f9] border-none rounded-lg w-7.5 h-7.5 cursor-pointer flex items-center justify-center text-[#64748b]"
+        className="absolute top-4 right-4 w-7 h-7 rounded-lg"
       >
         <X size={15} />
-      </button>
+      </Button>
     </div>
   );
 }
@@ -482,21 +389,10 @@ function DialogHeader({
 
 function DialogInfoBanner({ subsidyBudget }: { subsidyBudget: number }) {
   return (
-    <div className="px-6 py-3 bg-[#f0fdf4] border-b border-[#dcfce7] flex gap-2 items-start">
-      <Info size={14} color="#16a34a" className="mt-0.5 shrink-0" />
-      <p
-        style={{
-          fontFamily: "'DM Sans',sans-serif",
-          fontSize: 13,
-          color: "#15803d",
-          margin: 0,
-          lineHeight: 1.6,
-        }}
-      >
-        You have <strong>${subsidyBudget} gift subsidy</strong>. Tick the items
-        below that you want — we will pay for them using your subsidy. Any subsidy
-        left over will be saved in your <strong>Gift Wallet</strong> for next
-        time.
+    <div className="px-4 sm:px-5 py-2 sm:py-3 bg-green-50 border-b border-green-100 flex gap-2 items-center">
+      <Info size={13} className="text-green-600 shrink-0" />
+      <p className="text-xs text-green-700 leading-snug">
+        <strong>${subsidyBudget} gift subsidy</strong> — tick items to use it. Unused subsidy saves to your <strong>Gift Wallet</strong>.
       </p>
     </div>
   );
@@ -519,100 +415,50 @@ function DialogBudgetBar({
 }) {
   const resolvedBudget = resolveSubsidyBudget(baseSpend, unusedSubsidy, youPay);
   const bracketUpgrade = resolvedBudget > subsidyBudget;
+  const pct = Math.min(100, (subsidyUsed / subsidyBudget) * 100);
 
   return (
-    <div className="px-6 py-3.5 bg-[#fafafa] border-b border-[#f1f5f9]">
-      <div className="flex justify-between mb-1.75">
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 12,
-            color: "#64748b",
-            fontWeight: 500,
-          }}
-        >
-          Gift subsidy used so far
-        </span>
-        <span
-          style={{
-            fontFamily: "'Sora',sans-serif",
-            fontWeight: 700,
-            fontSize: 13,
-            color: "#16a34a",
-          }}
-        >
+    <div className="px-4 sm:px-5 py-2.5 sm:py-4 bg-muted/30 border-b border-border">
+      <div className="flex justify-between items-center mb-1.5">
+        <span className="text-xs text-muted-foreground font-medium">Gift subsidy used so far</span>
+        <span className="text-sm font-bold text-green-600 font-sora">
           ${subsidyUsed}{" "}
-          <span style={{ color: "#94a3b8", fontWeight: 500 }}>
-            of ${subsidyBudget}
-          </span>
+          <span className="text-muted-foreground font-normal">of ${subsidyBudget}</span>
         </span>
       </div>
-      <div className="h-1.75 rounded-full bg-[#e2e8f0] overflow-hidden">
-        <div
-          className="h-full rounded-full transition-[width] duration-350 ease-[cubic-bezier(0.34,1.2,0.64,1)]"
-          style={{
-            width: `${Math.min(100, (subsidyUsed / subsidyBudget) * 100)}%`,
-            background: "linear-gradient(90deg,#4ade80,#16a34a)",
-          }}
-        />
-      </div>
+      <Progress value={pct} className="h-1.5 bg-green-100 [&>div]:bg-green-500" />
 
-      {unusedSubsidy > 0 || youPay > 0 ? (
+      {(unusedSubsidy > 0 || youPay > 0) ? (
         <div
-          className={`mt-2 p-[8px_12px] rounded-lg flex items-start gap-1.75 border ${
+          className={cn(
+            "mt-2 p-2 sm:p-3 rounded-xl flex items-start gap-2 border text-xs font-medium leading-snug",
             bracketUpgrade
-              ? "bg-[#f0fdf4] border-[#86efac]"
-              : "bg-[#fffbeb] border-[#fde68a]"
-          }`}
-        >
-          {bracketUpgrade ? (
-            <Sparkles size={13} color="#16a34a" className="mt-0.5 shrink-0" />
-          ) : (
-            <Zap size={13} color="#d97706" className="mt-0.5 shrink-0" />
+              ? "bg-green-50 border-green-200 text-green-800"
+              : "bg-amber-50 border-amber-200 text-amber-800",
           )}
-          <p
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              fontSize: 12,
-              margin: 0,
-              lineHeight: 1.6,
-              fontWeight: 500,
-            }}
-            className={bracketUpgrade ? "text-[#15803d]" : "text-[#92400e]"}
-          >
+        >
+          {bracketUpgrade
+            ? <Sparkles size={13} className="text-green-600 mt-0.5 shrink-0" />
+            : <Zap size={13} className="text-amber-500 mt-0.5 shrink-0" />}
+          <p>
             {bracketUpgrade ? (
               <>
                 <strong>${(unusedSubsidy + youPay).toFixed(2)} extra</strong> rolls into your spend →{" "}
                 effective spend becomes{" "}
                 <strong>${(baseSpend + unusedSubsidy + youPay).toFixed(2)}</strong>, unlocking{" "}
-                <strong style={{ color: "#16a34a" }}>${resolvedBudget} gift subsidy</strong> on confirm.
+                <strong className="text-green-700">${resolvedBudget} gift subsidy</strong> on confirm.
               </>
             ) : (
               <>
                 <strong>${(unusedSubsidy + youPay).toFixed(2)} extra.</strong>{" "}
-                {youPay > 0 && (
-                  <>
-                    ${youPay.toFixed(2)} out-of-pocket +{" "}
-                  </>
-                )}
-                ${unusedSubsidy.toFixed(2)} unused — pick more
-                items to use it, or save to your Gift Wallet.
+                {youPay > 0 && <>${youPay.toFixed(2)} out-of-pocket + </>}
+                ${unusedSubsidy.toFixed(2)} unused — pick more items to use it, or save to your Gift Wallet.
               </>
             )}
           </p>
         </div>
       ) : (
-        <p
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 11,
-            color: "#16a34a",
-            margin: "6px 0 0",
-            fontWeight: 600,
-          }}
-        >
-          All gift subsidy used ✓
-        </p>
+        <p className="text-xs text-green-600 font-semibold mt-1.5">All gift subsidy used ✓</p>
       )}
     </div>
   );
@@ -638,93 +484,44 @@ function DialogItemRow({
   return (
     <div
       onClick={onToggle}
-      className={`flex items-center p-[11px_14px] rounded-xl mb-1 cursor-pointer transition-all duration-180 ease-in-out border-[1.5px] ${
-        isFree
-          ? "bg-[#f0fdf4] border-[#bbf7d0]"
-          : isPartial
-          ? "bg-[#fffbeb] border-[#fde68a]"
-          : checked
-          ? "bg-[#f0fdf4] border-[#bbf7d0]"
-          : "bg-white border-[#f1f5f9]"
-      }`}
+      className={cn(
+        "flex items-center p-3 rounded-xl mb-1 cursor-pointer transition-all duration-150 border",
+        isFree ? "bg-green-50 border-green-200"
+          : isPartial ? "bg-amber-50 border-amber-200"
+          : checked ? "bg-green-50 border-green-200"
+          : "bg-background border-border hover:border-green-200 hover:bg-green-50/40",
+      )}
     >
       <div
-        className={`w-5.5 h-5.5 rounded-md border-2 flex items-center justify-center shrink-0 mr-3 transition-all duration-200 ${
-          checked
-            ? "bg-[#16a34a] border-[#16a34a]"
-            : "bg-white border-[#cbd5e1]"
-        }`}
+        className={cn(
+          "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mr-3 transition-all duration-150",
+          checked ? "bg-green-600 border-green-600" : "bg-background border-border",
+        )}
       >
-        {checked && <Check size={12} color="white" strokeWidth={3} />}
+        {checked && <Check size={11} className="text-white" strokeWidth={3} />}
       </div>
-      <span
-        style={{
-          fontFamily: "'DM Sans',sans-serif",
-          fontSize: 14,
-        }}
-        className={`flex-1 transition-colors duration-200 ${
-          checked ? "text-[#0f172a]" : "text-[#94a3b8]"
-        }`}
-      >
+
+      <span className={cn("flex-1 text-sm", checked ? "text-foreground" : "text-muted-foreground")}>
         {item.name}
       </span>
+
       <div className="text-right">
         {isFree ? (
           <>
-            <span
-              style={{
-                fontFamily: "'Sora',sans-serif",
-                fontWeight: 800,
-                fontSize: 13,
-                color: "#16a34a",
-              }}
-            >
-              FREE
-            </span>
-            <div
-              style={{
-                fontFamily: "'DM Sans',sans-serif",
-                fontSize: 10,
-                color: "#94a3b8",
-                textDecoration: "line-through",
-                marginTop: 1,
-              }}
-            >
+            <span className="text-xs font-extrabold text-green-600 font-sora">FREE</span>
+            <div className="text-[10px] text-muted-foreground line-through mt-0.5">
               ${item.price.toFixed(2)}
             </div>
           </>
         ) : isPartial ? (
           <>
-            <span
-              style={{
-                fontFamily: "'Sora',sans-serif",
-                fontWeight: 700,
-                fontSize: 13,
-                color: "#d97706",
-              }}
-            >
+            <span className="text-xs font-bold text-amber-600 font-sora">
               ${effectivePrice.toFixed(2)}
             </span>
-            <div
-              style={{
-                fontFamily: "'DM Sans',sans-serif",
-                fontSize: 10,
-                color: "#fbbf24",
-                marginTop: 1,
-              }}
-            >
-              −${discount.toFixed(2)} off
-            </div>
+            <div className="text-[10px] text-amber-400 mt-0.5">−${discount.toFixed(2)} off</div>
           </>
         ) : (
-          <span
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              fontWeight: 600,
-              fontSize: 13,
-              color: "#94a3b8",
-            }}
-          >
+          <span className="text-xs font-semibold text-muted-foreground">
             ${item.price.toFixed(2)}
           </span>
         )}
@@ -753,74 +550,49 @@ function DialogItemList({
   const allChecked = checked.every(Boolean);
 
   return (
-    <div className="overflow-y-auto flex-1 pt-3 px-6">
-      {/* Select all */}
-      <div
-        onClick={onToggleAll}
-        className="flex items-center justify-between p-[10px_14px] bg-[#f8fafc] rounded-xl mb-2 cursor-pointer border border-[#e2e8f0]"
-      >
-        <span
-          style={{
-            fontFamily: "'Sora',sans-serif",
-            fontWeight: 700,
-            fontSize: 13,
-            color: "#334155",
-          }}
-        >
-          Select all items
-        </span>
+    <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+      <div className="px-4 sm:px-5 pt-2.5 sm:pt-3 pb-2">
+        {/* Select all */}
         <div
-          className={`w-5.5 h-5.5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
-            allChecked ? "bg-[#16a34a] border-[#16a34a]" : "bg-white border-[#cbd5e1]"
-          }`}
+          onClick={onToggleAll}
+          className="flex items-center justify-between p-3 bg-muted/50 rounded-xl mb-2 cursor-pointer border border-border hover:border-green-200 transition-colors"
         >
-          {allChecked && <Check size={12} color="white" strokeWidth={3} />}
-        </div>
-      </div>
-
-      {combo.map((item, i) => (
-        <DialogItemRow
-          key={i}
-          item={item}
-          checked={checked[i]}
-          discount={itemDiscount[i]}
-          onToggle={() => onToggle(i)}
-        />
-      ))}
-
-      {/* Browse all subsidized products - now switches to custom view */}
-      <button
-        onClick={onBrowseAll}
-        className="w-full text-left no-underline my-2 p-[11px_14px] bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl flex items-center justify-between cursor-pointer"
-      >
-        <div className="flex items-center gap-2">
-          <Tag size={14} color="#16a34a" />
-          <div>
-            <div
-              style={{
-                fontFamily: "'Sora',sans-serif",
-                fontWeight: 700,
-                fontSize: 13,
-                color: "#15803d",
-              }}
-            >
-              Browse all subsidized products
-            </div>
-            <div
-              style={{
-                fontFamily: "'DM Sans',sans-serif",
-                fontSize: 11,
-                color: "#64748b",
-                marginTop: 1,
-              }}
-            >
-              See the full list of items you can use gift subsidy on
-            </div>
+          <span className="text-sm font-bold text-foreground font-sora">Select all items</span>
+          <div
+            className={cn(
+              "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-150",
+              allChecked ? "bg-green-600 border-green-600" : "bg-background border-border",
+            )}
+          >
+            {allChecked && <Check size={11} className="text-white" strokeWidth={3} />}
           </div>
         </div>
-        <ChevronRight size={15} color="#16a34a" />
-      </button>
-      <div className="h-3" />
+
+        {combo.map((item, i) => (
+          <DialogItemRow
+            key={i}
+            item={item}
+            checked={checked[i]}
+            discount={itemDiscount[i]}
+            onToggle={() => onToggle(i)}
+          />
+        ))}
+
+        <button
+          onClick={onBrowseAll}
+          className="w-full mt-2 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center justify-between cursor-pointer hover:bg-green-100 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Tag size={14} className="text-green-600" />
+            <div className="text-left">
+              <div className="text-xs font-bold text-green-700 font-sora">Browse all subsidized products</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">See the full list of items you can use gift subsidy on</div>
+            </div>
+          </div>
+          <ChevronRight size={14} className="text-green-600 shrink-0" />
+        </button>
+        <div className="h-3" />
+      </div>
     </div>
   );
 }
@@ -843,103 +615,36 @@ function DialogSummaryFooter({
   onConfirm: () => void;
 }) {
   return (
-    <div className="p-[16px_24px_22px] border-t border-[#f1f5f9] bg-white">
-      <div className={`flex justify-between ${unusedSubsidy > 0 ? "mb-0.75" : "mb-2.5"}`}>
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 13,
-            color: "#94a3b8",
-          }}
-        >
-          Gift subsidy used
-        </span>
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 13,
-            color: "#16a34a",
-            fontWeight: 600,
-          }}
-        >
-          −${subsidyUsed.toFixed(2)}
-        </span>
+    <div className="px-4 sm:px-5 pt-3 sm:pt-4 pb-4 sm:pb-5 border-t border-border bg-background shrink-0">
+      <div className="flex justify-between mb-1">
+        <span className="text-sm text-muted-foreground">Gift subsidy used</span>
+        <span className="text-sm text-green-600 font-semibold">−${subsidyUsed.toFixed(2)}</span>
       </div>
       {unusedSubsidy > 0 && (
-        <div className="flex justify-between mb-2.5">
-          <span
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              fontSize: 13,
-              color: "#94a3b8",
-            }}
-          >
-            Saved to Gift Wallet
-          </span>
-          <span
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              fontSize: 13,
-              color: "#d97706",
-              fontWeight: 600,
-            }}
-          >
-            ${unusedSubsidy.toFixed(2)}
-          </span>
+        <div className="flex justify-between mb-1.5">
+          <span className="text-sm text-muted-foreground">Saved to Gift Wallet</span>
+          <span className="text-sm text-amber-600 font-semibold">${unusedSubsidy.toFixed(2)}</span>
         </div>
       )}
-      <div className="flex justify-between items-center bg-[#f0fdf4] rounded-xl p-[10px_14px] mb-3.5">
-        <span
-          style={{
-            fontFamily: "'Sora',sans-serif",
-            fontWeight: 700,
-            fontSize: 14,
-            color: "#0f172a",
-          }}
-        >
-          You pay for these items
-        </span>
-        <span
-          style={{
-            fontFamily: "'Sora',sans-serif",
-            fontWeight: 800,
-            fontSize: 22,
-            color: "#16a34a",
-            letterSpacing: -0.5,
-          }}
-        >
+
+      <div className="flex justify-between items-center bg-green-50 border border-green-200 rounded-xl px-3.5 py-2.5 mb-3">
+        <span className="text-sm font-bold text-foreground font-sora">You pay for these items</span>
+        <span className="text-xl sm:text-2xl font-extrabold text-green-600 font-sora tracking-tight">
           ${youPay.toFixed(2)}
         </span>
       </div>
 
-      <div className="flex gap-2.5">
-        <button
-          onClick={onClose}
-          style={{
-            fontFamily: "'Sora',sans-serif",
-            fontWeight: 600,
-            fontSize: 13,
-            color: "#64748b",
-          }}
-          className="flex-1 py-3.25 bg-white border-[1.5px] border-[#e2e8f0] rounded-xl cursor-pointer"
-        >
+      <div className="flex gap-2">
+        <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl h-10 sm:h-11 font-sora font-semibold text-sm">
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={onConfirm}
-          style={{
-            fontFamily: "'Sora',sans-serif",
-            fontWeight: 700,
-            fontSize: 14,
-            color: "white",
-            background: "linear-gradient(135deg,#22c55e,#16a34a)",
-            boxShadow: "0 4px 16px rgba(22,163,74,0.35)",
-          }}
-          className="flex-[2] py-3.25 border-none rounded-xl cursor-pointer flex items-center justify-center gap-1.75 transition-all duration-200"
+          className="flex-[2] rounded-xl h-10 sm:h-11 bg-green-600 hover:bg-green-700 text-white font-sora font-bold text-sm gap-1.5 shadow-lg shadow-green-200"
         >
           <Check size={15} strokeWidth={2.5} />
           {allUnchecked ? "Save all to Gift Wallet" : "Confirm Selection"}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -977,11 +682,7 @@ function SubsidyDialog({
   );
 
   const toggle = (i: number) =>
-    setChecked((prev) => {
-      const n = [...prev];
-      n[i] = !n[i];
-      return n;
-    });
+    setChecked((prev) => { const n = [...prev]; n[i] = !n[i]; return n; });
 
   const toggleAll = () => {
     const allOn = checked.every(Boolean);
@@ -994,37 +695,37 @@ function SubsidyDialog({
 
   const handleConfirm = () => {
     const items = pkg.combo
-      .map((item, i) => ({
-        name: item.name,
-        price: item.price,
-        discount: itemDiscount[i],
-      }))
+      .map((item, i) => ({ name: item.name, price: item.price, discount: itemDiscount[i] }))
       .filter((_, i) => checked[i]);
-
     const resolved = resolveSubsidyBudget(pkg.maxPrice, unusedSubsidy, youPay);
-
-    onConfirm({
-      items,
-      subsidyUsed,
-      unusedSubsidy,
-      youPay,
-      resolvedSubsidyBudget: resolved,
-    });
+    onConfirm({ items, subsidyUsed, unusedSubsidy, youPay, resolvedSubsidyBudget: resolved });
   };
 
   return (
     <div
       onClick={handleBackdrop}
-      className="fixed inset-0 z-[9999] bg-[rgba(15,23,42,0.55)] backdrop-blur-md flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease]"
+      className="
+        fixed inset-x-0 z-[9999]
+        bg-black/50 backdrop-blur-sm
+        animate-in fade-in duration-200
+        flex items-end sm:items-center justify-center
+        p-0 sm:p-4
+        top-[64px] bottom-[64px]
+        sm:inset-0 sm:top-0 sm:bottom-0
+      "
     >
       <div
-        className="bg-white rounded-3xl w-full max-w-130 max-h-[90vh] flex flex-col shadow-[0_32px_80px_rgba(0,0,0,0.22),0_4px_16px_rgba(0,0,0,0.08)] animate-[slideUp_0.3s_cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden"
+        className="
+          dialog-inner
+          bg-background w-full flex flex-col
+          shadow-2xl overflow-hidden border border-border
+          rounded-t-3xl sm:rounded-3xl
+          sm:max-w-lg sm:max-h-[88vh]
+          animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-2 duration-300
+          h-full sm:h-auto
+        "
       >
-        <DialogHeader
-          pkgName={pkg.name}
-          subsidyBudget={subsidyBudget}
-          onClose={onClose}
-        />
+        <DialogHeader pkgName={pkg.name} subsidyBudget={subsidyBudget} onClose={onClose} />
         <DialogInfoBanner subsidyBudget={subsidyBudget} />
         <DialogBudgetBar
           subsidyUsed={subsidyUsed}
@@ -1054,7 +755,7 @@ function SubsidyDialog({
   );
 }
 
-// ─── CardItemsDefault (unconfirmed state) ─────────────────────────────────────
+// ─── CardItemsDefault ─────────────────────────────────────────────────────────
 
 function CardItemsDefault({
   pkg,
@@ -1068,81 +769,41 @@ function CardItemsDefault({
   return (
     <>
       <div className="flex items-center gap-1.5 mb-1.5">
-        <Gift size={14} color="#16a34a" />
-        <span
-          style={{
-            fontFamily: "'Sora',sans-serif",
-            fontWeight: 700,
-            fontSize: 13,
-            color: "#15803d",
-          }}
-        >
+        <Gift size={13} className="text-green-600" />
+        <span className="text-xs font-bold text-green-700 font-sora">
           Items you can use your gift subsidy on
         </span>
       </div>
-      <p
-        style={{
-          fontFamily: "'DM Sans',sans-serif",
-          fontSize: 13,
-          color: "#64748b",
-          lineHeight: 1.6,
-        }}
-        className="mb-2.5"
-      >
-        Tap <strong style={{ color: "#0f172a" }}>"Pick Items"</strong> and
-        choose which ones you want covered by your{" "}
-        <strong style={{ color: "#15803d" }}>
-          ${subsidyBudget} gift subsidy
-        </strong>
-        . Whatever you don't use is saved to your Gift Wallet.
+      <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+        Tap <strong className="text-foreground">"Pick Items"</strong> and choose which ones you want
+        covered by your <strong className="text-green-600">${subsidyBudget} gift subsidy</strong>.
+        Whatever you don't use is saved to your Gift Wallet.
       </p>
-      <div className="rounded-xl overflow-hidden border border-[#f1f5f9]">
+      <div className="rounded-xl overflow-hidden border border-border">
         {pkg.combo.map((item, i) => (
           <div
             key={i}
-            className={`flex justify-between p-[9px_13px] ${
-              i % 2 === 0 ? "bg-[#fafafa]" : "bg-white"
-            } border-b border-[#f1f5f9] last:border-b-0`}
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              fontSize: 14,
-            }}
+            className={cn(
+              "flex justify-between px-3 py-2.5 text-sm border-b border-border last:border-b-0",
+              i % 2 === 0 ? "bg-muted/30" : "bg-background",
+            )}
           >
-            <span className="text-[#374151]">{item.name}</span>
-            <span className="text-[#16a34a] font-semibold">
-              ${item.price.toFixed(2)}
-            </span>
+            <span className="text-foreground">{item.name}</span>
+            <span className="text-green-600 font-semibold">${item.price.toFixed(2)}</span>
           </div>
         ))}
       </div>
-      {/* Browse all subsidized products - now a button to switch view */}
+
       <button
         onClick={onSwitchToCustomView}
-        className="w-full text-left no-underline mt-2 p-[10px_14px] bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl flex items-center justify-between cursor-pointer"
+        className="w-full text-left mt-2 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center justify-between cursor-pointer hover:bg-green-100 transition-colors"
       >
         <div className="flex items-center gap-1.5">
-          <Tag size={13} color="#16a34a" />
-          <span
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              fontWeight: 600,
-              fontSize: 13,
-              color: "#15803d",
-            }}
-          >
-            Browse all subsidized products
-          </span>
+          <Tag size={13} className="text-green-600" />
+          <span className="text-xs font-semibold text-green-700">Browse all subsidized products</span>
         </div>
-        <div className="flex items-center gap-0.75 text-[#16a34a]">
-          <span
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              fontSize: 12,
-              fontWeight: 500,
-            }}
-          >
-            See full list
-          </span>
+        <div className="flex items-center gap-0.5 text-green-600">
+          <span className="text-xs font-medium">See full list</span>
           <ChevronRight size={13} />
         </div>
       </button>
@@ -1167,37 +828,23 @@ function CardItemsConfirmed({
     <>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
-          <Check size={14} color="#16a34a" />
-          <span
-            style={{
-              fontFamily: "'Sora',sans-serif",
-              fontWeight: 700,
-              fontSize: 13,
-              color: "#15803d",
-            }}
-          >
+          <Check size={13} className="text-green-600" />
+          <span className="text-xs font-bold text-green-700 font-sora">
             Items paid by gift subsidy ({items.length})
           </span>
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
-          className="flex items-center gap-1 bg-white border border-[#e2e8f0] rounded-lg py-1 px-2.5 cursor-pointer"
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 12,
-            fontWeight: 600,
-            color: "#64748b",
-          }}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(e) => { e.stopPropagation(); onEdit(); }}
+          className="h-7 px-2.5 text-xs gap-1 rounded-lg"
         >
-          <Pencil size={11} />
+          <Pencil size={10} />
           Edit
-        </button>
+        </Button>
       </div>
 
-      <div className="rounded-xl overflow-hidden border border-[#f1f5f9]">
+      <div className="rounded-xl overflow-hidden border border-border">
         {items.map((item, i) => {
           const isFree = item.discount >= item.price - 0.001;
           const isPartial = item.discount > 0 && !isFree;
@@ -1206,83 +853,25 @@ function CardItemsConfirmed({
           return (
             <div
               key={i}
-              className={`flex justify-between items-center p-[9px_13px] border-b border-[#f1f5f9] ${
-                isFree
-                  ? "bg-[#f0fdf4]"
-                  : isPartial
-                  ? "bg-[#fffbeb]"
-                  : i % 2 === 0
-                  ? "bg-[#fafafa]"
-                  : "bg-white"
-              }`}
+              className={cn(
+                "flex justify-between items-center px-3 py-2.5 border-b border-border last:border-b-0",
+                isFree ? "bg-green-50" : isPartial ? "bg-amber-50" : i % 2 === 0 ? "bg-muted/30" : "bg-background",
+              )}
             >
-              <span
-                style={{
-                  fontFamily: "'DM Sans',sans-serif",
-                  fontSize: 13,
-                  color: "#374151",
-                }}
-                className="flex-1"
-              >
-                {item.name}
-              </span>
-              <div className="text-right">
+              <span className="text-sm text-foreground flex-1 mr-2">{item.name}</span>
+              <div className="text-right shrink-0">
                 {isFree ? (
                   <>
-                    <span
-                      style={{
-                        fontFamily: "'Sora',sans-serif",
-                        fontWeight: 800,
-                        fontSize: 12,
-                        color: "#16a34a",
-                      }}
-                    >
-                      FREE
-                    </span>
-                    <div
-                      style={{
-                        fontFamily: "'DM Sans',sans-serif",
-                        fontSize: 10,
-                        color: "#94a3b8",
-                        textDecoration: "line-through",
-                      }}
-                    >
-                      ${item.price.toFixed(2)}
-                    </div>
+                    <span className="text-xs font-extrabold text-green-600 font-sora">FREE</span>
+                    <div className="text-[10px] text-muted-foreground line-through">${item.price.toFixed(2)}</div>
                   </>
                 ) : isPartial ? (
                   <>
-                    <span
-                      style={{
-                        fontFamily: "'Sora',sans-serif",
-                        fontWeight: 700,
-                        fontSize: 12,
-                        color: "#d97706",
-                      }}
-                    >
-                      ${effPrice.toFixed(2)}
-                    </span>
-                    <div
-                      style={{
-                        fontFamily: "'DM Sans',sans-serif",
-                        fontSize: 10,
-                        color: "#fbbf24",
-                      }}
-                    >
-                      −${item.discount.toFixed(2)} off
-                    </div>
+                    <span className="text-xs font-bold text-amber-600 font-sora">${effPrice.toFixed(2)}</span>
+                    <div className="text-[10px] text-amber-400">−${item.discount.toFixed(2)} off</div>
                   </>
                 ) : (
-                  <span
-                    style={{
-                      fontFamily: "'DM Sans',sans-serif",
-                      fontSize: 13,
-                      color: "#374151",
-                      fontWeight: 600,
-                    }}
-                  >
-                    ${item.price.toFixed(2)}
-                  </span>
+                  <span className="text-xs font-semibold text-foreground">${item.price.toFixed(2)}</span>
                 )}
               </div>
             </div>
@@ -1291,50 +880,25 @@ function CardItemsConfirmed({
 
         {unusedSubsidy > 0 && (
           <div
-            className={`flex justify-between items-center p-[10px_13px] ${
-              bracketUpgrade ? "bg-[#f0fdf4]" : "bg-[#fffbeb]"
-            }`}
+            className={cn(
+              "flex justify-between items-center px-3 py-3",
+              bracketUpgrade ? "bg-green-50" : "bg-amber-50",
+            )}
           >
-            <div className="flex items-center gap-1.5">
-              {bracketUpgrade ? (
-                <Sparkles size={13} color="#16a34a" />
-              ) : (
-                <Zap size={13} color="#d97706" />
-              )}
-              <div>
-                <div
-                  style={{
-                    fontFamily: "'Sora',sans-serif",
-                    fontWeight: 700,
-                    fontSize: 12,
-                    color: bracketUpgrade ? "#15803d" : "#92400e",
-                  }}
-                >
-                  {bracketUpgrade
-                    ? `Bracket upgrade → $${resolvedSubsidyBudget} next time`
-                    : "Saved to Gift Wallet"}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {bracketUpgrade
+                ? <Sparkles size={13} className="text-green-600 shrink-0" />
+                : <Zap size={13} className="text-amber-500 shrink-0" />}
+              <div className="min-w-0">
+                <div className={cn("text-xs font-bold font-sora truncate", bracketUpgrade ? "text-green-700" : "text-amber-800")}>
+                  {bracketUpgrade ? `Bracket upgrade → $${resolvedSubsidyBudget} next time` : "Saved to Gift Wallet"}
                 </div>
-                <div
-                  style={{
-                    fontFamily: "'DM Sans',sans-serif",
-                    fontSize: 11,
-                    color: bracketUpgrade ? "#16a34a" : "#b45309",
-                  }}
-                >
-                  {bracketUpgrade
-                    ? `Unused $${unusedSubsidy.toFixed(2)} rolled into your spend`
-                    : "Use it on your next order"}
+                <div className={cn("text-[11px]", bracketUpgrade ? "text-green-600" : "text-amber-600")}>
+                  {bracketUpgrade ? `Unused $${unusedSubsidy.toFixed(2)} rolled in` : "Use it on your next order"}
                 </div>
               </div>
             </div>
-            <span
-              style={{
-                fontFamily: "'Sora',sans-serif",
-                fontWeight: 800,
-                fontSize: 15,
-                color: bracketUpgrade ? "#16a34a" : "#d97706",
-              }}
-            >
+            <span className={cn("text-sm font-extrabold font-sora shrink-0 ml-2", bracketUpgrade ? "text-green-600" : "text-amber-500")}>
               +${unusedSubsidy.toFixed(2)}
             </span>
           </div>
@@ -1359,62 +923,18 @@ function CardPricingFooter({
     return (
       <>
         <div className="flex justify-between items-center mb-2">
-          <span
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              fontSize: 14,
-              color: "#94a3b8",
-            }}
-          >
-            You pay at the store
-          </span>
-          <span
-            style={{
-              fontFamily: "'Sora',sans-serif",
-              fontWeight: 800,
-              fontSize: 20,
-              color: "#0f172a",
-              letterSpacing: -0.5,
-            }}
-          >
-            ${pkg.maxPrice}
-          </span>
+          <span className="text-sm text-muted-foreground">You pay at the store</span>
+          <span className="text-xl font-extrabold text-foreground font-sora tracking-tight">${pkg.maxPrice}</span>
         </div>
-        <div className="flex justify-between items-center bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-[12px_14px]">
+        <div className="flex justify-between items-center bg-green-50 border border-green-200 rounded-xl px-4 py-3">
           <div className="flex items-center gap-2">
-            <Gift size={15} color="#16a34a" className="shrink-0" />
+            <Gift size={14} className="text-green-600 shrink-0" />
             <div>
-              <div
-                style={{
-                  fontFamily: "'Sora',sans-serif",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  color: "#15803d",
-                }}
-              >
-                Gift subsidy added to your wallet
-              </div>
-              <div
-                style={{
-                  fontFamily: "'DM Sans',sans-serif",
-                  fontSize: 11,
-                  color: "#64748b",
-                  marginTop: 2,
-                }}
-              >
-                Use it to get free items now or save for later
-              </div>
+              <div className="text-sm font-bold text-green-700 font-sora">Gift subsidy added to wallet</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">Use now or save for later</div>
             </div>
           </div>
-          <span
-            style={{
-              fontFamily: "'Sora',sans-serif",
-              fontWeight: 800,
-              fontSize: 20,
-              color: "#16a34a",
-              letterSpacing: -0.5,
-            }}
-          >
+          <span className="text-xl font-extrabold text-green-600 font-sora tracking-tight ml-2 shrink-0">
             +${subsidyBudget}
           </span>
         </div>
@@ -1431,162 +951,59 @@ function CardPricingFooter({
   return (
     <>
       <div className="flex justify-between mb-1.5">
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 14,
-            color: "#94a3b8",
-          }}
-        >
-          Regular items (pack)
-        </span>
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 14,
-            color: "#475569",
-          }}
-        >
-          ${pkg.maxPrice.toFixed(2)}
-        </span>
+        <span className="text-sm text-muted-foreground">Regular items (pack)</span>
+        <span className="text-sm text-foreground">${pkg.maxPrice.toFixed(2)}</span>
       </div>
       <div className="flex justify-between mb-1.5">
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 14,
-            color: "#94a3b8",
-          }}
-        >
-          Subsidized items you picked
-        </span>
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 14,
-            color: "#475569",
-          }}
-        >
+        <span className="text-sm text-muted-foreground">Subsidized items picked</span>
+        <span className="text-sm text-foreground">
           ${confirmed.items.reduce((s, i) => s + i.price, 0).toFixed(2)}
         </span>
       </div>
-      <div className={`flex justify-between ${hasExtra ? "mb-1.5" : "mb-2.5"}`}>
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 14,
-            color: "#94a3b8",
-          }}
-        >
-          Gift subsidy used
-        </span>
-        <span
-          style={{
-            fontFamily: "'DM Sans',sans-serif",
-            fontSize: 14,
-            color: "#16a34a",
-            fontWeight: 700,
-          }}
-        >
-          −${subsidyUsed.toFixed(2)}
-        </span>
+      <div className={cn("flex justify-between", hasExtra ? "mb-2" : "mb-3")}>
+        <span className="text-sm text-muted-foreground">Gift subsidy used</span>
+        <span className="text-sm text-green-600 font-bold">−${subsidyUsed.toFixed(2)}</span>
       </div>
+
       {hasExtra && (
         <div
-          className={`flex justify-between items-center mb-2.5 p-[7px_11px] rounded-lg border ${
-            bracketUpgrade
-              ? "bg-[#f0fdf4] border-[#86efac]"
-              : "bg-[#fffbeb] border-[#fde68a]"
-          }`}
+          className={cn(
+            "flex justify-between items-center mb-3 px-3 py-2.5 rounded-xl border text-xs",
+            bracketUpgrade ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200",
+          )}
         >
-          <div className="flex items-center gap-1.5">
-            {bracketUpgrade ? (
-              <Sparkles size={12} color="#16a34a" />
-            ) : (
-              <Zap size={12} color="#d97706" />
-            )}
-            <div>
-              <span
-                style={{
-                  fontFamily: "'DM Sans',sans-serif",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  display: "block",
-                }}
-                className={bracketUpgrade ? "text-[#15803d]" : "text-[#92400e]"}
-              >
-                {bracketUpgrade
-                  ? `Bracket upgrade → $${resolvedSubsidyBudget} subsidy`
-                  : "Extra / Saved"}
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            {bracketUpgrade
+              ? <Sparkles size={12} className="text-green-600 shrink-0" />
+              : <Zap size={12} className="text-amber-500 shrink-0" />}
+            <div className="min-w-0">
+              <span className={cn("block font-semibold truncate", bracketUpgrade ? "text-green-700" : "text-amber-800")}>
+                {bracketUpgrade ? `Bracket upgrade → $${resolvedSubsidyBudget}` : "Extra / Saved"}
               </span>
-              <span
-                style={{
-                  fontFamily: "'DM Sans',sans-serif",
-                  fontSize: 11,
-                  color: "#64748b",
-                }}
-              >
-                {youPay > 0 && (
-                  <>+${youPay.toFixed(2)} out-of-pocket </>
-                )}
-                {unusedSubsidy > 0 && (
-                  <>+${unusedSubsidy.toFixed(2)} saved</>
-                )}
-                {bracketUpgrade && " → bumps your subsidy tier"}
+              <span className="text-muted-foreground text-[11px]">
+                {youPay > 0 && <>+${youPay.toFixed(2)} out-of-pocket </>}
+                {unusedSubsidy > 0 && <>+${unusedSubsidy.toFixed(2)} saved</>}
               </span>
             </div>
           </div>
-          <span
-            style={{
-              fontFamily: "'Sora',sans-serif",
-              fontSize: 13,
-              fontWeight: 700,
-            }}
-            className={bracketUpgrade ? "text-[#16a34a]" : "text-[#d97706]"}
-          >
+          <span className={cn("font-bold ml-2 shrink-0", bracketUpgrade ? "text-green-600" : "text-amber-500")}>
             +${(unusedSubsidy + youPay).toFixed(2)}
           </span>
         </div>
       )}
 
-      {/* Total store spend – now includes youPay */}
-      <div className="flex justify-between items-center bg-[#f0fdf4] rounded-xl p-[12px_14px]">
+      <div className="flex justify-between items-center bg-green-50 border border-green-200 rounded-xl px-4 py-3">
         <div>
-          <div
-            style={{
-              fontFamily: "'Sora',sans-serif",
-              fontWeight: 700,
-              fontSize: 15,
-              color: "#0f172a",
-            }}
-          >
-            Total store spend
-          </div>
-          <div
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              fontSize: 11,
-              color: "#94a3b8",
-              marginTop: 1,
-            }}
-          >
+          <div className="text-sm font-bold text-foreground font-sora">Total store spend</div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">
             {subsidyUsed > 0
-              ? `Gift subsidy covers $${subsidyUsed.toFixed(2)} of your items ✓`
+              ? `Gift subsidy covers $${subsidyUsed.toFixed(2)} ✓`
               : hasExtra
               ? `$${(unusedSubsidy + youPay).toFixed(2)} extra / saved`
               : "All gift subsidy used ✓"}
-            {youPay > 0 && " · Includes $" + youPay.toFixed(2) + " for subsidized items"}
           </div>
         </div>
-        <span
-          style={{
-            fontFamily: "'Sora',sans-serif",
-            fontWeight: 800,
-            fontSize: 22,
-            color: "#16a34a",
-            letterSpacing: -0.5,
-          }}
-        >
+        <span className="text-2xl font-extrabold text-green-600 font-sora tracking-tight ml-2 shrink-0">
           ${totalStoreSpend.toFixed(2)}
         </span>
       </div>
@@ -1612,7 +1029,6 @@ function PackageCard({
   const packTotal = pkg.combo.reduce((s, i) => s + i.price, 0);
   const baseSubsidyBudget = +(packTotal * SUBSIDY_RATE).toFixed(2);
 
-  const [hovered, setHovered] = useState(false);
   const [visible, setVisible] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [confirmed, setConfirmed] = useState<ConfirmedSelection | null>(null);
@@ -1624,10 +1040,7 @@ function PackageCard({
     return () => clearTimeout(t);
   }, [index]);
 
-  const handleDeselect = () => {
-    setConfirmed(null);
-    onSelect(pkg.id);
-  };
+  const handleDeselect = () => { setConfirmed(null); onSelect(pkg.id); };
 
   const handleConfirm = (sel: ConfirmedSelection) => {
     setConfirmed(sel);
@@ -1645,210 +1058,111 @@ function PackageCard({
           overrideSubsidyBudget={activeSubsidyBudget}
           initialChecked={
             confirmed
-              ? pkg.combo.map((item) =>
-                  confirmed.items.some((ci) => ci.name === item.name),
-                )
+              ? pkg.combo.map((item) => confirmed.items.some((ci) => ci.name === item.name))
               : undefined
           }
-          onBrowseAll={() => {
-            setDialogOpen(false);
-            onSwitchToCustomView();
-          }}
+          onBrowseAll={() => { setDialogOpen(false); onSwitchToCustomView(); }}
         />
       )}
 
-      <div
-        className="pack-card flex flex-col h-full overflow-hidden relative"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          background: "white",
-          borderRadius: 20,
-          borderWidth: 2,
-          borderColor: isSelected
-            ? "#16a34a"
-            : hovered
-            ? "#bbf7d0"
-            : "#f0fdf4",
-          boxShadow: isSelected
-            ? "0 12px 40px rgba(22,163,74,0.18),0 2px 8px rgba(0,0,0,0.06)"
-            : hovered
-            ? "0 16px 48px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.04)"
-            : "0 2px 16px rgba(0,0,0,0.06)",
-          transform: visible
-            ? hovered
-              ? "translateY(-4px) scale(1.01)"
-              : "translateY(0) scale(1)"
-            : "translateY(24px) scale(0.97)",
-          opacity: visible ? 1 : 0,
-          transition: "all 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-        }}
+      <Card
+        className={cn(
+          "relative flex flex-col h-full overflow-hidden transition-all duration-300 ease-out border-2",
+          visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5",
+          isSelected
+            ? "border-green-500 shadow-xl shadow-green-100"
+            : "border-border hover:border-green-200 hover:shadow-lg hover:-translate-y-0.5",
+        )}
       >
-        {/* Top accent bar */}
+        {/* Top accent */}
         <div
-          className="absolute top-0 left-0 right-0 h-0.75 transition-[background] duration-300"
-          style={{
-            background: isSelected
-              ? "linear-gradient(90deg,#16a34a,#4ade80)"
-              : "linear-gradient(90deg,#dcfce7,#bbf7d0)",
-          }}
+          className={cn(
+            "absolute top-0 inset-x-0 h-0.5 transition-all duration-300",
+            isSelected
+              ? "bg-gradient-to-r from-green-500 to-green-400"
+              : "bg-gradient-to-r from-green-100 to-green-200",
+          )}
         />
 
-        {/* Selected checkmark */}
+        {/* Selected badge */}
         {isSelected && (
-          <div
-            className="absolute top-3.5 right-3.5 w-6 h-6 bg-[#16a34a] rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(22,163,74,0.4)] animate-[popIn_0.3s_cubic-bezier(0.34,1.56,0.64,1)]"
-          >
-            <Check size={13} color="white" strokeWidth={3} />
+          <div className="absolute top-3.5 right-3.5 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center shadow-md shadow-green-200 animate-in zoom-in-75 duration-200">
+            <Check size={12} className="text-white" strokeWidth={3} />
           </div>
         )}
 
-        <div className="px-5.5 pt-6">
-          {/* Card header */}
-          <div
-            className={`flex items-start justify-between mb-1.5 transition-all duration-300 ${
-              isSelected ? "pr-9" : "pr-0"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-[background] duration-300 ${
-                  isSelected ? "bg-[#dcfce7]" : "bg-[#f0fdf4]"
-                }`}
-              >
-                <Package size={18} color={isSelected ? "#16a34a" : "#4ade80"} />
+        <CardHeader className="pt-6 px-5 pb-0">
+          <div className={cn("flex items-start justify-between mb-1", isSelected && "pr-9")}>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors", isSelected ? "bg-green-100" : "bg-muted")}>
+                <Package size={18} className={isSelected ? "text-green-600" : "text-green-400"} />
               </div>
-              <span
-                style={{
-                  fontFamily: "'Sora',sans-serif",
-                  fontWeight: 700,
-                  fontSize: 17,
-                  color: "#0f172a",
-                }}
-              >
-                {pkg.name}
-              </span>
+              <span className="text-base font-bold text-foreground font-sora truncate">{pkg.name}</span>
             </div>
-            <span
-              style={{
-                fontFamily: "'Sora',sans-serif",
-                fontWeight: 800,
-                fontSize: 22,
-                letterSpacing: -0.5,
-                color: "#16a34a",
-              }}
-            >
+            <span className="text-2xl font-extrabold text-green-600 font-sora tracking-tight shrink-0 ml-2">
               ${pkg.maxPrice}
             </span>
           </div>
 
-          <p
-            style={{
-              fontFamily: "'DM Sans',sans-serif",
-              color: "#64748b",
-              fontSize: 13,
-              lineHeight: 1.6,
-              minHeight: 42,
-            }}
-            className="mb-3.5"
-          >
+          <p className="text-xs text-muted-foreground leading-relaxed min-h-[36px] mb-3">
             {pkg.description}
           </p>
 
           {/* Gift subsidy pill */}
-          <div className="flex items-center gap-1.5 bg-[#f0fdf4] border-[1.5px] border-[#86efac] rounded-xl p-[10px_14px] mb-4">
-            <Gift size={15} color="#16a34a" className="shrink-0" />
-            <div>
-              <span
-                style={{
-                  fontFamily: "'Sora',sans-serif",
-                  fontWeight: 800,
-                  fontSize: 15,
-                  color: "#16a34a",
-                }}
-              >
+          <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3.5 py-2.5 mb-4">
+            <Gift size={14} className="text-green-600 shrink-0" />
+            <div className="flex flex-wrap items-baseline gap-x-1.5">
+              <span className="text-sm font-extrabold text-green-600 font-sora">
                 +${activeSubsidyBudget} gift subsidy
               </span>
               {confirmed && activeSubsidyBudget > baseSubsidyBudget && (
-                <span
-                  style={{
-                    fontFamily: "'DM Sans',sans-serif",
-                    fontSize: 11,
-                    color: "#16a34a",
-                    marginLeft: 6,
-                    fontWeight: 600,
-                  }}
-                >
+                <span className="text-[11px] text-green-600 font-semibold">
                   ↑ upgraded from ${baseSubsidyBudget}
                 </span>
               )}
               {!confirmed && (
-                <span
-                  style={{
-                    fontFamily: "'DM Sans',sans-serif",
-                    fontSize: 12,
-                    color: "#64748b",
-                    marginLeft: 6,
-                  }}
-                >
-                  — use it to get items for free
-                </span>
+                <span className="text-[11px] text-muted-foreground">— use it to get items free</span>
               )}
             </div>
           </div>
 
           {/* Items section */}
           {confirmed ? (
-            <CardItemsConfirmed
-              confirmed={confirmed}
-              onEdit={() => setDialogOpen(true)}
-            />
+            <CardItemsConfirmed confirmed={confirmed} onEdit={() => setDialogOpen(true)} />
           ) : (
-            <CardItemsDefault
-              pkg={pkg}
-              subsidyBudget={activeSubsidyBudget}
-              onSwitchToCustomView={onSwitchToCustomView}
-            />
+            <CardItemsDefault pkg={pkg} subsidyBudget={activeSubsidyBudget} onSwitchToCustomView={onSwitchToCustomView} />
           )}
-        </div>
+        </CardHeader>
 
         <div className="flex-1" />
 
         {/* Pricing footer */}
-        <div className="px-5.5 pt-3.5 border-t border-[#f1f5f9] mt-3.5">
-          <CardPricingFooter
-            pkg={pkg}
-            confirmed={confirmed}
-            subsidyBudget={activeSubsidyBudget}
-          />
+        <div className="px-5 pt-4 border-t border-border mt-3">
+          <CardPricingFooter pkg={pkg} confirmed={confirmed} subsidyBudget={activeSubsidyBudget} />
         </div>
 
         {/* CTA */}
-        <div className="p-[14px_22px_22px]">
-          <button
-            onClick={() =>
-              isSelected ? handleDeselect() : setDialogOpen(true)
-            }
-            className={`w-full font-sans font-bold text-[15px] rounded-xl py-3.75 flex items-center justify-center gap-2 transition-all duration-250 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+        <CardFooter className="px-5 pb-5 pt-3">
+          <Button
+            onClick={() => isSelected ? handleDeselect() : setDialogOpen(true)}
+            className={cn(
+              "w-full h-11 rounded-xl font-sora font-bold text-sm gap-2",
               isSelected
-                ? "bg-[#f1f5f9] text-[#64748b] border-[1.5px] border-[#e2e8f0] shadow-none"
-                : "bg-gradient-to-br from-[#22c55e] to-[#16a34a] text-white border-none shadow-[0_2px_8px_rgba(34,197,94,0.25)]"
-            }`}
-            style={{
-              fontFamily: "'Sora',sans-serif",
-            }}
+                ? "bg-muted text-muted-foreground hover:bg-muted/80 border border-border shadow-none"
+                : "bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-200",
+            )}
           >
             {isSelected ? (
               "Remove This Pack"
             ) : (
               <>
-                <Gift size={17} /> Pick Items — ${activeSubsidyBudget} gift subsidy
-                included
+                <Gift size={15} />
+                Pick Items — ${activeSubsidyBudget} gift subsidy
               </>
             )}
-          </button>
-        </div>
-      </div>
+          </Button>
+        </CardFooter>
+      </Card>
     </>
   );
 }
@@ -1857,42 +1171,26 @@ function PackageCard({
 
 type ViewMode = "packs" | "custom";
 
-function ViewSwitcher({
-  active,
-  onChange,
-}: {
-  active: ViewMode;
-  onChange: (v: ViewMode) => void;
-}) {
+function ViewSwitcher({ active, onChange }: { active: ViewMode; onChange: (v: ViewMode) => void }) {
   const tabs: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
-    {
-      id: "packs",
-      label: "Budget Packs",
-      icon: <LayoutGrid size={15} />,
-    },
-    {
-      id: "custom",
-      label: "Subsidy Items",
-      icon: <ListFilter size={15} />,
-    },
+    { id: "packs", label: "Budget Packs", icon: <LayoutGrid size={14} /> },
+    { id: "custom", label: "Subsidy Items", icon: <ListFilter size={14} /> },
   ];
 
   return (
-    <div className="inline-flex bg-[#f1f5f9] rounded-2xl p-1 gap-0.5">
+    <div className="inline-flex bg-muted rounded-2xl p-1 gap-0.5">
       {tabs.map((tab) => {
         const isActive = active === tab.id;
         return (
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
-            className={`flex items-center gap-1.5 px-4.5 py-2.25 rounded-xl border-none text-[13px] cursor-pointer transition-all duration-220 ease-[cubic-bezier(0.34,1.2,0.64,1)] whitespace-nowrap ${
+            className={cn(
+              "flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-sora transition-all duration-200 whitespace-nowrap cursor-pointer border-0",
               isActive
-                ? "bg-white text-[#0f172a] shadow-[0_1px_6px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.04)] font-bold"
-                : "bg-transparent text-[#94a3b8] font-medium"
-            }`}
-            style={{
-              fontFamily: "'Sora',sans-serif",
-            }}
+                ? "bg-background text-foreground font-bold shadow-sm"
+                : "bg-transparent text-muted-foreground font-medium",
+            )}
           >
             {tab.icon}
             {tab.label}
@@ -1926,129 +1224,96 @@ export default function BudgetPacks({ subsidyItems }: { subsidyItems: SubsidyIte
   }, []);
 
   return (
-    <>
+    <TooltipProvider>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
-        @keyframes popIn{0%{opacity:0;transform:scale(0.7);}100%{opacity:1;transform:scale(1);}}
-        @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-        @keyframes slideUp{from{opacity:0;transform:translateY(32px) scale(0.96);}to{opacity:1;transform:translateY(0) scale(1);}}
-        .back-btn:hover .back-icon{transform:translateX(-3px);}
-        .back-icon{transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1);}
-        .pack-grid{display:grid;gap:20px;width:100%;max-width:1380px;grid-template-columns:1fr;}
-        @media(min-width:640px){.pack-grid{grid-template-columns:repeat(2,1fr);}}
-        @media(min-width:1024px){.pack-grid{grid-template-columns:repeat(3,1fr);}}
+        .font-sora { font-family: 'Sora', sans-serif; }
       `}</style>
 
-      <div
-        className="fixed inset-0 z-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 20% 20%,rgba(220,252,231,0.6) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(187,247,208,0.4) 0%,transparent 50%)",
-        }}
-      />
+      {/* Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{
+        backgroundImage: "radial-gradient(circle at 20% 20%, hsl(var(--primary) / 0.04) 0%, transparent 50%), radial-gradient(circle at 80% 80%, hsl(var(--primary) / 0.03) 0%, transparent 50%)",
+      }} />
 
-      <main className="min-h-screen relative z-10 flex flex-col items-center py-8 px-4 md:px-4">
+      <main className="min-h-screen relative z-10 flex flex-col items-center py-6 sm:py-8 px-4">
+
         {/* Back button */}
-        <div
-          className={`w-full max-w-345 flex items-center mb-8 transition-all duration-550 ease-[cubic-bezier(0.34,1.2,0.64,1)] ${
-            headerVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3"
-          }`}
-        >
+        <div className={cn(
+          "w-full max-w-5xl flex items-center mb-6 transition-all duration-500",
+          headerVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2",
+        )}>
           <Link href="/customer" className="no-underline">
-            <button
-              className="back-btn flex items-center gap-1.5 bg-white border-[1.5px] border-[#e2e8f0] rounded-xl py-2.25 px-4 text-[#334155] font-semibold text-[13px] cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.06)] transition-all duration-200 hover:border-[#bbf7d0] hover:text-[#16a34a]"
-              style={{ fontFamily: "'Sora',sans-serif" }}
-            >
-              <ArrowLeft size={15} className="back-icon" />
+            <Button variant="outline" size="sm" className="gap-1.5 rounded-xl h-9 font-sora font-semibold text-xs hover:border-green-300 hover:text-green-700">
+              <ArrowLeft size={14} />
               Back
-            </button>
+            </Button>
           </Link>
         </div>
 
         {/* Hero */}
-        <div
-          className={`text-center mb-8 transition-all duration-550 ease-[cubic-bezier(0.34,1.2,0.64,1)] delay-100 ${
-            headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          }`}
-        >
-          <h1
-            className="font-sora font-extrabold text-[clamp(26px,4vw,38px)] text-[#0f172a] tracking-[-0.8px] leading-[1.15] mb-2.5"
-            style={{ fontFamily: "'Sora',sans-serif" }}
-          >
+        <div className={cn(
+          "text-center mb-6 transition-all duration-500 delay-100",
+          headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
+        )}>
+          <h1 className="font-sora font-extrabold text-3xl sm:text-4xl text-foreground tracking-tight leading-tight mb-2.5">
             Budget Grocery Packs
           </h1>
-          <p
-            className="font-dm-sans text-[clamp(14px,2vw,17px)] text-[#64748b] max-w-130 mx-auto leading-relaxed"
-            style={{ fontFamily: "'DM Sans',sans-serif" }}
-          >
+          <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
             Shop for groceries and get{" "}
-            <strong className="text-[#16a34a]">free gift subsidy</strong> back.
-            Use that subsidy to pay for subsidized items — milk, eggs, vegetables
-            and more.
+            <strong className="text-green-600">free gift subsidy</strong> back.
+            Use that subsidy to pay for subsidized items — milk, eggs, vegetables and more.
           </p>
         </div>
 
-        {/* How It Works Explainer */}
-        <div
-          className={`w-full flex justify-center transition-all duration-550 ease-[cubic-bezier(0.34,1.2,0.64,1)] delay-150 ${
-            headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          }`}
-        >
+        {/* How It Works */}
+        <div className={cn(
+          "w-full flex justify-center transition-all duration-500 delay-150",
+          headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
+        )}>
           <HowItWorksExplainer />
         </div>
 
-        {/* ── View switcher + grid header ── */}
-        <div
-          className={`w-full max-w-345 mb-4 transition-opacity duration-400 ease-in-out delay-250 ${
-            headerVisible ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          {/* Switcher row */}
-          <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+        {/* View switcher header */}
+        <div className={cn(
+          "w-full max-w-5xl mb-4 transition-opacity duration-400 delay-200",
+          headerVisible ? "opacity-100" : "opacity-0",
+        )}>
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
             <ViewSwitcher active={viewMode} onChange={setViewMode} />
           </div>
 
-          {/* Sub-header only shown for packs tab */}
           {viewMode === "packs" && (
             <>
-              <p
-                className="font-sora font-bold text-[16px] text-[#0f172a] mb-1"
-                style={{ fontFamily: "'Sora',sans-serif" }}
-              >
+              <p className="text-base font-bold text-foreground font-sora mb-0.5">
                 Choose how much you want to shop for
               </p>
-              <p
-                className="font-dm-sans text-[13px] text-[#64748b] mb-4"
-                style={{ fontFamily: "'DM Sans',sans-serif" }}
-              >
+              <p className="text-xs text-muted-foreground">
                 Minimum $21. The more you spend, the more gift subsidy you get back.
               </p>
             </>
           )}
         </div>
 
-        {/* Content area */}
+        {/* Content */}
         {viewMode === "packs" ? (
-          <div className="pack-grid">
+          <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {packages.map((pkg, i) => (
               <PackageCard
                 key={pkg.id}
                 pkg={pkg}
                 index={i}
                 isSelected={selectedPackId === pkg.id}
-                onSelect={(id) =>
-                  setSelectedPackId((prev) => (prev === id ? null : id))
-                }
+                onSelect={(id) => setSelectedPackId((prev) => (prev === id ? null : id))}
                 onSwitchToCustomView={() => setViewMode("custom")}
               />
             ))}
           </div>
         ) : (
-          <div className="w-full max-w-345 flex justify-center">
+          <div className="w-full max-w-5xl flex justify-center">
             <CustomOrderView items={subsidyItems} />
           </div>
         )}
       </main>
-    </>
+    </TooltipProvider>
   );
 }
