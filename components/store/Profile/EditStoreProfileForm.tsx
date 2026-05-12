@@ -17,10 +17,12 @@ import {
   Globe,
   ChevronDown,
   Loader2,
+  KeyRound,
 } from "lucide-react";
 import { IStore, ITimeRange } from "@/db/models/store/store.model";
 import { editStoreProfile } from "@/actions/store/EditStore.action";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -213,7 +215,7 @@ function HoursSummary({
   );
 }
 
-// ─── save button (shared between desktop footer and mobile bar) ───────────────
+// ─── save button ──────────────────────────────────────────────────────────────
 
 function SaveButton({
   onClick,
@@ -257,12 +259,10 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
   const initialHoursRef = useRef<Record<DayKey, ITimeRange | null>>(
     (() => {
       const result = {} as Record<DayKey, ITimeRange | null>;
-
       for (const d of DAYS) {
         const arr = Data.hours[d.key];
         result[d.key] = arr && arr.length > 0 ? arr[0] : null;
       }
-
       return result;
     })()
   );
@@ -290,7 +290,6 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
     for (const d of DAYS) {
       const a = initialHoursRef.current[d.key];
       const b = hours[d.key];
-
       if (a === null && b === null) continue;
       if (a === null || b === null) return true;
       if (!a && !b) continue;
@@ -303,31 +302,18 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
 
   const isDisabled = !isDirty || isPending;
 
-  // ── submit ──
   const handleSubmit = () => {
-    // --- Validation ---
     const trimmedName = fields.name.trim();
     const trimmedAddress = fields.address.trim();
     const trimmedMobile = fields.mobile.trim();
 
-    if (!trimmedName) {
-      toast.error("Store name cannot be empty.");
-      return;
-    }
-    if (!trimmedAddress) {
-      toast.error("Address cannot be empty.");
-      return;
-    }
-    if (!trimmedMobile) {
-      toast.error("Phone number cannot be empty.");
-      return;
-    }
+    if (!trimmedName) { toast.error("Store name cannot be empty."); return; }
+    if (!trimmedAddress) { toast.error("Address cannot be empty."); return; }
+    if (!trimmedMobile) { toast.error("Phone number cannot be empty."); return; }
     if (!/^\d{10}$/.test(trimmedMobile)) {
       toast.error("Phone number must be exactly 10 digits (no spaces or letters).");
       return;
     }
-    // -----------------
-
     if (isDisabled) return;
 
     const payload: StoreFormPayload = {
@@ -342,16 +328,9 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
       try {
         const result = await editStoreProfile(payload);
         if (result.success) {
-          initialRef.current = {
-            name: trimmedName,
-            address: trimmedAddress,
-            mobile: trimmedMobile,
-          };
-
+          initialRef.current = { name: trimmedName, address: trimmedAddress, mobile: trimmedMobile };
           initialHoursRef.current = { ...hours };
-
           setSaveVersion((v) => v + 1);
-
           toast.success(result.message ?? "Store updated successfully");
         } else {
           toast.error(result.message ?? "Failed to update store");
@@ -362,7 +341,6 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
     });
   };
 
-  // ── derived ──
   const initials = useMemo(
     () =>
       fields.name
@@ -376,7 +354,6 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
 
   const openDaysCount = DAYS.filter((d) => hours[d.key] !== null).length;
 
-  // ── render ──
   return (
     <div className="bg-background min-h-screen">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4 pb-8">
@@ -392,7 +369,7 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
         </div>
 
         <div className="flex flex-col gap-5 sm:grid sm:grid-cols-[1fr_300px] sm:items-start">
-          {/* ── PREVIEW — top on mobile, sticky right on desktop ── */}
+          {/* ── PREVIEW ── */}
           <div className="order-first sm:order-last sm:sticky sm:top-20 rounded-3xl border border-border/60 bg-card overflow-hidden">
             <div className="px-5 pt-5 pb-3 border-b border-border/40">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
@@ -438,14 +415,38 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
                   <span>{Data.timezone}</span>
                 </div>
               </div>
+
+              {/* ── Account quick links ── */}
+              <div className="w-full pt-3 border-t border-border/40 grid grid-cols-2 gap-2">
+                <Link href="/store/change-email" className="no-underline">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-9 rounded-xl text-xs gap-1.5 border-border/60 text-muted-foreground hover:text-foreground"
+                  >
+                    <Mail className="h-3.5 w-3.5 shrink-0" />
+                    Change Email
+                  </Button>
+                </Link>
+                <Link href="/forgot-password" className="no-underline">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-9 rounded-xl text-xs gap-1.5 border-border/60 text-muted-foreground hover:text-foreground"
+                  >
+                    <KeyRound className="h-3.5 w-3.5 shrink-0" />
+                    Change Password
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             <HoursSummary hours={hours} openDaysCount={openDaysCount} />
           </div>
 
-          {/* ── FORM — bottom on mobile, left on desktop ── */}
+          {/* ── FORM ── */}
           <div className="order-last sm:order-first rounded-3xl border border-border/60 bg-card overflow-hidden divide-y divide-border/40">
-            {/* Email read-only */}
+            {/* Email read-only — no change button here anymore */}
             <div className="px-6 py-5">
               <SectionLabel>Store Account</SectionLabel>
               <FieldLabel>Email</FieldLabel>
@@ -545,7 +546,7 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
           />
         </div>
 
-        {/* Spacer to clear mobile sticky bar */}
+        {/* Spacer for mobile sticky bar */}
         <div className="sm:hidden h-20" />
       </div>
     </div>

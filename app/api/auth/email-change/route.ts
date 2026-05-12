@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
     headers: req.headers,
   });
 
+  const userType = session?.user.role;
+
   if (!session?.user) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
@@ -22,9 +24,11 @@ export async function GET(req: NextRequest) {
     { $set: { email: session.user.email } }
   );
 
-  revalidatePath("/customer/profile");
-  revalidateTag("customer", "max");
-  revalidateTag("customer-and-store", "max");
+  revalidatePath(`/${userType}/profile`);
+  if(userType==='customer'){
+    revalidateTag("customer", "max");
+    revalidateTag("customer-and-store", "max");
+  }
 
   return NextResponse.redirect(new URL("/email-updated", req.url));
 }
