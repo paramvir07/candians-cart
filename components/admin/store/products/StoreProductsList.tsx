@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -318,9 +318,18 @@ export const StoreProductsList = ({
         </div>
         <div className="relative flex gap-2 w-full sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
+          {/* <Input
+          ref={searchInputRef}
             type="text"
             placeholder="Search products..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          /> */}
+          <Input
+            // ref={searchInputRef}
+            type="text"
+            placeholder="Search products...."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Logo from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
@@ -39,34 +39,61 @@ export function SearchNav({
   const [query, setQuery] = useState(initialQuery);
   const [, startTransition] = useTransition();
   const [scannerOpen, setScannerOpen] = useState(false);
-  const searchParams = useSearchParams();
-  const router = useRouter();
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const scanBufferRef = useRef("");
+  const lastKeyTimeRef = useRef(0);
   // Auto-open scanner when navigated here with ?scan=1 (from bottom nav Scan button)
   useEffect(() => {
-    if (searchParams.get("scan") === "1") {
-      // Small delay lets the dynamic import finish mounting
-      const t = setTimeout(() => {
-        setScannerOpen(true);
-        // Remove ?scan from URL without adding a history entry
-        const url = new URL(window.location.href);
-        url.searchParams.delete("scan");
-        router.replace(url.pathname + (url.search || ""), { scroll: false });
-      }, 300);
-      return () => clearTimeout(t);
-    }
-  }, [searchParams, router]);
+    const THRESHOLD = 50; // ms — scanners are faster than any human
 
-  const handleChange = (val: string) => {
-    setQuery(val);
-    startTransition(() => onQueryChange(val));
-  };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const now = Date.now();
+      const gap = now - lastKeyTimeRef.current;
+      lastKeyTimeRef.current = now;
+
+      if (e.key === "Enter") {
+        const buf = scanBufferRef.current;
+        scanBufferRef.current = "";
+
+        if (buf.length >= 6) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Focus the input
+          searchInputRef.current?.focus();
+
+          // Replace whatever was there with the scanned value
+          setQuery(buf);
+          startTransition(() => onQueryChange(buf));
+          onBarcodeScan?.(buf);
+
+          // Select all so the barcode is visually highlighted
+          setTimeout(() => searchInputRef.current?.select(), 0);
+        }
+        return;
+      }
+
+      if (e.key.length !== 1) return;
+
+      // Reset buffer if gap is too large (human typing pace)
+      if (gap > THRESHOLD) scanBufferRef.current = "";
+
+      scanBufferRef.current += e.key;
+    };
+
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, [onQueryChange, onBarcodeScan]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onQueryChange(query);
   };
-
+  const handleChange = (val: string) => {
+    setQuery(val);
+    startTransition(() => onQueryChange(val));
+  };
   const handleBarcodeScan = (value: string) => {
     handleChange(value);
     onBarcodeScan?.(value);
@@ -82,12 +109,15 @@ export function SearchNav({
   return (
     <nav className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 border-b border-border">
       <div className="flex items-center gap-5 px-3 sm:px-4 md:px-6 h-14">
-
         {/* LEFT */}
         <div className="flex items-center shrink-0">
           {!customerId && (
             <Link href="/customer" className="md:hidden">
-              <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full h-9 w-9"
+              >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
@@ -98,9 +128,13 @@ export function SearchNav({
         </div>
 
         {/* SEARCH */}
-        <form onSubmit={handleSubmit} className="flex flex-1 items-center gap-2 min-w-0">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-1 items-center gap-2 min-w-0"
+        >
           <div className="relative flex-1 min-w-0">
             <Input
+              ref={searchInputRef}
               type="text"
               placeholder="Search products…"
               value={query}
@@ -135,7 +169,12 @@ export function SearchNav({
         {!customerId && (
           <div className="hidden md:flex items-center gap-2 shrink-0">
             <Link href="/customer/cart">
-              <Button variant="outline" size="icon" className="relative h-9 w-9 rounded-xl" aria-label="Cart">
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative h-9 w-9 rounded-xl"
+                aria-label="Cart"
+              >
                 <ShoppingCart className="h-4 w-4" />
                 {cartCount > 0 && (
                   <Badge
@@ -154,8 +193,12 @@ export function SearchNav({
                   <Wallet className="h-3 w-3 text-primary-foreground" />
                 </div>
                 <div className="flex flex-col leading-none">
-                  <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Balance</span>
-                  <span className="text-sm font-bold text-foreground tabular-nums">{fmtShort(customerData.walletBalance)}</span>
+                  <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Balance
+                  </span>
+                  <span className="text-sm font-bold text-foreground tabular-nums">
+                    {fmtShort(customerData.walletBalance)}
+                  </span>
                 </div>
               </div>
             </Link>

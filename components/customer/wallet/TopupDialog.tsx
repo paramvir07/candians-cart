@@ -273,6 +273,19 @@ export function TopUpDialog({
             )}
 
             {/* CTA */}
+            {/* <Button
+              disabled={!amount}
+              onClick={handleProceed}
+              className="w-full py-5 rounded-2xl font-bold text-base transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                background: "var(--color-primary)",
+                color: "var(--color-primary-foreground)",
+                boxShadow: amount ? "0 8px 24px rgba(0,0,0,0.15)" : "none",
+              }}
+            >
+              {amount ? `Continue — $${amount.toFixed(2)}` : "Enter an Amount"}
+            </Button> */}
+            {/* CTA */}
             <Button
               disabled={!amount}
               onClick={handleProceed}
@@ -284,6 +297,14 @@ export function TopUpDialog({
               }}
             >
               {amount ? `Continue — $${amount.toFixed(2)}` : "Enter an Amount"}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleClose}
+              className="w-full rounded-2xl font-medium"
+              style={{ color: "var(--color-muted-foreground)" }}
+            >
+              Cancel
             </Button>
           </div>
         )}
@@ -439,7 +460,7 @@ export function TopUpDialog({
               )}
             </Button>
 
-            <Button
+            {/* <Button
               variant="ghost"
               disabled={loading}
               onClick={() => setStep("amount")}
@@ -448,7 +469,30 @@ export function TopUpDialog({
             >
               <ArrowLeft size={14} className="mr-1.5" />
               {adminRole ? "Cancel" : "Change method"}
-            </Button>
+            </Button> */}
+            <div className="flex gap-2">
+              {!adminRole && (
+                <Button
+                  variant="ghost"
+                  disabled={loading}
+                  onClick={() => setStep("amount")}
+                  className="w-full rounded-2xl font-medium"
+                  style={{ color: "var(--color-muted-foreground)" }}
+                >
+                  <ArrowLeft size={14} className="mr-1.5" />
+                  Change method
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                disabled={loading}
+                onClick={handleClose}
+                className="w-full rounded-2xl font-medium"
+                style={{ color: "var(--color-muted-foreground)" }}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>

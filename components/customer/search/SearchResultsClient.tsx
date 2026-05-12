@@ -25,8 +25,9 @@ import {
   X,
 } from "lucide-react";
 import { Customer } from "@/types/customer/customer";
-import { getCartQuantities } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { AddtoCart, getCartQuantities } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { useDebounce } from "use-debounce";
+import { toast } from "sonner";
 
 interface SearchResultsClientProps {
   customerId?: string;
@@ -71,6 +72,34 @@ export function SearchResultsClient({
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [cartMap, setCartMap] = useState<Record<string, number>>({});
 
+  const handleBarcodeScan = async (value: string) => {
+  setIsLoading(true);
+  setHasSearched(true);
+
+  // Search for the product by barcode
+  const res = await searchAction(value.trim(), storeId);
+  const results = res.success && res.data ? res.data : [];
+  setAllResults(results);
+  setIsLoading(false);
+
+  // If exactly one product found, auto-add to cart
+  if (results.length === 1) {
+    const product = results[0];
+    const productId = product._id as string;
+
+    try {
+      await AddtoCart(productId, customerId); // adjust to your actual action signature
+      setCartMap((prev) => ({
+        ...prev,
+        [productId]: (prev[productId] || 0) + 1,
+      }));
+      toast.success(`${product.name} added to cart`); // add: import { toast } from "sonner"
+    } catch {
+      toast.error("Failed to add to cart");
+    }
+  }
+};
+  
   // 1. Fetch Cart State
   useEffect(() => {
     const fetchInitialCart = async () => {
@@ -187,6 +216,7 @@ export function SearchResultsClient({
       <SearchNav
         customerId={customerId}
         initialQuery={query}
+        onBarcodeScan={handleBarcodeScan}
         onQueryChange={setQuery}
         customerData={customerData}
         cartCount={cartCount}
