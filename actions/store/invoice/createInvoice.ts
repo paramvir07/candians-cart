@@ -10,6 +10,7 @@ import { zodErrorResponse } from "@/zod/validation/error";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import ImageKit from "@imagekit/nodejs";
 import ProductsModel from "@/db/models/store/products.model";
+import { GetInvoiceResponse } from "@/types/store/invoice.types";
 
 const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
@@ -178,7 +179,7 @@ export async function getProductsLinkedToInvoice(invoiceId: string) {
   }
 }
 
-export async function getInvoiceById(invoiceId: string) {
+export async function getInvoiceById(invoiceId: string): Promise<GetInvoiceResponse> {
   try {
     const session = await getUserSession();
     if (!session?.user?.id) {
@@ -198,6 +199,7 @@ export async function getInvoiceById(invoiceId: string) {
       success: true,
       data: {
         _id: invoice._id.toString(),
+        storeId: invoice.storeId.toString(),
         vendorName: invoice.vendorName,
         InvoiceNumber: invoice.InvoiceNumber,
         // Format date to YYYY-MM-DD for the HTML date input
