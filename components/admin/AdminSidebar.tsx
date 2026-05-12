@@ -16,6 +16,7 @@ import {
   UserPlus,
   Users2,
   X,
+  Store,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
@@ -41,7 +42,7 @@ const NAV_GROUPS = [
       { href: "/admin/products", label: "Products", icon: Package },
       { href: "/admin/customers", label: "Customers", icon: Handshake },
       { href: "/admin/requests", label: "Requests", icon: Users2 },
-
+      { href: "/admin/store", label: "Store", icon: Store },
     ],
   },
   {
@@ -102,7 +103,7 @@ function NavItem({
     >
       <Icon
         className={cn(
-          "w-[18px] h-[18px] shrink-0 transition-colors",
+          "w-4.5 h-4.5 shrink-0 transition-colors",
           active
             ? "text-emerald-600"
             : "text-gray-400 group-hover:text-gray-600",
@@ -118,7 +119,7 @@ function NavItem({
       </span>
 
       {badge !== undefined && badge > 0 ? (
-        <div className="ml-auto flex h-5 min-w-[20px] px-1.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shrink-0">
+        <div className="ml-auto flex h-5 min-w-5 px-1.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shrink-0">
           {badge}
         </div>
       ) : active ? (
@@ -135,7 +136,7 @@ function SidebarContent({
 }: {
   onNav?: () => void;
   pendingInvoicesCount: number;
-  name: string
+  name: string;
 }) {
   return (
     <div className="flex flex-col h-full">
@@ -167,9 +168,8 @@ function SidebarContent({
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full cursor-pointer"
         >
           <Avatar className="h-8 w-8 shrink-0">
-            <AvatarImage 
-              src={`https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(name?name : "User")}`}
- 
+            <AvatarImage
+              src={`https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(name ? name : "User")}`}
             />
             <AvatarFallback className="text-xs bg-emerald-100 text-emerald-700 font-semibold">
               AD
@@ -193,7 +193,6 @@ function SidebarContent({
 type AdminSidebarProps = {
   name: string;
 };
-
 
 const AdminSidebar = ({ name }: AdminSidebarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -240,7 +239,10 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0">
-          <SidebarContent pendingInvoicesCount={pendingInvoicesCount} name={name} />
+          <SidebarContent
+            pendingInvoicesCount={pendingInvoicesCount}
+            name={name}
+          />
         </div>
       </aside>
 
