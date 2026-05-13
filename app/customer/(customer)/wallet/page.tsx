@@ -1,28 +1,28 @@
-import { Suspense } from "react";
-
+import { getCustomerDataAction } from "@/actions/customer/User.action";
 import Navbar from "@/components/customer/landing/Navbar";
-import WalletSwitcher from "@/components/customer/wallet/WalletSwitcher";
-
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
-import WalletSkeleton from "@/components/skeletons/WalletSkeleton";
-import WalletViewServer from "@/components/customer/wallet/server/WalletViewServer";
+import WalletSwitcher from "@/components/customer/wallet/WalletSwitcher";
+import WalletView from "@/components/customer/wallet/WalletView";
+import { Customer } from "@/types/customer/customer";
+import { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Wallet",
 };
 
-export default function Page() {
+const Page = async () => {
+  const customerDataResponse = await getCustomerDataAction();
+  const customerData: Customer = customerDataResponse.customerData;
+  
   return (
     <div>
       <Navbar />
-
       <WalletSwitcher />
-
-      <Suspense fallback={<WalletSkeleton />}>
-        <WalletViewServer />
-      </Suspense>
-
+      
+      <WalletView customerData={customerData} />
       <CustomerAdvertisements maxHeight={250} />
     </div>
   );
-}
+};
+
+export default Page;
