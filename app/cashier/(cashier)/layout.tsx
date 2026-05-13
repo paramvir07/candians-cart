@@ -19,20 +19,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getUserSession();
-  const role = session.user.role;
-
-  if (role !== "cashier") {
-    if (role === "store") {
-      redirect(`/store`);
-    } else if (role === "customer") {
-      redirect(`/`);
-    } else if (role === "admin") {
-      redirect(`/admin`);
-    } else {
-      redirect("/cashier/login");
-    }
-  }
   return (
     <div className="scroll-smooth">
       <TooltipProvider>

@@ -85,7 +85,17 @@ export const signupAction = async (
       // Check if store exists before starting the transaction
       const store = await Store.findById(data.associatedStore);
 
-      if (!store) return { success: false, message: "Store not found" };
+      if (!store) {
+        return { success: false, message: "Store not found" };
+      }
+
+      if (!store.isActive) {
+        return {
+          success: false,
+          message:
+            "This store is currently inactive. Please choose another store.",
+        };
+      }
 
       // Create auth user before transaction since it's an external system
       const newCustomerUser = await auth.api.signUpEmail({
@@ -212,7 +222,18 @@ export const signupAction = async (
       const data = result.data;
 
       const store = await Store.findById(data.associatedStore);
-      if (!store) return { success: false, message: "Store not found" };
+
+      if (!store) {
+        return { success: false, message: "Store not found" };
+      }
+
+      if (!store.isActive) {
+        return {
+          success: false,
+          message:
+            "This store is currently inactive. Cashier account cannot be created.",
+        };
+      }
 
       const newCashierUser = await auth.api.createUser({
         body: {

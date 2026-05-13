@@ -13,7 +13,7 @@ import {
 } from "@/atoms/customer/signUp";
 import { StoreDocument } from "@/types/store/store";
 import { StoreInfoDialog } from "./StoreInfoDialog";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { UserRole } from "@/types/auth";
 
 const SelectStore = ({
@@ -28,15 +28,29 @@ const SelectStore = ({
   const [hoveredStore, setHoveredStore] = useState<string | null>(null);
 
   const setStoreName = useSetAtom(storeNameAtom);
-  const [storeId, setStoreId] = useAtom(storeIdAtom);       // confirmed
+  const [storeId, setStoreId] = useAtom(storeIdAtom);
   const setStoreAddress = useSetAtom(storeAddressAtom);
-  const setPendingStoreId = useSetAtom(pendingStoreIdAtom);  // pending
+  const setPendingStoreId = useSetAtom(pendingStoreIdAtom);
   const setPendingAddress = useSetAtom(pendingStoreAddressAtom);
-  const setIsStoreSelectedDialogOpen = useSetAtom(isStoreSelectedDialogOpenAtom);
+  const setIsStoreSelectedDialogOpen = useSetAtom(
+    isStoreSelectedDialogOpenAtom,
+  );
+
+  const sortedStores = useMemo(() => {
+    return [...stores].sort((a, b) => {
+      const aActive = a.isActive === true;
+      const bActive = b.isActive === true;
+
+      if (aActive === bActive) return 0;
+      return aActive ? -1 : 1;
+    });
+  }, [stores]);
 
   const handleStoreSelect = (store: StoreDocument) => {
+    if (store.isActive !== true) return;
+
     setStoreName(store.name);
-    setPendingStoreId(store._id);        // only pending until confirmed
+    setPendingStoreId(store._id);
     setPendingAddress(store.address);
     setIsStoreSelectedDialogOpen(true);
   };
@@ -50,110 +64,131 @@ const SelectStore = ({
   };
 
   return (
-    <div className="w-full space-y-3">
-      {stores.length === 0 ? (
+    <div className="w-full space-y-4">
+      {sortedStores.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <MapPin className="h-8 w-8 text-muted-foreground/40 mb-3" />
+          <MapPin className="mb-3 h-8 w-8 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">
             No stores available in your area yet.
           </p>
         </div>
       ) : (
-        stores.map((s) => {
-          const isSelected = storeId === s._id; // only true after Assign confirmed
+        sortedStores.map((s) => {
+          const isSelected = storeId === s._id;
           const isHovered = hoveredStore === s.name;
+          const isInactive = s.isActive !== true;
 
           return (
             <div
-              key={s.name}
+              key={s._id}
               onMouseEnter={() => setHoveredStore(s.name)}
               onMouseLeave={() => setHoveredStore(null)}
-              className={`group relative rounded-xl border transition-all duration-200 overflow-hidden ${
-                isSelected
-                  ? "border-primary/60 bg-primary/5 shadow-sm"
-                  : "border-border/60 bg-card hover:border-primary/40 hover:shadow-sm"
+              className={`group relative overflow-hidden rounded-2xl border transition-all duration-200 ${
+                isInactive
+                  ? "border-dashed border-orange-200 bg-orange-50/40"
+                  : isSelected
+                    ? "border-primary/60 bg-primary/5 shadow-sm"
+                    : "border-border/60 bg-card hover:border-primary/40 hover:shadow-md"
               }`}
             >
-              {/* Left accent bar */}
               <div
-                className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl transition-all duration-200 ${
-                  isSelected
-                    ? "bg-primary"
-                    : "bg-primary/0 group-hover:bg-primary/70"
+                className={`absolute left-0 top-0 h-full w-1 transition-all duration-200 ${
+                  isInactive
+                    ? "bg-orange-300"
+                    : isSelected
+                      ? "bg-primary"
+                      : "bg-transparent group-hover:bg-primary/70"
                 }`}
               />
 
-              <div className="flex items-center gap-3 px-4 py-3.5 pl-5">
-                {/* Avatar */}
-                <div
-                  className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200 ${
-                    isSelected || isHovered
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
-                      : "bg-primary/10 text-primary"
-                  }`}
-                >
-                  {isSelected ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    s.name.charAt(0).toUpperCase()
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-semibold text-sm text-foreground truncate">
-                      {s.name}
-                    </h3>
-                    {isSelected && (
-                      <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full shrink-0">
-                        Selected
-                      </span>
+              <div className="flex flex-col gap-4 p-4 pl-5 sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4">
+                <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center sm:gap-4">
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-bold transition-all duration-200 sm:h-12 sm:w-12 ${
+                      isInactive
+                        ? "bg-orange-100 text-orange-700"
+                        : isSelected || isHovered
+                          ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                          : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    {isSelected ? (
+                      <Check className="h-5 w-5" />
+                    ) : (
+                      s.name.charAt(0).toUpperCase()
                     )}
                   </div>
-                  <div className="flex items-center gap-1 text-muted-foreground text-xs mt-0.5">
-                    <Users className="h-3 w-3 shrink-0" />
-                    <span>
-                      {s.members.length} member
-                      {s.members.length !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <h3
+                        className={`max-w-full truncate text-base font-semibold leading-tight ${
+                          isInactive ? "text-orange-950/80" : "text-foreground"
+                        }`}
+                      >
+                        {s.name}
+                      </h3>
+
+                      {isSelected && (
+                        <span className="inline-flex shrink-0 items-center rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Users className="h-3.5 w-3.5 shrink-0" />
+                      <span>
+                        {s.members.length} member
+                        {s.members.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  </div>
+
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground rounded-lg"
+                    className="h-10 w-10 shrink-0 rounded-full p-0 text-muted-foreground hover:text-foreground"         
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedStoreInfo(s);
                     }}
+                    title={
+                      isInactive
+                        ? "This store is coming soon"
+                        : "View store information"
+                    }
                   >
-                    <Info className="h-3.5 w-3.5" />
+                    <Info className="h-4 w-4" />
                   </Button>
+                </div>
 
+                <div className="flex w-full justify-end sm:w-auto sm:shrink-0">
                   {isSelected ? (
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
-                      className="h-8 px-3 text-xs font-semibold rounded-lg border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      className="h-10 w-full rounded-full border-destructive/50 px-4 text-sm font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
                       onClick={handleUnselect}
                     >
-                      <X className="h-3.5 w-3.5 mr-1" />
+                      <X className="mr-1 h-4 w-4" />
                       Unselect
                     </Button>
                   ) : (
                     <Button
                       type="button"
                       size="sm"
-                      className="h-8 px-3 text-xs font-semibold rounded-lg shadow-sm shadow-primary/20"
+                      disabled={isInactive}
+                      className={`h-10 w-full rounded-full px-5 text-sm font-semibold sm:w-auto ${
+                        isInactive
+                          ? "bg-orange-100 text-orange-700 hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-100"
+                          : "shadow-sm shadow-primary/20"
+                      }`}
                       onClick={() => handleStoreSelect(s)}
                     >
-                      Select
+                      {isInactive ? "Coming soon" : "Select"}
                     </Button>
                   )}
                 </div>

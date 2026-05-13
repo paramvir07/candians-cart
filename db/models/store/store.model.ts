@@ -42,6 +42,7 @@ export interface IStore {
   hours: IStoreHours;
   bankDetails: string;
   payoutSchedule: IPayoutSchedule;
+  isActive: boolean;
 }
 
 const timeRangeSchema = new Schema<ITimeRange>(
@@ -125,7 +126,10 @@ const storeSchema = new Schema<IStore>(
       type: String,
       default: "America/Vancouver",
     },
-
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
     hours: {
       type: hoursSchema,
       default: () => ({

@@ -22,20 +22,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getUserSession();
-  const role = session.user.role;
   const name = session.user.name;
-
-  if (role !== "admin") {
-    if (role === "store") {
-      redirect(`/store`);
-    } else if (role === "customer") {
-      redirect(`/`);
-    } else if (role === "cashier") {
-      redirect(`/cashier`);
-    } else {
-      redirect("/admin/login");
-    }
-  }
 
   return (
     // flex-col so the footer sits below the content row, never overlapped

@@ -28,18 +28,6 @@ export default async function RootLayout({
   if (!session) redirect("/store/login");
 
   const name = session.user.name;
-  const role = session.user.role;
-  if (role !== "store") {
-    if (role === "admin") {
-      redirect(`/admin`);
-    } else if (role === "customer") {
-      redirect(`/`);
-    } else if (role === "cashier") {
-      redirect(`/cashier`);
-    } else {
-      redirect("/store/login");
-    }
-  }
   return (
     <div className="scroll-smooth">
       <TooltipProvider>
