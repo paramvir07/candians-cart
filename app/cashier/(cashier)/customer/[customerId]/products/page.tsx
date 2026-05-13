@@ -2,7 +2,6 @@ import { CustomerIdParams } from "@/types/cashier/customer";
 import getStoreAndProduct from "@/actions/customer/ProductAndStore/getAssociatedStore";
 import { searchProducts } from "@/actions/common/searchProducts.action"; // adjust path if needed
 import { SearchResultsClient } from "@/components/customer/search/SearchResultsClient";
-import { redirect } from "next/navigation";
 import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
 import Link from "next/link";

@@ -5,10 +5,13 @@ import { dbConnect } from "@/db/dbConnect";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Customer from "@/db/models/customer/customer.model";
 import { Customer as CustomerType } from "@/types/customer/customer";
+import { IProduct } from "@/types/customer/CustomerCart";
 
 export interface AssociatedStoreResponse {
   success: boolean;
   customer?: CustomerType;
+  storeId?: string;
+  products?: IProduct[];
   error?: string;
 }
 
@@ -26,9 +29,14 @@ const getStoreAndProduct = cache(async (customerId?: string): Promise<Associated
 
     if (!customer) throw new Error("Customer not found");
 
+    const serializedCustomer: CustomerType = JSON.parse(JSON.stringify(customer));
+    const storeId = serializedCustomer.associatedStoreId?.toString();
+
     return {
       success: true,
-      customer: JSON.parse(JSON.stringify(customer)),
+      customer: serializedCustomer,
+      storeId,         
+      products: [],
     };
   } catch (error) {
     console.error("Error fetching store:", error);
