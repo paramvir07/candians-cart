@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ShoppingBag,
@@ -10,6 +10,27 @@ import {
   Calculator,
 } from "lucide-react";
 import Link from "next/link";
+
+// ── Isolated so useSearchParams() has a Suspense boundary above it ──
+function ScrollHandler() {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const target = searchParams.get("scrollTo");
+    if (!target) return;
+    const timer = setTimeout(() => {
+      const el = document.getElementById(target);
+      if (!el) return;
+      const navbarHeight = 72;
+      const top =
+        el.getBoundingClientRect().top + window.scrollY - navbarHeight;
+      window.scrollTo({ top, behavior: "smooth" });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [searchParams]);
+
+  return null;
+}
 
 export default function FeaturesSection() {
   const storeItems = [
@@ -44,21 +65,7 @@ export default function FeaturesSection() {
   ];
 
   const [spend, setSpend] = useState(21);
-  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const target = searchParams.get("scrollTo");
-    if (!target) return;
-    const timer = setTimeout(() => {
-      const el = document.getElementById(target);
-      if (!el) return;
-      const navbarHeight = 72;
-      const top =
-        el.getBoundingClientRect().top + window.scrollY - navbarHeight;
-      window.scrollTo({ top, behavior: "smooth" });
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [searchParams]);
   const eligible = spend >= 21;
   const savings = eligible ? spend * 0.35 * 0.6 : 0;
   const annual = savings * 12;
@@ -87,6 +94,11 @@ export default function FeaturesSection() {
         fontFamily: "'Sora', 'DM Sans', sans-serif",
       }}
     >
+      {/* ── Suspense boundary for useSearchParams ── */}
+      <Suspense fallback={null}>
+        <ScrollHandler />
+      </Suspense>
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');
 
@@ -731,19 +743,6 @@ export default function FeaturesSection() {
                     your phone.
                   </p>
                 </div>
-                {/* <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 5,
-                    color: "#16a34a",
-                    fontSize: "0.8rem",
-                    fontWeight: 600,
-                    marginTop: 16,
-                  }}
-                >
-                  Browse store <ArrowRight size={13} />
-                </div> */}
               </div>
 
               {/* Mock browser */}
@@ -824,7 +823,6 @@ export default function FeaturesSection() {
                 >
                   {storeItems.map((item) => (
                     <div key={item.name} className="fs-store-row">
-                      {/* emoji + text column */}
                       <div
                         style={{
                           display: "flex",
@@ -854,7 +852,6 @@ export default function FeaturesSection() {
                           <span className="fs-item-name">{item.name}</span>
                           {item.tag && (
                             <span
-                              className="fs-subsidised-badge"
                               style={{
                                 fontSize: "0.6rem",
                                 fontWeight: 700,
@@ -873,7 +870,6 @@ export default function FeaturesSection() {
                           )}
                         </div>
                       </div>
-                      {/* price column — always right-aligned */}
                       <div
                         style={{
                           display: "flex",
@@ -925,7 +921,6 @@ export default function FeaturesSection() {
               minHeight: 200,
             }}
           >
-            {/* decorative rings */}
             <div
               style={{
                 position: "absolute",
@@ -950,7 +945,6 @@ export default function FeaturesSection() {
                 pointerEvents: "none",
               }}
             />
-
             <div
               style={{
                 width: 46,
@@ -967,7 +961,6 @@ export default function FeaturesSection() {
             >
               <ShoppingBag size={20} color="#fff" strokeWidth={1.5} />
             </div>
-
             <div style={{ position: "relative", zIndex: 1, marginTop: 20 }}>
               <div
                 style={{
@@ -1024,7 +1017,6 @@ export default function FeaturesSection() {
             className="fs-card fs-area-calc"
             style={{ padding: "clamp(20px, 5vw, 32px)" }}
           >
-            {/* Header */}
             <div
               style={{
                 display: "flex",
@@ -1055,9 +1047,7 @@ export default function FeaturesSection() {
             </div>
 
             <div className="fs-calc-body">
-              {/* Left: controls */}
               <div className="fs-calc-col">
-                {/* Dollar input */}
                 <div style={{ marginBottom: 20 }}>
                   <span className="fs-label">Monthly spend</span>
                   <div style={{ position: "relative" }}>
@@ -1102,7 +1092,6 @@ export default function FeaturesSection() {
                   )}
                 </div>
 
-                {/* Slider */}
                 <div style={{ marginBottom: 22 }}>
                   <div
                     style={{
@@ -1141,7 +1130,6 @@ export default function FeaturesSection() {
                   />
                 </div>
 
-                {/* Quick picks */}
                 <div>
                   <span className="fs-label">Quick select</span>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
@@ -1158,15 +1146,12 @@ export default function FeaturesSection() {
                 </div>
               </div>
 
-              {/* Divider */}
               <div className="fs-calc-divider" />
 
-              {/* Right: results */}
               <div
                 className="fs-calc-col"
                 style={{ display: "flex", flexDirection: "column", gap: 12 }}
               >
-                {/* Breakdown */}
                 <div
                   style={{
                     background: "#f9fafb",
@@ -1187,7 +1172,6 @@ export default function FeaturesSection() {
                   >
                     How it works
                   </p>
-
                   <div className="fs-calc-row">
                     <span
                       style={{
@@ -1230,7 +1214,6 @@ export default function FeaturesSection() {
                   </div>
                 </div>
 
-                {/* Result banner */}
                 <div
                   style={{
                     background: eligible
@@ -1269,7 +1252,6 @@ export default function FeaturesSection() {
                       border: "1px solid rgba(255,255,255,0.09)",
                     }}
                   />
-
                   <div style={{ position: "relative", zIndex: 1 }}>
                     <p
                       style={{
@@ -1313,7 +1295,6 @@ export default function FeaturesSection() {
                       </span>
                     </div>
                   </div>
-
                   <div
                     style={{
                       textAlign: "right",
