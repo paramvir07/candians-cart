@@ -1,4 +1,5 @@
 import { getSubsidisedList } from "@/actions/admin/subsidyList/subsidyList.actions";
+import CashierSidebar from "@/components/cashier/CashierSlidebar";
 import SubsidyListView from "@/components/shared/subsidyList/SubsidyListView";
 
 const subsidyList = async () => {
@@ -9,6 +10,7 @@ const subsidyList = async () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <CashierSidebar />
       <div className="mb-6">
         <h1 className="text-xl font-bold text-slate-800 tracking-tight">
           Subsidised Items

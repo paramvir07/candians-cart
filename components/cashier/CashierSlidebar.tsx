@@ -124,14 +124,8 @@ function SidebarContent({
               onClick={onNav}
             />
             <NavItem
-              href="/cashier/customer/orders"
-              label="Orders"
-              icon={ReceiptText}
-              onClick={onNav}
-            />
-            <NavItem
               href="/cashier/subsidy-list"
-              label=" Subsidy List"
+              label="Subsidy List"
               icon={List}
               onClick={onNav}
             />
