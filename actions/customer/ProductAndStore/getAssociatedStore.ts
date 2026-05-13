@@ -1,55 +1,39 @@
 "use server";
 
-import Product from "@/db/models/store/products.model";
+import { cache } from "react";
 import { dbConnect } from "@/db/dbConnect";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Customer from "@/db/models/customer/customer.model";
-import { IProduct } from "@/types/customer/CustomerCart";
 import { Customer as CustomerType } from "@/types/customer/customer";
 
-export interface AssociatedStoreResponse{
+export interface AssociatedStoreResponse {
   success: boolean;
-  storeId?: string;
-  products?: IProduct[];
   customer?: CustomerType;
   error?: string;
 }
 
-export default async function getStoreAndProduct(customerId?: string) : Promise<AssociatedStoreResponse> {
+const getStoreAndProduct = cache(async (customerId?: string): Promise<AssociatedStoreResponse> => {
   try {
     const session = await getUserSession();
     const userId = session.user.id;
-    const cashierRole = session.user.role === "cashier";
+    const isCashier = session.user.role === "cashier";
+
     await dbConnect();
 
-    let customer;
-    if (cashierRole) {
-      customer = await Customer.findById(customerId).lean();
-    }
-    else {
-      customer = await Customer.findOne({ userId: userId }).lean();
-    }
+    const customer = isCashier
+      ? await Customer.findById(customerId).select("associatedStoreId").lean()
+      : await Customer.findOne({ userId }).select("associatedStoreId").lean();
 
-    if (!customer) {
-      throw new Error("Customer not found");
-    }
-
-    const products = await Product.find({
-      storeId: customer.associatedStoreId,
-    }).lean();
-    const serializedProducts = JSON.parse(JSON.stringify(products));
-    const serializedCustomer = JSON.parse(JSON.stringify(customer));
+    if (!customer) throw new Error("Customer not found");
 
     return {
       success: true,
-      products: serializedProducts,
-      customer: serializedCustomer,
+      customer: JSON.parse(JSON.stringify(customer)),
     };
   } catch (error) {
-    console.log("Error fetching store and products: " + error);
-    return {
-      success: false,
-      error: "Error fetching the products: " + error,
-    };
+    console.error("Error fetching store:", error);
+    return { success: false, error: String(error) };
   }
-}
+});
+
+export default getStoreAndProduct;
