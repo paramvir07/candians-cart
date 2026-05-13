@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ShoppingBag, BarChart2, User, ScanLine, PackageCheck } from "lucide-react";
+import { Home, BarChart2, User, ScanLine, PackageCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect, useRef } from "react";
 
 const navItems = [
   { label: "Home", href: "/customer", icon: Home, exact: true },
@@ -15,61 +16,70 @@ const navItems = [
 
 export default function BottomNavbar() {
   const pathname = usePathname();
+  const navRef = useRef<HTMLDivElement>(null);
+  const pillRef = useRef<HTMLSpanElement>(null);
+  const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
-  const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : pathname.startsWith(href);
+  const activeIndex = navItems.findIndex(({ href, exact }) =>
+    exact ? pathname === href : pathname.startsWith(href)
+  );
+
+  useEffect(() => {
+    const nav = navRef.current;
+    const pill = pillRef.current;
+    const activeItem = itemRefs.current[activeIndex];
+    if (!nav || !pill || !activeItem) return;
+
+    const navRect = nav.getBoundingClientRect();
+    const itemRect = activeItem.getBoundingClientRect();
+    // Center the 48px pill over the icon area
+    const pillLeft = itemRect.left - navRect.left + itemRect.width / 2 - 24;
+    pill.style.transform = `translateX(${pillLeft}px)`;
+  }, [activeIndex]);
 
   return (
     <>
-      {/* Spacer — accounts for nav height + safe area */}
       <div className="h-20 md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }} />
 
       <nav
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-100"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="flex items-center justify-around px-2 py-2">
-          {navItems.map(({ label, href, icon: Icon, exact }) => {
-            const active = isActive(href, exact);
+        <div ref={navRef} className="relative flex items-center justify-around px-2 py-2">
+
+          {/* The single sliding pill — lives behind all items */}
+          <span
+            ref={pillRef}
+            className="pointer-events-none absolute left-0 top-2 h-10 w-12 rounded-2xl bg-[#16a34a] shadow-[0_4px_16px_rgba(22,163,74,0.35)]"
+            style={{ transition: "transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+          />
+
+          {navItems.map(({ label, href, icon: Icon, exact }, i) => {
+            const active = activeIndex === i;
 
             return (
               <Link
                 key={href}
                 href={href}
-                className="relative flex flex-col items-center justify-center flex-1 gap-1 min-w-0 select-none"
+                ref={(el) => { itemRefs.current[i] = el; }}
+                className="relative z-10 flex flex-col items-center justify-center flex-1 gap-1 min-w-0 select-none"
                 style={{ WebkitTapHighlightColor: "transparent" }}
               >
-                {/* Icon pill */}
-                <span
-                  className={cn(
-                    "relative flex items-center justify-center w-12 h-10 rounded-2xl transition-all duration-300 ease-out",
-                    active
-                      ? "bg-[#16a34a] shadow-[0_4px_16px_rgba(22,163,74,0.4)] scale-[1.08]"
-                      : "bg-transparent active:scale-95 active:bg-gray-50",
-                  )}
-                >
+                <span className="flex items-center justify-center w-12 h-10">
                   <Icon
                     size={19}
                     strokeWidth={active ? 2.5 : 1.75}
                     className={cn(
-                      "transition-all duration-300",
-                      active ? "text-white" : "text-gray-400",
+                      "transition-colors duration-150",
+                      active ? "text-white" : "text-gray-400"
                     )}
                   />
-
-                  {active && (
-                    <span
-                      className="absolute inset-0 rounded-2xl bg-[#16a34a]/20"
-                      style={{ animation: "ping 0.6s cubic-bezier(0,0,0.2,1) 1 forwards" }}
-                    />
-                  )}
                 </span>
 
-                {/* Label */}
                 <span
                   className={cn(
-                    "text-[10px] leading-none font-semibold tracking-wide transition-colors duration-300",
-                    active ? "text-[#15803d]" : "text-gray-400",
+                    "text-[10px] leading-none font-semibold tracking-wide transition-colors duration-150",
+                    active ? "text-[#15803d]" : "text-gray-400"
                   )}
                 >
                   {label}
