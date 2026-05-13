@@ -6,9 +6,6 @@ import {
   DialogContent,
   DialogTitle,
   DialogTrigger,
-  DialogHeader,
-  DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {

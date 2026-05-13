@@ -8,6 +8,7 @@ import { walletTopUpZodSchema } from "@/zod/schemas/cashier/cashierTopUpSchema";
 import { zodErrorResponse } from "@/zod/validation/error";
 import mongoose from "mongoose";
 import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
+import { revalidatePath } from "next/cache";
 
 export const walletTopUpAction = async (
   customerId: string,
@@ -84,7 +85,7 @@ export const walletTopUpAction = async (
         throw new Error("Customer not found");
       }
     });
-
+    revalidatePath(`/cashier/customer/${userData.user.id}/wallet`)
     return { success: true, message: "Wallet topped up successfully!!" };
   } catch (error) {
     console.log("Error while topping up customer's wallet: ", error);

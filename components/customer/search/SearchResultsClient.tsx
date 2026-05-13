@@ -28,6 +28,8 @@ import { Customer } from "@/types/customer/customer";
 import { AddtoCart, getCartQuantities } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { useDebounce } from "use-debounce";
 import { toast } from "sonner";
+import { getCartInsights } from "@/actions/cashier/GetCartInsights";
+import CartInsightBar from "@/components/cashier/CartInsightsBar";
 
 interface SearchResultsClientProps {
   customerId?: string;
@@ -40,10 +42,15 @@ interface SearchResultsClientProps {
   cartCount: number;
 }
 
+interface CartInsight {
+  numItems: number;
+  subsidyOnOrder: number;
+  total: number;
+}
+
 const QUICK_SUGGESTIONS = [
   { emoji: "🥭", label: "Fruits" },
   { emoji: "🥦", label: "Vegetables" },
-  // { emoji: "🥕", label: "Produce" },
   { emoji: "🥛", label: "Dairy" },
   { emoji: "🍗", label: "Meat" },
   { emoji: "🫓", label: "Bakery" },
@@ -71,35 +78,46 @@ export function SearchResultsClient({
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [cartMap, setCartMap] = useState<Record<string, number>>({});
+  const [cartInsight, setCartInsight] = useState<CartInsight | null>(null);
+
+  // ── Fetch cart insight whenever cartMap changes ──────────────────────────
+  useEffect(() => {
+    const fetchInsight = async () => {
+      const res = await getCartInsights(customerId);
+      if (res?.success && res.data) {
+        setCartInsight(res.data);
+      } else {
+        setCartInsight(null);
+      }
+    };
+    fetchInsight();
+  }, [cartMap, customerId]);
 
   const handleBarcodeScan = async (value: string) => {
-  setIsLoading(true);
-  setHasSearched(true);
+    setIsLoading(true);
+    setHasSearched(true);
 
-  // Search for the product by barcode
-  const res = await searchAction(value.trim(), storeId);
-  const results = res.success && res.data ? res.data : [];
-  setAllResults(results);
-  setIsLoading(false);
+    const res = await searchAction(value.trim(), storeId);
+    const results = res.success && res.data ? res.data : [];
+    setAllResults(results);
+    setIsLoading(false);
 
-  // If exactly one product found, auto-add to cart
-  if (results.length === 1) {
-    const product = results[0];
-    const productId = product._id as string;
-
-    try {
-      await AddtoCart(productId, customerId); // adjust to your actual action signature
-      setCartMap((prev) => ({
-        ...prev,
-        [productId]: (prev[productId] || 0) + 1,
-      }));
-      toast.success(`${product.name} added to cart`); // add: import { toast } from "sonner"
-    } catch {
-      toast.error("Failed to add to cart");
+    if (results.length === 1) {
+      const product = results[0];
+      const productId = product._id as string;
+      try {
+        await AddtoCart(productId, customerId);
+        setCartMap((prev) => ({
+          ...prev,
+          [productId]: (prev[productId] || 0) + 1,
+        }));
+        toast.success(`${product.name} added to cart`);
+      } catch {
+        toast.error("Failed to add to cart");
+      }
     }
-  }
-};
-  
+  };
+
   // 1. Fetch Cart State
   useEffect(() => {
     const fetchInitialCart = async () => {
@@ -140,7 +158,6 @@ export function SearchResultsClient({
         setAllResults([]);
         setHasSearched(false);
       } else {
-        // Query cleared but category filter still active — re-fetch by category
         const reload = async () => {
           setIsLoading(true);
           setHasSearched(true);
@@ -164,15 +181,13 @@ export function SearchResultsClient({
     fetchResult();
   }, [debouncedQuery, storeId]);
 
-  // Re-fetch when categories change via quick suggestions (no active search query)
   useEffect(() => {
-    if (debouncedQuery.trim()) return; // search mode handles its own fetching
-    if (!hasSearched) return; // nothing shown yet, no need to refetch
+    if (debouncedQuery.trim()) return;
+    if (!hasSearched) return;
 
     const load = async () => {
       setIsLoading(true);
       if (filters.categories.length === 0) {
-        // No categories selected — reset back to idle
         setAllResults([]);
         setHasSearched(false);
         setIsLoading(false);
@@ -196,7 +211,6 @@ export function SearchResultsClient({
     if (filters.inStockOnly) result = result.filter((p) => p.stock);
     if (filters.subsidisedOnly) result = result.filter((p) => p.subsidised);
     switch (filters.sortBy) {
-      // To this:
       case "price_asc":
         result.sort((a, b) => displayPrice(a) - displayPrice(b));
         break;
@@ -222,17 +236,27 @@ export function SearchResultsClient({
         cartCount={cartCount}
       />
 
+      {/* Cart insight bar — shown when cart has items */}
+      {cartInsight && cartInsight.numItems > 0 && (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
+          <CartInsightBar
+            numItems={cartInsight.numItems}
+            subsidyOnOrder={cartInsight.subsidyOnOrder}
+            total={cartInsight.total}
+            customerId={customerId}
+          />
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-6">
           {/* ── Desktop sidebar ── */}
-          {/* {hasSearched && allResults.length > 0 && !customerId && ( */}
           {hasSearched && allResults.length > 0 && !customerId && (
             <aside className="hidden lg:flex flex-col w-64 shrink-0">
               <div
                 className="sticky top-18 rounded-2xl border border-border/60 bg-card overflow-hidden flex flex-col"
                 style={{ maxHeight: "calc(100vh - 5rem)" }}
               >
-                {/* Sidebar header */}
                 <div className="flex items-center gap-2 px-5 pt-5 pb-3 border-b border-border/40 shrink-0">
                   <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center">
                     <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
@@ -271,7 +295,6 @@ export function SearchResultsClient({
             {/* ── Idle state ── */}
             {!query.trim() && !hasSearched && (
               <div className="flex flex-col items-center justify-center py-20 gap-6">
-                {/* Icon */}
                 <div className="relative">
                   <div className="w-20 h-20 rounded-3xl bg-card border border-border/60 flex items-center justify-center shadow-sm">
                     <Search className="h-8 w-8 text-green-600" />
@@ -288,53 +311,26 @@ export function SearchResultsClient({
                   </p>
                 </div>
 
-                {/* Quick suggestion pills — reference style */}
                 <div className="flex flex-wrap gap-2 justify-center max-w-lg">
                   {QUICK_SUGGESTIONS.map((s) => (
                     <button
                       key={s.label}
                       onClick={async () => {
-                        const CATEGORY_MAP: Record<string, string[]> = {
-                          // Produce: ["Fruits", "Vegetables", "Produce"],
-                        };
+                        const CATEGORY_MAP: Record<string, string[]> = {};
                         const labelsToAdd = CATEGORY_MAP[s.label] ?? [s.label];
-                        // const newCategories = filters.categories.includes(
-                        //   s.label,
-                        // )
-                        //   ? filters.categories
-                        //   : [...filters.categories, s.label];
-                        const newCategories = filters.categories.includes(
-                          s.label,
-                        )
-                          ? filters.categories.filter(
-                              (c) => !labelsToAdd.includes(c),
-                            )
-                          : [
-                              ...new Set([
-                                ...filters.categories,
-                                ...labelsToAdd,
-                              ]),
-                            ];
+                        const newCategories = filters.categories.includes(s.label)
+                          ? filters.categories.filter((c) => !labelsToAdd.includes(c))
+                          : [...new Set([...filters.categories, ...labelsToAdd])];
 
-                        setFilters((prev) => ({
-                          ...prev,
-                          categories: newCategories,
-                        }));
+                        setFilters((prev) => ({ ...prev, categories: newCategories }));
 
                         if (!query.trim()) {
                           setIsLoading(true);
                           setHasSearched(true);
-                          const res = await getStoreProductsFiltered(
-                            storeId,
-                            1,
-                            200,
-                            {
-                              categories: newCategories as any,
-                            },
-                          );
-                          setAllResults(
-                            res.success && res.data ? res.data : [],
-                          );
+                          const res = await getStoreProductsFiltered(storeId, 1, 200, {
+                            categories: newCategories as any,
+                          });
+                          setAllResults(res.success && res.data ? res.data : []);
                           setIsLoading(false);
                         }
                       }}
@@ -367,19 +363,12 @@ export function SearchResultsClient({
             {/* ── Results ── */}
             {!isLoading && hasSearched && (
               <>
-                {/* Toolbar */}
-                <div
-                  ref={resultsRef}
-                  className="flex items-center justify-between mb-5 gap-3"
-                >
+                <div ref={resultsRef} className="flex items-center justify-between mb-5 gap-3">
                   <div>
                     <p className="font-bold text-foreground">
                       {filtered.length > 0
                         ? `${filtered.length} result${filtered.length !== 1 ? "s" : ""}`
-                        : "No results"}{" "}
-                      <span className="text-muted-foreground font-normal text-sm">
-                        {/* for &ldquo;{query}&rdquo; */}
-                      </span>
+                        : "No results"}
                     </p>
                     {activeFilterCount > 0 && (
                       <button
@@ -387,8 +376,7 @@ export function SearchResultsClient({
                         className="text-xs text-green-600 font-semibold hover:text-green-700 mt-0.5 flex items-center gap-1"
                       >
                         <X className="h-3 w-3" />
-                        Clear {activeFilterCount} filter
-                        {activeFilterCount !== 1 ? "s" : ""}
+                        Clear {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""}
                       </button>
                     )}
                   </div>
@@ -403,7 +391,6 @@ export function SearchResultsClient({
                   )}
                 </div>
 
-                {/* Product grid */}
                 {filtered.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     {filtered.map((product) => (
@@ -417,18 +404,13 @@ export function SearchResultsClient({
                     ))}
                   </div>
                 ) : allResults.length > 0 ? (
-                  /* Filters returned nothing */
                   <div className="py-20 flex flex-col items-center justify-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center">
                       <PackageOpen className="h-6 w-6 text-muted-foreground/50" />
                     </div>
                     <div className="text-center">
-                      <p className="font-bold text-foreground">
-                        No products match your filters
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Try adjusting or clearing your filters
-                      </p>
+                      <p className="font-bold text-foreground">No products match your filters</p>
+                      <p className="text-sm text-muted-foreground mt-1">Try adjusting or clearing your filters</p>
                     </div>
                     <button
                       onClick={resetFilters}
@@ -438,33 +420,28 @@ export function SearchResultsClient({
                     </button>
                   </div>
                 ) : (
-                  /* No results at all */
-                  <>
-                    <div className="py-20 flex flex-col items-center justify-center gap-4">
-                      <div className="w-16 h-16 rounded-3xl bg-card border border-border/60 flex items-center justify-center text-3xl shadow-sm">
-                        🔍
-                      </div>
-                      <div className="text-center">
-                        <p className="font-bold text-foreground text-lg">
-                          Nothing found
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
-                          Try a different spelling or browse by category
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setQuery("");
-                          setAllResults([]);
-                          setHasSearched(false);
-                          setFilters(DEFAULT_FILTERS);
-                        }}
-                        className="h-9 px-5 rounded-full border border-border/60 bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-all"
-                      >
-                        Clear search
-                      </button>
+                  <div className="py-20 flex flex-col items-center justify-center gap-4">
+                    <div className="w-16 h-16 rounded-3xl bg-card border border-border/60 flex items-center justify-center text-3xl shadow-sm">
+                      🔍
                     </div>
-                  </>
+                    <div className="text-center">
+                      <p className="font-bold text-foreground text-lg">Nothing found</p>
+                      <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
+                        Try a different spelling or browse by category
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setQuery("");
+                        setAllResults([]);
+                        setHasSearched(false);
+                        setFilters(DEFAULT_FILTERS);
+                      }}
+                      className="h-9 px-5 rounded-full border border-border/60 bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-all"
+                    >
+                      Clear search
+                    </button>
+                  </div>
                 )}
               </>
             )}
@@ -500,8 +477,6 @@ export function SearchResultsClient({
                 onReset={resetFilters}
               />
             </div>
-
-            {/* Fixed apply button */}
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
               <button
                 onClick={() => setFilterSheetOpen(false)}
@@ -510,8 +485,7 @@ export function SearchResultsClient({
                 Show {filtered.length} Result{filtered.length !== 1 ? "s" : ""}
                 {activeFilterCount > 0 && (
                   <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {activeFilterCount} filter
-                    {activeFilterCount !== 1 ? "s" : ""}
+                    {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""}
                   </span>
                 )}
               </button>

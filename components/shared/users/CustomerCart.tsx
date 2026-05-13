@@ -36,6 +36,7 @@ import { RemoveButton } from "@/components/customer/products/RemoveButton";
 import { QuantityControl } from "@/components/customer/products/QuantityControls";
 import { cn } from "@/lib/utils";
 
+
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
 const calcLine = (item: ICartItem) => {
