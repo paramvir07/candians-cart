@@ -1,16 +1,16 @@
-import { getSubsidisedList } from "@/actions/admin/subsidyList/subsidyList.actions";
-import BudgetPacks from "@/components/customer/budgetpacks/packs"
+import { Suspense } from "react";
 import Navbar from "@/components/customer/landing/Navbar";
+import BudgetPacksSkeleton from "@/components/skeletons/BudgetPacksSkeleton";
+import BudgetPacksLoader from "@/components/customer/budgetpacks/BudgetpackLoader";
 
-const page = async() => {
-    const { subsidisedList } = await getSubsidisedList();
 
+export default function Page() {
   return (
     <div>
       <Navbar />
-      <BudgetPacks subsidyItems={subsidisedList} />
+      <Suspense fallback={<BudgetPacksSkeleton />}>
+        <BudgetPacksLoader />
+      </Suspense>
     </div>
   );
 }
-
-export default page

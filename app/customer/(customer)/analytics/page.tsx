@@ -1,11 +1,13 @@
-import { getWalletTopUpHistory } from "@/actions/common/getWalletRechargeHistory.action";
-import { getOrders } from "@/actions/customer/ProductAndStore/Order.Action";
-import AnalyticsDashboard from "@/components/customer/analytics/dashboard";
+// app/customer/(customer)/analytics/page.tsx
+
+import { Suspense } from "react";
 import Navbar from "@/components/customer/landing/Navbar";
+import AnalyticsLoader from "@/components/customer/analytics/AnalyticsLoader";
 import { PlaceOrderProduct } from "@/db/models/customer/Orders.Model";
 import { IWalletPayment } from "@/db/models/customer/WalletPayment.model";
 import { PlaceOrderI } from "@/db/models/customer/Orders.Model";
 import { Metadata } from "next";
+import AnalyticsSkeleton from "@/components/skeletons/CustomerAnalyticsSkeleton";
 
 export const metadata: Metadata = {
   title: "Analytics",
@@ -20,7 +22,10 @@ export type SerializedProduct = Omit<PlaceOrderProduct, "productId"> & {
   };
 };
 
-export type SerializedOrder = Omit<PlaceOrderI, "products" | "subsidyItems" | "userId" | "storeId" | "cashierId"> & {
+export type SerializedOrder = Omit<
+  PlaceOrderI,
+  "products" | "subsidyItems" | "userId" | "storeId" | "cashierId"
+> & {
   _id: string;
   products: SerializedProduct[];
   subsidyItems: SerializedProduct[];
@@ -44,27 +49,16 @@ export type WalletTopUpEntry = {
   createdAt: string;
 };
 
-const AnalyticsPage = async () => {
-  const [Orders, WalletHistory] = await Promise.all([
-    getOrders(),
-    getWalletTopUpHistory(),
-  ]);
-
-  const orders = (Orders ?? []) as SerializedOrder[];
-  const stripeTopUps = (WalletHistory?.walletTopUpHistory?.stripeTopUps ?? []) as SerializedWalletPayment[];
-  const walletTopUps = (WalletHistory?.walletTopUpHistory?.walletTopUps ?? []) as WalletTopUpEntry[];
-
-
+export default function AnalyticsPage() {
   return (
-    <div className="min-h-screen" style={{ background: "oklch(0.9719 0.0055 158.5966)" }}>
+    <div
+      className="min-h-screen"
+      style={{ background: "oklch(0.9719 0.0055 158.5966)" }}
+    >
       <Navbar />
-      <AnalyticsDashboard
-        orders={orders}
-        stripeTopUps={stripeTopUps}
-        walletTopUps={walletTopUps}
-      />
+      <Suspense fallback={<AnalyticsSkeleton />}>
+        <AnalyticsLoader />
+      </Suspense>
     </div>
   );
-};
-
-export default AnalyticsPage;
+}

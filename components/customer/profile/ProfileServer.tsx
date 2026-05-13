@@ -16,13 +16,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { BlurFade } from "@/components/ui/blur-fade";
 import { getOrderCount } from "@/actions/customer/ProductAndStore/Order.Action";
 import { Metadata } from "next";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 
 export const metadata: Metadata = {
-  title: "Profile", // This becomes "Orders | Store Panel - Candian's Cart" in the browser tab
+  title: "Profile",
 };
 
 export default async function ProfileServer() {
@@ -122,85 +121,53 @@ export default async function ProfileServer() {
 
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <BlurFade delay={0.05} inView>
-          <div className="flex items-center gap-3 py-4 lg:py-6">
-            <Link href="/customer">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-base font-bold tracking-tight leading-none">
-                My Profile
-              </h1>
-              <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
-                Manage your account and preferences
-              </p>
-            </div>
+        <div className="flex items-center gap-3 py-4 lg:py-6">
+          <Link href="/customer">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-base font-bold tracking-tight leading-none">
+              My Profile
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+              Manage your account and preferences
+            </p>
           </div>
-        </BlurFade>
+        </div>
 
         <div className="pb-20 max-w-lg mx-auto lg:max-w-none">
           {/* ── Mobile ── */}
           <div className="flex flex-col gap-4 lg:hidden">
-            <BlurFade delay={0.1} inView>
-              <ProfileHero customer={customerData} />
-              <CustomerAdvertisements />
-            </BlurFade>
-            <BlurFade delay={0.18} inView>
-              <ProfileStats
-                customer={customerData}
-                OrderCount={orderCount ?? 0}
-              />
-            </BlurFade>
-            <BlurFade delay={0.26} inView>
-              <ProfileContact customer={customerData} />
-            </BlurFade>
-            <BlurFade delay={0.34} inView>
-              <ProfileStore store={customerData.associatedStoreId} />
-            </BlurFade>
-            <BlurFade delay={0.42} inView>
-              <QuickActions />
-            </BlurFade>
-            <BlurFade delay={0.5} inView>
-              <LogoutButton variant="card" />
-            </BlurFade>
+            <ProfileHero customer={customerData} />
+            <CustomerAdvertisements />
+            <ProfileStats customer={customerData} OrderCount={orderCount ?? 0} />
+            <ProfileContact customer={customerData} />
+            <ProfileStore store={customerData.associatedStoreId} />
+            <QuickActions />
+            <LogoutButton variant="card" />
           </div>
 
           {/* ── Desktop ── */}
           <div className="hidden lg:grid grid-cols-[1fr_340px] gap-6 items-start">
             {/* Left col */}
             <div className="flex flex-col gap-4">
-              <BlurFade delay={0.1} inView>
-                <ProfileHero customer={customerData} />
-              </BlurFade>
+              <ProfileHero customer={customerData} />
               <CustomerAdvertisements />
-              <BlurFade delay={0.22} inView>
-                <ProfileStore store={customerData.associatedStoreId} />
-              </BlurFade>
+              <ProfileStore store={customerData.associatedStoreId} />
             </div>
 
             {/* Right col */}
             <div className="flex flex-col gap-4">
-              <BlurFade delay={0.16} inView>
-                <ProfileStats
-                  customer={customerData}
-                  OrderCount={orderCount ?? 0}
-                />
-              </BlurFade>
-              <BlurFade delay={0.28} inView>
-                <ProfileContact customer={customerData} />
-              </BlurFade>
-              <BlurFade delay={0.36} inView>
-                <QuickActions />
-              </BlurFade>
-              <BlurFade delay={0.44} inView>
-                <LogoutButton variant="card" />
-              </BlurFade>
+              <ProfileStats customer={customerData} OrderCount={orderCount ?? 0} />
+              <ProfileContact customer={customerData} />
+              <QuickActions />
+              <LogoutButton variant="card" />
             </div>
           </div>
         </div>
