@@ -19,52 +19,50 @@ import { StoreInfoDialog } from "@/components/customer/signup/StoreInfoDialog";
 interface HeroBannerProps {
   store: StoreDocument;
 }
-const ik = (src: string, width: number, quality = 70) =>
-  `${src}?tr=w-${width},q-${quality},f-webp`;
 
 const LEFT_IMAGES = [
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(1).png", 200),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(1).png",
     alt: "Broccoli",
-    cls: "absolute -left-2 top-3 w-44 h-44 xl:w-52 xl:h-52",
+    cls: "absolute -left-2 top-3 w-48 h-48 xl:w-56 xl:h-56",
     rotation: -22,
     delay: "0s",
     duration: "6s",
   },
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(2).png", 160),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(2).png",
     alt: "Tomato",
-    cls: "absolute left-24 top-[30%] w-28 h-28 xl:w-36 xl:h-36",
+    cls: "absolute left-24 top-[30%] w-32 h-32 xl:w-40 xl:h-40",
     rotation: 16,
     delay: "1s",
     duration: "7s",
   },
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(4).png", 150),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(4).png",
     alt: "Lemons",
-    cls: "absolute left-20 bottom-8 w-24 h-24 xl:w-28 xl:h-28",
+    cls: "absolute left-20 bottom-8 w-28 h-28 xl:w-32 xl:h-32",
     rotation: -8,
     delay: "1.6s",
     duration: "8s",
   },
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(6).png", 130),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(6).png",
     alt: "Strawberries",
-    cls: "absolute left-32 -top-2 w-20 h-20 xl:w-24 xl:h-24",
+    cls: "absolute left-32 -top-2 w-24 h-24 xl:w-28 xl:h-28",
     rotation: 28,
     delay: "2.2s",
     duration: "5.5s",
   },
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(5).png", 180),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(5).png",
     alt: "Orange accent",
-    cls: "absolute -left-4 bottom-16 w-32 h-32 xl:w-36 xl:h-36",
+    cls: "absolute -left-4 bottom-16 w-36 h-36 xl:w-40 xl:h-40",
     rotation: -30,
     delay: "0.6s",
     duration: "9s",
   },
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(7).png", 120),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(7).png",
     alt: "Pineapple accent",
     cls: "absolute left-10 top-[55%] w-20 h-20 xl:w-24 xl:h-24",
     rotation: 12,
@@ -75,49 +73,49 @@ const LEFT_IMAGES = [
 
 const RIGHT_IMAGES = [
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(5).png", 200),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(5).png",
     alt: "Oranges",
-    cls: "absolute -right-2 top-6 w-44 h-44 xl:w-52 xl:h-52",
+    cls: "absolute -right-2 top-6 w-48 h-48 xl:w-56 xl:h-56",
     rotation: 20,
     delay: "0.5s",
     duration: "6.5s",
   },
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(7).png", 170),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(7).png",
     alt: "Pineapple",
-    cls: "absolute right-20 top-[25%] w-32 h-32 xl:w-40 xl:h-40",
+    cls: "absolute right-20 top-[25%] w-36 h-36 xl:w-44 xl:h-44",
     rotation: -18,
     delay: "1.2s",
     duration: "7.5s",
   },
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(6).png", 170),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(6).png",
     alt: "Strawberries",
-    cls: "absolute right-4 bottom-6 w-32 h-32 xl:w-40 xl:h-40",
+    cls: "absolute right-4 bottom-6 w-36 h-36 xl:w-44 xl:h-44",
     rotation: 14,
     delay: "2s",
     duration: "8.5s",
   },
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(1).png", 140),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(1).png",
     alt: "Broccoli accent",
-    cls: "absolute right-28 -top-3 w-20 h-20 xl:w-24 xl:h-24",
+    cls: "absolute right-28 -top-3 w-24 h-24 xl:w-28 xl:h-28",
     rotation: -25,
     delay: "3.2s",
     duration: "10s",
   },
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(2).png", 120),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(2).png",
     alt: "Tomato accent",
-    cls: "absolute right-32 bottom-14 w-18 h-18 xl:w-20 xl:h-20",
+    cls: "absolute right-32 bottom-14 w-20 h-20 xl:w-24 xl:h-24",
     rotation: 35,
     delay: "1.8s",
     duration: "7s",
   },
   {
-    src: ik("https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(4).png", 140),
+    src: "https://ik.imagekit.io/zaia2gfsw/pngwing.com%20(4).png",
     alt: "Lemon accent",
-    cls: "absolute -right-4 bottom-28 w-24 h-24 xl:w-28 xl:h-28",
+    cls: "absolute -right-4 bottom-28 w-28 h-28 xl:w-32 xl:h-32",
     rotation: -12,
     delay: "0.9s",
     duration: "8s",
@@ -221,20 +219,26 @@ export function HeroBanner({ store }: HeroBannerProps) {
         {LEFT_IMAGES.map((img) => (
           <div
             key={img.alt}
-            className={`${img.cls} drop-shadow-2xl will-change-transform`}
+            className={`${img.cls} drop-shadow-2xl`}
             style={{
-              transform: `rotate(${img.rotation}deg)`,
+              rotate: `${img.rotation}deg`,
               animation: `floatAnim ${img.duration} ease-in-out ${img.delay} infinite`,
             }}
           >
-          <Image
-            src={img.src}
-            alt={img.alt}
-            fill
-            loading="lazy"
-            className="object-contain"
-            sizes="180px"
-          />
+            <Image
+              src={img.src}
+              priority={
+                img.alt === "Strawberries" ||
+                img.alt === "Orange accent" ||
+                img.alt === "Oranges" ||
+                img.alt === "Tomato"
+              }
+              loading="eager"
+              alt={img.alt}
+              fill
+              className="object-contain"
+              sizes="(max-width: 1024px) 100vw, 340px"
+            />
           </div>
         ))}
         <div
@@ -262,20 +266,19 @@ export function HeroBanner({ store }: HeroBannerProps) {
         {RIGHT_IMAGES.map((img) => (
           <div
             key={img.alt}
-            className={`${img.cls} drop-shadow-2xl will-change-transform`}
+            className={`${img.cls} drop-shadow-2xl`}
             style={{
-              transform: `rotate(${img.rotation}deg)`,
+              rotate: `${img.rotation}deg`,
               animation: `floatAnim ${img.duration} ease-in-out ${img.delay} infinite`,
             }}
           >
             <Image
-            src={img.src}
-            alt={img.alt}
-            fill
-            loading="lazy"
-            className="object-contain"
-            sizes="180px"
-          />
+              src={img.src}
+              alt={img.alt}
+              fill
+              className="object-contain"
+              sizes="(max-width: 1024px) 100vw, 340px"
+            />
           </div>
         ))}
         <div
