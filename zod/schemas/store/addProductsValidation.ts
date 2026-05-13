@@ -93,7 +93,8 @@ export const BaseProductFormSchema = z.object({
     .trim()
     .regex(/^\d*$/, "UPC must contain digits only")
     .max(14, "UPC must be atleast 14 digits")
-    .transform((val) => (val === "" ? undefined : val)),
+    .transform((val) => (val === "" ? undefined : val))
+    .optional(),
 
   isMeasuredInWeight: z.boolean().optional().default(false),
 
