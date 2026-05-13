@@ -43,6 +43,16 @@ export function SearchNav({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
   const lastKeyTimeRef = useRef(0);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+  if (searchParams.get("scan") === "1") {
+    setScannerOpen(true);
+    // Clean up the URL so re-renders don't re-trigger it
+    router.replace("/customer/search", { scroll: false });
+  }
+}, []);
   // Auto-open scanner when navigated here with ?scan=1 (from bottom nav Scan button)
   useEffect(() => {
     const THRESHOLD = 50; // ms — scanners are faster than any human
