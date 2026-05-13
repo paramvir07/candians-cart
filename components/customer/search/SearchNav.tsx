@@ -46,6 +46,7 @@ export function SearchNav({
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  // Auto-open scanner when navigated here with ?scan=1 (from bottom nav Scan button)
   useEffect(() => {
   if (searchParams.get("scan") === "1") {
     setScannerOpen(true);
@@ -53,7 +54,7 @@ export function SearchNav({
     router.replace("/customer/search", { scroll: false });
   }
 }, []);
-  // Auto-open scanner when navigated here with ?scan=1 (from bottom nav Scan button)
+  // Scanner gun auto enter
   useEffect(() => {
     const THRESHOLD = 50; // ms — scanners are faster than any human
 
