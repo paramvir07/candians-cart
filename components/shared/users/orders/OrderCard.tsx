@@ -141,9 +141,9 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
             />
 
             {/* ══════════════════════════════════
-                MOBILE  (hidden on sm+)
+                MOBILE  (hidden on lg+)
             ══════════════════════════════════ */}
-            <div className="sm:hidden pl-4 pr-4 py-3.5 flex items-center gap-3">
+            <div className="lg:hidden pl-4 pr-4 py-3.5 flex items-center gap-3">
               {/* Thumbnail */}
               <div
                 className="relative shrink-0 rounded-xl overflow-hidden"
@@ -201,77 +201,69 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
               </div>
             </div>
 
-            {/* ══════════════════════════════════
-                DESKTOP  (hidden below sm)
-            ══════════════════════════════════ */}
-            <div className="hidden sm:flex items-center gap-5 pl-5 pr-5 py-4">
-              {/* Thumbnail */}
-              <div
-                className="relative shrink-0 rounded-xl overflow-hidden"
-                style={{ width: 54, height: 54, border: "1.5px solid rgba(0,0,0,0.07)", background: "#f8f8f6", boxShadow: "0 2px 6px rgba(0,0,0,0.06)" }}
-              >
-                {thumbUrl ? (
-                  <Image src={thumbUrl} alt="Order" fill className="object-cover" />
-                ) : (
-                  <CategoryIllustration category={firstCat} />
-                )}
-                {(hasSubsidyUsed || hasSubsidyGenerated) && (
-                  <div className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg" style={{ background: "#f59e0b" }}>
-                    <Sparkles className="w-2.5 h-2.5 text-white" />
-                  </div>
-                )}
-              </div>
+{/* ══════════════════════════════════
+    DESKTOP  (hidden below lg)
+══════════════════════════════════ */}
+<div className="hidden lg:flex items-center gap-3 pl-5 pr-4 py-4">
+  {/* Thumbnail */}
+  <div
+    className="relative shrink-0 rounded-xl overflow-hidden"
+    style={{ width: 54, height: 54, border: "1.5px solid rgba(0,0,0,0.07)", background: "#f8f8f6", boxShadow: "0 2px 6px rgba(0,0,0,0.06)" }}
+  >
+    {thumbUrl ? (
+      <Image src={thumbUrl} alt="Order" fill className="object-cover" />
+    ) : (
+      <CategoryIllustration category={firstCat} />
+    )}
+    {(hasSubsidyUsed || hasSubsidyGenerated) && (
+      <div className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg" style={{ background: "#f59e0b" }}>
+        <Sparkles className="w-2.5 h-2.5 text-white" />
+      </div>
+    )}
+  </div>
 
-              {/* Data columns — flex with auto spacing, chevron is INSIDE this flex */}
-              <div className="flex-1 flex items-center gap-6 min-w-0">
-                {/* Order # */}
-                <div className="min-w-[86px]">
-                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 3 }}>Order</p>
-                  <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider">#{orderId}</p>
-                </div>
+  {/* Data columns — grid so columns never overflow */}
+  <div className="flex-1 grid grid-cols-[1.4fr_1.3fr_0.5fr_1fr_1.1fr_1fr] items-center gap-x-2 min-w-0">
+    {/* Order # */}
+    <div className="min-w-0">
+      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Order</p>
+      <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider truncate">#{orderId}</p>
+    </div>
 
-                {/* Date */}
-                <div className="min-w-[84px]">
-                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 3 }}>Date</p>
-                  <p className="text-[13px] font-semibold text-stone-600">{date}</p>
-                </div>
+    {/* Date */}
+    <div className="min-w-0">
+      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Date</p>
+      <p className="text-[13px] font-semibold text-stone-600 truncate">{date}</p>
+    </div>
 
-                {/* Items */}
-                <div className="min-w-[44px]">
-                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 3 }}>Items</p>
-                  <div className="flex items-center gap-1">
-                    <Package className="w-3 h-3 text-stone-400" />
-                    <p className="text-[13px] font-bold text-stone-700">{totalItems}</p>
-                  </div>
-                </div>
+    {/* Items */}
+    <div className="min-w-0">
+      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Items</p>
+      <div className="flex items-center gap-1">
+        <Package className="w-3 h-3 text-stone-400 shrink-0" />
+        <p className="text-[13px] font-bold text-stone-700">{totalItems}</p>
+      </div>
+    </div>
 
-                {/* Payment */}
-                <div className="min-w-[72px]">
-                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 5 }}>Payment</p>
-                  <PaymentBadge mode={order.paymentMode} />
-                </div>
+    {/* Payment */}
+    <div className="min-w-0 overflow-hidden">
+      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">Payment</p>
+      <PaymentBadge mode={order.paymentMode} />
+    </div>
 
-                {/* Status */}
-                <div>
-                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 5 }}>Status</p>
-                  <StatusBadge status={order.status} />
-                </div>
+    {/* Status */}
+    <div className="min-w-0 overflow-hidden">
+      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">Status</p>
+      <StatusBadge status={order.status} />
+    </div>
 
-                {/* Total — pushed to right, chevron RIGHT AFTER inside same flex */}
-                <div className="ml-auto text-right shrink-0">
-                  <p style={{ fontSize: 9, color: "#a8a29e", textTransform: "uppercase", letterSpacing: "0.09em", fontWeight: 700, marginBottom: 3 }}>Total</p>
-                  <p className="tabular-nums font-bold text-[16px]" style={{ color: "#16a34a", letterSpacing: "-0.3px" }}>
-                    {fmt(order.cartTotal)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Chevron — outside data columns but inside the row, always visible */}
-              <ChevronRight
-                className="shrink-0 w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5"
-                style={{ color: "#d6d3d1" }}
-              />
-            </div>
+    {/* Total */}
+    <div className="min-w-0 text-right">
+      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Total</p>
+      <p className="tabular-nums font-bold text-[15px] text-green-700 truncate">{fmt(order.cartTotal)}</p>
+    </div>
+  </div>
+</div>
           </div>
         </button>
       </DialogTrigger>

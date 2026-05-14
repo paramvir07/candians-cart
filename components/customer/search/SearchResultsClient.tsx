@@ -388,7 +388,7 @@ useEffect(() => {
                   </div>
 
                   {allResults.length > 0 && (
-                    <div className="lg:hidden">
+                    <div className={customerId ? "block" : "lg:hidden"}>
                       <FilterTriggerButton
                         activeCount={activeFilterCount}
                         onClick={() => setFilterSheetOpen(true)}

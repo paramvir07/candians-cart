@@ -408,7 +408,7 @@ CartItems
         style={{ minHeight: "calc(100dvh - 0px)" }}
       >
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-5 pb-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 pt-5 pb-4 space-y-4">
           {/* Header */}
           <div className="flex items-center gap-3">
             <Link
@@ -461,7 +461,7 @@ CartItems
             </div>
 
             {/* Scrollable items list */}
-            <div className="max-h-[460px] overflow-y-auto no-scrollbar rounded-xl space-y-2 pr-0.5">
+            <div className="max-h-[460px] overflow-y-auto rounded-xl space-y-2 pr-0.5">
               {items.map((item: ICartItem) => {
                 const { afterMarkup } = calcLine(item);
                 const hasImage = item.productId.images?.[0]?.url;
@@ -698,7 +698,7 @@ CartItems
                 </CardHeader>
 
                 {/* Scrollable items */}
-                <div className="max-h-[420px] overflow-y-auto no-scrollbar divide-y divide-border/50">
+                <div className="max-h-[420px] overflow-y-auto divide-y divide-border/50">
                   {items.map((item: ICartItem) => {
                     const { afterMarkup } = calcLine(item);
                     const hasImage = item.productId.images?.[0]?.url;
