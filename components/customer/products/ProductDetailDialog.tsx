@@ -357,7 +357,7 @@ export function ProductDetailDialog({
             <span
               className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}
             >
-              {catConfig.emoji} {(vegetablesCategory || fruitsCategory) ? "Produce" : product.category }
+              {catConfig.emoji} { product.category }
             </span>
 
             <h2 className="text-lg font-black leading-tight text-foreground">
