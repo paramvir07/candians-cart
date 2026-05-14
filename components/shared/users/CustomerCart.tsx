@@ -36,7 +36,6 @@ import { RemoveButton } from "@/components/customer/products/RemoveButton";
 import { QuantityControl } from "@/components/customer/products/QuantityControls";
 import { cn } from "@/lib/utils";
 
-
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
 const calcLine = (item: ICartItem) => {
@@ -117,7 +116,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const { prev, current, mid } = getFibBracketFrom21(totalInDollars);
   const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
 
-
   const activeMarkup = (() => {
     if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
       return avgMarkup;
@@ -125,7 +123,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       return 30;
     return null;
   })();
-CartItems
+  CartItems;
 
   const calculateTotalMarkup = (item: ICartItem) => {
     if (activeMarkup === null || item.productId.subsidised) return null;
@@ -376,7 +374,7 @@ CartItems
       {!isCashier && <Navbar />}
 
       {/* ── Cashier banner ── */}
-      {isCashier && (
+      {/* {isCashier && (
         <div className="border-b border-border bg-background px-4 py-2.5">
           <div className="flex items-center gap-2 flex-wrap">
             <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
@@ -397,14 +395,14 @@ CartItems
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* ════════════════════════════════════════
           MOBILE + TABLET LAYOUT  (< lg / < 1024px)
           Covers phones AND iPads (768px portrait & landscape)
       ════════════════════════════════════════ */}
       <div
-        className="lg:hidden flex flex-col"
+        className="xl:hidden flex flex-col"
         style={{ minHeight: "calc(100dvh - 0px)" }}
       >
         {/* Scrollable content area */}
@@ -598,7 +596,9 @@ CartItems
 
         {/* Mobile/Tablet CTA — sticky above footer */}
         <div className="sticky bottom-0 shrink-0 border-t border-border bg-background/95 backdrop-blur-md px-4 pt-3.5 pb-6 z-10">
-          <div className={`flex ${customerId ? "items-center": ""} justify-between gap-4 ${!customerId ? "mb-2": ""}`}>
+          <div
+            className={`flex ${customerId ? "items-center" : ""} justify-between gap-4 ${!customerId ? "mb-2" : ""}`}
+          >
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground leading-tight">
                 Total
@@ -628,7 +628,7 @@ CartItems
           DESKTOP LAYOUT  (≥ lg / ≥ 1024px)
           Only triggers on true desktop screens
       ════════════════════════════════════════ */}
-      <div className="hidden lg:block">
+      <div className="hidden xl:block">
         <div className="max-w-5xl mx-auto px-6 lg:px-8 py-8">
           {/* Page header */}
           <div className="flex items-center gap-3 mb-6 flex-wrap">
@@ -685,7 +685,6 @@ CartItems
           <div className="flex gap-6 items-start">
             {/* Left col */}
             <div className="flex-1 min-w-0 space-y-5">
-
               {/* Items card */}
               <Card className="border-border/60 shadow-none overflow-hidden">
                 <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50 sticky top-0 z-10">
@@ -724,9 +723,29 @@ CartItems
                           )}
                         </div>
 
-                        <div className="flex-1 min-w-0">
+                        {/* <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 min-w-0">
                             <p className="text-sm font-semibold text-foreground truncate">
+                              {item.productId.name}
+                            </p>
+                            {item.productId.subsidised && (
+                              <span className="shrink-0">
+                                <AddtoSubsidyBtn
+                                  ProductId={item.productId._id.toString()}
+                                  customerId={customerId}
+                                />
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                            {item.productId.category}
+                          </p>
+                        </div> */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start gap-2 min-w-0">
+                            {" "}
+                            {/* changed items-center to items-start */}
+                            <p className="text-sm font-semibold text-foreground truncate flex-1 min-w-0">
                               {item.productId.name}
                             </p>
                             {item.productId.subsidised && (
@@ -758,7 +777,7 @@ CartItems
                           </p>
                         </div>
 
-                        <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="shrink-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
                           <RemoveButton
                             productId={item.productId._id.toString()}
                             customerId={customerId}

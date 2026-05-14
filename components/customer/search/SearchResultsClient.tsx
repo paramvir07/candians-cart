@@ -25,13 +25,16 @@ import {
   X,
 } from "lucide-react";
 import { Customer } from "@/types/customer/customer";
-import { AddtoCart, getCartQuantities } from "@/actions/customer/ProductAndStore/Cart.Action";
+import {
+  AddtoCart,
+  getCartQuantities,
+} from "@/actions/customer/ProductAndStore/Cart.Action";
 import { useDebounce } from "use-debounce";
 import { toast } from "sonner";
 import { getCartInsights } from "@/actions/cashier/GetCartInsights";
 import CartInsightBar from "@/components/cashier/CartInsightsBar";
 import { onCartUpdated } from "@/lib/cartEvent";
-
+import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 
 interface SearchResultsClientProps {
   customerId?: string;
@@ -81,29 +84,61 @@ export function SearchResultsClient({
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [cartMap, setCartMap] = useState<Record<string, number>>({});
   const [cartInsight, setCartInsight] = useState<CartInsight | null>(null);
+  const [upcMode, setUpcMode] = useState(!!customerId);
 
   // ── Fetch cart insight whenever cartMap changes ──────────────────────────
-useEffect(() => {
-  const fetchInsight = async () => {
-    const res = await getCartInsights(customerId);
-    if (res?.success && res.data) {
-      setCartInsight(res.data);
-    } else {
-      setCartInsight(null);
-    }
-  };
- 
-  fetchInsight();
- 
-  const unsubscribe = onCartUpdated(fetchInsight);
-  return unsubscribe;
-}, [customerId]);
+  useEffect(() => {
+    const fetchInsight = async () => {
+      const res = await getCartInsights(customerId);
+      if (res?.success && res.data) {
+        setCartInsight(res.data);
+      } else {
+        setCartInsight(null);
+      }
+    };
+
+    fetchInsight();
+
+    const unsubscribe = onCartUpdated(fetchInsight);
+    return unsubscribe;
+  }, [customerId]);
+
+  // const handleBarcodeScan = async (value: string) => {
+  //   setIsLoading(true);
+  //   setHasSearched(true);
+
+  //   const res = await searchAction(value.trim(), storeId);
+  //   const results = res.success && res.data ? res.data : [];
+  //   setAllResults(results);
+  //   setIsLoading(false);
+
+  //   if (results.length === 1) {
+  //     const product = results[0];
+  //     const productId = product._id as string;
+  //     try {
+  //       await AddtoCart(productId, customerId);
+  //       setCartMap((prev) => ({
+  //         ...prev,
+  //         [productId]: (prev[productId] || 0) + 1,
+  //       }));
+  //       toast.success(`${product.name} added to cart`);
+  //     } catch {
+  //       toast.error("Failed to add to cart");
+  //     }
+  //   }
+  // };
+
+  // 1. Fetch Cart State
+  // ---
 
   const handleBarcodeScan = async (value: string) => {
     setIsLoading(true);
     setHasSearched(true);
 
-    const res = await searchAction(value.trim(), storeId);
+    const res = upcMode
+      ? await searchProductsByUPC(value.trim(), storeId)
+      : await searchAction(value.trim(), storeId);
+
     const results = res.success && res.data ? res.data : [];
     setAllResults(results);
     setIsLoading(false);
@@ -124,7 +159,6 @@ useEffect(() => {
     }
   };
 
-  // 1. Fetch Cart State
   useEffect(() => {
     const fetchInitialCart = async () => {
       try {
@@ -158,6 +192,52 @@ useEffect(() => {
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
   const activeFilterCount = getActiveFilterCount(filters);
 
+  // useEffect(() => {
+  //   if (!debouncedQuery.trim()) {
+  //     if (!filters.categories.length) {
+  //       setAllResults([]);
+  //       setHasSearched(false);
+  //     } else {
+  //       const reload = async () => {
+  //         setIsLoading(true);
+  //         setHasSearched(true);
+  //         const res = await getStoreProductsFiltered(storeId, 1, 200, {
+  //           categories: filters.categories as any,
+  //         });
+  //         setAllResults(res.success && res.data ? res.data : []);
+  //         setIsLoading(false);
+  //       };
+  //       reload();
+  //     }
+  //     return;
+  //   }
+  //   const fetchResult = async () => {
+  //     setIsLoading(true);
+  //     setHasSearched(true);
+  //     const res = await searchAction(debouncedQuery.trim(), storeId);
+  //     setAllResults(res.success && res.data ? res.data : []);
+  //     setIsLoading(false);
+  //   };
+  //   fetchResult();
+  // }, [debouncedQuery, storeId]);
+
+  // Re-run search immediately when upcMode toggles, if there's an active query
+useEffect(() => {
+  if (!debouncedQuery.trim()) return;
+
+  const refetch = async () => {
+    setIsLoading(true);
+    setHasSearched(true);
+    const res = upcMode
+      ? await searchProductsByUPC(debouncedQuery.trim(), storeId)
+      : await searchAction(debouncedQuery.trim(), storeId);
+    setAllResults(res.success && res.data ? res.data : []);
+    setIsLoading(false);
+  };
+
+  refetch();
+}, [upcMode]); // intentionally only upcMode — we want this to fire on toggle only
+
   useEffect(() => {
     if (!debouncedQuery.trim()) {
       if (!filters.categories.length) {
@@ -180,12 +260,14 @@ useEffect(() => {
     const fetchResult = async () => {
       setIsLoading(true);
       setHasSearched(true);
-      const res = await searchAction(debouncedQuery.trim(), storeId);
+      const res = upcMode
+        ? await searchProductsByUPC(debouncedQuery.trim(), storeId)
+        : await searchAction(debouncedQuery.trim(), storeId);
       setAllResults(res.success && res.data ? res.data : []);
       setIsLoading(false);
     };
     fetchResult();
-  }, [debouncedQuery, storeId]);
+  }, [debouncedQuery, storeId, upcMode]);
 
   useEffect(() => {
     if (debouncedQuery.trim()) return;
@@ -251,6 +333,40 @@ useEffect(() => {
             total={cartInsight.total}
             customerId={customerId}
           />
+          {/* UPC Mode toggle — cashier only */}
+          {customerId && (
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-3">
+              {/* <button
+                onClick={() => {
+                  setUpcMode((v) => !v);
+                  setQuery("");
+                  setAllResults([]);
+                  setHasSearched(false);
+                }}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  upcMode
+                    ? "bg-green-600 text-white border-green-600 shadow-sm"
+                    : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`}
+                />
+                {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
+              </button> */}
+              <button
+  onClick={() => setUpcMode((v) => !v)}
+  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+    upcMode
+      ? "bg-green-600 text-white border-green-600 shadow-sm"
+      : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
+  }`}
+>
+  <span className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`} />
+  {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
+</button>
+            </div>
+          )}
         </div>
       )}
 
@@ -324,19 +440,38 @@ useEffect(() => {
                       onClick={async () => {
                         const CATEGORY_MAP: Record<string, string[]> = {};
                         const labelsToAdd = CATEGORY_MAP[s.label] ?? [s.label];
-                        const newCategories = filters.categories.includes(s.label)
-                          ? filters.categories.filter((c) => !labelsToAdd.includes(c))
-                          : [...new Set([...filters.categories, ...labelsToAdd])];
+                        const newCategories = filters.categories.includes(
+                          s.label,
+                        )
+                          ? filters.categories.filter(
+                              (c) => !labelsToAdd.includes(c),
+                            )
+                          : [
+                              ...new Set([
+                                ...filters.categories,
+                                ...labelsToAdd,
+                              ]),
+                            ];
 
-                        setFilters((prev) => ({ ...prev, categories: newCategories }));
+                        setFilters((prev) => ({
+                          ...prev,
+                          categories: newCategories,
+                        }));
 
                         if (!query.trim()) {
                           setIsLoading(true);
                           setHasSearched(true);
-                          const res = await getStoreProductsFiltered(storeId, 1, 200, {
-                            categories: newCategories as any,
-                          });
-                          setAllResults(res.success && res.data ? res.data : []);
+                          const res = await getStoreProductsFiltered(
+                            storeId,
+                            1,
+                            200,
+                            {
+                              categories: newCategories as any,
+                            },
+                          );
+                          setAllResults(
+                            res.success && res.data ? res.data : [],
+                          );
                           setIsLoading(false);
                         }
                       }}
@@ -369,7 +504,10 @@ useEffect(() => {
             {/* ── Results ── */}
             {!isLoading && hasSearched && (
               <>
-                <div ref={resultsRef} className="flex items-center justify-between mb-5 gap-3">
+                <div
+                  ref={resultsRef}
+                  className="flex items-center justify-between mb-5 gap-3"
+                >
                   <div>
                     <p className="font-bold text-foreground">
                       {filtered.length > 0
@@ -382,7 +520,8 @@ useEffect(() => {
                         className="text-xs text-green-600 font-semibold hover:text-green-700 mt-0.5 flex items-center gap-1"
                       >
                         <X className="h-3 w-3" />
-                        Clear {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""}
+                        Clear {activeFilterCount} filter
+                        {activeFilterCount !== 1 ? "s" : ""}
                       </button>
                     )}
                   </div>
@@ -415,8 +554,12 @@ useEffect(() => {
                       <PackageOpen className="h-6 w-6 text-muted-foreground/50" />
                     </div>
                     <div className="text-center">
-                      <p className="font-bold text-foreground">No products match your filters</p>
-                      <p className="text-sm text-muted-foreground mt-1">Try adjusting or clearing your filters</p>
+                      <p className="font-bold text-foreground">
+                        No products match your filters
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Try adjusting or clearing your filters
+                      </p>
                     </div>
                     <button
                       onClick={resetFilters}
@@ -431,7 +574,9 @@ useEffect(() => {
                       🔍
                     </div>
                     <div className="text-center">
-                      <p className="font-bold text-foreground text-lg">Nothing found</p>
+                      <p className="font-bold text-foreground text-lg">
+                        Nothing found
+                      </p>
                       <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
                         Try a different spelling or browse by category
                       </p>
@@ -491,7 +636,8 @@ useEffect(() => {
                 Show {filtered.length} Result{filtered.length !== 1 ? "s" : ""}
                 {activeFilterCount > 0 && (
                   <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""}
+                    {activeFilterCount} filter
+                    {activeFilterCount !== 1 ? "s" : ""}
                   </span>
                 )}
               </button>

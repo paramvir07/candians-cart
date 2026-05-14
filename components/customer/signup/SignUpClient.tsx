@@ -109,12 +109,12 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
           <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black to-transparent" />
 
           {/* Logo on image */}
-          <div className="absolute top-5 left-5">
-            <div className=" h-12 bg-white/90 rounded-xl flex items-center justify-center shadow-2xl p-2">
+          {/* <div className="absolute top-5 left-5"> */}
+            {/* <div className=" h-12 bg-white/90 rounded-xl flex items-center justify-center shadow-2xl p-2"> */}
               {/* <ShoppingCart size={22} className="text-primary-foreground" /> */}
-              <Logo variant="icon" href="/" />
-            </div>
-          </div>
+              {/* <Logo variant="icon" href="/" /> */}
+            {/* </div> */}
+          {/* </div> */}
 
           {/* Step counter */}
           <div className="absolute top-5 right-5">
@@ -124,11 +124,23 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
           </div>
         </div>
 
+
+
         {/* Form card — same deep overlap + solid bg as login */}
         <div className="relative z-10 -mt-45 flex-1 bg-background rounded-t-3xl px-6 pt-8 pb-10 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
 
+          
+
           {/* Step dots */}
+                           {/* Logo on image */}
+          <div className="">
+            <div className=" h-12 mb-8 rounded-xlshadow-2xl p-2">
+              <Logo variant="icon" href="/" />
+            </div>
+          </div>
+
           <div className="flex items-center gap-1.5 mb-5">
+            
             {STEPS.map((_, i) => (
               <div key={i} className={`h-1 rounded-full transition-all duration-300 ${
                 i === currentStepIndex ? "w-6 bg-primary"
@@ -139,6 +151,7 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
           </div>
 
          {/* Step heading */}
+
           <div className="mb-5">
             <p className="text-[10px] font-semibold text-primary uppercase tracking-widest mb-1.5">
               {STEP_META[STEPS[currentStepIndex] ?? "location"]?.label}
