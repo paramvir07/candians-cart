@@ -46,15 +46,26 @@ const NAV_LINKS: TNavLink[] = [
 
 interface NavbarProps {
   isLoggedIn?: boolean;
+  role?: "customer" | "store" | "admin" | "cashier";
 }
 
-export default function Navbar({ isLoggedIn = false }: NavbarProps) {
+  const ROLE_HOME: Record<string, string> = {
+  customer: "/customer",
+  store: "/store",
+  admin: "/admin",
+  cashier: "/cashier",
+};
+
+export default function Navbar({ isLoggedIn = false, role = "customer" }: NavbarProps) {
+  const homeHref = ROLE_HOME[role] ?? "/customer";
   const [scrolled, setScrolled]         = useState(false);
   const [mobileOpen, setMobileOpen]     = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const menuRef   = useRef<HTMLDivElement>(null);
   const router    = useRouter();
   const pathname  = usePathname();
+
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -211,7 +222,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
             </div>
 
             {isLoggedIn ? (
-              <Link href="/customer">
+              <Link href={homeHref}>
                 <Button
                   size="sm"
                   className="h-9 gap-1.5 rounded-xl bg-gradient-to-b from-green-400 to-green-600 px-4 text-[13.5px] font-bold text-white shadow-[0_1px_2px_rgba(0,0,0,.08),0_3px_10px_rgba(22,101,52,.25)] transition-all hover:-translate-y-px hover:shadow-[0_2px_4px_rgba(0,0,0,.1),0_6px_18px_rgba(22,101,52,.35)] border-0"
@@ -330,7 +341,7 @@ export default function Navbar({ isLoggedIn = false }: NavbarProps) {
             {/* CTA buttons */}
             <div className="mt-4 grid grid-cols-2 gap-2.5">
               {isLoggedIn ? (
-                <Link href="/customer" onClick={closeMobile} className="col-span-2">
+                <Link href={homeHref} onClick={closeMobile} className="col-span-2">
                   <Button className="h-12 w-full gap-2 rounded-xl bg-gradient-to-b from-green-400 to-green-600 text-[14px] font-bold text-white shadow-[0_3px_10px_rgba(22,101,52,.3)] border-0">
                     <Home className="h-4 w-4" />
                     Go to Home

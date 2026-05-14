@@ -158,3 +158,69 @@ export const searchProducts = async (
     };
   }
 };
+
+/**
+ * Exact match search for Candian Cart products by primaryUPC.
+ * Skips fuzzy search and directly queries the database.
+ * 
+ * @param {string} upc - The exact UPC string to search for.
+ * @param {string} [providedStoreId] - Optional store ID.
+ * @returns {Promise<ProductActionResponse>} Success with matching products or an error message.
+ */
+export const searchProductsByUPC = async (
+  upc: string,
+  providedStoreId?: string,
+): Promise<ProductActionResponse> => {
+  try {
+    await dbConnect();
+    const session = await getUserSession();
+    const { id: userId, role } = session.user;
+
+    let targetStoreId = providedStoreId;
+
+    // Enforcement Rule: Customers MUST only see their associated store
+    if (role === "customer") {
+      const customer = await getCustomerProfile(userId);
+      if (!customer?.associatedStoreId) {
+        return {
+          success: false,
+          error: "Associated store not found for customer.",
+        };
+      }
+      targetStoreId = customer.associatedStoreId.toString();
+    }
+
+    const cleanUPC = upc.trim();
+    if (!cleanUPC) {
+      return { success: false, error: "UPC cannot be empty." };
+    }
+
+    // Build the exact match query without using 'any'
+    const findQuery: Record<string, string | mongoose.Types.ObjectId> = {
+      primaryUPC: cleanUPC,
+    };
+
+    if (targetStoreId) {
+      findQuery.storeId = new mongoose.Types.ObjectId(targetStoreId);
+    }
+
+    // Direct find instead of Atlas Search aggregate for exact match
+    const products = await Product.find(findQuery).limit(10).lean();
+
+    if (!products || products.length === 0) {
+      return { success: false, error: "No products found for this UPC." };
+    }
+
+    // JSON Serialization for safe transfer to Client Components
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(products)),
+    };
+  } catch (error) {
+    console.error("Product UPC search error:", error);
+    return {
+      success: false,
+      error: "Failed to search products by UPC. Please try again later.",
+    };
+  }
+};
