@@ -30,6 +30,8 @@ import { useDebounce } from "use-debounce";
 import { toast } from "sonner";
 import { getCartInsights } from "@/actions/cashier/GetCartInsights";
 import CartInsightBar from "@/components/cashier/CartInsightsBar";
+import { onCartUpdated } from "@/lib/cartEvent";
+
 
 interface SearchResultsClientProps {
   customerId?: string;
@@ -81,17 +83,21 @@ export function SearchResultsClient({
   const [cartInsight, setCartInsight] = useState<CartInsight | null>(null);
 
   // ── Fetch cart insight whenever cartMap changes ──────────────────────────
-  useEffect(() => {
-    const fetchInsight = async () => {
-      const res = await getCartInsights(customerId);
-      if (res?.success && res.data) {
-        setCartInsight(res.data);
-      } else {
-        setCartInsight(null);
-      }
-    };
-    fetchInsight();
-  }, [cartMap, customerId]);
+useEffect(() => {
+  const fetchInsight = async () => {
+    const res = await getCartInsights(customerId);
+    if (res?.success && res.data) {
+      setCartInsight(res.data);
+    } else {
+      setCartInsight(null);
+    }
+  };
+ 
+  fetchInsight();
+ 
+  const unsubscribe = onCartUpdated(fetchInsight);
+  return unsubscribe;
+}, [customerId]);
 
   const handleBarcodeScan = async (value: string) => {
     setIsLoading(true);

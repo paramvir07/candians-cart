@@ -27,6 +27,7 @@ import {
 } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { ProductDetailDialog } from "@/components/customer/products/ProductDetailDialog";
 import { Button } from "@/components/ui/button";
+import { emitCartUpdated } from "@/lib/cartEvent";
 
 async function removeAllFromServer(
   productId: string,
@@ -47,8 +48,8 @@ export function CustomerProductCard({
   cartQuantity?: number;
   subsidyPage: boolean;
 }) {
-  const vegetablesCategory = product.category === "Vegetables";
-  const fruitsCategory = product.category === "Fruits";
+  // const vegetablesCategory = product.category === "Vegetables";
+  // const fruitsCategory = product.category === "Fruits";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -116,6 +117,7 @@ export function CustomerProductCard({
         const res = await AddtoCart(product._id as string, customerId);
         if (res?.success) {
           toast.success(`${product.name} added to cart!`);
+          emitCartUpdated();
         } else {
           setQuantity(0);
           setInputValue("0");
@@ -149,6 +151,7 @@ export function CustomerProductCard({
 
         const res = await UpdateItemQuantity(customerId, fd);
         if (!res?.success) throw new Error(res?.message || "Failed");
+        emitCartUpdated();
       } catch {
         setQuantity(prev);
         setInputValue(formatQtyForInput(prev));
@@ -178,7 +181,7 @@ export function CustomerProductCard({
 
         const res = await UpdateItemQuantity(customerId, fd);
         if (!res?.success) throw new Error(res?.message || "Failed");
-
+        emitCartUpdated();
         if (normalizedNext === 0) {
           toast.success(`${product.name} removed from cart`);
         }
@@ -201,6 +204,7 @@ export function CustomerProductCard({
       try {
         await removeAllFromServer(product._id as string, customerId);
         toast.success(`${product.name} removed from cart`);
+        emitCartUpdated();
       } catch {
         setQuantity(prev);
         setInputValue(formatQtyForInput(prev));
@@ -238,7 +242,7 @@ export function CustomerProductCard({
 
         const res = await UpdateItemQuantity(customerId, fd);
         if (!res?.success) throw new Error(res?.message || "Failed");
-
+        emitCartUpdated();
         if (newQty === 0) {
           toast.success(`${product.name} removed from cart`);
         }
