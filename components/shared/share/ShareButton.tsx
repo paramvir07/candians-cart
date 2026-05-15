@@ -142,7 +142,7 @@ export default function ShareButton({ link }: ShareButtonProps) {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm pb-[calc(env(safe-area-inset-bottom)+4rem)] sm:pb-0"
           onClick={closeModal}
         >
           <div
