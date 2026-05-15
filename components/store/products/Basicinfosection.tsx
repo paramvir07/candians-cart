@@ -86,13 +86,17 @@ export function BasicInfoSection({
             <div className="relative">
               <Input
                 type="text"
-                inputMode="numeric"
-                pattern="\d*"
+                inputMode="text"
+                pattern="[a-zA-Z0-9]*" // Updated pattern to allow letters and numbers
                 maxLength={14}
-                placeholder="e.g. 123456789012"
+                placeholder="e.g. 123456789012 or ABC123"
                 value={primaryUPC}
                 onChange={(e) =>
-                  onChange("primaryUPC", e.target.value.replace(/\D/g, ""))
+                  // [^a-zA-Z0-9] means "match anything that is NOT a letter or a number"
+                  onChange(
+                    "primaryUPC",
+                    e.target.value.replace(/[^a-zA-Z0-9]/g, ""),
+                  )
                 }
                 className="pr-16"
               />

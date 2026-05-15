@@ -83,17 +83,14 @@ export const BaseProductFormSchema = z.object({
 
   isFeatured: z.boolean(),
 
-  markup: z.coerce
-    .number()
-    .min(0, "Markup must be between 0% and 40%")
-    .max(40, "Markup must be between 0% and 40%"),
+  markup: z.coerce.number().min(0, "Markup must be greater than or equal to 0"),
 
   primaryUPC: z
     .string()
     .trim()
-    .regex(/^\d*$/, "UPC must contain digits only")
-    .max(14, "UPC must be atleast 14 digits")
-    .transform((val) => (val === "" ? undefined : val))
+    .regex(/^[a-zA-Z0-9]*$/, "UPC must contain only letters and numbers")
+    .max(14, "UPC cannot exceed 14 characters")
+    .transform((val) => (val === "" ? undefined : val.toUpperCase()))
     .optional(),
 
   isMeasuredInWeight: z.boolean().optional().default(false),
