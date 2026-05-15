@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Share2 } from "lucide-react";
+import { Share2, QrCode, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { QRCodeSVG } from "qrcode.react";
 
 const DEFAULT_URL = "https://www.canadianscart.ca";
 
@@ -74,6 +75,8 @@ const APPS: AppConfig[] = [
   },
 ];
 
+type ModalView = "picker" | "qr" | "share";
+
 interface ShareButtonProps {
   link?: string;
 }
@@ -81,21 +84,42 @@ interface ShareButtonProps {
 export default function ShareButton({ link }: ShareButtonProps) {
   const url = link ?? DEFAULT_URL;
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<ModalView>("picker");
   const [copied, setCopied] = useState(false);
 
-  const isMobile = typeof navigator !== "undefined" && !!navigator.share;
+  const isMobile =
+    typeof navigator !== "undefined" && !!navigator.share;
+
+  const openModal = (v: ModalView) => {
+    setView(v);
+    setOpen(true);
+  };
+
+  const closeModal = () => {
+    setOpen(false);
+    // reset after animation settles
+    setTimeout(() => setView("picker"), 200);
+  };
 
   const handleShare = async () => {
     if (isMobile) {
-      // Native OS share sheet on mobile/tablet — no custom UI needed
+      // On mobile show the picker so they can still choose QR
+      openModal("picker");
+    } else {
+      openModal("picker");
+    }
+  };
+
+  const handleNativeOrCustomShare = async () => {
+    if (isMobile) {
       try {
         await navigator.share({ url });
       } catch {
-        // User cancelled or share failed — do nothing
+        // cancelled or failed — fall back to custom share sheet
+        setView("share");
       }
     } else {
-      // Desktop — show custom dialog
-      setOpen(true);
+      setView("share");
     }
   };
 
@@ -116,58 +140,140 @@ export default function ShareButton({ link }: ShareButtonProps) {
         <Share2 className="h-4 w-4" />
       </Button>
 
-      {/* Desktop dialog — only rendered on non-mobile */}
-      {!isMobile && open && (
+      {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={closeModal}
         >
           <div
-            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-lg"
+            className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl bg-background border border-border shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="mb-4 text-center text-sm text-gray-500">
-              Share this page
-            </p>
-
-            {/* App icons */}
-            <div className="mb-5 flex justify-around">
-              {APPS.map((app) => (
-                <a
-                  key={app.label}
-                  href={app.href(url)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex flex-col items-center gap-1"
-                >
-                  <span
-                    className="flex h-12 w-12 items-center justify-center rounded-2xl"
-                    style={{ background: app.bg }}
-                  >
-                    {app.icon}
-                  </span>
-                  <span className="text-[11px] text-gray-500">{app.label}</span>
-                </a>
-              ))}
-            </div>
-
-            {/* Copy link row */}
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-              <span className="flex-1 truncate font-mono text-xs text-gray-400">
-                {url}
-              </span>
-              <Button
-                size="sm"
-                className={
-                  copied
-                    ? "rounded-lg border border-green-400 bg-green-100 text-xs text-green-700"
-                    : "rounded-lg bg-green-600 text-xs text-white hover:bg-green-700"
-                }
-                onClick={copyLink}
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <button
+                onClick={view !== "picker" ? () => setView("picker") : closeModal}
+                className="text-muted-foreground hover:text-foreground transition-colors p-1 -ml-1"
+                aria-label="Back"
               >
-                {copied ? "Copied!" : "Copy"}
-              </Button>
+                {view !== "picker" ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M19 12H5M12 5l-7 7 7 7" />
+                  </svg>
+                ) : (
+                  <X className="h-5 w-5" />
+                )}
+              </button>
+              <p className="text-sm font-semibold text-foreground">
+                {view === "picker" && "Share"}
+                {view === "qr" && "QR Code"}
+                {view === "share" && "Share via"}
+              </p>
+              <div className="w-7" />
             </div>
+
+            {/* Picker view */}
+            {view === "picker" && (
+              <div className="px-5 pb-8 pt-2 grid grid-cols-2 gap-3">
+                {/* QR Code option */}
+                <button
+                  onClick={() => setView("qr")}
+                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-muted/40 hover:bg-muted/70 active:scale-95 transition-all p-5"
+                >
+                  <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-600">
+                    <QrCode className="h-7 w-7" />
+                  </span>
+                  <span className="text-sm font-medium text-foreground">QR Code</span>
+                  <span className="text-xs text-muted-foreground text-center leading-relaxed">
+                    Scan to open on another device
+                  </span>
+                </button>
+
+                {/* Share option */}
+                <button
+                  onClick={handleNativeOrCustomShare}
+                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-muted/40 hover:bg-muted/70 active:scale-95 transition-all p-5"
+                >
+                  <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-600">
+                    <Share2 className="h-7 w-7" />
+                  </span>
+                  <span className="text-sm font-medium text-foreground">Share Link</span>
+                  <span className="text-xs text-muted-foreground text-center leading-relaxed">
+                    Send via apps or copy link
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* QR Code view */}
+            {view === "qr" && (
+              <div className="px-5 pb-8 pt-2 flex flex-col items-center gap-5">
+                <div className="rounded-2xl bg-white p-5 shadow-inner border border-border">
+                  <QRCodeSVG value={url} size={200} />
+                </div>
+                <div className="text-center space-y-1">
+                  <p className="text-sm font-medium text-foreground">Scan with your camera</p>
+                  <p className="text-xs text-muted-foreground max-w-[220px] leading-relaxed">
+                    Point your phone camera at the code to open the link instantly
+                  </p>
+                </div>
+                {/* URL pill */}
+                <div className="flex items-center gap-2 w-full rounded-xl border border-border bg-muted/40 px-3 py-2">
+                  <span className="flex-1 truncate font-mono text-xs text-muted-foreground">{url}</span>
+                  <Button
+                    size="sm"
+                    className={
+                      copied
+                        ? "rounded-lg border border-green-400 bg-green-100 text-xs text-green-700 hover:bg-green-100"
+                        : "rounded-lg bg-green-600 text-xs text-white hover:bg-green-700"
+                    }
+                    onClick={copyLink}
+                  >
+                    {copied ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Custom share sheet (desktop fallback) */}
+            {view === "share" && (
+              <div className="px-5 pb-8 pt-2 flex flex-col gap-5">
+                <div className="flex justify-around">
+                  {APPS.map((app) => (
+                    <a
+                      key={app.label}
+                      href={app.href(url)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex flex-col items-center gap-1.5 group"
+                    >
+                      <span
+                        className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm group-hover:scale-110 transition-transform"
+                        style={{ background: app.bg }}
+                      >
+                        {app.icon}
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">{app.label}</span>
+                    </a>
+                  ))}
+                </div>
+                {/* Copy link row */}
+                <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2">
+                  <span className="flex-1 truncate font-mono text-xs text-muted-foreground">{url}</span>
+                  <Button
+                    size="sm"
+                    className={
+                      copied
+                        ? "rounded-lg border border-green-400 bg-green-100 text-xs text-green-700 hover:bg-green-100"
+                        : "rounded-lg bg-green-600 text-xs text-white hover:bg-green-700"
+                    }
+                    onClick={copyLink}
+                  >
+                    {copied ? "Copied!" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
