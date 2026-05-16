@@ -56,20 +56,27 @@ export const getStoreProductsFiltered = async (
 
     if (filters.markupMin !== undefined || filters.markupMax !== undefined) {
       query.markup = {};
-      if (filters.markupMin !== undefined) query.markup.$gte = filters.markupMin;
-      if (filters.markupMax !== undefined) query.markup.$lte = filters.markupMax;
+      if (filters.markupMin !== undefined)
+        query.markup.$gte = filters.markupMin;
+      if (filters.markupMax !== undefined)
+        query.markup.$lte = filters.markupMax;
     }
 
-    let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
-    if (filters.sortBy === "price_asc") sortOption = { price: 1 };
-    else if (filters.sortBy === "price_desc") sortOption = { price: -1 };
-    else if (filters.sortBy === "name_asc") sortOption = { name: 1 };
+    let sortOption: Record<string, 1 | -1> = { createdAt: -1, _id: -1 };
+    if (filters.sortBy === "price_asc") sortOption = { price: 1, _id: 1 };
+    else if (filters.sortBy === "price_desc")
+      sortOption = { price: -1, _id: -1 };
+    else if (filters.sortBy === "name_asc") {
+      sortOption = { name: 1, _id: 1 };
+    }
 
     const skip = (page - 1) * limit;
 
     const [products, totalCount] = await Promise.all([
       Product.find(query)
-        .select("_id name description category markup tax price stock subsidised images disposableFee isFeatured")
+        .select(
+          "_id name description category markup tax price stock subsidised images disposableFee isFeatured",
+        )
         .sort(sortOption)
         .skip(skip)
         .limit(limit)
@@ -129,8 +136,10 @@ export const searchProductsWithFilters = async (
 
     if (filters.markupMin !== undefined || filters.markupMax !== undefined) {
       match.markup = {};
-      if (filters.markupMin !== undefined) match.markup.$gte = filters.markupMin;
-      if (filters.markupMax !== undefined) match.markup.$lte = filters.markupMax;
+      if (filters.markupMin !== undefined)
+        match.markup.$gte = filters.markupMin;
+      if (filters.markupMax !== undefined)
+        match.markup.$lte = filters.markupMax;
     }
 
     let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
@@ -142,7 +151,9 @@ export const searchProductsWithFilters = async (
 
     const [products, totalCount] = await Promise.all([
       Product.find(match)
-        .select("_id name description category markup tax price stock subsidised images disposableFee isFeatured")
+        .select(
+          "_id name description category markup tax price stock subsidised images disposableFee isFeatured",
+        )
         .sort(sortOption)
         .skip(skip)
         .limit(limit)
@@ -159,6 +170,12 @@ export const searchProductsWithFilters = async (
     };
   } catch (error) {
     console.error("Failed to search with filters:", error);
-    return { success: false, data: [], totalPages: 0, totalCount: 0, error: "Failed to search" };
+    return {
+      success: false,
+      data: [],
+      totalPages: 0,
+      totalCount: 0,
+      error: "Failed to search",
+    };
   }
 };
