@@ -27,9 +27,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.canadianscart.ca",
   },
+    appleWebApp: {
+    title: "CC",
+  },
   title: {
-    default: "Candian's Cart | Smart grocery shopping for families",
-    template: "%s | Candian's Cart",
+    default: "CC",
+    template: "%s | CC",
   },
   description:
     "Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.",

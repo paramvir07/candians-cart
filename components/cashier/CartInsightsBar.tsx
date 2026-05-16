@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingCart, Gift, CircleDollarSign } from "lucide-react";
+import { ShoppingCart, Gift, CircleDollarSign, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -28,39 +28,42 @@ export default function CartInsightBar({
   return (
     <Link
       href={href}
-      className={cn("fixed top-40 right-4 z-50 group", className)}
+      className={cn("block w-full group", className)}
     >
-      <div className="flex items-stretch divide-x divide-border border border-border bg-card rounded-xl shadow-md overflow-hidden transition-all duration-150 group-hover:shadow-lg group-hover:border-primary/40">
+      <div className="flex items-center justify-between gap-2 w-full px-4 py-3 rounded-2xl border border-border bg-card shadow-sm transition-all duration-150 group-hover:shadow-md group-hover:border-primary/40">
 
-        {/* Items */}
-        <div className="flex items-center gap-2 px-3.5 py-2.5 bg-muted/50">
-          <ShoppingCart className="h-3.5 w-3.5 text-primary shrink-0" />
+        {/* Left: items count */}
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-primary/10 shrink-0">
+            <ShoppingCart className="h-4 w-4 text-primary" />
+          </div>
           <div className="flex items-baseline gap-1 leading-none">
             <span className="text-sm font-bold tabular-nums text-foreground">{numItems}</span>
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
-              {numItems === 1 ? "item" : "items"}
+            <span className="text-xs text-muted-foreground">
+              {numItems === 1 ? "item" : "items"} in cart
             </span>
           </div>
         </div>
 
-        {/* Subsidy */}
-        {subsidyOnOrder > 0 && (
-          <div className="flex items-center gap-2 px-3.5 py-2.5">
-            <Gift className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-            <div className="flex items-baseline gap-0.5 leading-none">
-              <span className="text-[10px] font-semibold text-emerald-600">−$</span>
-              <span className="text-sm font-bold tabular-nums text-emerald-600">{fmt(subsidyOnOrder)}</span>
+        {/* Right: subsidy + total + arrow */}
+        <div className="flex items-center gap-1 shrink-0">
+          {subsidyOnOrder > 0 && (
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40">
+              <Gift className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+              <span className="text-xs font-bold tabular-nums text-emerald-600">
+                −${fmt(subsidyOnOrder)}
+              </span>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Total */}
-        <div className="flex items-center gap-2 px-3.5 py-2.5">
-          <CircleDollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          <div className="flex items-baseline gap-0.5 leading-none">
-            <span className="text-[10px] font-semibold text-muted-foreground">$</span>
-            <span className="text-sm font-bold tabular-nums text-foreground">{fmt(total)}</span>
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/60">
+            <CircleDollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <span className="text-xs font-bold tabular-nums text-foreground">
+              ${fmt(total)}
+            </span>
           </div>
+
+          <ChevronRight className="h-4 w-4 text-muted-foreground ml-1 group-hover:translate-x-0.5 transition-transform" />
         </div>
 
       </div>

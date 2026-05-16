@@ -314,7 +314,11 @@ useEffect(() => {
   }, [allResults, filters]);
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div
+  className={`min-h-screen bg-muted/30 ${
+    customerId ? "rounded-3xl shadow-md mr-4 overflow-hidden" : ""
+  }`}
+>
       <SearchNav
         customerId={customerId}
         initialQuery={query}
@@ -324,7 +328,7 @@ useEffect(() => {
         cartCount={cartCount}
       />
 
-      {/* Cart insight bar — shown when cart has items */}
+{/* Cart insight bar — shown when cart has items */}
       {cartInsight && cartInsight.numItems > 0 && (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
           <CartInsightBar
@@ -335,36 +339,18 @@ useEffect(() => {
           />
           {/* UPC Mode toggle — cashier only */}
           {customerId && (
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-3">
-              {/* <button
-                onClick={() => {
-                  setUpcMode((v) => !v);
-                  setQuery("");
-                  setAllResults([]);
-                  setHasSearched(false);
-                }}
+            <div className="pt-3">
+              <button
+                onClick={() => setUpcMode((v) => !v)}
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                   upcMode
                     ? "bg-green-600 text-white border-green-600 shadow-sm"
                     : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
                 }`}
               >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`}
-                />
+                <span className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`} />
                 {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
-              </button> */}
-              <button
-  onClick={() => setUpcMode((v) => !v)}
-  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-    upcMode
-      ? "bg-green-600 text-white border-green-600 shadow-sm"
-      : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
-  }`}
->
-  <span className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`} />
-  {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
-</button>
+              </button>
             </div>
           )}
         </div>
