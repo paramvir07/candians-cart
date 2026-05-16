@@ -26,7 +26,7 @@ if (!response.success) {
   const storeId = response.storeId ?? response.products?.[0]?.storeId ?? "";
   return (
     <>
-      <div className="flex items-center gap-2 md:pl-30 lg:pl-40 pt-2">
+      <div className="flex items-center gap-2 md:pl-0 lg:pl-0 pb-4 pt-2">
         <Link href={`/cashier/customer/${customerId}`}>
           <Button className="rounded-full" variant="outline" size="icon">
             <ChevronLeft className="w-4 h-4" />

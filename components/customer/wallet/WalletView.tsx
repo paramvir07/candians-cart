@@ -28,9 +28,12 @@ const WalletView = ({
   };
 
   const [activeWallet] = useAtom(WalletSwitcherAtom);
+
   return (
-    <div>
-      <div className={`md:hidden`}>
+    <div className="@container w-full">
+
+      {/* Single-card + switcher — container narrower than 860px */}
+      <div className="@[860px]:hidden">
         {activeWallet === WalletViewEnum.WALLET ? (
           <TopupWallet
             topupWalletData={topupWalletData}
@@ -42,8 +45,9 @@ const WalletView = ({
         )}
       </div>
 
-      <div className={`hidden md:flex justify-center w-full p-8`}>
-        <div className="flex-1">
+      {/* Side-by-side — grows freely to fill all available space */}
+      <div className="hidden @[860px]:flex justify-center w-full p-8">
+        <div className="flex-1 min-w-0">
           <TopupWallet
             topupWalletData={topupWalletData}
             customerId={customerId}
@@ -51,10 +55,11 @@ const WalletView = ({
           />
         </div>
         <Separator orientation="vertical" className="mx-8" />
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <GiftWallet giftWalletData={giftWalletData} />
         </div>
       </div>
+
     </div>
   );
 };

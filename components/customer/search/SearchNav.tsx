@@ -48,12 +48,12 @@ export function SearchNav({
 
   // Auto-open scanner when navigated here with ?scan=1 (from bottom nav Scan button)
   useEffect(() => {
-  if (searchParams.get("scan") === "1") {
-    setScannerOpen(true);
-    // Clean up the URL so re-renders don't re-trigger it
-    router.replace("/customer/search", { scroll: false });
-  }
-}, []);
+    if (searchParams.get("scan") === "1") {
+      setScannerOpen(true);
+      // Clean up the URL so re-renders don't re-trigger it
+      router.replace("/customer/search", { scroll: false });
+    }
+  }, []);
   // Scanner gun auto enter
   useEffect(() => {
     const THRESHOLD = 50; // ms — scanners are faster than any human
@@ -133,9 +133,11 @@ export function SearchNav({
               </Button>
             </Link>
           )}
-          <div className="hidden md:flex items-center">
-            <Logo variant="icon" />
-          </div>
+          {!customerId && (
+            <div className="hidden md:flex items-center">
+              <Logo variant="icon" />
+            </div>
+          )}
         </div>
 
         {/* SEARCH */}

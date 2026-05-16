@@ -1,22 +1,23 @@
 import { WalletInfo } from "./WalletInfo";
+
 type GiftWalletProps = {
   giftWalletData: {
     balance: number;
     memberSince: string;
   };
 };
+
 const GiftWallet = ({ giftWalletData }: GiftWalletProps) => {
   return (
     <div>
       <div className="p-4">
         <div
-          className="relative rounded-2xl p-6 space-y-10 lg:space-y-17 overflow-hidden text-white bg-black"
+          className="relative rounded-2xl p-6 overflow-hidden flex flex-col justify-between text-white bg-black w-full h-52"
           style={{
-            boxShadow:
-              "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
           }}
         >
-          {/* ── GREEN BLOB SPLASH — top left like the reference ── */}
+          {/* Green blob — top left */}
           <div
             className="absolute pointer-events-none bg-primary"
             style={{
@@ -29,7 +30,7 @@ const GiftWallet = ({ giftWalletData }: GiftWalletProps) => {
               opacity: 0.92,
             }}
           />
-          {/* Blob drip extension */}
+          {/* Blob drip */}
           <div
             className="absolute pointer-events-none bg-primary"
             style={{
@@ -43,61 +44,42 @@ const GiftWallet = ({ giftWalletData }: GiftWalletProps) => {
             }}
           />
 
-          {/* Subtle dark-to-blue gradient on right half */}
-          <div className="absolute inset-0 pointer-events-none" />
-
-          {/* ── Content ── */}
-          <div className="relative z-10 flex flex-col gap-2 justify-center">
+          {/* Top: label + balance */}
+          <div className="relative z-10 flex flex-col gap-1">
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
               Candian's Gift Card
             </p>
             <div className="flex items-center justify-between">
               <h1
-                className="flex items-baseline gap-1 text-4xl font-bold font-sans"
+                className="flex items-baseline gap-1 text-4xl font-bold"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
-                <span
-                  style={{
-                    color: "rgba(255,255,255,0.3)",
-                    fontSize: "1.75rem",
-                    fontWeight: 300,
-                  }}
-                >
+                <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "1.75rem", fontWeight: 300 }}>
                   $
                 </span>
-                {(giftWalletData.balance/100).toFixed(2)}
+                {(giftWalletData.balance / 100).toFixed(2)}
               </h1>
               <WalletInfo />
             </div>
           </div>
 
           {/* Dashed divider */}
-          <div className="relative z-10 flex items-center gap-2">
-            <div
-              className="flex-1 border-t border-dashed"
-              style={{ borderColor: "rgba(255,255,255,0.1)" }}
-            />
-            <div
-              className="flex-1 border-t border-dashed"
-              style={{ borderColor: "rgba(255,255,255,0.1)" }}
-            />
+          <div className="relative z-10">
+            <div className="border-t border-dashed" style={{ borderColor: "rgba(255,255,255,0.1)" }} />
           </div>
 
-          <div className="relative z-10 flex w-full justify-between gap-20 -mt-3">
-            <div className="flex flex-col flex-1">
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
-                Member Since
-              </p>
-              <p className="font-semibold text-sm">
-                {giftWalletData.memberSince}
-              </p>
-            </div>
+          {/* Bottom: member since */}
+          <div className="relative z-10 flex flex-col">
+            <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Member Since
+            </p>
+            <p className="font-semibold text-sm">{giftWalletData.memberSince}</p>
           </div>
         </div>
       </div>
-      <div className="w-full h-8.75 px-4 relative flex justify-center gap-1 space-y-2">
 
-            </div>
+      {/* Spacer to match TopupWallet button height */}
+      <div className="w-full px-4 h-10" />
     </div>
   );
 };

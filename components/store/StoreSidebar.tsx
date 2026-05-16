@@ -38,7 +38,7 @@ const NAV_GROUPS = [
       { href: "/store/products", label: "Products", icon: Package },
       { href: "/store/subsidy-list", label: "Subsidy List", icon: List },
       { href: "/store/customers", label: "Customers", icon: Users2 },
-      { href: "/store/profile", label: "Profile", icon: UserRoundPen },
+      // { href: "/store/profile", label: "Profile", icon: UserRoundPen },
     ],
   },
   {
