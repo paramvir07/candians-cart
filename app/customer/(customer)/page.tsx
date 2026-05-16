@@ -9,7 +9,6 @@ import { HeroBannerLoader } from "@/components/customer/landing/HeroBannerLoader
 import { ProductsSectionLoader } from "@/components/customer/products/ProductsSectionLoader";
 
 export const metadata: Metadata = {
-  title: "Home | Candian's Cart",
   description: "Browse our fresh selection of groceries, exclusive subsidized items, and everyday essentials.",
 };
 

@@ -255,7 +255,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
   return (
     <>
       {/* ── Desktop Sidebar ────────────────────────────────────────────────── */}
-      <aside className="hidden md:flex fixed top-4 bottom-4 left-3 w-56 flex-col bg-white rounded-2xl border border-gray-100 shadow-sm z-40 overflow-hidden">
+      <aside className="hidden md:flex fixed top-4 bottom-4 left-3 w-56 flex-col bg-white rounded-2xl border border-gray-100 shadow-sm z-110 overflow-hidden">
         {/* Brand header */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
@@ -273,7 +273,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
       </aside>
 
       {/* ── Mobile top bar ─────────────────────────────────────────────────── */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center gap-3 px-4 h-14 bg-white border-b border-gray-100">
+      <header className="md:hidden fixed top-0 left-0 right-0 z-80 flex items-center gap-3 px-4 h-14 bg-white border-b border-gray-100">
         <button
           onClick={() => setMobileOpen(true)}
           className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600 shrink-0"
@@ -299,7 +299,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
       {/* ── Mobile backdrop ─────────────────────────────────────────────────── */}
       <div
         className={cn(
-          "md:hidden fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm transition-opacity duration-300",
+          "md:hidden fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm transition-opacity duration-300",
           mobileOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none",
@@ -310,7 +310,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
       {/* ── Mobile drawer ───────────────────────────────────────────────────── */}
       <div
         className={cn(
-          "md:hidden fixed top-0 left-0 bottom-0 z-[55] w-72 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out",
+          "md:hidden fixed top-0 left-0 bottom-0 z-[90] w-72 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >

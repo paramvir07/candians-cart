@@ -316,7 +316,7 @@ useEffect(() => {
   return (
     <div
   className={`min-h-screen bg-muted/30 ${
-    customerId ? "rounded-3xl shadow-md mr-4 overflow-hidden" : ""
+    customerId ? "rounded-3xl shadow-md md:mr-4 overflow-hidden" : ""
   }`}
 >
       <SearchNav
