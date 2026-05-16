@@ -383,7 +383,7 @@ export default function StorePayoutDetailClient({
         size: 9,
         color: MUTED,
       });
-      const supportText = "support@candianscart.ca";
+      const supportText = "info@canadianscart.ca";
       const supportW = font.widthOfTextAtSize(supportText, 9);
       page.drawText(supportText, {
         x: width - margin - supportW,
