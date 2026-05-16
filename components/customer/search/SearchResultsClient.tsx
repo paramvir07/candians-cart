@@ -328,33 +328,30 @@ useEffect(() => {
         cartCount={cartCount}
       />
 
-{/* Cart insight bar — shown when cart has items */}
-      {cartInsight && cartInsight.numItems > 0 && (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
-          <CartInsightBar
-            numItems={cartInsight.numItems}
-            subsidyOnOrder={cartInsight.subsidyOnOrder}
-            total={cartInsight.total}
-            customerId={customerId}
-          />
-          {/* UPC Mode toggle — cashier only */}
-          {customerId && (
-            <div className="pt-3">
-              <button
-                onClick={() => setUpcMode((v) => !v)}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  upcMode
-                    ? "bg-green-600 text-white border-green-600 shadow-sm"
-                    : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
-                }`}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`} />
-                {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+{/* Cart insight + UPC toggle — cashier only, always visible */}
+{customerId && (
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 flex flex-col gap-3">
+    {cartInsight && (
+      <CartInsightBar
+        numItems={cartInsight.numItems}
+        subsidyOnOrder={cartInsight.subsidyOnOrder}
+        total={cartInsight.total}
+        customerId={customerId}
+      />
+    )}
+    <button
+      onClick={() => setUpcMode((v) => !v)}
+      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all w-fit ${
+        upcMode
+          ? "bg-green-600 text-white border-green-600 shadow-sm"
+          : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
+      }`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`} />
+      {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
+    </button>
+  </div>
+)}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-6">
