@@ -28,6 +28,7 @@ export const auth = betterAuth({
           "/api/auth/email-change"
         );
 
+        
         await sendEmail({
           to: user.email,
           subject: "Verify email change",
