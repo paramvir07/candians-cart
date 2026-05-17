@@ -65,6 +65,17 @@ const SOCIAL = [
       </svg>
     ),
   },
+  {
+  label: "Email",
+  href: "mailto:info@canadianscart.ca",
+  icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+      strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <polyline points="2,4 12,13 22,4" />
+    </svg>
+  ),
+},
 ];
 
 const NAVBAR_OFFSET = 80;

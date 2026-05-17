@@ -21,7 +21,7 @@ export default function CartInsightBar({
   customerId,
   className,
 }: CartInsightBarProps) {
-  if (numItems === 0) return null;
+  // if (numItems === 0) return null;
 
   const href = customerId ? `/cashier/customer/${customerId}/cart` : "/customer/cart";
 
@@ -38,23 +38,30 @@ export default function CartInsightBar({
             <ShoppingCart className="h-4 w-4 text-primary" />
           </div>
           <div className="flex items-baseline gap-1 leading-none">
-            <span className="text-sm font-bold tabular-nums text-foreground">{numItems}</span>
+            {/* <span className="text-sm font-bold tabular-nums text-foreground">{numItems}</span> */}
             <span className="text-xs text-muted-foreground">
-              {numItems === 1 ? "item" : "items"} in cart
-            </span>
+  {numItems === 0 ? "No items in cart" : numItems === 1 ? `${numItems} item in cart` : `${numItems} items in cart`}
+</span>
           </div>
         </div>
 
         {/* Right: subsidy + total + arrow */}
         <div className="flex items-center gap-1 shrink-0">
-          {subsidyOnOrder > 0 && (
+          {/* {subsidyOnOrder > 0 && (
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40">
               <Gift className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
               <span className="text-xs font-bold tabular-nums text-emerald-600">
                 −${fmt(subsidyOnOrder)}
               </span>
             </div>
-          )}
+          )} */}
+
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40">
+  <Gift className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+  <span className="text-xs font-bold tabular-nums text-emerald-600">
+    −${fmt(subsidyOnOrder)}
+  </span>
+</div>
 
           <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted/60">
             <CircleDollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

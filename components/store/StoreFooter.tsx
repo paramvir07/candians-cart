@@ -20,28 +20,28 @@ const FOOTER_GROUPS = [
   {
     label: "Management",
     items: [
-      { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
-      { href: "/admin/products", label: "Products", icon: Package },
-      { href: "/admin/customers", label: "Customers", icon: Users2 },
+      { href: "/store/orders", label: "Orders", icon: ShoppingCart },
+      { href: "/store/products", label: "Products", icon: Package },
+      { href: "/store/subsidy-list", label: "Subsidy List", icon: Users2 },
     ],
   },
   {
     label: "Finance",
     items: [
-      { href: "/admin/store-payouts", label: "Payouts", icon: HandCoins },
+      { href: "/store/payouts", label: "Payouts", icon: HandCoins },
       {
-        href: "/admin/cash-collection",
+        href: "/store/cash-collection",
         label: "Cash Collection",
         icon: Banknote,
       },
-      { href: "/admin/price-invoices", label: "Invoices", icon: Receipt },
+      { href: "/store/invoices", label: "Invoices", icon: Receipt },
     ],
   },
   {
     label: "Other",
     items: [
-      { href: "/admin/new-user", label: "New User", icon: UserPlus },
-      { href: "/admin/referral-codes", label: "Referrals", icon: LinkIcon },
+      { href: "/store/", label: "Dashboard", icon: UserPlus },
+      { href: "/store/analytics", label: "Analytics", icon: LinkIcon },
     ],
   },
 ];
@@ -51,11 +51,11 @@ function LogoPlaceholder() {
     <div className="flex items-center gap-2.5">
       {/* Swap this div for your <Logo /> — use a light/white variant on dark bg */}
       <div className="w-9 h-9 rounded-xlflex items-center justify-center shrink-0">
-        <Logo variant="icon" href="/admin" />
+        <Logo variant="icon" href="/store" />
       </div>
       <div>
         <p className="text-sm font-bold text-white leading-tight">
-          Admin Panel
+          Store Panel
         </p>
         <p className="text-[11px] text-gray-500 leading-tight">
           Candian's Cart
@@ -65,7 +65,7 @@ function LogoPlaceholder() {
   );
 }
 
-const AdminFooter = () => {
+const StoreFooter = () => {
   const year = new Date().getFullYear();
 
   return (
@@ -75,10 +75,9 @@ const AdminFooter = () => {
         <div className="flex flex-col md:flex-row gap-10 md:gap-16">
           {/* Brand column */}
           <div className="md:w-56 shrink-0 space-y-4">
-            <Logo variant="icon" href="/admin" />
+            <Logo variant="icon" href="/store" />
             <p className="text-xs text-gray-500 leading-relaxed">
-              Internal admin portal for managing stores, orders, products, and
-              platform finances.
+              Internal store portal for managing orders and products.
             </p>
             <a
               href="mailto:info@canadianscart.ca"
@@ -141,4 +140,4 @@ const AdminFooter = () => {
   );
 };
 
-export default AdminFooter;
+export default StoreFooter;

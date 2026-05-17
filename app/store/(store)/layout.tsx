@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
+import StoreFooter from "@/components/store/StoreFooter";
 
 export const metadata: Metadata = {
   title: {
@@ -29,16 +30,17 @@ export default async function RootLayout({
 
   const name = session.user.name;
   return (
-    <div className="scroll-smooth">
+    <div className="min-h-screen flex flex-col bg-gray-50 scroll-smooth">
       <TooltipProvider>
-        <div className="min-h-screen bg-gray-50">
+        <div className="flex flex-1 items-start min-h-screen bg-gray-50">
           <StoreSidebar name={name} />
-          <main className="md:ml-64 pt-14 md:pt-0 min-h-screen m-4">
+          <main className="flex-1 min-w-0 pt-14 md:pt-0 min-h-screen p-4">
             <CustomerAdvertisements maxHeight={250}/>
             {children}
           </main>
         </div>
       </TooltipProvider>
+      <StoreFooter />
     </div>
   );
 }

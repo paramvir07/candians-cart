@@ -222,21 +222,21 @@ export function SearchResultsClient({
   // }, [debouncedQuery, storeId]);
 
   // Re-run search immediately when upcMode toggles, if there's an active query
-useEffect(() => {
-  if (!debouncedQuery.trim()) return;
+  useEffect(() => {
+    if (!debouncedQuery.trim()) return;
 
-  const refetch = async () => {
-    setIsLoading(true);
-    setHasSearched(true);
-    const res = upcMode
-      ? await searchProductsByUPC(debouncedQuery.trim(), storeId)
-      : await searchAction(debouncedQuery.trim(), storeId);
-    setAllResults(res.success && res.data ? res.data : []);
-    setIsLoading(false);
-  };
+    const refetch = async () => {
+      setIsLoading(true);
+      setHasSearched(true);
+      const res = upcMode
+        ? await searchProductsByUPC(debouncedQuery.trim(), storeId)
+        : await searchAction(debouncedQuery.trim(), storeId);
+      setAllResults(res.success && res.data ? res.data : []);
+      setIsLoading(false);
+    };
 
-  refetch();
-}, [upcMode]); // intentionally only upcMode — we want this to fire on toggle only
+    refetch();
+  }, [upcMode]); // intentionally only upcMode — we want this to fire on toggle only
 
   useEffect(() => {
     if (!debouncedQuery.trim()) {
@@ -315,10 +315,10 @@ useEffect(() => {
 
   return (
     <div
-  className={`min-h-screen bg-muted/30 ${
-    customerId ? "rounded-3xl shadow-md md:mr-4 overflow-hidden" : ""
-  }`}
->
+      className={`min-h-screen bg-muted/30 ${
+        customerId ? "rounded-3xl shadow-md md:mr-4 overflow-hidden" : ""
+      }`}
+    >
       <SearchNav
         customerId={customerId}
         initialQuery={query}
@@ -328,30 +328,30 @@ useEffect(() => {
         cartCount={cartCount}
       />
 
-{/* Cart insight + UPC toggle — cashier only, always visible */}
-{customerId && (
-  <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 flex flex-col gap-3">
-    {cartInsight && (
-      <CartInsightBar
-        numItems={cartInsight.numItems}
-        subsidyOnOrder={cartInsight.subsidyOnOrder}
-        total={cartInsight.total}
-        customerId={customerId}
-      />
-    )}
-    <button
-      onClick={() => setUpcMode((v) => !v)}
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all w-fit ${
-        upcMode
-          ? "bg-green-600 text-white border-green-600 shadow-sm"
-          : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
-      }`}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`} />
-      {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
-    </button>
-  </div>
-)}
+      {/* Cart insight + UPC toggle — cashier only, always visible */}
+      {customerId && (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 flex flex-col gap-3">
+          <CartInsightBar
+            numItems={cartInsight?.numItems ?? 0}
+            subsidyOnOrder={cartInsight?.subsidyOnOrder ?? 0}
+            total={cartInsight?.total ?? 0}
+            customerId={customerId}
+          />
+          <button
+            onClick={() => setUpcMode((v) => !v)}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all w-fit ${
+              upcMode
+                ? "bg-green-600 text-white border-green-600 shadow-sm"
+                : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`}
+            />
+            {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
+          </button>
+        </div>
+      )}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-6">

@@ -39,6 +39,16 @@ const SOCIALS = [
       </svg>
     ),
   },
+  {
+  label: "Email",
+  href: "mailto:info@canadianscart.ca",
+  icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+      <rect x="2" y="4" width="20" height="16" rx="2"/>
+      <polyline points="2,4 12,13 22,4"/>
+    </svg>
+  ),
+},
   // {
   //   label: "Facebook",
   //   href: "https://facebook.com/candianscart",
@@ -91,7 +101,7 @@ export function Footer() {
 
               {/* Socials */}
               <div>
-                <p className="text-xs font-semibold text-foreground mb-3">Follow us</p>
+                <p className="text-xs font-semibold text-foreground mb-3">Reach out to us</p>
                 <div className="flex items-center gap-2">
                   {SOCIALS.map(({ label, href, icon }) => (
                     <Link
