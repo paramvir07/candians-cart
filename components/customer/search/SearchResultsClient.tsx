@@ -35,6 +35,7 @@ import { getCartInsights } from "@/actions/cashier/GetCartInsights";
 import CartInsightBar from "@/components/cashier/CartInsightsBar";
 import { onCartUpdated } from "@/lib/cartEvent";
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
+import { useSearchParams } from "next/navigation";
 
 interface SearchResultsClientProps {
   customerId?: string;
@@ -62,10 +63,25 @@ const QUICK_SUGGESTIONS = [
   { emoji: "🧃", label: "Beverages" },
   { emoji: "🍿", label: "Snacks" },
   { emoji: "🧹", label: "Household" },
-  { emoji: "🌶️", label: "Spices" },
-  { emoji: "☕", label: "Tea & Coffee" },
+  { emoji: "🫙", label: "Oil & Ghee" },
   { emoji: "🫘", label: "Pulses & Lentils" },
+  { emoji: "🌾", label: "Flour & Atta" },
+  { emoji: "🍚", label: "Rice" },
+  { emoji: "🌶️", label: "Spices" },
+  { emoji: "🫙", label: "Pickles & Chutneys" },
+  { emoji: "🍜", label: "Instant Foods" },
+  { emoji: "🧊", label: "Frozen Foods" },
   { emoji: "🍮", label: "Sweets & Mithai" },
+  { emoji: "🥜", label: "Dry Fruits & Nuts" },
+  { emoji: "☕", label: "Tea & Coffee" },
+  { emoji: "🥫", label: "Sauces & Condiments" },
+  { emoji: "🥨", label: "Papad & Fryums" },
+  { emoji: "🪔", label: "Pooja / Religious Items" },
+  { emoji: "🍳", label: "Utensils" },
+  { emoji: "🥡", label: "Disposables" },
+  { emoji: "🪥", label: "Personal Care" },
+  { emoji: "🛒", label: "Other" },
+  { emoji: "✨", label: "Subsidised Only" },
 ];
 
 export function SearchResultsClient({
@@ -75,6 +91,8 @@ export function SearchResultsClient({
   customerData,
   cartCount,
 }: SearchResultsClientProps) {
+  const searchParams = useSearchParams();
+
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounce(query, 500);
   const [allResults, setAllResults] = useState<IProduct[]>([]);
@@ -85,6 +103,20 @@ export function SearchResultsClient({
   const [cartMap, setCartMap] = useState<Record<string, number>>({});
   const [cartInsight, setCartInsight] = useState<CartInsight | null>(null);
   const [upcMode, setUpcMode] = useState(!!customerId);
+  const [pendingFilters, setPendingFilters] = useState<FilterState>(DEFAULT_FILTERS);
+
+useEffect(() => {
+  if (searchParams.get("subsidisedOnly") !== "true") return;
+
+  setFilters((prev) => ({ ...prev, subsidisedOnly: true }));
+  setIsLoading(true);
+  setHasSearched(true);
+
+  getStoreProductsFiltered(storeId, 1, 200, { subsidised: true }).then((res) => {
+    setAllResults(res.success && res.data ? res.data : []);
+    setIsLoading(false);
+  });
+}, []);
 
   // ── Fetch cart insight whenever cartMap changes ──────────────────────────
   useEffect(() => {
@@ -179,6 +211,7 @@ export function SearchResultsClient({
       isFirstFilterRender.current = false;
       return;
     }
+    // if (filterSheetOpen) return;
     if (!resultsRef.current) return;
     const rect = resultsRef.current.getBoundingClientRect();
     window.scrollTo({
@@ -186,6 +219,10 @@ export function SearchResultsClient({
       behavior: "smooth",
     });
   }, [filters]);
+  
+  useEffect(() => {
+  if (filterSheetOpen) setPendingFilters(filters);
+}, [filterSheetOpen]);
 
   const updateFilters = (partial: Partial<FilterState>) =>
     setFilters((prev) => ({ ...prev, ...partial }));
@@ -241,6 +278,7 @@ export function SearchResultsClient({
   useEffect(() => {
     if (!debouncedQuery.trim()) {
       if (!filters.categories.length) {
+        if (searchParams.get("subsidisedOnly") === "true") return;
         setAllResults([]);
         setHasSearched(false);
       } else {
@@ -269,26 +307,60 @@ export function SearchResultsClient({
     fetchResult();
   }, [debouncedQuery, storeId, upcMode]);
 
-  useEffect(() => {
-    if (debouncedQuery.trim()) return;
-    if (!hasSearched) return;
+  // useEffect(() => {
+  //   if (debouncedQuery.trim()) return;
+  //   if (!hasSearched) return;
 
-    const load = async () => {
-      setIsLoading(true);
-      if (filters.categories.length === 0) {
-        setAllResults([]);
-        setHasSearched(false);
-        setIsLoading(false);
-        return;
-      }
-      const res = await getStoreProductsFiltered(storeId, 1, 200, {
-        categories: filters.categories as any,
-      });
-      setAllResults(res.success && res.data ? res.data : []);
+  //   const load = async () => {
+  //     setIsLoading(true);
+  //     if (filters.categories.length === 0) {
+  //       if (filters.subsidisedOnly) {
+  //         // subsidised-only browse — don't reset, just keep results
+  //         setIsLoading(false);
+  //         return;
+  //       }
+  //       setAllResults([]);
+  //       setHasSearched(false);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+  //     const res = await getStoreProductsFiltered(storeId, 1, 200, {
+  //       categories: filters.categories as any,
+  //     });
+  //     setAllResults(res.success && res.data ? res.data : []);
+  //     setIsLoading(false);
+  //   };
+  //   load();
+  // }, [
+  //   filters.categories,
+  //   storeId,
+  //   debouncedQuery,
+  //   hasSearched,
+  //   filters.subsidisedOnly,
+  // ]);
+
+  useEffect(() => {
+  if (debouncedQuery.trim()) return;
+  if (!hasSearched) return;
+  if (filterSheetOpen) return;
+
+  const load = async () => {
+    setIsLoading(true);
+    if (filters.categories.length === 0 && !filters.subsidisedOnly) {
+      setAllResults([]);
+      setHasSearched(false);
       setIsLoading(false);
-    };
-    load();
-  }, [filters.categories, storeId, debouncedQuery, hasSearched]);
+      return;
+    }
+    const res = await getStoreProductsFiltered(storeId, 1, 200, {
+      categories: filters.categories.length > 0 ? filters.categories as any : undefined,
+      subsidised: filters.subsidisedOnly ? true : undefined,
+    });
+    setAllResults(res.success && res.data ? res.data : []);
+    setIsLoading(false);
+  };
+  load();
+}, [filters.categories, filters.subsidisedOnly, storeId, debouncedQuery, hasSearched]);
 
   const displayPrice = (p: IProduct) => p.price + p.price * (p.markup / 100);
 
@@ -421,6 +493,16 @@ export function SearchResultsClient({
                     <button
                       key={s.label}
                       onClick={async () => {
+                        // ── Special case: Subsidised Only toggle ──
+                        if (s.label === "Subsidised Only") {
+                          const newValue = !filters.subsidisedOnly;
+                          setFilters((prev) => ({
+                            ...prev,
+                            subsidisedOnly: newValue,
+                          }));
+                          if (!query.trim()) setHasSearched(true);
+                          return;
+                        }
                         const CATEGORY_MAP: Record<string, string[]> = {};
                         const labelsToAdd = CATEGORY_MAP[s.label] ?? [s.label];
                         const newCategories = filters.categories.includes(
@@ -605,13 +687,29 @@ export function SearchResultsClient({
 
           <div className="flex-1 overflow-hidden relative">
             <div className="h-full overflow-y-auto px-5 pt-4 pb-28">
-              <FilterPanel
-                filters={filters}
-                onChange={updateFilters}
-                onReset={resetFilters}
-              />
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
+  <FilterPanel
+    filters={pendingFilters}
+    onChange={(partial) => setPendingFilters((prev) => ({ ...prev, ...partial }))}
+    onReset={() => setPendingFilters(DEFAULT_FILTERS)}
+  />
+</div>
+<div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
+  <button
+    onClick={() => {
+      setFilters(pendingFilters);   // ← commit on apply
+      setFilterSheetOpen(false);
+    }}
+    className="w-full h-12 rounded-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
+  >
+    Show {filtered.length} Result{filtered.length !== 1 ? "s" : ""}
+    {getActiveFilterCount(pendingFilters) > 0 && (
+      <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+        {getActiveFilterCount(pendingFilters)} filter{getActiveFilterCount(pendingFilters) !== 1 ? "s" : ""}
+      </span>
+    )}
+  </button>
+</div>
+            {/* <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
               <button
                 onClick={() => setFilterSheetOpen(false)}
                 className="w-full h-12 rounded-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
@@ -624,7 +722,7 @@ export function SearchResultsClient({
                   </span>
                 )}
               </button>
-            </div>
+            </div> */}
           </div>
         </SheetContent>
       </Sheet>

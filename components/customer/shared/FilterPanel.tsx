@@ -1,13 +1,14 @@
 "use client";
 // components/customer/shared/FilterPanel.tsx
 
-import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+// import { useSearchParams } from "next/navigation";
 import { X, SlidersHorizontal } from "lucide-react";
 import {
   ALL_CATEGORIES,
   getCategoryConfig,
 } from "@/components/customer/shared/CategoryIllustration";
+import { useSearchParams } from "next/navigation";
 
 export interface FilterState {
   categories: string[];
@@ -86,19 +87,19 @@ export function FilterPanel({
   // so selecting one filter from the footer never stacks on prior filters.
   //   ?subsidisedOnly=true     - from the subsidy popup "View all" button
   //   ?category=Fresh+Produce  - from footer category links
-  useEffect(() => {
-    const subsidisedParam = searchParams.get("subsidisedOnly") === "true";
-    const cat             = searchParams.get("category");
-    const validCat        = cat && ALL_CATEGORIES.includes(cat) ? cat : null;
+  // useEffect(() => {
+  //   const subsidisedParam = searchParams.get("subsidisedOnly") === "true";
+  //   const cat             = searchParams.get("category");
+  //   const validCat        = cat && ALL_CATEGORIES.includes(cat) ? cat : null;
 
-    if (!subsidisedParam && !validCat) return;
+  //   if (!subsidisedParam && !validCat) return;
 
-    onChange({
-      ...DEFAULT_FILTERS,
-      subsidisedOnly: subsidisedParam,
-      categories:     validCat ? [validCat] : [],
-    });
-  }, [searchParams]);
+  //   onChange({
+  //     ...DEFAULT_FILTERS,
+  //     subsidisedOnly: subsidisedParam,
+  //     categories:     validCat ? [validCat] : [],
+  //   });
+  // }, [searchParams]);
 
   // const toggleCategory = (cat: string) => {
   //   const next = filters.categories.includes(cat)
@@ -120,6 +121,8 @@ const toggleCategory = (cat: string) => {
     : [...new Set([...filters.categories, ...toToggle])];
   onChange({ categories: next });
 };
+const [pendingFilters, setPendingFilters] = useState<FilterState>(DEFAULT_FILTERS);
+
 
   return (
     <div className="flex flex-col h-full">

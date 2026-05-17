@@ -3,6 +3,7 @@ import { searchProducts } from "@/actions/common/searchProducts.action";
 import { SearchResultsClient } from "@/components/customer/search/SearchResultsClient";
 import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { Suspense } from "react";
 
 export default async function SearchPageLoader() {
   const [response, customerDataResponse, cartCount] = await Promise.all([
@@ -19,11 +20,13 @@ export default async function SearchPageLoader() {
     response.storeId ?? response.products?.[0]?.storeId ?? "";
 
   return (
+    <Suspense>
     <SearchResultsClient
       storeId={storeId}
       searchAction={searchProducts}
       customerData={customerDataResponse.customerData}
       cartCount={cartCount ?? 0}
     />
+    </Suspense>
   );
 }

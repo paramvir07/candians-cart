@@ -87,12 +87,14 @@ export function SubsidizedPopup({
     onOpenChange(false);
   };
 
-  const handleViewAll = () => {
-    onOpenChange(false);
-    // Navigate to /customer with subsidisedOnly filter flag in search params
-    router.push("/customer?subsidisedOnly=true");
-  };
-
+const handleViewAll = () => {
+  onOpenChange(false);
+  if (customerId) {
+    router.push(`/cashier/customer/${customerId}/products?subsidisedOnly=true`);
+  } else {
+    router.push("/customer/search?subsidisedOnly=true");
+  }
+};
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent
