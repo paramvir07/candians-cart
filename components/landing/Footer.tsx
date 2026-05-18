@@ -21,6 +21,10 @@ const FOOTER_LINKS: Record<
       scrollTo: "values",
       scrollPage: "/about",
     },
+    {
+      label: "Careers",
+      href: "/careers"
+    }
   ],
   Support: [
     { label: "Contact Us", href: "/contact" },

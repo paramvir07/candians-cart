@@ -218,7 +218,7 @@ export default function SubsidyListView({
           <p className="text-xs mt-1">Try adjusting your search or filter</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto h-120">
           {Object.entries(grouped).map(([category, groupItems]) => {
             const style = getCategoryStyle(category);
             return (

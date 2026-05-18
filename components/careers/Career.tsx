@@ -47,79 +47,16 @@ export interface JobPosting {
 
 const JOB_POSTINGS: JobPosting[] = [
   {
-    id: "driver-abbotsford",
-    title: "Delivery Driver",
-    department: "Logistics",
-    location: "Abbotsford, BC",
-    type: "Part-Time",
-    salary: "$18 – $22 / hr",
-    summary:
-      "Pick up and deliver grocery packs to families across Abbotsford. A friendly face that represents Candian's Cart in the community.",
-    description:
-      "As a Delivery Driver you'll be the final — and most memorable — touchpoint for our families. You'll collect pre-packed grocery orders from our fulfilment hub and deliver them on time with care and a smile.",
-    responsibilities: [
-      "Pick up packed orders from the fulfilment hub on schedule.",
-      "Deliver grocery packs to customers within the assigned route.",
-      "Verify order accuracy before leaving the hub.",
-      "Handle perishables safely and maintain cold-chain where required.",
-      "Communicate any delivery issues to dispatch promptly.",
-      "Collect signatures / confirmations and update delivery status in the app.",
-    ],
-    requirements: [
-      "Valid BC Class 5 driver's licence (clean abstract).",
-      "Access to a reliable vehicle (van or SUV preferred).",
-      "Able to lift up to 25 kg comfortably.",
-      "Excellent time-management and communication skills.",
-      "Smartphone with data plan for the delivery app.",
-    ],
-    niceToHave: [
-      "Previous courier or grocery delivery experience.",
-      "Familiarity with Abbotsford neighbourhoods.",
-    ],
-    posted: "May 2025",
-  },
-  {
-    id: "picker-packer",
-    title: "Grocery Picker & Packer",
-    department: "Operations",
-    location: "Abbotsford, BC",
-    type: "Part-Time",
-    salary: "$17 – $20 / hr",
-    summary:
-      "Assemble accurate, high-quality grocery packs at our fulfilment hub, making sure every family receives exactly what they ordered.",
-    description:
-      "You'll work inside our fulfilment hub preparing grocery packs ahead of delivery windows. Accuracy, speed, and care for food quality are the keys to success in this role.",
-    responsibilities: [
-      "Pick grocery items from shelves/cold storage using a digital pick-list.",
-      "Pack orders neatly and ensure fragile items are protected.",
-      "Perform quality checks — correct items, correct quantities, no damaged goods.",
-      "Maintain cleanliness and organisation in the packing area.",
-      "Flag inventory shortages to the team lead.",
-      "Assist with receiving and storing supplier deliveries.",
-    ],
-    requirements: [
-      "Ability to stand for extended periods and lift up to 20 kg.",
-      "High attention to detail and accuracy.",
-      "Comfortable using a tablet or smartphone app.",
-      "Reliable and punctual — shifts begin early morning.",
-    ],
-    niceToHave: [
-      "Experience in a grocery, warehouse, or food-service environment.",
-      "Food Safe Level 1 certificate.",
-    ],
-    posted: "May 2025",
-  },
-  {
     id: "customer-support",
     title: "Customer Support Specialist",
     department: "Customer Experience",
-    location: "Remote (BC, Canada)",
+    location: "Abbotsford, BC",
     type: "Part-Time",
-    salary: "$17 – $19 / hr",
+    salary: "$18.25 / hr",
     summary:
       "Be the friendly voice behind Candian's Cart — helping families with orders, accounts, and anything else they need.",
     description:
-      "Our customers rely on us for their weekly groceries, and you'll make sure their experience is smooth and delightful. You'll handle inbound queries via email and chat, resolve issues, and proactively improve our support processes.",
+      "Our customers rely on us for their weekly groceries, and you'll make sure their experience is smooth and delightful. You'll handle inbound queries via email and chat, resolve issues, and help families get the most out of the platform.",
     responsibilities: [
       "Respond to customer emails and live-chat messages within SLA.",
       "Resolve order issues, billing questions, and account problems.",
@@ -129,47 +66,47 @@ const JOB_POSTINGS: JobPosting[] = [
       "Assist with onboarding new customers to the platform.",
     ],
     requirements: [
-      "Excellent written communication in English.",
+      "Excellent written and verbal communication in English.",
       "Empathetic, patient, and solution-focused approach.",
-      "Comfortable working independently in a remote setting.",
-      "Reliable internet connection and a quiet workspace.",
+      "Comfortable working in a fast-paced, community-oriented environment.",
+      "Reliable and punctual.",
     ],
     niceToHave: [
-      "Bilingual (English / Punjabi or English / French).",
+      "Bilingual (English / Punjabi or English / Hindi).",
       "Previous customer support or retail experience.",
-      "Familiarity with help-desk tools (Freshdesk, Intercom, etc.).",
+      "Familiarity with the Abbotsford South Asian community.",
     ],
     posted: "May 2025",
   },
   {
-    id: "social-media",
-    title: "Social Media & Content Creator",
-    department: "Marketing",
-    location: "Remote (BC, Canada)",
-    type: "Contract",
-    salary: "$20 – $28 / hr",
+    id: "cashier",
+    title: "Cashier",
+    department: "Operations",
+    location: "Abbotsford, BC",
+    type: "Part-Time",
+    salary: "$18.25 / hr",
     summary:
-      "Tell the Candian's Cart story across Instagram and beyond — growing our community with authentic, engaging content.",
+      "Process customer pickups at our Abbotsford location — the last smile families see before heading home with their groceries.",
     description:
-      "We're looking for a creative self-starter to own our social media presence. You'll plan, create, and publish content that resonates with Canadian families — showcasing our mission, products, and community impact.",
+      "As a Cashier you'll be at the front line of the Candian's Cart pickup experience. You'll process orders, verify items, handle payments, and make sure every family leaves happy.",
     responsibilities: [
-      "Develop and execute a monthly content calendar.",
-      "Shoot, edit, and publish Reels, Stories, and static posts for Instagram.",
-      "Engage with followers — respond to comments and DMs.",
-      "Track analytics and report on growth and engagement monthly.",
-      "Collaborate with the team on seasonal campaigns and promotions.",
-      "Source UGC and coordinate with community members for testimonials.",
+      "Process customer pickup orders accurately using our point-of-sale system.",
+      "Verify order contents against the packing list before handoff.",
+      "Handle cash, debit, and digital payment transactions.",
+      "Answer basic customer questions and escalate issues when needed.",
+      "Maintain a clean and organised checkout area.",
+      "Assist with bagging and loading orders for customers as needed.",
     ],
     requirements: [
-      "Strong portfolio of social media content (food, lifestyle, or community preferred).",
-      "Proficiency with Instagram and short-form video editing (CapCut, Reels, etc.).",
-      "Understanding of Canadian / South-Asian family demographics is a plus.",
-      "Self-directed with strong creative instincts.",
+      "Strong attention to detail and basic numeracy.",
+      "Friendly, professional demeanour with customers.",
+      "Comfortable using a tablet or POS terminal.",
+      "Reliable and punctual — shifts may include early mornings or weekends.",
     ],
     niceToHave: [
-      "Experience with photography or videography.",
-      "Knowledge of SEO and hashtag strategy.",
-      "Experience working with small or local brands.",
+      "Previous cashier or retail experience.",
+      "Bilingual (English / Punjabi or English / Hindi).",
+      "Familiarity with the Abbotsford community.",
     ],
     posted: "May 2025",
   },
@@ -579,7 +516,7 @@ export default function CareersPage() {
         </section>
 
         {/* ══════════════════════ OPEN APPLICATION BANNER ══════════════════════ */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
+        <section className="max-w-5xl hidden mx-auto px-4 sm:px-6 py-14 sm:py-20">
           <div className="relative rounded-3xl border border-gray-200 bg-white overflow-hidden p-8 sm:p-12 shadow-sm">
             {/* Green blob decoration */}
             <div

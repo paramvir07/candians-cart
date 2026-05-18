@@ -42,6 +42,10 @@ const NAV_LINKS: TNavLink[] = [
     label: "Contact Us",
     href: "/contact",
   },
+  {
+    label: "Careers",
+    href: "/careers"
+  }
 ];
 
 interface NavbarProps {

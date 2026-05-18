@@ -2,6 +2,7 @@
 import { getStoreProductsFiltered } from "@/actions/admin/products/getProductsFiltered.action";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { IProduct } from "@/types/store/products.types";
+import { searchProductsWithFilters } from "@/actions/admin/products/getProductsFiltered.action";
 import { CustomerProductCard } from "@/components/customer/products/CustomerProductCard";
 import {
   FilterPanel,
@@ -103,20 +104,23 @@ export function SearchResultsClient({
   const [cartMap, setCartMap] = useState<Record<string, number>>({});
   const [cartInsight, setCartInsight] = useState<CartInsight | null>(null);
   const [upcMode, setUpcMode] = useState(!!customerId);
-  const [pendingFilters, setPendingFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [pendingFilters, setPendingFilters] =
+    useState<FilterState>(DEFAULT_FILTERS);
 
-useEffect(() => {
-  if (searchParams.get("subsidisedOnly") !== "true") return;
+  useEffect(() => {
+    if (searchParams.get("subsidisedOnly") !== "true") return;
 
-  setFilters((prev) => ({ ...prev, subsidisedOnly: true }));
-  setIsLoading(true);
-  setHasSearched(true);
+    setFilters((prev) => ({ ...prev, subsidisedOnly: true }));
+    setIsLoading(true);
+    setHasSearched(true);
 
-  getStoreProductsFiltered(storeId, 1, 200, { subsidised: true }).then((res) => {
-    setAllResults(res.success && res.data ? res.data : []);
-    setIsLoading(false);
-  });
-}, []);
+    getStoreProductsFiltered(storeId, 1, 200, { subsidised: true }).then(
+      (res) => {
+        setAllResults(res.success && res.data ? res.data : []);
+        setIsLoading(false);
+      },
+    );
+  }, []);
 
   // ── Fetch cart insight whenever cartMap changes ──────────────────────────
   useEffect(() => {
@@ -219,10 +223,10 @@ useEffect(() => {
       behavior: "smooth",
     });
   }, [filters]);
-  
+
   useEffect(() => {
-  if (filterSheetOpen) setPendingFilters(filters);
-}, [filterSheetOpen]);
+    if (filterSheetOpen) setPendingFilters(filters);
+  }, [filterSheetOpen]);
 
   const updateFilters = (partial: Partial<FilterState>) =>
     setFilters((prev) => ({ ...prev, ...partial }));
@@ -275,6 +279,7 @@ useEffect(() => {
     refetch();
   }, [upcMode]); // intentionally only upcMode — we want this to fire on toggle only
 
+// REPLACE with (two clean separate effects):
   useEffect(() => {
     if (!debouncedQuery.trim()) {
       if (!filters.categories.length) {
@@ -287,6 +292,7 @@ useEffect(() => {
           setHasSearched(true);
           const res = await getStoreProductsFiltered(storeId, 1, 200, {
             categories: filters.categories as any,
+            sortBy: filters.sortBy === "default" ? "recommended" : filters.sortBy,
           });
           setAllResults(res.success && res.data ? res.data : []);
           setIsLoading(false);
@@ -300,88 +306,117 @@ useEffect(() => {
       setHasSearched(true);
       const res = upcMode
         ? await searchProductsByUPC(debouncedQuery.trim(), storeId)
-        : await searchAction(debouncedQuery.trim(), storeId);
+        : await searchProductsWithFilters(debouncedQuery.trim(), storeId, 1, 200, {
+            sortBy: filters.sortBy === "default" ? "recommended" : filters.sortBy,
+          });
       setAllResults(res.success && res.data ? res.data : []);
       setIsLoading(false);
     };
     fetchResult();
-  }, [debouncedQuery, storeId, upcMode]);
-
-  // useEffect(() => {
-  //   if (debouncedQuery.trim()) return;
-  //   if (!hasSearched) return;
-
-  //   const load = async () => {
-  //     setIsLoading(true);
-  //     if (filters.categories.length === 0) {
-  //       if (filters.subsidisedOnly) {
-  //         // subsidised-only browse — don't reset, just keep results
-  //         setIsLoading(false);
-  //         return;
-  //       }
-  //       setAllResults([]);
-  //       setHasSearched(false);
-  //       setIsLoading(false);
-  //       return;
-  //     }
-  //     const res = await getStoreProductsFiltered(storeId, 1, 200, {
-  //       categories: filters.categories as any,
-  //     });
-  //     setAllResults(res.success && res.data ? res.data : []);
-  //     setIsLoading(false);
-  //   };
-  //   load();
-  // }, [
-  //   filters.categories,
-  //   storeId,
-  //   debouncedQuery,
-  //   hasSearched,
-  //   filters.subsidisedOnly,
-  // ]);
+  }, [debouncedQuery, storeId, upcMode, filters.sortBy]);
 
   useEffect(() => {
-  if (debouncedQuery.trim()) return;
-  if (!hasSearched) return;
-  if (filterSheetOpen) return;
+    if (debouncedQuery.trim()) return;
+    if (!hasSearched) return;
+    if (filterSheetOpen) return;
 
-  const load = async () => {
-    setIsLoading(true);
-    if (filters.categories.length === 0 && !filters.subsidisedOnly) {
-      setAllResults([]);
-      setHasSearched(false);
+    const load = async () => {
+      setIsLoading(true);
+      if (filters.categories.length === 0 && !filters.subsidisedOnly) {
+        setAllResults([]);
+        setHasSearched(false);
+        setIsLoading(false);
+        return;
+      }
+      const res = await getStoreProductsFiltered(storeId, 1, 200, {
+        categories:
+          filters.categories.length > 0
+            ? (filters.categories as any)
+            : undefined,
+        subsidised: filters.subsidisedOnly ? true : undefined,
+        sortBy: filters.sortBy === "default" ? "recommended" : filters.sortBy,
+      });
+      setAllResults(res.success && res.data ? res.data : []);
       setIsLoading(false);
-      return;
-    }
-    const res = await getStoreProductsFiltered(storeId, 1, 200, {
-      categories: filters.categories.length > 0 ? filters.categories as any : undefined,
-      subsidised: filters.subsidisedOnly ? true : undefined,
+    };
+    load();
+  }, [
+    filters.categories,
+    filters.subsidisedOnly,
+    filters.sortBy,
+    storeId,
+    debouncedQuery,
+    hasSearched,
+  ]);
+
+  // ADD this new effect after the debouncedQuery effect:
+  useEffect(() => {
+    if (!debouncedQuery.trim()) return;
+    if (!hasSearched) return;
+
+    setAllResults((prev) => {
+      const result = [...prev];
+      switch (filters.sortBy) {
+        case "price_asc":
+          result.sort(
+            (a, b) =>
+              a.price +
+              a.price * (a.markup / 100) -
+              (b.price + b.price * (b.markup / 100)),
+          );
+          break;
+        case "price_desc":
+          result.sort(
+            (a, b) =>
+              b.price +
+              b.price * (b.markup / 100) -
+              (a.price + a.price * (a.markup / 100)),
+          );
+          break;
+        case "name_asc":
+          result.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+        default:
+          result.sort(
+            (a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0),
+          );
+          break;
+      }
+      return result;
     });
-    setAllResults(res.success && res.data ? res.data : []);
-    setIsLoading(false);
-  };
-  load();
-}, [filters.categories, filters.subsidisedOnly, storeId, debouncedQuery, hasSearched]);
+  }, [filters.sortBy]);
 
   const displayPrice = (p: IProduct) => p.price + p.price * (p.markup / 100);
 
+  // const filtered = useMemo(() => {
+  //   let result = [...allResults];
+  //   if (filters.categories.length > 0)
+  //     result = result.filter((p) => filters.categories.includes(p.category));
+  //   if (filters.inStockOnly) result = result.filter((p) => p.stock);
+  //   if (filters.subsidisedOnly) result = result.filter((p) => p.subsidised);
+  //   switch (filters.sortBy) {
+  //     case "price_asc":
+  //       result.sort((a, b) => displayPrice(a) - displayPrice(b));
+  //       break;
+  //     case "price_desc":
+  //       result.sort((a, b) => displayPrice(b) - displayPrice(a));
+  //       break;
+  //     case "name_asc":
+  //       result.sort((a, b) => a.name.localeCompare(b.name));
+  //       break;
+  //   }
+  //   result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+  //   return result;
+  // }, [allResults, filters]);
+
+  // AFTER
   const filtered = useMemo(() => {
     let result = [...allResults];
     if (filters.categories.length > 0)
       result = result.filter((p) => filters.categories.includes(p.category));
     if (filters.inStockOnly) result = result.filter((p) => p.stock);
     if (filters.subsidisedOnly) result = result.filter((p) => p.subsidised);
-    switch (filters.sortBy) {
-      case "price_asc":
-        result.sort((a, b) => displayPrice(a) - displayPrice(b));
-        break;
-      case "price_desc":
-        result.sort((a, b) => displayPrice(b) - displayPrice(a));
-        break;
-      case "name_asc":
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-    }
-    result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+    // Sort is now handled by the backend fetch — no client-side sort here
     return result;
   }, [allResults, filters]);
 
@@ -532,6 +567,10 @@ useEffect(() => {
                             200,
                             {
                               categories: newCategories as any,
+                              sortBy:
+                                filters.sortBy === "default"
+                                  ? "recommended"
+                                  : filters.sortBy,
                             },
                           );
                           setAllResults(
@@ -687,28 +726,31 @@ useEffect(() => {
 
           <div className="flex-1 overflow-hidden relative">
             <div className="h-full overflow-y-auto px-5 pt-4 pb-28">
-  <FilterPanel
-    filters={pendingFilters}
-    onChange={(partial) => setPendingFilters((prev) => ({ ...prev, ...partial }))}
-    onReset={() => setPendingFilters(DEFAULT_FILTERS)}
-  />
-</div>
-<div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
-  <button
-    onClick={() => {
-      setFilters(pendingFilters);   // ← commit on apply
-      setFilterSheetOpen(false);
-    }}
-    className="w-full h-12 rounded-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
-  >
-    Show {filtered.length} Result{filtered.length !== 1 ? "s" : ""}
-    {getActiveFilterCount(pendingFilters) > 0 && (
-      <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-        {getActiveFilterCount(pendingFilters)} filter{getActiveFilterCount(pendingFilters) !== 1 ? "s" : ""}
-      </span>
-    )}
-  </button>
-</div>
+              <FilterPanel
+                filters={pendingFilters}
+                onChange={(partial) =>
+                  setPendingFilters((prev) => ({ ...prev, ...partial }))
+                }
+                onReset={() => setPendingFilters(DEFAULT_FILTERS)}
+              />
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
+              <button
+                onClick={() => {
+                  setFilters(pendingFilters); // ← commit on apply
+                  setFilterSheetOpen(false);
+                }}
+                className="w-full h-12 rounded-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
+              >
+                Show {filtered.length} Result{filtered.length !== 1 ? "s" : ""}
+                {getActiveFilterCount(pendingFilters) > 0 && (
+                  <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {getActiveFilterCount(pendingFilters)} filter
+                    {getActiveFilterCount(pendingFilters) !== 1 ? "s" : ""}
+                  </span>
+                )}
+              </button>
+            </div>
             {/* <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
               <button
                 onClick={() => setFilterSheetOpen(false)}
