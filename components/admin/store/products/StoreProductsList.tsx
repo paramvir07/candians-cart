@@ -160,7 +160,7 @@ export const StoreProductsList = ({
           // Standard search doesn't paginate, so fallback to 1
           setTotalPages(res.totalPages ?? 1); 
         } else {
-          toast.error(res.error || "Failed to fetch products in Candian Cart");
+          toast.error(res.error || "Failed to fetch products in Candian's Cart");
         }
       } catch (error) {
         if (mounted) {

@@ -23,7 +23,7 @@ export default async function GlobalPriceChangesPage() {
       {/* Add Invoice Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-50 p-4 rounded-lg border border-slate-200 gap-4">
         <p className="text-sm font-medium text-slate-600">
-          Want to add a new Invoice to Candian Cart?
+          Want to add a new Invoice to Candian's Cart?
         </p>
         <Button asChild className="shrink-0">
           {/* 
