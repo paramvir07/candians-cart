@@ -3,6 +3,7 @@
 import { dbConnect } from "@/db/dbConnect";
 import ContactModel from "@/db/models/customer/Contact.model";
 import { contactSchema } from "@/zod/schemas/customer/contact";
+import { SendContactAdmin } from "../resend/ResendActions";
 
 export type FormErrors = Partial<Record<"name" | "email" | "phone" | "topic" | "message", string[]>>;
 
@@ -35,6 +36,8 @@ export const ContactSubmit = async (
     }
 
     await ContactModel.create(parsed.data);
+    await SendContactAdmin(parsed.data);
+
 
     return { success: true, errors: {} };
   } catch (err) {

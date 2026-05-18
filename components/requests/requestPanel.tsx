@@ -25,6 +25,7 @@ import {
   MailCheck,
   Phone,
   ChevronRight,
+  X,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -127,13 +128,22 @@ function FilterDropdown({
         )}
       >
         <Filter className="w-3.5 h-3.5 shrink-0" />
-        {activeMeta ? (
-          <span className="flex items-center gap-1.5">
+        {/* Hide label text on very small screens, show icon only */}
+        <span className="hidden xs:flex items-center gap-1.5">
+          {activeMeta ? (
+            <>
+              {activeMeta.icon}
+              <span>{activeMeta.label}</span>
+            </>
+          ) : (
+            <span>{placeholder}</span>
+          )}
+        </span>
+        {/* On xs screens, show active icon or nothing */}
+        {activeMeta && (
+          <span className="xs:hidden flex items-center gap-1.5">
             {activeMeta.icon}
-            <span>{activeMeta.label}</span>
           </span>
-        ) : (
-          <span>{placeholder}</span>
         )}
         <ChevronDown className={cn("w-3.5 h-3.5 ml-0.5 transition-transform duration-150", open && "rotate-180")} />
       </button>
@@ -190,141 +200,151 @@ function StageBadge({ stage }: { stage: Stage }) {
   );
 }
 
-// ─── Row Skeleton ─────────────────────────────────────────────────────────────
+// ─── Mobile Card ──────────────────────────────────────────────────────────────
 
-function RowSkeleton() {
-  return (
-    <tr className="border-b border-border">
-      {[40, 32, 56, 20, 16].map((w, i) => (
-        <td key={i} className="px-5 py-4">
-          <div className={`h-4 w-${w} rounded-md bg-muted animate-pulse`} />
-        </td>
-      ))}
-    </tr>
-  );
-}
-
-// ─── Table Row ────────────────────────────────────────────────────────────────
-
-function HelpRow({ item, onAccept, onResolve }: {
+function HelpCard({ item, onAccept, onResolve }: {
   item: HelpItem;
   onAccept: (id: string) => void;
   onResolve: (id: string) => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const [pending, startTransition] = useTransition();
   const stage = getStage(item);
   const cat = CATEGORY_META[item.category] ?? CATEGORY_META.other;
 
   return (
-    <tr className={cn("border-b border-border transition-colors hover:bg-muted/30", pending && "opacity-50")}>
-      <td className="px-5 py-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground truncate max-w-[200px]">{item.email}</span>
+    <div className={cn("border border-border rounded-xl bg-card transition-colors", pending && "opacity-50")}>
+      <button
+        className="w-full text-left p-4"
+        onClick={() => setExpanded((e) => !e)}
+      >
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">{item.email}</p>
+            <p className="text-xs text-muted-foreground truncate mt-0.5">{item.subject}</p>
+          </div>
+          <ChevronRight className={cn("w-4 h-4 text-muted-foreground shrink-0 mt-0.5 transition-transform duration-150", expanded && "rotate-90")} />
         </div>
-        <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[220px]">{item.subject}</p>
-      </td>
-      <td className="px-5 py-4">
-        <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border", cat.pill)}>
-          {cat.icon}{cat.label}
-        </span>
-      </td>
-      <td className="px-5 py-4">
-        <StageBadge stage={stage} />
-      </td>
-      <td className="px-5 py-4 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-        {formatDate(item.createdAt)}
-      </td>
-      <td className="px-5 py-4">
-        {stage === "new" && (
-          <button
-            onClick={() => startTransition(async () => { onAccept(item._id); await acceptRequest(item._id, "help"); })}
-            disabled={pending}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40"
-          >
-            {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-            Accept
-          </button>
-        )}
-        {stage === "accepted" && (
-          <button
-            onClick={() => startTransition(async () => { onResolve(item._id); await resolveRequest(item._id, "help"); })}
-            disabled={pending}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 dark:bg-emerald-500 text-white hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40"
-          >
-            {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-            Resolve
-          </button>
-        )}
-      </td>
-    </tr>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border", cat.pill)}>
+            {cat.icon}{cat.label}
+          </span>
+          <StageBadge stage={stage} />
+          <span className="text-xs text-muted-foreground ml-auto">{formatDate(item.createdAt)}</span>
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-3 border-t border-border">
+          <p className="text-sm text-muted-foreground leading-relaxed pt-3">{item.message}</p>
+        </div>
+      )}
+
+      {(stage === "new" || stage === "accepted") && (
+        <div className="px-4 pb-4 flex justify-end">
+          {stage === "new" && (
+            <button
+              onClick={(e) => { e.stopPropagation(); startTransition(async () => { onAccept(item._id); await acceptRequest(item._id, "help"); }); }}
+              disabled={pending}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40"
+            >
+              {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              Accept
+            </button>
+          )}
+          {stage === "accepted" && (
+            <button
+              onClick={(e) => { e.stopPropagation(); startTransition(async () => { onResolve(item._id); await resolveRequest(item._id, "help"); }); }}
+              disabled={pending}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 dark:bg-emerald-500 text-white hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40"
+            >
+              {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+              Resolve
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
-function ContactRow({ item, onAccept, onResolve }: {
+function ContactCard({ item, onAccept, onResolve }: {
   item: ContactItem;
   onAccept: (id: string) => void;
   onResolve: (id: string) => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const [pending, startTransition] = useTransition();
   const stage = getStage(item);
   const cat = CATEGORY_META[item.topic] ?? CATEGORY_META.Other;
 
   return (
-    <tr className={cn("border-b border-border transition-colors hover:bg-muted/30", pending && "opacity-50")}>
-      <td className="px-5 py-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">{item.name}</span>
+    <div className={cn("border border-border rounded-xl bg-card transition-colors", pending && "opacity-50")}>
+      <button
+        className="w-full text-left p-4"
+        onClick={() => setExpanded((e) => !e)}
+      >
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground">{item.name}</p>
+            <div className="flex items-center gap-1 flex-wrap mt-0.5">
+              <span className="text-xs text-muted-foreground truncate">{item.email}</span>
+              {item.phone && (
+                <>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
+                    <Phone className="w-2.5 h-2.5" />{item.phone}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+          <ChevronRight className={cn("w-4 h-4 text-muted-foreground shrink-0 mt-0.5 transition-transform duration-150", expanded && "rotate-90")} />
         </div>
-        <div className="flex items-center gap-1 mt-0.5">
-          <span className="text-xs text-muted-foreground">{item.email}</span>
-          {item.phone && (
-            <>
-              <span className="text-muted-foreground/40">·</span>
-              <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
-                <Phone className="w-2.5 h-2.5" />{item.phone}
-              </span>
-            </>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border", cat.pill)}>
+            {cat.icon}{cat.label}
+          </span>
+          <StageBadge stage={stage} />
+          <span className="text-xs text-muted-foreground ml-auto">{formatDate(item.createdAt)}</span>
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-3 border-t border-border">
+          <p className="text-sm text-muted-foreground leading-relaxed pt-3">{item.message}</p>
+        </div>
+      )}
+
+      {(stage === "new" || stage === "accepted") && (
+        <div className="px-4 pb-4 flex justify-end">
+          {stage === "new" && (
+            <button
+              onClick={(e) => { e.stopPropagation(); startTransition(async () => { onAccept(item._id); await acceptRequest(item._id, "contact"); }); }}
+              disabled={pending}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40"
+            >
+              {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              Accept
+            </button>
+          )}
+          {stage === "accepted" && (
+            <button
+              onClick={(e) => { e.stopPropagation(); startTransition(async () => { onResolve(item._id); await resolveRequest(item._id, "contact"); }); }}
+              disabled={pending}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 dark:bg-emerald-500 text-white hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40"
+            >
+              {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+              Resolve
+            </button>
           )}
         </div>
-      </td>
-      <td className="px-5 py-4">
-        <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border", cat.pill)}>
-          {cat.icon}{cat.label}
-        </span>
-      </td>
-      <td className="px-5 py-4">
-        <StageBadge stage={stage} />
-      </td>
-      <td className="px-5 py-4 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-        {formatDate(item.createdAt)}
-      </td>
-      <td className="px-5 py-4">
-        {stage === "new" && (
-          <button
-            onClick={() => startTransition(async () => { onAccept(item._id); await acceptRequest(item._id, "contact"); })}
-            disabled={pending}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40"
-          >
-            {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-            Accept
-          </button>
-        )}
-        {stage === "accepted" && (
-          <button
-            onClick={() => startTransition(async () => { onResolve(item._id); await resolveRequest(item._id, "contact"); })}
-            disabled={pending}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 dark:bg-emerald-500 text-white hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40"
-          >
-            {pending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-            Resolve
-          </button>
-        )}
-      </td>
-    </tr>
+      )}
+    </div>
   );
 }
 
-// ─── Expandable Message Row ───────────────────────────────────────────────────
+// ─── Desktop Table Rows (unchanged, only shown on md+) ───────────────────────
 
 function HelpRowExpanded({ item, onAccept, onResolve }: {
   item: HelpItem;
@@ -501,88 +521,116 @@ export default function RequestsPanel({
     { label: "Resolved",    value: activeStats.resolved,   iconCls: "bg-emerald-100 text-emerald-600", border: "border-l-emerald-500", icon: <CheckCircle2 className="w-4 h-4" /> },
   ];
 
+  const EmptyState = () => (
+    <div className="py-16 text-center">
+      <div className="flex flex-col items-center gap-2">
+        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+          {view === "resolved" ? <CheckCircle2 className="w-5 h-5 text-muted-foreground" /> : <Inbox className="w-5 h-5 text-muted-foreground" />}
+        </div>
+        <p className="text-sm font-medium text-foreground">
+          {view === "resolved" ? "No resolved requests" : "No active requests"}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {view === "resolved" ? "Resolved items appear here once marked done." : "New submissions will show up here."}
+        </p>
+        {filter && (
+          <button onClick={() => setFilter(null)} className="text-xs text-primary underline underline-offset-2 mt-1">
+            Clear filter
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
+
       {/* ── Page header ── */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold tracking-tight text-foreground">Support Requests</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground">Support Requests</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             Manage contact and help form submissions from users and businesses.
           </p>
         </div>
         {totalNew > 0 && (
-          <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/50">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />{totalNew} unread
+          <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/50">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            {totalNew} new
           </span>
         )}
       </div>
 
       {/* ── Summary cards ── */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {SUMMARY_CARDS.map(c => (
-          <div key={c.label} className={cn("rounded-2xl border border-border bg-card shadow-sm p-4 border-l-4", c.border)}>
-            <div className="flex items-start justify-between mb-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{c.label}</p>
-              <div className={cn("p-1.5 rounded-lg", c.iconCls)}>{c.icon}</div>
+          <div key={c.label} className={cn("rounded-xl sm:rounded-2xl border border-border bg-card shadow-sm p-3 sm:p-4 border-l-4", c.border)}>
+            <div className="flex items-start justify-between mb-2 sm:mb-3">
+              <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wide leading-tight">{c.label}</p>
+              <div className={cn("p-1 sm:p-1.5 rounded-lg shrink-0", c.iconCls)}>{c.icon}</div>
             </div>
-            <p className="text-3xl font-bold text-foreground tabular-nums tracking-tight">{c.value}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground tabular-nums tracking-tight">{c.value}</p>
           </div>
         ))}
       </div>
 
       {/* ── Table card ── */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm">
+      <div className="rounded-xl sm:rounded-2xl border border-border bg-card shadow-sm">
 
         {/* Card header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 pt-5 pb-4 border-b border-border">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-primary/10 p-1.5 rounded-lg">
-              <Inbox className="w-4 h-4 text-primary" />
+        <div className="flex flex-col gap-3 px-4 sm:px-5 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-border">
+          {/* Top row: title + badge */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/10 p-1.5 rounded-lg shrink-0">
+                <Inbox className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-sm sm:text-base font-bold text-foreground">Requests</h2>
+                <p className="text-xs text-muted-foreground hidden sm:block">Click a row to read the full message</p>
+              </div>
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full tabular-nums">{rows}</span>
             </div>
-            <div>
-              <h2 className="text-base font-bold text-foreground">Requests</h2>
-              <p className="text-xs text-muted-foreground">Click a row to read the full message</p>
-            </div>
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full tabular-nums">{rows}</span>
-          </div>
 
-          {/* Source tabs */}
-          <div className="flex items-center gap-1 p-0.5 rounded-xl bg-muted/60 border border-border">
-            {([
-              { key: "contact" as Tab, label: "Contact", icon: <MailCheck className="w-3.5 h-3.5" />, ct: cs.new },
-              { key: "help" as Tab,    label: "Help Reports", icon: <HelpCircle className="w-3.5 h-3.5" />, ct: hs.new },
-            ]).map(t => (
-              <button key={t.key} onClick={() => { setTab(t.key); setFilter(null); }}
-                className={cn(
-                  "flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-[10px] transition-all duration-150",
-                  tab === t.key ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
-                )}>
-                {t.icon}{t.label}
-                {t.ct > 0 && (
-                  <span className={cn("text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded-full min-w-[18px] text-center",
-                    tab === t.key ? "bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400" : "bg-muted text-muted-foreground"
-                  )}>{t.ct}</span>
-                )}
-              </button>
-            ))}
+            {/* Source tabs — always visible, wraps gracefully */}
+            <div className="flex items-center gap-0.5 p-0.5 rounded-xl bg-muted/60 border border-border">
+              {([
+                { key: "contact" as Tab, label: "Contact", mobileLabel: "Contact", icon: <MailCheck className="w-3.5 h-3.5" />, ct: cs.new },
+                { key: "help" as Tab,    label: "Help Reports", mobileLabel: "Help", icon: <HelpCircle className="w-3.5 h-3.5" />, ct: hs.new },
+              ]).map(t => (
+                <button key={t.key} onClick={() => { setTab(t.key); setFilter(null); }}
+                  className={cn(
+                    "flex items-center gap-1 sm:gap-1.5 text-xs font-semibold px-2 sm:px-3 py-1.5 rounded-[10px] transition-all duration-150",
+                    tab === t.key ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
+                  )}>
+                  {t.icon}
+                  <span className="hidden xs:inline">{t.mobileLabel}</span>
+                  <span className="hidden sm:inline">{t.label !== t.mobileLabel ? " Reports" : ""}</span>
+                  {t.ct > 0 && (
+                    <span className={cn("text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded-full min-w-[18px] text-center",
+                      tab === t.key ? "bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400" : "bg-muted text-muted-foreground"
+                    )}>{t.ct}</span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Filter bar */}
-        <div className="flex items-center gap-3 px-5 py-3 border-b border-border bg-muted/20">
+        <div className="flex items-center gap-2 px-4 sm:px-5 py-3 border-b border-border bg-muted/20 flex-wrap">
           {/* View toggle */}
           <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-muted/80 border border-border">
             {(["ongoing", "resolved"] as View[]).map(v => (
               <button key={v} onClick={() => setView(v)}
                 className={cn(
-                  "text-xs font-semibold px-3 py-1.5 rounded-[8px] transition-all duration-150 capitalize",
+                  "text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-[8px] transition-all duration-150 capitalize",
                   view === v ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"
                 )}>{v === "ongoing" ? "Ongoing" : "Resolved"}</button>
             ))}
           </div>
 
-          <div className="h-4 w-px bg-border" />
+          <div className="h-4 w-px bg-border hidden xs:block" />
 
           {/* Category dropdown */}
           <FilterDropdown
@@ -594,14 +642,33 @@ export default function RequestsPanel({
 
           {filter && (
             <button onClick={() => setFilter(null)}
-              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors">
-              Clear
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <X className="w-3 h-3" />
+              <span className="hidden xs:inline">Clear</span>
             </button>
           )}
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* ── Mobile card list (hidden on md+) ── */}
+        <div className="md:hidden">
+          {rows === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="p-4 space-y-2">
+              {tab === "help"
+                ? helpFiltered.map(item => (
+                    <HelpCard key={item._id} item={item} onAccept={helpAccept} onResolve={helpResolve} />
+                  ))
+                : contactFiltered.map(item => (
+                    <ContactCard key={item._id} item={item} onAccept={contactAccept} onResolve={contactResolve} />
+                  ))
+              }
+            </div>
+          )}
+        </div>
+
+        {/* ── Desktop table (hidden below md) ── */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-border bg-muted/10">
@@ -623,24 +690,8 @@ export default function RequestsPanel({
               }
               {rows === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-16 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
-                        {view === "resolved" ? <CheckCircle2 className="w-5 h-5 text-muted-foreground" /> : <Inbox className="w-5 h-5 text-muted-foreground" />}
-                      </div>
-                      <p className="text-sm font-medium text-foreground">
-                        {view === "resolved" ? "No resolved requests" : "No active requests"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {view === "resolved" ? "Resolved items appear here once marked done." : "New submissions will show up here."}
-                      </p>
-                      {filter && (
-                        <button onClick={() => setFilter(null)}
-                          className="text-xs text-primary underline underline-offset-2 mt-1">
-                          Clear filter
-                        </button>
-                      )}
-                    </div>
+                  <td colSpan={5}>
+                    <EmptyState />
                   </td>
                 </tr>
               )}

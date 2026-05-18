@@ -11,7 +11,7 @@ async function RequestsContent() {
 
 const Page = () => {
   return (
-    <div className="p-6 space-y-6 w-full">
+    <div className="p-2 md:p-6 space-y-6 w-full">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Support Requests</h1>
         <p className="text-muted-foreground text-sm mt-1">

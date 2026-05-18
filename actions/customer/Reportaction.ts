@@ -2,7 +2,7 @@
 
 import ReportModel from "@/db/models/customer/Report.model";
 import { reportSchema } from "@/zod/schemas/customer/report";
-import { HelpFormConfirmation } from "../resend/ResendActions";
+import { HelpFormConfirmation, SendtoAdmin } from "../resend/ResendActions";
 import { FormErrors, FormState } from "@/types/customer/helpForm";
 
 
@@ -29,6 +29,7 @@ export const ReportSubmit = async (
 
     await ReportModel.create(parsed.data);
     await HelpFormConfirmation(parsed.data);
+    await SendtoAdmin(parsed.data)
 
     return {
       success: true,
