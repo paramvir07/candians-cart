@@ -59,3 +59,26 @@ export const resolveRequest = async (
     return { success: false };
   }
 };
+
+export const getPendingRequests = async () => {
+  try {
+    await dbConnect();
+
+    const [pendingReports, pendingContactQueries] = await Promise.all([
+      ReportModel.countDocuments({ accepted: false }),
+      ContactModel.countDocuments({ accepted: false }),
+    ]);
+
+    return {
+      success: true,
+      total: pendingReports + pendingContactQueries,
+    };
+  } catch (err) {
+    console.log(err);
+
+    return {
+      success: false,
+      total: 0,
+    };
+  }
+};

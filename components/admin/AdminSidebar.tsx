@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { getPendingPriceChangesCount } from "@/actions/admin/invoice/getPriceChange";
 import Logo from "../shared/Logo";
+import { getPendingRequests } from "@/actions/admin/Requests/request";
 
 const NAV_GROUPS = [
   {
@@ -49,11 +50,7 @@ const NAV_GROUPS = [
     label: "Finance",
     items: [
       { href: "/admin/store-payouts", label: "Payouts", icon: HandCoins },
-      {
-        href: "/admin/cash-collection",
-        label: "Cash Collection",
-        icon: Banknote,
-      },
+      { href: "/admin/cash-collection", label: "Cash Collection", icon: Banknote },
       { href: "/admin/price-invoices", label: "Invoices", icon: Receipt },
     ],
   },
@@ -132,10 +129,12 @@ function NavItem({
 function SidebarContent({
   onNav,
   pendingInvoicesCount,
+  pendingRequestsCount,
   name,
 }: {
   onNav?: () => void;
   pendingInvoicesCount: number;
+  pendingRequestsCount: number;
   name: string;
 }) {
   return (
@@ -152,7 +151,9 @@ function SidebarContent({
                   key={item.href}
                   {...item}
                   badge={
-                    item.label === "Invoices" ? pendingInvoicesCount : undefined
+                    item.label === "Invoices" ? pendingInvoicesCount :
+                    item.label === "Requests" ? pendingRequestsCount :
+                    undefined
                   }
                   onClick={onNav}
                 />
@@ -197,15 +198,20 @@ type AdminSidebarProps = {
 const AdminSidebar = ({ name }: AdminSidebarProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pendingInvoicesCount, setPendingInvoicesCount] = useState(0);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const pathname = usePathname();
 
   useEffect(() => {
     setMobileOpen(false);
-    const fetchPendingCount = async () => {
-      const count = await getPendingPriceChangesCount();
-      setPendingInvoicesCount(count);
+    const fetchCounts = async () => {
+      const [invoices, requests] = await Promise.all([
+        getPendingPriceChangesCount(),
+        getPendingRequests(),
+      ]);
+      setPendingInvoicesCount(invoices);
+      setPendingRequestsCount(requests.total);
     };
-    fetchPendingCount();
+    fetchCounts();
   }, [pathname]);
 
   useEffect(() => {
@@ -217,18 +223,7 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
 
   return (
     <>
-      {/* ── Desktop Sidebar ──────────────────────────────────────────────────── */}
-      {/*
-        KEY CHANGE: was `fixed top-4 bottom-4 left-3` — now `sticky top-4`.
-        `sticky` behaves like fixed (floats while you scroll) but is scoped to
-        its containing block. Since the layout puts <AdminFooter> OUTSIDE the
-        flex row that contains this sidebar, sticky naturally stops at the
-        footer edge. `self-start` keeps the aside at its own height so sticky
-        actually works. `max-h-[calc(100vh-2rem)]` caps the height so it
-        never taller than the viewport.
-      */}
       <aside className="hidden md:flex sticky top-4 self-start flex-col bg-white rounded-2xl border border-gray-100 shadow-sm z-40 overflow-hidden w-56 ml-3 h-[calc(100vh-2rem)]">
-        {/* Brand header */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
             <Logo variant="icon" href="/admin" />
@@ -241,12 +236,12 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
         <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0">
           <SidebarContent
             pendingInvoicesCount={pendingInvoicesCount}
+            pendingRequestsCount={pendingRequestsCount}
             name={name}
           />
         </div>
       </aside>
 
-      {/* ── Mobile Top Bar ────────────────────────────────────────────────────── */}
       <header className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center gap-3 px-4 h-14 bg-white border-b border-gray-100">
         <button
           onClick={() => setMobileOpen(true)}
@@ -263,7 +258,6 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
         </div>
       </header>
 
-      {/* ── Mobile Backdrop ───────────────────────────────────────────────────── */}
       <div
         className={cn(
           "md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-300",
@@ -274,7 +268,6 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
         onClick={() => setMobileOpen(false)}
       />
 
-      {/* ── Mobile Drawer ─────────────────────────────────────────────────────── */}
       <div
         className={cn(
           "md:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out",
@@ -303,6 +296,7 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
           <SidebarContent
             onNav={() => setMobileOpen(false)}
             pendingInvoicesCount={pendingInvoicesCount}
+            pendingRequestsCount={pendingRequestsCount}
             name={name}
           />
         </div>
