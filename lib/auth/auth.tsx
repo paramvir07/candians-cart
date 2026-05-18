@@ -69,8 +69,8 @@ export const auth = betterAuth({
         try {
           const payload = JSON.parse(atob(token.split(".")[1]));
           requestType = payload.requestType ?? "verify";
-        } catch {
-          // not a valid JWT, treat as regular verification
+        } catch(err) {
+          console.error("[emailVerification] failed to decode token:", err);
         }
       }
 
