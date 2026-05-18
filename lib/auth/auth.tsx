@@ -17,18 +17,13 @@ export const auth = betterAuth({
   database: mongodbAdapter(db, {
     client,
   }),
-  user:{
-    changeEmail:{
-      enabled:true,
+  user: {
+    changeEmail: {
+      enabled: true,
       sendChangeEmailConfirmation: async ({ newEmail, user, url }) => {
         const u = new URL(url);
+        u.searchParams.set("callbackURL", "/email-verified?type=confirmation");
 
-        u.searchParams.set(
-          "callbackURL",
-          "/api/auth/email-change"
-        );
-
-        
         await sendEmail({
           to: user.email,
           subject: "Verify email change",
@@ -42,7 +37,7 @@ export const auth = betterAuth({
           ),
         });
       },
-    }
+    },
   },
   emailAndPassword: {
     enabled: true,
@@ -66,13 +61,32 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     sendOnSignIn: true,
     sendVerificationEmail: async ({ user, url }) => {
+      const u = new URL(url);
+      const token = u.searchParams.get("token");
+
+      let requestType = "verify";
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          requestType = payload.requestType ?? "verify";
+        } catch(err) {
+          console.error("[emailVerification] failed to decode token:", err);
+        }
+      }
+
+      if (requestType === "change-email-verification") {
+        u.searchParams.set("callbackURL", "/api/auth/email-change");
+      } else {
+        u.searchParams.set("callbackURL", "/email-updated");
+      }
+
       await sendEmail({
         to: user.email,
         subject: "Verify your email address",
         react: (
           <VerifyEmail
             username={user.name}
-            verifyUrl={url}
+            verifyUrl={u.toString()}
             appName="Candian's Cart"
           />
         ),

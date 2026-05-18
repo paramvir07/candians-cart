@@ -36,5 +36,5 @@ export async function GET(req: NextRequest) {
     revalidateTag("customer-and-store", "max");
   }
 
-  return NextResponse.redirect(new URL("/email-updated", req.url));
+  return NextResponse.redirect(new URL("/email-verified?type=verification", req.url));
 }
