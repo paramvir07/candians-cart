@@ -110,6 +110,17 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // Determine redirection path considering edit mode and user roles
+  const resolvedStoreId = storeId || initialData?.storeId?.toString();
+  const getRedirectPath = () => {
+    if (role === "admin") {
+      return resolvedStoreId ? `/admin/store/${resolvedStoreId}/products` : "/admin/products";
+    }
+    return "/store/products";
+  };
+
+  const navigateBack = () => router.push(getRedirectPath());
+
   // Step 1: Pre-Submit Validation and Duplicate Check
   const handlePreSubmitValidation = async () => {
     const rawpayload: ProductFormValues = {
@@ -227,9 +238,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
         toast.success(initialData ? "Product Updated" : "Product Created", {
           description: `${formData.name} has been saved successfully.`,
         });
-        router.push(
-          storeId ? `/admin/store/${storeId}/products` : "/store/products",
-        );
+        router.push(getRedirectPath());
         router.refresh();
       } else {
         toast.error(result.message || "An error occurred.");
@@ -258,11 +267,6 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
       setIsDeleting(false);
     }
   };
-
-  const navigateBack = () =>
-    router.push(
-      storeId ? `/admin/store/${storeId}/products` : "/store/products",
-    );
 
   const isEditMode = !!initialData;
   const buttonText = loading

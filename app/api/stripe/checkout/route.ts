@@ -69,7 +69,7 @@ export async function POST(req: Request) {
       custom_text: {
         submit: {
           message:
-            "⚠️ NOTE: A calculated processing fee is added to cover Stripe's transaction costs. To avoid this fee, please recharge directly at your assigned Candian Cart store.",
+            "⚠️ NOTE: A calculated processing fee is added to cover Stripe's transaction costs. To avoid this fee, please recharge directly at your assigned Candian's Cart store.",
         },
       },
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/customer/wallet/payment-success?session_id={CHECKOUT_SESSION_ID}`,
