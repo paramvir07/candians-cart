@@ -21,6 +21,7 @@ export interface IProductDB {
   isMeasuredInWeight?: boolean; // Optional field for weight-based products
   UOM?: string; // Optional field for unit of measurement (e.g., kg, lb)
   primaryUPC?: string; // Optional field for UPC code
+  PriceDrop?:boolean;
 }
 
 export type ProductCategory =
@@ -78,6 +79,7 @@ export interface IProduct {
   isMeasuredInWeight?: boolean; // Optional field for weight-based products
   UOM?: string; // Optional field for unit of measurement (e.g., kg, lb)
   primaryUPC?: string; // Optional field for UPC code
+  PriceDrop?:boolean;
   createdAt: string; // ISO Date string
   updatedAt: string; // ISO Date string
 }

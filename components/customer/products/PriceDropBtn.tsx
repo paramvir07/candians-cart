@@ -3,13 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { MoreVertical, TrendingDown } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export default function PriceDropBtn({ productId }: { productId: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const [coords, setCoords] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
@@ -40,7 +38,7 @@ export default function PriceDropBtn({ productId }: { productId: string }) {
   const handlePriceDropClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setOpen(false);
-    router.push(`/cashier/price-drop/${productId}`);
+    window.open(`/cashier/price-drop/${productId}`,"_blank");
   };
 
   return (

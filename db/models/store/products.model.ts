@@ -95,12 +95,15 @@ const productSchema = new Schema(
       // This is to check if the product is measured by weight or not
       type: Boolean,
     },
-
     UOM: {
       // This is unit of measurement, will be stored as string to allow all sort of data, can also be null
       type: String,
     },
-
+    PriceDrop:{
+        type:Boolean,
+        required:false,
+        default:false
+    },
     vendorId: {
       //Refer to the _id store model
       type: Schema.Types.ObjectId,

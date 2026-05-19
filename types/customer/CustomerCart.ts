@@ -17,6 +17,7 @@ export interface IProduct {
   stock: boolean
   subsidised: boolean,
   images?: IProductImage[]
+  PriceDrop?:boolean
   createdAt: string
   updatedAt: string
 }

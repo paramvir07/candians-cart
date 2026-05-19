@@ -12,6 +12,7 @@ import {
   Minus,
   Trash2,
   Check,
+  BadgePercent,
 } from "lucide-react";
 import { toast } from "sonner";
 import { IProduct } from "@/types/store/products.types";
@@ -338,6 +339,15 @@ export function CustomerProductCard({
                 FEATURED
               </div>
             )}
+            {product?.PriceDrop && (
+              <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm">
+                <BadgePercent
+                  className="h-2.5 w-2.5 shrink-0 "
+                  strokeWidth={2}
+                />
+                PRICE DROP
+              </div>
+            )}
           </div>
 
           <div
@@ -389,7 +399,7 @@ export function CustomerProductCard({
             <h3 className="line-clamp-2 text-sm font-bold leading-tight text-white drop-shadow flex items-center justify-between">
               {product.name}
               <div>
-                {isCashier && <PriceDropBtn productId={product._id}/>}
+                {(isCashier && !product.PriceDrop) && <PriceDropBtn productId={product._id}/>}
               </div>
             </h3>
 

@@ -485,9 +485,21 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                     <div className="flex-1 min-w-0 flex flex-col gap-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2">
+                          <div>
+                          <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2 flex gap-2 items-center">
                             {item.productId.name}
+                            {item.productId?.PriceDrop ? <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm w-fit">
+                                            <BadgePercent
+                                              className="h-2.5 w-2.5 shrink-0 "
+                                              strokeWidth={2}
+                                            />
+                                            PRICE DROP
+                                          </div> : ""}
                           </p>
+                          <p className="text-xs font-semibold text-muted-foreground">
+                            
+                          </p>
+                          </div>
                           <p className="text-xs text-muted-foreground mt-0.5 truncate">
                             {item.productId.category}
                           </p>
@@ -740,12 +752,21 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                           </p>
                         </div> */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start gap-2 min-w-0">
+                          <div className="flex items-center gap-2 min-w-0">
                             {" "}
                             {/* changed items-center to items-start */}
                             <p className="text-sm font-semibold text-foreground truncate flex-1 min-w-0">
                               {item.productId.name}
                             </p>
+                            <p className="text-xs font-semibold text-muted-foreground">
+                            {item.productId?.PriceDrop ? 
+                            <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm">
+                                            <BadgePercent
+                                              className="h-2.5 w-2.5 shrink-0 "
+                                              strokeWidth={2}
+                                            />
+                                            PRICE DROP
+                                          </div> : ""}</p>
                             {item.productId.subsidised && (
                               <span className="shrink-0">
                                 <AddtoSubsidyBtn

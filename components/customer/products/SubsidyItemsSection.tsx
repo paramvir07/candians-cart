@@ -1,5 +1,5 @@
 import { ISubsidyItems } from "@/db/models/customer/cart.model";
-import { Tag } from "lucide-react";
+import { BadgePercent, Tag } from "lucide-react";
 import Image from "next/image";
 import CartActionBtns from "./CartActionBtns";
 import { CategoryIllustration } from "../shared/CategoryIllustration";
@@ -76,8 +76,15 @@ export const SubsidyItemsSection = ({
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold truncate" style={{ color: "var(--foreground)" }}>
+                    <p className="text-sm font-bold truncate flex items-center gap-2" style={{ color: "var(--foreground)" }}>
                       {item.productId.name}
+                      {item.productId?.PriceDrop ? <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm w-fit">
+                                                                  <BadgePercent
+                                                                    className="h-2.5 w-2.5 shrink-0 "
+                                                                    strokeWidth={2}
+                                                                  />
+                                                                  PRICE DROP
+                                                                </div> : ""}
                     </p>
                     <p className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                       {item.productId.category}
@@ -163,8 +170,15 @@ export const SubsidyItemsSection = ({
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold" style={{ color: "var(--foreground)" }}>
+                <p className="text-sm font-bold flex items-center gap-2" style={{ color: "var(--foreground)" }}>
                   {item.productId.name}
+                  {item.productId?.PriceDrop ? <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm w-fit">
+                                                                  <BadgePercent
+                                                                    className="h-2.5 w-2.5 shrink-0 "
+                                                                    strokeWidth={2}
+                                                                  />
+                                                                  PRICE DROP
+                                                                </div> : ""}
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                   {item.productId.category}
