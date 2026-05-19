@@ -152,7 +152,7 @@ export const searchProductsWithFilters = async (
     const [products, totalCount] = await Promise.all([
       Product.find(match)
         .select(
-          "_id name description category markup tax price stock subsidised images disposableFee isFeatured",
+          "_id name description category markup tax price stock subsidised images disposableFee isFeatured UOM isMeasuredInWeight",
         )
         .sort(sortOption)
         .skip(skip)
