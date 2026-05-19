@@ -34,11 +34,12 @@ import { useDebounce } from "use-debounce";
 import { toast } from "sonner";
 import { getCartInsights } from "@/actions/cashier/GetCartInsights";
 import CartInsightBar from "@/components/cashier/CartInsightsBar";
-import { onCartUpdated } from "@/lib/cartEvent";
+import { emitCartUpdated, onCartUpdated } from "@/lib/cartEvent";
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { useSearchParams } from "next/navigation";
 
 interface SearchResultsClientProps {
+  isCashier?:boolean;
   customerId?: string;
   storeId: string;
   searchAction: (
@@ -86,6 +87,7 @@ const QUICK_SUGGESTIONS = [
 ];
 
 export function SearchResultsClient({
+  isCashier,
   customerId,
   storeId,
   searchAction,
@@ -189,6 +191,7 @@ export function SearchResultsClient({
           [productId]: (prev[productId] || 0) + 1,
         }));
         toast.success(`${product.name} added to cart`);
+        emitCartUpdated()
       } catch {
         toast.error("Failed to add to cart");
       }
@@ -644,6 +647,7 @@ export function SearchResultsClient({
                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                     {filtered.map((product) => (
                       <CustomerProductCard
+                        isCashier={isCashier}
                         subsidyPage={false}
                         customerId={customerId}
                         key={product._id}

@@ -28,6 +28,7 @@ import {
 import { ProductDetailDialog } from "@/components/customer/products/ProductDetailDialog";
 import { Button } from "@/components/ui/button";
 import { emitCartUpdated } from "@/lib/cartEvent";
+import PriceDropBtn from "./PriceDropBtn";
 
 async function removeAllFromServer(
   productId: string,
@@ -39,10 +40,12 @@ async function removeAllFromServer(
 }
 
 export function CustomerProductCard({
+  isCashier,
   customerId,
   product,
   cartQuantity = 0,
 }: {
+  isCashier?:boolean;
   customerId?: string;
   product: IProduct;
   cartQuantity?: number;
@@ -383,11 +386,14 @@ export function CustomerProductCard({
                 : product.category} */}
             </span>
 
-            <h3 className="line-clamp-2 text-sm font-bold leading-tight text-white drop-shadow">
+            <h3 className="line-clamp-2 text-sm font-bold leading-tight text-white drop-shadow flex items-center justify-between">
               {product.name}
+              <div>
+                {isCashier && <PriceDropBtn productId={product._id}/>}
+              </div>
             </h3>
 
-            <div className="flex items-center text-xs font-medium text-white/90">
+            <div className="flex items-center text-xs font-medium text-white/90 justify-between">
               <span className="flex items-center gap-1">
                 <span className="font-black text-white">
                   {fmt(product.price + product.price * (product.markup / 100))}

@@ -39,6 +39,7 @@ return (
     </div>
     <Suspense>
       <SearchResultsClient
+        isCashier={true}
         customerId={customerId}
         storeId={storeId}
         searchAction={searchProducts}
