@@ -158,7 +158,7 @@ function SidebarContent({
                 <p className="text-sm font-semibold text-gray-800 truncate">
                   {customerData?.name ?? "Customer"}
                 </p>
-                <p className="text-xs text-gray-400">View profile</p>
+                <p className="text-xs text-gray-400">{customerData?.id ?? "Couldn't find ID"}</p>
               </div>
             </Link>
 
