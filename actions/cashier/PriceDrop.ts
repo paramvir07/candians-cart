@@ -78,7 +78,7 @@ export const createPriceDropItem = async (Payload:createPriceDropPayload) =>{
     
     const PDProduct = await productsModel.create({
       storeId: product.storeId,
-      name: product.name,
+      name: product.name+" (Price Drop)",
       description: product.description,
       category: product.category,
       markup: product.markup,
