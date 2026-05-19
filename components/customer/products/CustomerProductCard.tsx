@@ -93,7 +93,6 @@ export function CustomerProductCard({
     },
     [product.isMeasuredInWeight],
   );
-
   useEffect(() => {
     setQuantity(cartQuantity);
     setInputValue(formatQtyForInput(cartQuantity));

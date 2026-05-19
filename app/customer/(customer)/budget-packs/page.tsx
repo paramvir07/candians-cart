@@ -2,7 +2,11 @@ import { Suspense } from "react";
 import Navbar from "@/components/customer/landing/Navbar";
 import BudgetPacksSkeleton from "@/components/skeletons/BudgetPacksSkeleton";
 import BudgetPacksLoader from "@/components/customer/budgetpacks/BudgetpackLoader";
+import { Metadata } from "next"
 
+export const metadata: Metadata = {
+  title: "Budget Packs",
+}
 
 export default function Page() {
   return (

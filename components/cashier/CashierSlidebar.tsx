@@ -147,7 +147,8 @@ function SidebarContent({
             >
               <Avatar className="h-8 w-8 shrink-0 ring-2 ring-emerald-200">
                 <AvatarImage
-                  src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
+                  // src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
+                  src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
                 />
                 <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-xs">
                   {(customerData?.name ?? "U").slice(0, 2).toUpperCase()}
@@ -157,7 +158,7 @@ function SidebarContent({
                 <p className="text-sm font-semibold text-gray-800 truncate">
                   {customerData?.name ?? "Customer"}
                 </p>
-                <p className="text-xs text-gray-400">View profile</p>
+                <p className="text-xs text-gray-400">{customerData?.id ?? "Couldn't find ID"}</p>
               </div>
             </Link>
 

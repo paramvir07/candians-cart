@@ -2,6 +2,7 @@
 import { getCustomerStats } from "@/actions/admin/analytics/getCustomerStats.action";
 import MainOverviewUser from "@/components/shared/users/MainOverviewUser";
 import UserList from "@/components/shared/users/UserList";
+export const dynamic = "force-dynamic";
 
 const AdminAllCustomersPage = async () => {
   const stats = await getCustomerStats();

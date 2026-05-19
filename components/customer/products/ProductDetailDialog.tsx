@@ -363,6 +363,9 @@ export function ProductDetailDialog({
             <h2 className="text-lg font-black leading-tight text-foreground">
               {product.name}
             </h2>
+            <p>
+              
+            </p>
 
             {product.description && (
               <p className="line-clamp-3 text-sm leading-relaxed text-slate-500">

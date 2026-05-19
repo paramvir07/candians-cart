@@ -5,7 +5,7 @@ import { useSetAtom } from "jotai";
 import { stepAtom } from "@/atoms/customer/signUp";
 
 const POLICY_LINKS = [
-  { href: "/terms-and-conditions", label: "Terms & Conditions" },
+  { href: "/terms", label: "Terms" },
 ];
 
 const Terms = () => {

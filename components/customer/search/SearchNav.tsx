@@ -56,6 +56,9 @@ export function SearchNav({
   }, []);
   // Scanner gun auto enter
   useEffect(() => {
+
+    if(!customerId) return;
+
     const THRESHOLD = 50; // ms — scanners are faster than any human
 
     const handleKeyDown = (e: KeyboardEvent) => {

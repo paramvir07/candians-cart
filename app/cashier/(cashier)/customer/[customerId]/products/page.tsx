@@ -27,7 +27,7 @@ if (!response.success) {
   const storeId = response.storeId ?? response.products?.[0]?.storeId ?? "";
 return (
   <>
-    <div className="flex pl-4 items-center gap-2 md:pl-0 lg:pl-0 pb-4 pt-4">
+    {/* <div className="flex pl-4 items-center gap-2 md:pl-0 lg:pl-0 pb-4 pt-4">
       <Link href={`/cashier/customer/${customerId}`}>
         <Button className="rounded-full" variant="outline" size="icon">
           <ChevronLeft className="w-4 h-4" />
@@ -36,7 +36,7 @@ return (
       <h1 className="text-xl font-bold tracking-tight text-gray-950">
         Customer Products
       </h1>
-    </div>
+    </div> */}
     <Suspense>
       <SearchResultsClient
         isCashier={true}
