@@ -2,7 +2,7 @@
 
 import { revalidateTag, revalidatePath } from "next/cache";
 
-interface BurstCacheResponse {
+export interface BurstCacheResponse {
   success: boolean;
   message: string;
 }

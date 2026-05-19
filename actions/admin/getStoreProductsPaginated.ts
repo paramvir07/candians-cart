@@ -46,7 +46,7 @@ export const getStoreProductsPaginated = async (
     // search for products and count the number of returned items
     const [products, totalCount] = await Promise.all([
       Product.find({ storeId: new mongoose.Types.ObjectId(storeId) })
-        .select("_id name description category markup tax price stock subsidised images") // Added all the fields
+        .select("_id name description category markup tax price stock subsidised images UOM isMeasuredInWeight") // Added all the fields
         .skip(skip)
         .limit(limit)
         .lean(),
