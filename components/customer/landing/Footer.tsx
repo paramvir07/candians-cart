@@ -21,8 +21,8 @@ const LINKS = {
   Company: [
     { label: "About Us", href: "/about" },
     { label: "Contact", href: "/contact" },
-    { label: "Terms and Conditions", href: "/terms-and-conditions" },
-    { label: "Privacy Policy", href: "/privacy-policy" },
+    { label: "Terms", href: "/terms" },
+    { label: "Privacy Policy", href: "/privacy" },
   ],
 };
 

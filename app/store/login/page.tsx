@@ -3,7 +3,11 @@ import { LoginCarousel } from "@/components/customer/login/LoginCarousel";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Metadata } from "next"
 
+export const metadata: Metadata = {
+  title: "Store Login",
+}
 // server action in actions/auth/login-logout.action.ts
 
 export default async function Page() {

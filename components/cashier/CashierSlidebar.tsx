@@ -147,7 +147,8 @@ function SidebarContent({
             >
               <Avatar className="h-8 w-8 shrink-0 ring-2 ring-emerald-200">
                 <AvatarImage
-                  src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
+                  // src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
+                  src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
                 />
                 <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-xs">
                   {(customerData?.name ?? "U").slice(0, 2).toUpperCase()}

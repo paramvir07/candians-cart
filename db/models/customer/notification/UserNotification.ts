@@ -35,3 +35,4 @@ const NotificationUser: Model<INotificationUser> =
   model<INotificationUser>("NotificationUser", notificationUserSchema);
 
 export default NotificationUser;
+

@@ -3,7 +3,11 @@ import { LoginCarousel } from "@/components/customer/login/LoginCarousel";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Metadata } from "next"
 
+export const metadata: Metadata = {
+  title: "Admin Login",
+}
 export default async function Page() {
   const session = await auth.api.getSession({
     headers: await headers(),

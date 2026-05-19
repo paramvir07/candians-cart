@@ -10,13 +10,13 @@ import { Separator } from "@/components/ui/separator";
 import { getCustomerNotifications } from "@/actions/common/notification.action";
 import { CreateNotificationForm } from "@/components/admin/notification/CreateNotificationForm";
 import { Bell, AlertCircle, InboxIcon } from "lucide-react";
+import Link from "next/link";
+import { CreatePrivateNotificationForm } from "@/components/admin/notification/CreatePrivateNotificationForm";
+import { getAllNotificationsAdmin } from "@/actions/common/notification.action";
 
 export default async function AdminNotificationsPage() {
-  const {
-    data: notifications,
-    success,
-    message,
-  } = await getCustomerNotifications();
+const { data: notifications, success, message } = await getAllNotificationsAdmin();
+
 
   return (
     <div className="w-full min-h-screen px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
@@ -26,20 +26,20 @@ export default async function AdminNotificationsPage() {
           Notification Center
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Create new global notifications and view previously broadcasted messages.
+          Create new global notifications and view previously broadcasted
+          messages.
         </p>
         <Separator className="mt-5" />
       </div>
 
       {/* Two-column layout — stacks on mobile, side-by-side on lg+ */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
-
-        {/* LEFT — Create Form */}
-        <div className="w-full">
+        {/* LEFT — Forms */}
+        <div className="w-full space-y-4">
           <Card className="w-full border shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold">
-                Create Notification
+                Global Notification
               </CardTitle>
               <CardDescription className="text-xs">
                 Broadcast a new message to all active customers.
@@ -50,8 +50,22 @@ export default async function AdminNotificationsPage() {
               <CreateNotificationForm />
             </CardContent>
           </Card>
-        </div>
 
+          <Card className="w-full border shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">
+                Private Notification
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Send a message to a specific customer.
+              </CardDescription>
+            </CardHeader>
+            <Separator />
+            <CardContent className="pt-4">
+              <CreatePrivateNotificationForm />
+            </CardContent>
+          </Card>
+        </div>
         {/* RIGHT — Recent Notifications */}
         <div className="w-full">
           <h2 className="mb-4 text-base font-semibold tracking-tight text-foreground sm:text-lg">
@@ -75,44 +89,48 @@ export default async function AdminNotificationsPage() {
           ) : (
             <div className="flex flex-col gap-3">
               {notifications.map((notification) => (
-                <Card
-                  key={notification._id}
-                  className="w-full border shadow-sm transition-colors hover:bg-muted/30"
-                >
-                  <CardHeader className="pb-2 pt-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <CardTitle className="text-sm font-semibold leading-snug text-foreground">
-                        {notification.title}
-                      </CardTitle>
-                      <Badge
-                        variant={
-                          notification.type === "GLOBAL" ? "default" : "secondary"
-                        }
-                        className="shrink-0 rounded-full px-2.5 py-0.5 text-xs"
-                      >
-                        {notification.type}
-                      </Badge>
-                    </div>
-                    <CardDescription className="text-xs">
-                      {new Date(notification.createdAt).toLocaleDateString(
-                        "en-US",
-                        {
-                          weekday: "short",
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
-                      )}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pb-4 pt-0">
-                    <p className="text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">
-                      {notification.message}
-                    </p>
-                  </CardContent>
-                </Card>
+                <Link href={`/admin/notifications/${notification._id}`}>
+                  <Card
+                    key={notification._id}
+                    className="w-full border shadow-sm transition-colors hover:bg-muted/30"
+                  >
+                    <CardHeader className="pb-2 pt-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <CardTitle className="text-sm font-semibold leading-snug text-foreground">
+                          {notification.title}
+                        </CardTitle>
+                        <Badge
+                          variant={
+                            notification.type === "GLOBAL"
+                              ? "default"
+                              : "secondary"
+                          }
+                          className="shrink-0 rounded-full px-2.5 py-0.5 text-xs"
+                        >
+                          {notification.type}
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-xs">
+                        {new Date(notification.createdAt).toLocaleDateString(
+                          "en-US",
+                          {
+                            weekday: "short",
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-4 pt-0">
+                      <p className="text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">
+                        {notification.message}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           )}
