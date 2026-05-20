@@ -88,8 +88,8 @@ export const BaseProductFormSchema = z.object({
   primaryUPC: z
     .string()
     .trim()
-    .regex(/^[a-zA-Z0-9]*$/, "UPC must contain only letters and numbers")
-    .max(14, "UPC cannot exceed 14 characters")
+    .regex(/^[a-zA-Z0-9-]*$/, "UPC must contain only letters, numbers, and hyphens")
+    .max(18, "UPC cannot exceed 18 characters")
     .transform((val) => (val === "" ? undefined : val.toUpperCase()))
     .optional(),
 

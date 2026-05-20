@@ -1,6 +1,6 @@
 import { IProduct } from "@/types/store/products.types";
 import mongoose from "mongoose";
-import { model, models, Schema, Types,Document } from "mongoose";
+import { model, models, Schema, Types, Document } from "mongoose";
 
 export interface ICartItem {
   productId: Types.ObjectId;
@@ -10,8 +10,7 @@ export interface ICartItem {
   updatedAt?: Date;
 }
 
-
-export interface ISubsidyItems{
+export interface ISubsidyItems {
   productId: IProduct;
   storeId: Types.ObjectId;
   quantity: number;
@@ -22,16 +21,22 @@ export interface ISubsidyItems{
   updatedAt?: Date;
 }
 
+export interface IMiscCartItem {
+  itemId: Types.ObjectId;
+  quantity: number;
+  priceAtAdd: number;
+}
+
 export interface ICart extends Document {
   customerId: Types.ObjectId;
   items: ICartItem[];
-  subsidyItems:ISubsidyItems[];
+  subsidyItems: ISubsidyItems[];
+  miscItems: IMiscCartItem[];
   isSavedtoWallet: boolean;
   cartSubsidy: number;
   createdAt: Date;
   updatedAt: Date;
 }
-
 
 const cartItemSchema = new Schema<ICartItem>(
   {
@@ -73,11 +78,11 @@ const SubsidyItemsSchema = new Schema<ISubsidyItems>(
       min: 1,
       max: 99,
     },
-     TotalPrice: {
+    TotalPrice: {
       type: Number,
       required: true,
       min: 0,
-     },
+    },
     subsidy: {
       type: Number,
       required: true,
@@ -89,7 +94,29 @@ const SubsidyItemsSchema = new Schema<ISubsidyItems>(
       min: 0,
     },
   }
-)
+);
+
+const miscCartItemSchema = new Schema<IMiscCartItem>(
+  {
+    itemId: {
+      type: Schema.Types.ObjectId,
+      ref: "MiscellaneousItems",
+      required: true,
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 99,
+    },
+    priceAtAdd: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+  },
+  { _id: false, timestamps: true }
+);
 
 const cartSchema = new Schema<ICart>(
   {
@@ -103,20 +130,24 @@ const cartSchema = new Schema<ICart>(
       type: [cartItemSchema],
       default: [],
     },
-    subsidyItems:{
-      type:[SubsidyItemsSchema],
-      default:[]
+    subsidyItems: {
+      type: [SubsidyItemsSchema],
+      default: [],
     },
-    isSavedtoWallet:{
-      type:Boolean,
-      required:true,
-      default:false
+    miscItems: {
+      type: [miscCartItemSchema],
+      default: [],
     },
-    cartSubsidy:{
-      type:Number,
-      required:true,
-      default:0
-    }
+    isSavedtoWallet: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    cartSubsidy: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

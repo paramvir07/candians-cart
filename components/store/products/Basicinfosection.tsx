@@ -95,7 +95,7 @@ export function BasicInfoSection({
                   // [^a-zA-Z0-9] means "match anything that is NOT a letter or a number"
                   onChange(
                     "primaryUPC",
-                    e.target.value.replace(/[^a-zA-Z0-9]/g, ""),
+                    e.target.value.replace(/[^a-zA-Z0-9-]/g, ""),
                   )
                 }
                 className="pr-16"
