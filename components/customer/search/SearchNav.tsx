@@ -170,13 +170,16 @@ export function SearchNav({
   //   };
   // }, [onQueryChange, onBarcodeScan, customerId]);
 
-  useEffect(() => {
+useEffect(() => {
   if (!customerId) return;
   const input = searchInputRef.current;
   if (!input) return;
 
-  const ANDROID_DEBOUNCE_MS = 150;
-  let prevLength = 0; // track previous input length
+  const SEQUENCE_TIMEOUT_MS = 1500; // max time for a full barcode sequence
+  const COMMIT_DEBOUNCE_MS = 150;   // wait after last char before committing
+
+  let sequenceStartTime = 0;
+  let prevLength = 0;
 
   const handleInput = (e: Event) => {
     const inputEvent = e as InputEvent;
@@ -184,25 +187,28 @@ export function SearchNav({
 
     const val = (e.target as HTMLInputElement).value;
     const now = Date.now();
-    const gap = now - androidLastInputRef.current;
-    androidLastInputRef.current = now;
-
     const charDelta = Math.abs(val.length - prevLength);
     prevLength = val.length;
 
-    // If a single input event added 4+ characters at once, it's definitely
-    // a scanner (replaced selection or pasted whole barcode). Commit immediately.
+    // Whole barcode replaced selection in one shot → immediate commit
     if (charDelta >= 4) {
       if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
       androidBufferRef.current = "";
+      sequenceStartTime = 0;
       prevLength = 0;
       if (val.length >= 4) commitScan(val);
       return;
     }
 
-    // Otherwise accumulate with debounce (slow scanner or human)
-    if (gap > ANDROID_DEBOUNCE_MS * 2) {
+    // First character of a new sequence
+    if (sequenceStartTime === 0) {
+      sequenceStartTime = now;
+    }
+
+    // Sequence has gone on too long — must be human typing, abandon it
+    if (now - sequenceStartTime > SEQUENCE_TIMEOUT_MS) {
       androidBufferRef.current = "";
+      sequenceStartTime = now; // restart from this char
     }
 
     androidBufferRef.current = val;
@@ -211,18 +217,43 @@ export function SearchNav({
 
     androidTimerRef.current = setTimeout(() => {
       const buf = androidBufferRef.current;
+      const elapsed = Date.now() - sequenceStartTime;
       androidBufferRef.current = "";
+      sequenceStartTime = 0;
       prevLength = 0;
 
-      // Only commit if enough chars arrived fast enough.
-      // Gap * buf.length gives total time; scanners finish in < 600ms total.
-      if (buf.length >= 4) commitScan(buf);
-    }, ANDROID_DEBOUNCE_MS);
+      // Commit only if: enough chars AND arrived within the scanner window
+      if (buf.length >= 4 && elapsed <= SEQUENCE_TIMEOUT_MS) {
+        commitScan(buf);
+      }
+    }, COMMIT_DEBOUNCE_MS);
+  };
+
+  // Enter key on Android (scanner terminator) — commit immediately
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key !== "Enter") return;
+    const buf = androidBufferRef.current;
+    if (!buf || buf.length < 4) return;
+
+    // Only intercept if we're in an active scan sequence
+    const elapsed = Date.now() - sequenceStartTime;
+    if (sequenceStartTime > 0 && elapsed <= SEQUENCE_TIMEOUT_MS) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+      androidBufferRef.current = "";
+      sequenceStartTime = 0;
+      prevLength = 0;
+      commitScan(buf);
+    }
   };
 
   input.addEventListener("input", handleInput);
+  input.addEventListener("keydown", handleKeyDown, true);
+
   return () => {
     input.removeEventListener("input", handleInput);
+    input.removeEventListener("keydown", handleKeyDown, true);
     if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
   };
 }, [onQueryChange, onBarcodeScan, customerId]);
