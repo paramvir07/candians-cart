@@ -27,6 +27,7 @@ export interface IStorePayout {
   platformCommision: number;
   status: "pending" | "paid";
   additionalNote?: string;
+  additionalPrice?: number; // additional cost like image kit
   paymentReciept?: {
     url: string;
     fileId: string;
@@ -152,6 +153,12 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       type: String,
       required: false,
     },
+
+    additionalPrice: {
+      type: Number, // in cents
+      required: false,
+    },
+
     // any proof of payment, Imagekit
     paymentReciept: {
       type: {

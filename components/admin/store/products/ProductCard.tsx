@@ -231,7 +231,8 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
                 Price
               </p>
               <p className="text-xl font-bold text-foreground tracking-tight">
-                {fmt(product.price + product.price * (product.markup / 100))}{product.UOM && `/${product.UOM.toUpperCase()}`}{" "}
+                {fmt(product.price + product.price * (product.markup / 100))}
+                {product.UOM && `/${product.UOM.toUpperCase()}`}{" "}
                 <span className="text-sm text-gray-500">
                   ({fmt(product.price)})
                 </span>

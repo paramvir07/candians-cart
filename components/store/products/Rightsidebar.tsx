@@ -1,7 +1,16 @@
 "use client";
 
 import { RefObject, useEffect, useState } from "react";
-import { Image as ImageIcon, X, Tag, FileText, Save, Loader2, Check, Copy } from "lucide-react";
+import {
+  Image as ImageIcon,
+  X,
+  Tag,
+  FileText,
+  Save,
+  Loader2,
+  Check,
+  Copy,
+} from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,15 +24,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getTop5Invoices } from "@/actions/store/invoice/getInvoices"; 
+import { getTop5Invoices } from "@/actions/store/invoice/getInvoices";
 
 const CATEGORIES = [
-  "Fruits", "Vegetables", "Dairy", "Meat", "Bakery", "Beverages", "Snacks",
-  "Household", "Oil & Ghee", "Pulses & Lentils", "Flour & Atta", "Rice",
-  "Spices", "Pickles & Chutneys", "Instant Foods", "Frozen Foods",
-  "Sweets & Mithai", "Dry Fruits & Nuts", "Tea & Coffee", "Sauces & Condiments",
-  "Papad & Fryums", "Pooja / Religious Items", "Utensils", "Disposables",
-  "Personal Care", "Other",
+  "Fruits",
+  "Vegetables",
+  "Dairy",
+  "Meat",
+  "Bakery",
+  "Beverages",
+  "Snacks",
+  "Household",
+  "Oil & Ghee",
+  "Pulses & Lentils",
+  "Flour & Atta",
+  "Rice",
+  "Spices",
+  "Pickles & Chutneys",
+  "Instant Foods",
+  "Frozen Foods",
+  "Sweets & Mithai",
+  "Dry Fruits & Nuts",
+  "Tea & Coffee",
+  "Sauces & Condiments",
+  "Papad & Fryums",
+  "Pooja / Religious Items",
+  "Utensils",
+  "Disposables",
+  "Personal Care",
+  "Other",
 ];
 
 // 1. Strict Typing to avoid `any`
@@ -46,6 +75,7 @@ interface RightSidebarProps {
   loading: boolean;
   buttonText: string;
   onSubmit: () => void;
+  productId?: string; // Optional prop for product ID
 }
 
 export function RightSidebar({
@@ -61,8 +91,8 @@ export function RightSidebar({
   loading,
   buttonText,
   onSubmit,
+  productId
 }: RightSidebarProps) {
-  
   const [recentInvoices, setRecentInvoices] = useState<InvoiceData[]>([]);
   const [fetchingInvoices, setFetchingInvoices] = useState(false);
 
@@ -73,7 +103,7 @@ export function RightSidebar({
       setFetchingInvoices(true);
       try {
         // Falls back to session in the backend if storeId is undefined
-        const response = await getTop5Invoices(storeId);
+        const response = await getTop5Invoices(storeId, productId);
         if (isMounted && response.success && response.data) {
           setRecentInvoices(response.data as InvoiceData[]);
         }
@@ -89,7 +119,7 @@ export function RightSidebar({
     return () => {
       isMounted = false; // Cleanup on unmount
     };
-  }, [storeId]);
+  }, [storeId, productId]);
 
   return (
     <div className="space-y-6">
@@ -220,7 +250,9 @@ export function RightSidebar({
               <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Recent Invoices
               </Label>
-              {fetchingInvoices && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
+              {fetchingInvoices && (
+                <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+              )}
             </div>
 
             {!fetchingInvoices && recentInvoices.length === 0 && (
@@ -233,18 +265,26 @@ export function RightSidebar({
               {recentInvoices.map((invoice) => {
                 const isSelected = InvoiceId === invoice._id;
                 const displayName = invoice.InvoiceNumber || invoice._id;
-                const DateInvoiceCame = invoice.DateInvoiceCame ? new Date(invoice.DateInvoiceCame).toLocaleDateString() : "Unknown date";
+                const DateInvoiceCame = invoice.DateInvoiceCame
+                  ? new Date(invoice.DateInvoiceCame).toLocaleDateString()
+                  : "Unknown date";
 
                 return (
-                  <div 
-                    key={invoice._id} 
+                  <div
+                    key={invoice._id}
                     className={`flex items-center justify-between p-2.5 rounded-lg border transition-colors ${
-                      isSelected ? "border-primary bg-primary/5" : "border-border/50 bg-muted/20 hover:bg-muted/50"
+                      isSelected
+                        ? "border-primary bg-primary/5"
+                        : "border-border/50 bg-muted/20 hover:bg-muted/50"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 overflow-hidden">
-                      <FileText className={`w-3.5 h-3.5 shrink-0 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
-                      <span className={`text-xs font-mono truncate ${isSelected ? "font-semibold text-primary" : "text-foreground/80"}`}>
+                      <FileText
+                        className={`w-3.5 h-3.5 shrink-0 ${isSelected ? "text-primary" : "text-muted-foreground"}`}
+                      />
+                      <span
+                        className={`text-xs font-mono truncate ${isSelected ? "font-semibold text-primary" : "text-foreground/80"}`}
+                      >
                         {displayName}
                       </span>
                     </div>
@@ -294,7 +334,11 @@ export function RightSidebar({
           disabled={loading}
           className="w-full gap-2 py-5 text-sm font-semibold"
         >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
           {buttonText}
         </Button>
       </div>

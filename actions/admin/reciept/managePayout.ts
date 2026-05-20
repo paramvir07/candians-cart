@@ -1,6 +1,5 @@
 "use server";
 
-import mongoose from "mongoose";
 import { dbConnect } from "@/db/dbConnect";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import StorePayoutModel from "@/db/models/admin/storePayouts.model";
@@ -41,6 +40,7 @@ export async function getStorePayoutByIdAction(payoutId: string) {
       // Status and metadata
       status: payout.status,
       additionalNote: payout.additionalNote || "",
+      additionalPrice: payout.additionalPrice || 0,
       paymentReciept: payout.paymentReciept
         ? {
             url: payout.paymentReciept.url,

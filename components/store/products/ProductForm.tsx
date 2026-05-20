@@ -326,6 +326,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
             loading={loading}
             buttonText={buttonText}
             onSubmit={handlePreSubmitValidation}
+            productId={initialData?._id}
           />
         </div>
       </div>

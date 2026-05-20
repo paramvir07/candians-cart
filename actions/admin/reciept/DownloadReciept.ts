@@ -533,6 +533,7 @@ export interface SavedPayoutData {
   totalOrderCashCollected: number;
   status: "pending" | "paid";
   additionalNote?: string;
+  additionalPrice?: number;
   paymentReciept?: {
     url: string;
     fileId: string;
