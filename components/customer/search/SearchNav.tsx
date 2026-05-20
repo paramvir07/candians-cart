@@ -131,44 +131,101 @@ export function SearchNav({
     };
   }, [onQueryChange, onBarcodeScan, customerId]);
 
+  // useEffect(() => {
+  //   if (!customerId) return;
+  //   const input = searchInputRef.current;
+  //   if (!input) return;
+
+  //   const ANDROID_DEBOUNCE_MS = 150;
+
+  //   const handleInput = (e: Event) => {
+  //     const inputEvent = e as InputEvent;
+  //     // During IME composition, compositionend handles it
+  //     if (inputEvent.isComposing) return;
+
+  //     const val = (e.target as HTMLInputElement).value;
+  //     const now = Date.now();
+  //     const gap = now - androidLastInputRef.current;
+  //     androidLastInputRef.current = now;
+
+  //     if (gap > ANDROID_DEBOUNCE_MS * 2) {
+  //       androidBufferRef.current = "";
+  //     }
+
+  //     androidBufferRef.current = val;
+
+  //     if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+
+  //     androidTimerRef.current = setTimeout(() => {
+  //       const buf = androidBufferRef.current;
+  //       androidBufferRef.current = "";
+  //       if (buf.length >= 4) commitScan(buf);
+  //     }, ANDROID_DEBOUNCE_MS);
+  //   };
+
+  //   input.addEventListener("input", handleInput);
+  //   return () => {
+  //     input.removeEventListener("input", handleInput);
+  //     if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+  //   };
+  // }, [onQueryChange, onBarcodeScan, customerId]);
+
   useEffect(() => {
-    if (!customerId) return;
-    const input = searchInputRef.current;
-    if (!input) return;
+  if (!customerId) return;
+  const input = searchInputRef.current;
+  if (!input) return;
 
-    const ANDROID_DEBOUNCE_MS = 150;
+  const ANDROID_DEBOUNCE_MS = 150;
+  let prevLength = 0; // track previous input length
 
-    const handleInput = (e: Event) => {
-      const inputEvent = e as InputEvent;
-      // During IME composition, compositionend handles it
-      if (inputEvent.isComposing) return;
+  const handleInput = (e: Event) => {
+    const inputEvent = e as InputEvent;
+    if (inputEvent.isComposing) return;
 
-      const val = (e.target as HTMLInputElement).value;
-      const now = Date.now();
-      const gap = now - androidLastInputRef.current;
-      androidLastInputRef.current = now;
+    const val = (e.target as HTMLInputElement).value;
+    const now = Date.now();
+    const gap = now - androidLastInputRef.current;
+    androidLastInputRef.current = now;
 
-      if (gap > ANDROID_DEBOUNCE_MS * 2) {
-        androidBufferRef.current = "";
-      }
+    const charDelta = Math.abs(val.length - prevLength);
+    prevLength = val.length;
 
-      androidBufferRef.current = val;
-
+    // If a single input event added 4+ characters at once, it's definitely
+    // a scanner (replaced selection or pasted whole barcode). Commit immediately.
+    if (charDelta >= 4) {
       if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+      androidBufferRef.current = "";
+      prevLength = 0;
+      if (val.length >= 4) commitScan(val);
+      return;
+    }
 
-      androidTimerRef.current = setTimeout(() => {
-        const buf = androidBufferRef.current;
-        androidBufferRef.current = "";
-        if (buf.length >= 4) commitScan(buf);
-      }, ANDROID_DEBOUNCE_MS);
-    };
+    // Otherwise accumulate with debounce (slow scanner or human)
+    if (gap > ANDROID_DEBOUNCE_MS * 2) {
+      androidBufferRef.current = "";
+    }
 
-    input.addEventListener("input", handleInput);
-    return () => {
-      input.removeEventListener("input", handleInput);
-      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-    };
-  }, [onQueryChange, onBarcodeScan, customerId]);
+    androidBufferRef.current = val;
+
+    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+
+    androidTimerRef.current = setTimeout(() => {
+      const buf = androidBufferRef.current;
+      androidBufferRef.current = "";
+      prevLength = 0;
+
+      // Only commit if enough chars arrived fast enough.
+      // Gap * buf.length gives total time; scanners finish in < 600ms total.
+      if (buf.length >= 4) commitScan(buf);
+    }, ANDROID_DEBOUNCE_MS);
+  };
+
+  input.addEventListener("input", handleInput);
+  return () => {
+    input.removeEventListener("input", handleInput);
+    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+  };
+}, [onQueryChange, onBarcodeScan, customerId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
