@@ -71,6 +71,9 @@ export function SearchNav({
   useEffect(() => {
     if (!customerId) return;
 
+      const isAndroid = /android/i.test(navigator.userAgent);
+  if (isAndroid) return;
+
     const HUMAN_THRESHOLD_MS = 100;
     const COMMIT_TIMEOUT_MS = 100;
 
@@ -175,8 +178,11 @@ useEffect(() => {
   const input = searchInputRef.current;
   if (!input) return;
 
-  const SEQUENCE_TIMEOUT_MS = 1500; // max time for a full barcode sequence
-  const COMMIT_DEBOUNCE_MS = 150;   // wait after last char before committing
+  const isAndroid = /android/i.test(navigator.userAgent);
+  if (!isAndroid) return; // PC/iPhone/iPad handled by the window keydown listener above
+
+  const SEQUENCE_TIMEOUT_MS = 1500;
+  const COMMIT_DEBOUNCE_MS = 150;
 
   let sequenceStartTime = 0;
   let prevLength = 0;
@@ -205,47 +211,39 @@ useEffect(() => {
       sequenceStartTime = now;
     }
 
-    // Sequence has gone on too long — must be human typing, abandon it
+    // Sequence too long — must be human typing, abandon and restart
     if (now - sequenceStartTime > SEQUENCE_TIMEOUT_MS) {
       androidBufferRef.current = "";
-      sequenceStartTime = now; // restart from this char
+      sequenceStartTime = now;
     }
 
     androidBufferRef.current = val;
 
     if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
 
+    // 150ms after the last character with no new input → commit
     androidTimerRef.current = setTimeout(() => {
       const buf = androidBufferRef.current;
-      const elapsed = Date.now() - sequenceStartTime;
       androidBufferRef.current = "";
       sequenceStartTime = 0;
       prevLength = 0;
-
-      // Commit only if: enough chars AND arrived within the scanner window
-      if (buf.length >= 4 && elapsed <= SEQUENCE_TIMEOUT_MS) {
-        commitScan(buf);
-      }
+      if (buf.length >= 4) commitScan(buf);
     }, COMMIT_DEBOUNCE_MS);
   };
 
-  // Enter key on Android (scanner terminator) — commit immediately
+  // Enter key = scanner terminator, commit immediately
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key !== "Enter") return;
     const buf = androidBufferRef.current;
     if (!buf || buf.length < 4) return;
 
-    // Only intercept if we're in an active scan sequence
-    const elapsed = Date.now() - sequenceStartTime;
-    if (sequenceStartTime > 0 && elapsed <= SEQUENCE_TIMEOUT_MS) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-      androidBufferRef.current = "";
-      sequenceStartTime = 0;
-      prevLength = 0;
-      commitScan(buf);
-    }
+    e.preventDefault();
+    e.stopPropagation();
+    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+    androidBufferRef.current = "";
+    sequenceStartTime = 0;
+    prevLength = 0;
+    commitScan(buf);
   };
 
   input.addEventListener("input", handleInput);
