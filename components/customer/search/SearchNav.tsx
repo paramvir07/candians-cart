@@ -43,6 +43,8 @@ export function SearchNav({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
   const lastKeyTimeRef = useRef(0);
+  const androidBufferRef = useRef("");
+  const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -54,10 +56,10 @@ export function SearchNav({
       router.replace("/customer/search", { scroll: false });
     }
   }, []);
+
   // Scanner gun auto enter
   useEffect(() => {
-
-    if(!customerId) return;
+    if (!customerId) return;
 
     const THRESHOLD = 50; // ms — scanners are faster than any human
 
@@ -91,14 +93,50 @@ export function SearchNav({
       if (e.key.length !== 1) return;
 
       // Reset buffer if gap is too large (human typing pace)
-      if (gap > THRESHOLD) scanBufferRef.current = "";
+      if (gap > THRESHOLD && scanBufferRef.current.length > 0)
+        scanBufferRef.current = "";
 
       scanBufferRef.current += e.key;
     };
 
     window.addEventListener("keydown", handleKeyDown, true);
     return () => window.removeEventListener("keydown", handleKeyDown, true);
-  }, [onQueryChange, onBarcodeScan]);
+  }, [onQueryChange, onBarcodeScan, customerId]);
+
+  useEffect(() => {
+  if (!customerId) return;
+
+  const input = searchInputRef.current;
+  if (!input) return;
+
+  const handleInput = (e: Event) => {
+    const val = (e.target as HTMLInputElement).value;
+
+    // Clear any pending commit
+    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+
+    androidBufferRef.current = val;
+
+    // Android scanners dump the whole barcode + Enter very fast.
+    // If no more input arrives in 80ms, treat it as a complete scan.
+    androidTimerRef.current = setTimeout(() => {
+      const buf = androidBufferRef.current;
+      if (buf.length >= 6) {
+        setQuery(buf);
+        startTransition(() => onQueryChange(buf));
+        onBarcodeScan?.(buf);
+        setTimeout(() => input.select(), 0);
+      }
+      androidBufferRef.current = "";
+    }, 80);
+  };
+
+  input.addEventListener("input", handleInput);
+  return () => {
+    input.removeEventListener("input", handleInput);
+    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+  };
+}, [onQueryChange, onBarcodeScan, customerId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
