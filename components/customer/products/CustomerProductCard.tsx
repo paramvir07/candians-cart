@@ -39,14 +39,23 @@ async function removeAllFromServer(
   formData.append("productId", productId);
   await RemoveItem(customerId, formData);
 }
-
+function useCashierMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 996);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+}
 export function CustomerProductCard({
   isCashier,
   customerId,
   product,
   cartQuantity = 0,
 }: {
-  isCashier?:boolean;
+  isCashier?: boolean;
   customerId?: string;
   product: IProduct;
   cartQuantity?: number;
@@ -60,8 +69,10 @@ export function CustomerProductCard({
   const [quantity, setQuantity] = useState(cartQuantity);
   const [inputValue, setInputValue] = useState(String(cartQuantity));
   const [isQtyDirty, setIsQtyDirty] = useState(false);
+  const cashierMobile = useCashierMobile();
+const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks for sizing
 
-  const quantityStep = product.isMeasuredInWeight ? 0.01 : 1;
+  const quantityStep = product.isMeasuredInWeight ? 1 : 1;
 
   const formatQtyForInput = useCallback(
     (value: number) => {
@@ -388,8 +399,7 @@ export function CustomerProductCard({
             <span
               className={`self-start inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold opacity-90 ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}
             >
-              {catConfig.emoji}{" "}
-              {product.category}
+              {catConfig.emoji} {product.category}
               {/* {vegetablesCategory || fruitsCategory
                 ? "Produce"
                 : product.category} */}
@@ -398,7 +408,9 @@ export function CustomerProductCard({
             <h3 className="line-clamp-2 text-sm font-bold leading-tight text-white drop-shadow flex items-center justify-between">
               {product.name}
               <div>
-                {(isCashier && !product.PriceDrop) && <PriceDropBtn productId={product._id}/>}
+                {isCashier && !product.PriceDrop && (
+                  <PriceDropBtn productId={product._id} />
+                )}
               </div>
             </h3>
 
@@ -421,7 +433,9 @@ export function CustomerProductCard({
                     type="button"
                     onClick={handleRemoveAll}
                     disabled={isPending}
-                    className="group/trash h-8 w-8 shrink-0 rounded-xl border border-white/25 bg-white/15 backdrop-blur-sm transition-colors hover:bg-red-500/40 disabled:opacity-40"
+                    className={`group/trash shrink-0 rounded-xl border border-white/25 bg-white/15 backdrop-blur-sm transition-colors hover:bg-red-500/40 disabled:opacity-40 ${
+                      cashier ? "h-11 w-11" : "h-8 w-8"
+                    }`}
                   >
                     <div className="flex h-full w-full items-center justify-center">
                       <Trash2
@@ -437,10 +451,12 @@ export function CustomerProductCard({
                       type="button"
                       onClick={handleDecrement}
                       disabled={isPending}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/20 transition-colors hover:bg-white/35 disabled:opacity-50"
+                      className={`flex shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/20 transition-colors hover:bg-white/35 disabled:opacity-50 ${
+                        cashier ? "h-9 w-9" : "h-6 w-6"
+                      }`}
                     >
                       <Minus
-                        size={11}
+                        size={cashier ? 16 : 11}
                         strokeWidth={2.5}
                         className="text-white"
                       />
@@ -482,8 +498,9 @@ export function CustomerProductCard({
                           if (e.key === "Enter") e.currentTarget.blur();
                         }}
                         disabled={isPending}
-                        className="h-6 w-10 rounded-md border border-white/30 bg-white/20 text-center text-sm font-bold text-white tabular-nums outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                      />
+className={`rounded-md border border-white/30 bg-white/20 text-center font-bold text-white tabular-nums outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+  cashier ? "h-9 w-14 text-base" : "h-6 w-10 text-sm"
+}`}                      />
 
                       {showConfirm && (
                         <button
@@ -494,8 +511,9 @@ export function CustomerProductCard({
                             handleQuantityInputCommit();
                           }}
                           disabled={isPending}
-                          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50"
-                        >
+className={`flex shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50 ${
+  cashier ? "h-9 w-9" : "h-6 w-6"
+}`}                        >
                           <Check
                             size={11}
                             strokeWidth={3}
@@ -510,13 +528,10 @@ export function CustomerProductCard({
                         type="button"
                         onClick={handleIncrement}
                         disabled={isPending || quantity >= 99}
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50"
-                      >
-                        <Plus
-                          size={11}
-                          strokeWidth={2.5}
-                          className="text-primary-foreground"
-                        />
+className={`flex shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50 ${
+  cashier ? "h-9 w-9" : "h-6 w-6"
+}`}                      >
+<Plus size={cashier ? 16 : 11} strokeWidth={2.5} className="text-primary-foreground" />
                       </button>
                     )}
                   </div>
@@ -526,8 +541,9 @@ export function CustomerProductCard({
                   type="button"
                   disabled={!product.stock || isPending}
                   onClick={handleAddToCart}
-                  className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border border-primary/20 bg-secondary text-xs font-bold text-primary shadow-sm transition-all hover:bg-primary/15 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-                >
+className={`flex w-full items-center justify-center gap-1.5 rounded-xl border border-primary/20 bg-secondary font-bold text-primary shadow-sm transition-all hover:bg-primary/15 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${
+  cashier ? "h-12 text-sm" : "h-9 text-xs"
+}`}                >
                   {isPending ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (

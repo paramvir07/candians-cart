@@ -644,8 +644,11 @@ export function SearchResultsClient({
                 </div>
 
                 {filtered.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                    {filtered.map((product) => (
+<div className={`grid gap-3 sm:gap-4 ${
+  isCashier
+    ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+    : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+}`}>                    {filtered.map((product) => (
                       <CustomerProductCard
                         isCashier={isCashier}
                         subsidyPage={false}

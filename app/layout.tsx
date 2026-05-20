@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     title: "CC",
   },
   title: {
-    default: "CC",
+    default: "Canadian's Cart",
     template: "%s | CC",
   },
   description:
