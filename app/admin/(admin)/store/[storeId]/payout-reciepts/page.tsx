@@ -1,9 +1,13 @@
 import ReceiptPage from "@/components/admin/analytics/reciept/RecieptComponent";
 import StorePayoutHistory from "@/components/admin/analytics/reciept/StorePayoutHistory";
-import PayoutStatsCards, { PayoutStatsCardsSkeleton } from "@/components/store/payouts/PayoutStatsCards";
+import PayoutStatsCards, {
+  PayoutStatsCardsSkeleton,
+} from "@/components/store/payouts/PayoutStatsCards";
 import PayoutScheduleConfig from "@/components/admin/payoutSchedule/Payoutscheduleconfig";
 import ManualPayoutTrigger from "@/components/admin/payoutSchedule/Manualpayouttrigger";
 import { Suspense } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 const StorePayoutReciepts = async ({
   params,
@@ -14,6 +18,13 @@ const StorePayoutReciepts = async ({
 
   return (
     <div className="space-y-8 p-4 sm:p-6 lg:p-8 max-w-400 mx-auto">
+      <Link
+        href={`/admin/store/${storeId}`}
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors group"
+      >
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+        Go Back
+      </Link>
       {/* Analytics Stats */}
       <Suspense fallback={<PayoutStatsCardsSkeleton />}>
         <PayoutStatsCards storeId={storeId} />
