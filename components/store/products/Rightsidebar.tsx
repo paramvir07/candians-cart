@@ -107,7 +107,7 @@ export function RightSidebar({
         <CardContent className="p-6">
           <input
             type="file"
-            accept="image/png, image/jpeg, image/webp"
+            accept="image/*"
             className="hidden"
             ref={fileInputRef}
             onChange={onImageChange}

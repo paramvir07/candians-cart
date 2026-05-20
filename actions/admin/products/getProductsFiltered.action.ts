@@ -75,7 +75,7 @@ export const getStoreProductsFiltered = async (
     const [products, totalCount] = await Promise.all([
       Product.find(query)
         .select(
-          "_id name description category markup tax price stock subsidised images disposableFee isFeatured",
+          "_id name description category markup tax price stock subsidised images disposableFee isFeatured UOM isMeasuredInWeight primaryUPC",
         )
         .sort(sortOption)
         .skip(skip)
@@ -152,7 +152,7 @@ export const searchProductsWithFilters = async (
     const [products, totalCount] = await Promise.all([
       Product.find(match)
         .select(
-          "_id name description category markup tax price stock subsidised images disposableFee isFeatured UOM isMeasuredInWeight",
+          "_id name description category markup tax price stock subsidised images disposableFee isFeatured UOM isMeasuredInWeight primaryUPC",
         )
         .sort(sortOption)
         .skip(skip)
