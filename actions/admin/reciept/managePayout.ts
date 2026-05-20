@@ -30,6 +30,7 @@ export async function getStorePayoutByIdAction(payoutId: string) {
       totalTax: payout.totalTax,
       totalSubsidy: payout.totalSubsidy || 0,
       totalDisposableFee: payout.totalDisposableFee,
+      storeMarkupTax: payout.storeMarkupTax,
       storeFixedValue: payout.storeFixedValue,
       storeProfit: payout.storeProfit,
       storePayout: payout.storePayout,
@@ -40,7 +41,7 @@ export async function getStorePayoutByIdAction(payoutId: string) {
       // Status and metadata
       status: payout.status,
       additionalNote: payout.additionalNote || "",
-      additionalPrice: payout.additionalPrice || 0,
+      additionalCost: payout.additionalCost || 0,
       paymentReciept: payout.paymentReciept
         ? {
             url: payout.paymentReciept.url,
@@ -67,6 +68,7 @@ export async function updateStorePayoutAction(
   data: {
     status: "pending" | "paid";
     additionalNote?: string;
+    additionalCost?: number;
     paymentReciept?: { url: string; fileId: string } | null;
   },
 ) {
@@ -75,10 +77,11 @@ export async function updateStorePayoutAction(
     if (session?.user?.role !== "admin") {
       return { success: false, message: "Unauthorized", data: null };
     }
+    const UpdatedadditionalCost= Math.round(Number(data.additionalCost) * 100);
 
     const updated = await StorePayoutModel.findByIdAndUpdate(
       payoutId,
-      { $set: data },
+      { $set: { ...data, additionalCost: UpdatedadditionalCost } },
       { returnDocument: "after" },
     );
 

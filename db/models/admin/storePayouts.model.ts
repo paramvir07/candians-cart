@@ -14,6 +14,7 @@ export interface IStorePayout {
   markupTax: number;
   storebasetaxGST: number;
   storebasetaxPST: number;
+  storeMarkupTax: number;
   platformMarkuptax: number;
   totalSubsidy: number;
   totalDisposableFee: number;
@@ -27,7 +28,7 @@ export interface IStorePayout {
   platformCommision: number;
   status: "pending" | "paid";
   additionalNote?: string;
-  additionalPrice?: number; // additional cost like image kit
+  additionalCost?: number; // additional cost like image kit
   paymentReciept?: {
     url: string;
     fileId: string;
@@ -97,6 +98,10 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       type: Number,
       required: true,
     },
+    storeMarkupTax: {
+      type: Number,
+      required: true,
+    },
     platformMarkuptax: {
       type: Number,
       required: true,
@@ -154,7 +159,7 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       required: false,
     },
 
-    additionalPrice: {
+    additionalCost: {
       type: Number, // in cents
       required: false,
     },
