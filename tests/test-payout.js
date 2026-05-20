@@ -30,7 +30,7 @@ function calculateOrderMetrics(inputs) {
   const STORE_PROFIT_MARGIN = 0.35;
 
   const totalTax = totalGST + totalPST;
-
+  
   const totalMarkup =
     cartTotal - (totalBasePrice + totalDisposableTax + totalTax);
 
@@ -38,12 +38,15 @@ function calculateOrderMetrics(inputs) {
 
   const basePercentage = val > 0 ? totalBasePrice / val : 0;
   const markupPercentage = val > 0 ? totalMarkup / val : 0;
+  const subsidyPercentage = val > 0 ? subsidy / val : 0;
 
   const baseTax = totalTax * basePercentage;
   const markupTax = totalTax * markupPercentage;
-  const storeMarkupTax = markupTax * STORE_PROFIT_MARGIN;
+  const subsidyTax = totalTax * subsidyPercentage;
+  const leftTax = markupTax - subsidyTax;
+  const storeMarkupTax = leftTax * STORE_PROFIT_MARGIN;
 
-  const sfv = totalBasePrice + totalDisposableTax + baseTax;
+  const sfv = totalBasePrice + totalDisposableTax + baseTax + storeMarkupTax;
 
   const grossMargin = cartTotal - sfv;
 
@@ -99,9 +102,6 @@ async function main() {
     totalCashCollected,
   });
 
-  // Derived comparisons
-  const storeProfit = metrics.grossMargin * 0.35;
-
   console.log("\n--- Tax & Markup Breakdown ---");
   console.log(
     `Total Tax = ${totalGST.toFixed(2)} (GST) + ${totalPST.toFixed(2)} (PST) = $${metrics.totalTax.toFixed(2)}`
@@ -126,7 +126,7 @@ async function main() {
 
   console.log("\n--- Store Metrics ---");
   console.log(
-    `SFV = ${totalBasePrice.toFixed(2)} (base price) + ${totalDisposableTax.toFixed(2)} (disposable fee) + ${metrics.baseTax.toFixed(2)} (base tax) = $${metrics.sfv.toFixed(2)}`
+    `SFV = ${totalBasePrice.toFixed(2)} (base price) + ${totalDisposableTax.toFixed(2)} (disposable fee) + ${metrics.baseTax.toFixed(2)} (base tax) + ${metrics.storeMarkupTax.toFixed(2)} (store markup tax) = $${metrics.sfv.toFixed(2)}`,
   );
 
   console.log(
@@ -134,7 +134,7 @@ async function main() {
   );
 
   console.log(
-    `Store Profit (35%) = ${metrics.grossMargin.toFixed(2)} (Gross Margin) * 0.35 = $${storeProfit.toFixed(2)}`
+    `Store Profit (35%) = ${metrics.grossMargin.toFixed(2)} (Gross Margin) * 0.35 = $${metrics.storeProfit.toFixed(2)}`,
   );
 
   console.log(
