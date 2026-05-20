@@ -45,8 +45,18 @@ export function SearchNav({
   const lastKeyTimeRef = useRef(0);
   const androidBufferRef = useRef("");
   const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const androidLastInputRef = useRef(0);
+  const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const commitScan = (value: string) => {
+    if (!value || value.length < 4) return;
+    setQuery(value);
+    startTransition(() => onQueryChange(value));
+    onBarcodeScan?.(value);
+    setTimeout(() => searchInputRef.current?.select(), 0);
+  };
 
   // Auto-open scanner when navigated here with ?scan=1 (from bottom nav Scan button)
   useEffect(() => {
@@ -61,82 +71,104 @@ export function SearchNav({
   useEffect(() => {
     if (!customerId) return;
 
-    const THRESHOLD = 50; // ms — scanners are faster than any human
+    const HUMAN_THRESHOLD_MS = 100;
+    const COMMIT_TIMEOUT_MS = 100;
+
+    const flush = () => {
+      const buf = scanBufferRef.current;
+      scanBufferRef.current = "";
+      if (buf.length >= 4) commitScan(buf);
+    };
+
+    const resetTimer = () => {
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+      scanTimerRef.current = setTimeout(flush, COMMIT_TIMEOUT_MS);
+    };
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.length !== 1 && e.key !== "Enter") return;
+
       const now = Date.now();
       const gap = now - lastKeyTimeRef.current;
       lastKeyTimeRef.current = now;
 
       if (e.key === "Enter") {
+        if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
         const buf = scanBufferRef.current;
         scanBufferRef.current = "";
-
-        if (buf.length >= 6) {
+        if (buf.length >= 4) {
           e.preventDefault();
           e.stopPropagation();
-
-          // Focus the input
-          searchInputRef.current?.focus();
-
-          // Replace whatever was there with the scanned value
-          setQuery(buf);
-          startTransition(() => onQueryChange(buf));
-          onBarcodeScan?.(buf);
-
-          // Select all so the barcode is visually highlighted
-          setTimeout(() => searchInputRef.current?.select(), 0);
+          commitScan(buf);
         }
         return;
       }
 
-      if (e.key.length !== 1) return;
-
-      // Reset buffer if gap is too large (human typing pace)
-      if (gap > THRESHOLD && scanBufferRef.current.length > 0)
+      if (gap > HUMAN_THRESHOLD_MS && scanBufferRef.current.length > 0) {
         scanBufferRef.current = "";
+      }
 
       scanBufferRef.current += e.key;
+      resetTimer();
+    };
+
+    // iPad Safari fix: on fast bursts Safari starts IME composition and drops
+    // the first character. compositionend gives us the full string cleanly.
+    const handleCompositionEnd = (e: CompositionEvent) => {
+      if (!e.data || e.data.length < 4) return;
+      scanBufferRef.current = "";
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+      commitScan(e.data);
     };
 
     window.addEventListener("keydown", handleKeyDown, true);
-    return () => window.removeEventListener("keydown", handleKeyDown, true);
+    window.addEventListener("compositionend", handleCompositionEnd, true);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+      window.removeEventListener("compositionend", handleCompositionEnd, true);
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+    };
   }, [onQueryChange, onBarcodeScan, customerId]);
 
   useEffect(() => {
-  if (!customerId) return;
+    if (!customerId) return;
+    const input = searchInputRef.current;
+    if (!input) return;
 
-  const input = searchInputRef.current;
-  if (!input) return;
+    const ANDROID_DEBOUNCE_MS = 150;
 
-  const handleInput = (e: Event) => {
-    const val = (e.target as HTMLInputElement).value;
+    const handleInput = (e: Event) => {
+      const inputEvent = e as InputEvent;
+      // During IME composition, compositionend handles it
+      if (inputEvent.isComposing) return;
 
-    // Clear any pending commit
-    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+      const val = (e.target as HTMLInputElement).value;
+      const now = Date.now();
+      const gap = now - androidLastInputRef.current;
+      androidLastInputRef.current = now;
 
-    androidBufferRef.current = val;
-
-    // Android scanners dump the whole barcode + Enter very fast.
-    // If no more input arrives in 80ms, treat it as a complete scan.
-    androidTimerRef.current = setTimeout(() => {
-      const buf = androidBufferRef.current;
-      if (buf.length >= 6) {
-        setQuery(buf);
-        startTransition(() => onQueryChange(buf));
-        onBarcodeScan?.(buf);
-        setTimeout(() => input.select(), 0);
+      if (gap > ANDROID_DEBOUNCE_MS * 2) {
+        androidBufferRef.current = "";
       }
-      androidBufferRef.current = "";
-    }, 80);
-  };
 
-  input.addEventListener("input", handleInput);
-  return () => {
-    input.removeEventListener("input", handleInput);
-    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-  };
-}, [onQueryChange, onBarcodeScan, customerId]);
+      androidBufferRef.current = val;
+
+      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+
+      androidTimerRef.current = setTimeout(() => {
+        const buf = androidBufferRef.current;
+        androidBufferRef.current = "";
+        if (buf.length >= 4) commitScan(buf);
+      }, ANDROID_DEBOUNCE_MS);
+    };
+
+    input.addEventListener("input", handleInput);
+    return () => {
+      input.removeEventListener("input", handleInput);
+      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+    };
+  }, [onQueryChange, onBarcodeScan, customerId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -194,6 +226,11 @@ export function SearchNav({
               value={query}
               onChange={(e) => handleChange(e.target.value)}
               autoFocus
+              autoComplete={customerId ? "off" : "on"}
+              autoCorrect={customerId ? "off" : "on"}
+              autoCapitalize={customerId ? "off" : "sentences"}
+              spellCheck={!customerId}
+              inputMode={customerId ? "text" : "text"}
               className="h-9 w-full rounded-xl bg-muted border-transparent focus-visible:border-border pr-8 text-sm placeholder:text-muted-foreground"
             />
             {query && (
