@@ -71,9 +71,6 @@ export function SearchNav({
   useEffect(() => {
     if (!customerId) return;
 
-      const isAndroid = /android/i.test(navigator.userAgent);
-  if (isAndroid) return;
-
     const HUMAN_THRESHOLD_MS = 100;
     const COMMIT_TIMEOUT_MS = 100;
 
@@ -134,127 +131,44 @@ export function SearchNav({
     };
   }, [onQueryChange, onBarcodeScan, customerId]);
 
-  // useEffect(() => {
-  //   if (!customerId) return;
-  //   const input = searchInputRef.current;
-  //   if (!input) return;
+  useEffect(() => {
+    if (!customerId) return;
+    const input = searchInputRef.current;
+    if (!input) return;
 
-  //   const ANDROID_DEBOUNCE_MS = 150;
+    const ANDROID_DEBOUNCE_MS = 150;
 
-  //   const handleInput = (e: Event) => {
-  //     const inputEvent = e as InputEvent;
-  //     // During IME composition, compositionend handles it
-  //     if (inputEvent.isComposing) return;
+    const handleInput = (e: Event) => {
+      const inputEvent = e as InputEvent;
+      // During IME composition, compositionend handles it
+      if (inputEvent.isComposing) return;
 
-  //     const val = (e.target as HTMLInputElement).value;
-  //     const now = Date.now();
-  //     const gap = now - androidLastInputRef.current;
-  //     androidLastInputRef.current = now;
+      const val = (e.target as HTMLInputElement).value;
+      const now = Date.now();
+      const gap = now - androidLastInputRef.current;
+      androidLastInputRef.current = now;
 
-  //     if (gap > ANDROID_DEBOUNCE_MS * 2) {
-  //       androidBufferRef.current = "";
-  //     }
+      if (gap > ANDROID_DEBOUNCE_MS * 2) {
+        androidBufferRef.current = "";
+      }
 
-  //     androidBufferRef.current = val;
+      androidBufferRef.current = val;
 
-  //     if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-
-  //     androidTimerRef.current = setTimeout(() => {
-  //       const buf = androidBufferRef.current;
-  //       androidBufferRef.current = "";
-  //       if (buf.length >= 4) commitScan(buf);
-  //     }, ANDROID_DEBOUNCE_MS);
-  //   };
-
-  //   input.addEventListener("input", handleInput);
-  //   return () => {
-  //     input.removeEventListener("input", handleInput);
-  //     if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-  //   };
-  // }, [onQueryChange, onBarcodeScan, customerId]);
-
-useEffect(() => {
-  if (!customerId) return;
-  const input = searchInputRef.current;
-  if (!input) return;
-
-  const isAndroid = /android/i.test(navigator.userAgent);
-  if (!isAndroid) return; // PC/iPhone/iPad handled by the window keydown listener above
-
-  const SEQUENCE_TIMEOUT_MS = 1500;
-  const COMMIT_DEBOUNCE_MS = 150;
-
-  let sequenceStartTime = 0;
-  let prevLength = 0;
-
-  const handleInput = (e: Event) => {
-    const inputEvent = e as InputEvent;
-    if (inputEvent.isComposing) return;
-
-    const val = (e.target as HTMLInputElement).value;
-    const now = Date.now();
-    const charDelta = Math.abs(val.length - prevLength);
-    prevLength = val.length;
-
-    // Whole barcode replaced selection in one shot → immediate commit
-    if (charDelta >= 4) {
       if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-      androidBufferRef.current = "";
-      sequenceStartTime = 0;
-      prevLength = 0;
-      if (val.length >= 4) commitScan(val);
-      return;
-    }
 
-    // First character of a new sequence
-    if (sequenceStartTime === 0) {
-      sequenceStartTime = now;
-    }
+      androidTimerRef.current = setTimeout(() => {
+        const buf = androidBufferRef.current;
+        androidBufferRef.current = "";
+        if (buf.length >= 4) commitScan(buf);
+      }, ANDROID_DEBOUNCE_MS);
+    };
 
-    // Sequence too long — must be human typing, abandon and restart
-    if (now - sequenceStartTime > SEQUENCE_TIMEOUT_MS) {
-      androidBufferRef.current = "";
-      sequenceStartTime = now;
-    }
-
-    androidBufferRef.current = val;
-
-    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-
-    // 150ms after the last character with no new input → commit
-    androidTimerRef.current = setTimeout(() => {
-      const buf = androidBufferRef.current;
-      androidBufferRef.current = "";
-      sequenceStartTime = 0;
-      prevLength = 0;
-      if (buf.length >= 4) commitScan(buf);
-    }, COMMIT_DEBOUNCE_MS);
-  };
-
-  // Enter key = scanner terminator, commit immediately
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key !== "Enter") return;
-    const buf = androidBufferRef.current;
-    if (!buf || buf.length < 4) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-    androidBufferRef.current = "";
-    sequenceStartTime = 0;
-    prevLength = 0;
-    commitScan(buf);
-  };
-
-  input.addEventListener("input", handleInput);
-  input.addEventListener("keydown", handleKeyDown, true);
-
-  return () => {
-    input.removeEventListener("input", handleInput);
-    input.removeEventListener("keydown", handleKeyDown, true);
-    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-  };
-}, [onQueryChange, onBarcodeScan, customerId]);
+    input.addEventListener("input", handleInput);
+    return () => {
+      input.removeEventListener("input", handleInput);
+      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+    };
+  }, [onQueryChange, onBarcodeScan, customerId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
