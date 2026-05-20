@@ -5,8 +5,7 @@ import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
-import type { BurstCacheResponse } from "@/actions/admin/products/burstGlobalCache.action";
-
+import { BurstCacheResponse } from "@/types/cache/ProductCache";
 interface BurstCacheButtonProps {
   // Pass the server action dynamically
   action: () => Promise<BurstCacheResponse>;

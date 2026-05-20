@@ -1,11 +1,7 @@
 "use server";
 
 import { revalidateTag, revalidatePath } from "next/cache";
-
-export interface BurstCacheResponse {
-  success: boolean;
-  message: string;
-}
+import { BurstCacheResponse } from "@/types/cache/ProductCache";
 
 export async function burstStoreProductsCache(
   storeId: string,
