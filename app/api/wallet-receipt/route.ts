@@ -139,7 +139,7 @@ export async function POST(req: Request) {
       color: rgb(0.18, 0.5, 0.27),
     });
 
-    page.drawText("Candian's Cart", {
+    page.drawText("Canadian's Cart", {
       x: margin,
       y: height - 36,
       font: boldFont,
@@ -361,7 +361,7 @@ export async function POST(req: Request) {
       color: GREEN_PRIMARY,
     });
     page.drawText(
-      "Candian's Cart — Your wallet activity is encrypted and securely stored.",
+      "Canadian's Cart — Your wallet activity is encrypted and securely stored.",
       {
         x: margin,
         y: footerH - 34,

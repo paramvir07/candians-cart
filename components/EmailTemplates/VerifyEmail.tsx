@@ -26,7 +26,7 @@ type VerifyEmailProps = {
 export function VerifyEmail({
   username,
   verifyUrl,
-  appName = "Candian's Cart",
+  appName = "Canadian's Cart",
   supportEmail = "info@canadianscart.ca",
   websiteUrl = "https://www.canadianscart.ca",
   loginUrl = "https://www.canadianscart.ca/customer/login",

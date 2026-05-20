@@ -13,8 +13,8 @@ export async function sendEmail({ to, subject, react }: SendEmailProps) {
   const { data, error } = await resend.emails.send({
     from:
       process.env.NODE_ENV === "development"
-        ? "Candian's Cart <onboarding@resend.dev>"
-        : "Candian's Cart <onboarding@canadianscart.ca>",
+        ? "Canadian's Cart <onboarding@resend.dev>"
+        : "Canadian's Cart <onboarding@canadianscart.ca>",
     to: process.env.NODE_ENV === "development" ? process.env.DEV_EMAIL! : to,
     subject,
     react,

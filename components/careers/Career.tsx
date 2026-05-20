@@ -54,7 +54,7 @@ const JOB_POSTINGS: JobPosting[] = [
     type: "Part-Time",
     salary: "$18.25 / hr",
     summary:
-      "Be the friendly voice behind Candian's Cart — helping families with orders, accounts, and anything else they need.",
+      "Be the friendly voice behind Canadian's Cart — helping families with orders, accounts, and anything else they need.",
     description:
       "Our customers rely on us for their weekly groceries, and you'll make sure their experience is smooth and delightful. You'll handle inbound queries via email and chat, resolve issues, and help families get the most out of the platform.",
     responsibilities: [
@@ -88,7 +88,7 @@ const JOB_POSTINGS: JobPosting[] = [
     summary:
       "Process customer pickups at our Abbotsford location — the last smile families see before heading home with their groceries.",
     description:
-      "As a Cashier you'll be at the front line of the Candian's Cart pickup experience. You'll process orders, verify items, handle payments, and make sure every family leaves happy.",
+      "As a Cashier you'll be at the front line of the Canadian's Cart pickup experience. You'll process orders, verify items, handle payments, and make sure every family leaves happy.",
     responsibilities: [
       "Process customer pickup orders accurately using our point-of-sale system.",
       "Verify order contents against the packing list before handoff.",
@@ -136,7 +136,7 @@ const DEPT_STYLE: Record<string, { bg: string; text: string }> = {
 function buildMailto(job: JobPosting) {
   const subject = encodeURIComponent(`Application – ${job.title}`);
   const body = encodeURIComponent(
-    `Hi Candian's Cart team,\n\nI'm interested in applying for the ${job.title} (${job.type}) position in ${job.location}.\n\nPlease find my details below:\n\nName:\nPhone:\nLinkedIn / Portfolio:\n\n[Attach your resume]\n\nLooking forward to hearing from you!`
+    `Hi Canadian's Cart team,\n\nI'm interested in applying for the ${job.title} (${job.type}) position in ${job.location}.\n\nPlease find my details below:\n\nName:\nPhone:\nLinkedIn / Portfolio:\n\n[Attach your resume]\n\nLooking forward to hearing from you!`
   );
   return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
 }
@@ -446,7 +446,7 @@ export default function CareersPage() {
               style={{ animationDelay: "60ms" }}
             >
               Join the team behind{" "}<br />
-              <span className="block sm:inline cc-shimmer">Candian's Cart</span>
+              <span className="block sm:inline cc-shimmer">Canadian's Cart</span>
             </h1>
 
             {/* Subhead */}

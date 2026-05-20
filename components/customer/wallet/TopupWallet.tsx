@@ -59,7 +59,7 @@ const TopupWallet = ({ topupWalletData, customerId, userRole }: TopupWalletProps
           {/* Top: label + balance */}
           <div className="relative z-10 flex flex-col gap-1 text-white">
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
-              Candian's Cart Wallet
+              Canadian's Cart Wallet
             </p>
             <div className="flex items-center justify-between">
               <h1 className="flex items-baseline gap-1 text-4xl font-bold">

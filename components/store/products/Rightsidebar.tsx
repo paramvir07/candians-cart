@@ -78,7 +78,7 @@ export function RightSidebar({
           setRecentInvoices(response.data as InvoiceData[]);
         }
       } catch (error) {
-        console.error("Candian Cart: Failed to fetch recent invoices", error);
+        console.error("Canadian Cart: Failed to fetch recent invoices", error);
       } finally {
         if (isMounted) setFetchingInvoices(false);
       }

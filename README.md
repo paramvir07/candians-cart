@@ -1,6 +1,6 @@
-# Candian's Cart
+# Canadian's Cart
 
-Candian's cart is a grocery shopping app, designed to give people subsidy on products.
+Canadian's cart is a grocery shopping app, designed to give people subsidy on products.
 
 Check out the website in action by visiting -:
 https://www.canadianscart.ca/

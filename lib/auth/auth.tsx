@@ -32,7 +32,7 @@ export const auth = betterAuth({
               username={user.name}
               confirmUrl={u.toString()}
               newEmail={newEmail}
-              appName="Candian's Cart"
+              appName="Canadian's Cart"
             />
           ),
         });
@@ -46,12 +46,12 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
-        subject: "Reset your Candian's Cart account password",
+        subject: "Reset your Canadian's Cart account password",
         react: (
           <ForgotPasswordEmail
             username={user.name}
             resetUrl={url}
-            appName="Candian's Cart"
+            appName="Canadian's Cart"
           />
         ),
       });
@@ -87,7 +87,7 @@ export const auth = betterAuth({
           <VerifyEmail
             username={user.name}
             verifyUrl={u.toString()}
-            appName="Candian's Cart"
+            appName="Canadian's Cart"
           />
         ),
       });

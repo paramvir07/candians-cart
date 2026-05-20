@@ -414,7 +414,7 @@ export default function EditPayoutForm({
                   type="file"
                   ref={fileInputRef}
                   className="hidden"
-                  accept="image/jpeg, image/png, image/webp, application/pdf"
+                  accept="image/*, application/pdf"
                   onChange={handleFileChange}
                 />
               </div>

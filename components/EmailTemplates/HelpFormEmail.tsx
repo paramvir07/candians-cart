@@ -203,7 +203,7 @@ export default function HelpFormEmail({
                 Automated confirmation · Do not reply to this email
               </Text>
               <Text style={{ fontSize: "11px", color: "#9ca3af", margin: 0 }}>
-                © {new Date().getFullYear()} Candian's Cart · Invite-only family grocery platform
+                © {new Date().getFullYear()} Canadian's Cart · Invite-only family grocery platform
               </Text>
             </div>
 
