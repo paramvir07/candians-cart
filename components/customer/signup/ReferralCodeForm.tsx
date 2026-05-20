@@ -108,7 +108,7 @@ export function ReferralCodeForm() {
 
       {/* Helper note */}
       <p className="text-xs text-muted-foreground text-center">
-        Need a code? Ask an existing Candian&apos;s Cart family member to share theirs.
+        Need a code? Ask an existing Canadian&apos;s Cart family member to share theirs.
       </p>
     </div>
   );

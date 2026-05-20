@@ -178,7 +178,7 @@ const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
           setTotalPages(res.totalPages ?? 1);
         } else {
           toast.error(
-            res.error || "Failed to fetch products in Candian's Cart",
+            res.error || "Failed to fetch products in Canadian's Cart",
           );
         }
       } catch (error) {

@@ -64,7 +64,7 @@ const values = [
     emoji: "🤝",
     title: "Community-Driven",
     description:
-      "Candian's Cart is invite-only and grows through trust. Our members refer neighbours, friends, and family.",
+      "Canadian's Cart is invite-only and grows through trust. Our members refer neighbours, friends, and family.",
   },
 ];
 
@@ -117,7 +117,7 @@ const About = () => {
               <span className="text-green-600">for families like yours</span>
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed">
-              Candian&apos;s Cart started with a simple idea: every Canadian family
+              Canadian&apos;s Cart started with a simple idea: every Canadian family
               deserves access to fresh, affordable groceries — without the hassle.
               We&apos;re a subsidised grocery pickup service exclusive to families in
               Abbotsford, BC.
@@ -165,7 +165,7 @@ const About = () => {
               </p>
               <p className="text-gray-600 leading-relaxed">
                 Today, over 500 families in Abbotsford save an average of 30%
-                every month shopping with Candian&apos;s Cart. We&apos;re just getting
+                every month shopping with Canadian&apos;s Cart. We&apos;re just getting
                 started.
               </p>
             </div>

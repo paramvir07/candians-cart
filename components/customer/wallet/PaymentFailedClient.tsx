@@ -241,7 +241,7 @@ export default function PaymentFailedClient() {
           className="text-[11px] font-medium tracking-widest"
           style={{ color: "oklch(0.5252 0.0315 157.3462)" }}
         >
-          CANDIAN'S CART
+          CANADIAN'S CART
         </span>
       </div>
     </div>

@@ -16,7 +16,7 @@ const NotFound = () => {
           <Logo variant="icon" />
         {/* </div> */}
         {/* <span className="text-base font-bold text-foreground tracking-tight"> */}
-          {/* Candian&apos;s Cart */}
+          {/* Canadian&apos;s Cart */}
         {/* </span> */}
       </div>
 

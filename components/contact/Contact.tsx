@@ -56,7 +56,7 @@ const ContactUs = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-16 lg:py-20">
 
         <p className="text-center text-sm text-gray-400 mb-3">
-          Candian&apos;s Cart{" "}
+          Canadian&apos;s Cart{" "}
           <span className="mx-1.5 text-gray-300">•</span>
           <span className="text-gray-500 font-medium">Contact us</span>
         </p>

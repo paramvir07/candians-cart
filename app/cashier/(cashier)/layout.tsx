@@ -6,7 +6,7 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: {
     default: "Cashier Terminal",
-    template: "%s | Terminal - Candian's Cart",
+    template: "%s | Terminal - Canadian's Cart",
   },
   robots: {
     index: false, // Prevents indexing of all cashier routes

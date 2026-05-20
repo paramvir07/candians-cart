@@ -16,17 +16,17 @@ const slides = [
   {
     image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80",
     title: "Join Your\nLocal Community",
-    sub: "CANDIAN'S CART",
+    sub: "CANADIAN'S CART",
   },
   {
     image: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80",
     title: "Fresh Groceries,\nDelivered Fast",
-    sub: "CANDIAN'S CART",
+    sub: "CANADIAN'S CART",
   },
   {
     image: "https://images.unsplash.com/photo-1506617564039-2f3b650b7010?w=800&q=80",
     title: "Save More\nEvery Week",
-    sub: "CANDIAN'S CART",
+    sub: "CANADIAN'S CART",
   },
 ]
 

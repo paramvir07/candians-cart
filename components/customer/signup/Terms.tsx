@@ -25,7 +25,7 @@ const Terms = () => {
       <div className="w-full rounded-xl border border-border/60 bg-muted/30 overflow-hidden">
 <div className="px-4 py-3.5 text-xs text-muted-foreground leading-relaxed space-y-2">
   <p>
-    By using Candian&apos;s Cart, you agree to our Terms of Service and Privacy
+    By using Canadian&apos;s Cart, you agree to our Terms of Service and Privacy
     Policy.
   </p>
 

@@ -73,7 +73,7 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
       ? "Enter admin details to create access"
       : cashier
         ? "Enter cashier details to register"
-        : "Join the Candian's Cart family today";
+        : "Join the Canadian's Cart family today";
 
   const formContent = (
     <>
