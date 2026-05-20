@@ -317,6 +317,8 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
                     ? `/store/products/${product._id}/edit`
                     : `/admin/product/${product._id}/edit`
                 }
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 border border-border rounded-xl transition-colors"
               >
                 <Edit className="h-3.5 w-3.5" />

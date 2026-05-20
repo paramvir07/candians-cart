@@ -2,7 +2,7 @@
 
 import { dbConnect } from "@/db/dbConnect";
 import productsModel from "@/db/models/store/products.model";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 
 export async function featuredProduct(
   productId: string,
@@ -11,27 +11,21 @@ export async function featuredProduct(
   try {
     await dbConnect();
 
-    const result = await productsModel.findByIdAndUpdate(
+    const product = await productsModel.findByIdAndUpdate(
       productId,
       { isFeatured },
       { returnDocument: "after" },
     );
 
-    if (!result) {
+    if (!product) {
       return { success: false, error: "Product not found" };
     }
-    // 1. Add 'await'
-    // 2. Destructure the storeId (because select() returns an object like { _id: '...', storeId: '...' })
-    const product = await productsModel
-      .findById(productId)
-      .select("storeId")
-      .lean();
 
-    if (product && product.storeId) {
-      const tagToBust = `products-${product.storeId.toString()}`;
-      revalidateTag(tagToBust, "max");
-      console.log(`[Cache] Successfully marked tag '${tagToBust}' as stale`);
-    }
+    const tagToBust = `products-${product.storeId.toString()}`;
+    revalidateTag(tagToBust, "max");
+    revalidateTag("global-products", "max");
+    revalidatePath("/admin/products");
+    console.log(`[Cache] Successfully marked tag '${tagToBust}' as stale`);
 
     return { success: true };
   } catch (error: any) {

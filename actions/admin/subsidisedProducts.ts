@@ -3,7 +3,7 @@
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { dbConnect } from "@/db/dbConnect";
 import Product from "@/db/models/store/products.model";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 
 /**
  * Marks a product as subsidised (admin-only action).
@@ -52,12 +52,11 @@ export async function subsidisedProduct(
       };
     }
 
-    const product = await Product.findById(productId).select("storeId").lean();
-    if (product && product.storeId) {
-      const tagToBust = `products-${product.storeId.toString()}`;
-      revalidateTag(tagToBust, "max");
-      console.log(`[Cache] Successfully marked tag '${tagToBust}' as stale`);
-    }
+    const tagToBust = `products-${updatedProduct.storeId.toString()}`;
+    revalidateTag(tagToBust, "max");
+    revalidateTag("global-products", "max");
+    revalidatePath("/admin/products");
+    console.log(`[Cache] Successfully marked tag '${tagToBust}' as stale`);
 
     return {
       success: true,

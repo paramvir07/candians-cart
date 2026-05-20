@@ -84,7 +84,7 @@ export const getCachedStoreProducts = async (
     [cacheKey], // dependencies for cache invalidation
     {
       revalidate: 86400, // revalidate after 24 hr
-      tags: [`products-${storeId}`], // tag for manual invalidation when products change
+      tags: [`products-${storeId}`, "global-products"], // tag for manual invalidation when products change
     },
   );
 

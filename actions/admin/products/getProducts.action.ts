@@ -22,6 +22,8 @@ export interface AdminProduct {
   InvoiceId?: string;
   createdAt: string;
   updatedAt: string;
+  UOM: string;
+  isMeasuredInWeight: Boolean;
   images?: {
     url: string;
     fileId: string;
