@@ -118,7 +118,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
       return avgMarkup;
     else if (mid && totalInDollars >= mid && totalInDollars <= current)
-      return 30;
+      return avgMarkup;
     return null;
   })();
   CartItems;
