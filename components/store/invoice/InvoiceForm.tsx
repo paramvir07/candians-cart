@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Save, X, FileText, UploadCloud, Loader2 } from "lucide-react";
+import {
+  Save,
+  X,
+  FileText,
+  UploadCloud,
+  Loader2,
+  Camera,
+  FolderOpen,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +25,6 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-// Server actions
 import {
   createInvoice,
   editInvoice,
@@ -28,10 +35,10 @@ import { zodErrorResponse } from "@/zod/validation/error";
 import { StoreDocument } from "@/types/store/store";
 
 interface InvoiceFormProps {
-  storeId?: string; // Optional so admin doesn't require a pre-bound store
+  storeId?: string;
   invoiceId?: string;
-  isAdmin?: boolean; // Flag to enable admin store selection
-  stores?: StoreDocument[]; // Fetched store list for admin dropdown
+  isAdmin?: boolean;
+  stores?: StoreDocument[];
 }
 
 const InvoiceForm = ({
@@ -46,26 +53,27 @@ const InvoiceForm = ({
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(isEditMode);
 
-  // Document Upload State
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [documentPreview, setDocumentPreview] = useState<string | null>(null);
   const [existingDocument, setExistingDocument] = useState<{
     url: string;
     fileId: string;
   } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form State
+  // Gallery / file picker — accepts images + PDFs
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Camera input — images only (can't capture a PDF from a camera)
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState({
     storeId: storeId || "",
     vendorName: "",
     InvoiceNumber: "",
-    DateInvoiceCame: "", // (YYYY-MM-DD)
+    DateInvoiceCame: "",
     productNameInInvoice: "",
     additionalNote: "",
   });
 
-  // Fetch initial data if editing
   useEffect(() => {
     if (!invoiceId) return;
 
@@ -73,15 +81,12 @@ const InvoiceForm = ({
       try {
         const response = await getInvoiceById(invoiceId);
 
-        // 1. EARLY EXIT: Handle the failure state immediately
         if (!response.success) {
           toast.error(response.message || "Failed to load invoice");
           router.push(isAdmin ? "/admin/price-invoices" : "/store/invoice");
           return;
         }
 
-        // 2. TypeScript now GUARANTEES that response.success is true
-        // and response.data exists based on your GetInvoiceResponse type.
         setFormData({
           storeId: response.data.storeId || storeId || "",
           vendorName: response.data.vendorName,
@@ -104,10 +109,7 @@ const InvoiceForm = ({
   }, [invoiceId, router, isAdmin, storeId]);
 
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,12 +120,11 @@ const InvoiceForm = ({
         return;
       }
       setDocumentFile(file);
-
-      if (file.type.startsWith("image/")) {
-        setDocumentPreview(URL.createObjectURL(file));
-      } else {
-        setDocumentPreview("pdf-or-doc");
-      }
+      setDocumentPreview(
+        file.type.startsWith("image/")
+          ? URL.createObjectURL(file)
+          : "pdf-or-doc",
+      );
     }
   };
 
@@ -131,9 +132,8 @@ const InvoiceForm = ({
     setDocumentFile(null);
     setDocumentPreview(null);
     setExistingDocument(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
   const handleSubmit = async () => {
@@ -233,6 +233,10 @@ const InvoiceForm = ({
     );
   }
 
+  // Whether the current preview is an image (not a PDF/doc placeholder)
+  const previewIsImage =
+    documentPreview !== null && documentPreview !== "pdf-or-doc";
+
   return (
     <div className="max-w-6xl mx-auto p-8 bg-[#F9FAFB] min-h-screen">
       <div className="flex justify-between items-center mb-8">
@@ -249,21 +253,20 @@ const InvoiceForm = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* LEFT COLUMN: Main Info */}
+        {/* LEFT COLUMN */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="border-none shadow-sm ring-1 ring-slate-200">
             <CardContent className="p-6 space-y-6">
               <h2 className="text-lg font-semibold">Invoice Details</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* ADMIN EXCLUSIVE: Store Selector */}
                 {isAdmin && stores && (
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="storeId">
                       Assign to Store <span className="text-red-500">*</span>
                     </Label>
                     <Select
-                      disabled={isEditMode || loading} // Typically we don't want admins changing the store owner on edit
+                      disabled={isEditMode || loading}
                       value={formData.storeId}
                       onValueChange={(value) => handleChange("storeId", value)}
                     >
@@ -276,7 +279,6 @@ const InvoiceForm = ({
                             key={String(store._id)}
                             value={String(store._id)}
                           >
-                            {/* Assumes storeName, adapt if your schema uses .name */}
                             {store.name || "Unnamed Store"}
                           </SelectItem>
                         ))}
@@ -382,6 +384,21 @@ const InvoiceForm = ({
                 Invoice Document <span className="text-red-500">*</span>
               </h2>
 
+              {/*
+               * Two hidden inputs — same pattern as the product image form.
+               *
+               * fileInputRef  — no capture, accepts image/* + PDF.
+               *   Opens the OS file picker / full iOS sheet (Take Photo +
+               *   Photo Library + Files). Used by "Choose File" and the
+               *   Gallery button in preview state.
+               *
+               * cameraInputRef — capture="environment", images only.
+               *   Bypasses the picker and opens the camera app directly on
+               *   every iOS and Android version, including Android 14+ Chrome
+               *   where the default picker lost its camera option.
+               *   PDFs can't come from a camera so accept="image/*" only.
+               *   Desktop ignores capture and falls back to file picker.
+               */}
               <input
                 type="file"
                 accept="image/*,application/pdf"
@@ -389,39 +406,87 @@ const InvoiceForm = ({
                 ref={fileInputRef}
                 onChange={handleDocumentChange}
               />
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                ref={cameraInputRef}
+                onChange={handleDocumentChange}
+              />
 
               <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-center bg-white min-h-60 relative overflow-hidden">
                 {documentPreview ? (
                   <div className="relative w-full h-full flex flex-col items-center justify-center gap-2">
                     {documentPreview === "pdf-or-doc" ? (
-                      <div className="flex flex-col items-center justify-center text-indigo-600 bg-indigo-50 p-6 rounded-lg w-full h-full">
-                        <FileText className="w-12 h-12 mb-2 opacity-80" />
-                        <span className="text-sm font-medium truncate max-w-50">
-                          {documentFile?.name || "Existing Document"}
-                        </span>
-                      </div>
+                      <>
+                        {/* PDF preview — X button only, no camera swap */}
+                        <div className="flex flex-col items-center justify-center text-indigo-600 bg-indigo-50 p-6 rounded-lg w-full h-full">
+                          <FileText className="w-12 h-12 mb-2 opacity-80" />
+                          <span className="text-sm font-medium truncate max-w-[200px]">
+                            {documentFile?.name || "Existing Document"}
+                          </span>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-7 w-7 rounded-full shadow-md z-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveDocument();
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </>
                     ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={documentPreview}
-                        alt="Document Preview"
-                        className="max-h-50 w-auto object-contain rounded-md"
-                      />
+                      <>
+                        {/* Image preview — Camera / Gallery / Remove buttons */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={documentPreview}
+                          alt="Document Preview"
+                          className="max-h-48 w-auto object-contain rounded-md"
+                        />
+                        <div className="grid grid-cols-3 gap-2 w-full mt-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-[11px] px-2"
+                            onClick={() => cameraInputRef.current?.click()}
+                          >
+                            <Camera className="w-3 h-3 shrink-0" />
+                            <span className="truncate">Camera</span>
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-[11px] px-2"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            <FolderOpen className="w-3 h-3 shrink-0" />
+                            <span className="truncate">Gallery</span>
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 text-[11px] px-2 text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/60 hover:bg-destructive/5"
+                            onClick={handleRemoveDocument}
+                          >
+                            <X className="w-3 h-3 shrink-0" />
+                            <span className="truncate">Remove</span>
+                          </Button>
+                        </div>
+                      </>
                     )}
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute -top-2 -right-2 h-7 w-7 rounded-full shadow-md z-10"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveDocument();
-                      }}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
                   </div>
                 ) : (
                   <>
+                    {/* Empty state — Choose File covers PDFs + gallery;
+                        Take Photo gives direct camera access */}
                     <UploadCloud className="h-10 w-10 text-slate-300 mb-3" />
                     <p className="text-sm font-medium text-slate-700">
                       Upload Document
@@ -429,14 +494,27 @@ const InvoiceForm = ({
                     <p className="text-[12px] text-slate-400 mb-4 mt-1">
                       PDF, PNG, JPG up to 10MB
                     </p>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      Choose File
-                    </Button>
+                    <div className="flex flex-col gap-2 w-full">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Choose File
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-1.5 text-slate-600"
+                        onClick={() => cameraInputRef.current?.click()}
+                      >
+                        <Camera className="w-3.5 h-3.5 shrink-0" />
+                        Take Photo
+                      </Button>
+                    </div>
                   </>
                 )}
               </div>
