@@ -118,7 +118,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
       return avgMarkup;
     else if (mid && totalInDollars >= mid && totalInDollars <= current)
-      return avgMarkup;
+      return avgMarkup; // If we're above the mid point, we can still give the higher markup as a subsidy, but it won't be reflected in the progress bar markup percentage
     return null;
   })();
   CartItems;
@@ -182,7 +182,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   })();
 
   const MarkupSub = markupBase * (active / 100);
-  const subsidyOnOrder = Math.floor(MarkupSub * 0.6);
+  const subsidyOnOrder = Math.floor(MarkupSub * 0.6); // Subsidy is 60% of the calculated markup based on the active fib bracket
   const TotalSubsidy = Number(
     ((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2),
   );
