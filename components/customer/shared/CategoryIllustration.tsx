@@ -271,9 +271,9 @@ export const CATEGORY_CONFIG: Record<
     gradient: "from-amber-500 to-yellow-600",
   },
   "Tea & Coffee": {
-    bg: "bg-brown-50",
+    bg: "bg-amber-50",
     text: "text-amber-900",
-    border: "border-amber-400",
+    border: "border-amber-300",
     emoji: "☕",
     gradient: "from-amber-700 to-yellow-800",
   },

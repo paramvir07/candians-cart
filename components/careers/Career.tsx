@@ -51,7 +51,7 @@ const JOB_POSTINGS: JobPosting[] = [
     title: "Customer Support Specialist",
     department: "Customer Experience",
     location: "Abbotsford, BC",
-    type: "Part-Time",
+    type: "Full-Time",
     salary: "$18.25 / hr",
     summary:
       "Be the friendly voice behind Canadian's Cart — helping families with orders, accounts, and anything else they need.",
@@ -83,7 +83,7 @@ const JOB_POSTINGS: JobPosting[] = [
     title: "Cashier",
     department: "Operations",
     location: "Abbotsford, BC",
-    type: "Part-Time",
+    type: "Full-Time",
     salary: "$18.25 / hr",
     summary:
       "Process customer pickups at our Abbotsford location — the last smile families see before heading home with their groceries.",

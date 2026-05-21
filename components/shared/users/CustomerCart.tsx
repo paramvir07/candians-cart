@@ -464,6 +464,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 return (
                   <div
                     key={item.productId._id.toString()}
+                    data-cart-item
                     className="flex gap-3 bg-card rounded-xl border border-border/60 p-3"
                   >
                     <div className="relative h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-secondary">
@@ -522,11 +523,13 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                             />
                           )}
                         </div>
+                        
                         <QuantityControl
                           productId={item.productId._id.toString()}
                           customerId={customerId}
                           initialQuantity={item.quantity}
                           variant="mobile"
+                          isMeasuredInWeight={item.productId.isMeasuredInWeight}
                         />
                       </div>
                     </div>
@@ -714,6 +717,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                     return (
                       <div
                         key={item.productId._id.toString()}
+                        data-cart-item
                         className="flex items-center gap-4 px-5 py-3.5 hover:bg-accent/20 transition-colors group"
                       >
                         <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-secondary">
@@ -787,6 +791,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                             customerId={customerId}
                             initialQuantity={item.quantity}
                             variant="desktop"
+                            isMeasuredInWeight={item.productId.isMeasuredInWeight}
                           />
                         </div>
 

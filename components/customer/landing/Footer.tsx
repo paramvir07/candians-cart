@@ -3,12 +3,12 @@ import Logo from "@/components/shared/Logo";
 
 const LINKS = {
   Shop: [
-    { label: "All Products", href: "/customer" },
+    { label: "All Products", href: "/customer#allproducts" },
     // { label: "Fresh Produce", href: "/customer?category=Produce" },
-    { label: "Fruits", href: "/customer?category=Fruits" },
-    { label: "Vegetables", href: "/customer?category=Vegetables" },
-    { label: "Dairy & Eggs", href: "/customer?category=Dairy" },
-    { label: "Bakery", href: "/customer?category=Bakery" },
+    { label: "Fruits", href: "/customer/search?category=Fruits" },
+    { label: "Vegetables", href: "/customer/search?category=Vegetables" },
+    { label: "Dairy & Eggs", href: "/customer/search?category=Dairy" },
+    { label: "Bakery", href: "/customer/search?category=Bakery" },
   ],
   Account: [
     { label: "My Profile", href: "/customer/profile" },
@@ -23,6 +23,7 @@ const LINKS = {
     { label: "Contact", href: "/contact" },
     { label: "Terms", href: "/terms" },
     { label: "Privacy Policy", href: "/privacy" },
+    { label: "Careers", href: "/careers"},
   ],
 };
 
@@ -40,16 +41,6 @@ const SOCIALS = [
     ),
   },
   {
-  label: "Email",
-  href: "mailto:info@canadianscart.ca",
-  icon: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-      <rect x="2" y="4" width="20" height="16" rx="2"/>
-      <polyline points="2,4 12,13 22,4"/>
-    </svg>
-  ),
-},
-  {
     label: "Facebook",
     href: "https://www.facebook.com/canadianscart",
     icon: (
@@ -58,21 +49,22 @@ const SOCIALS = [
       </svg>
     ),
   },
-  // {
-  //   label: "X / Twitter",
-  //   href: "https://x.com/candianscart",
-  //   icon: (
-  //     <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-  //       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-  //     </svg>
-  //   ),
-  // },
   {
     label: "TikTok",
     href: "https://vt.tiktok.com/ZSxjaYrjL/",
     icon: (
       <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
         <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.73a4.85 4.85 0 0 1-1.01-.04z"/>
+      </svg>
+    ),
+  },
+    {
+    label: "Email",
+    href: "mailto:info@canadianscart.ca",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <polyline points="2,4 12,13 22,4"/>
       </svg>
     ),
   },

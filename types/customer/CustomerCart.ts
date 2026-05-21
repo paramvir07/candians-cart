@@ -20,6 +20,8 @@ export interface IProduct {
   PriceDrop?:boolean
   createdAt: string
   updatedAt: string
+  isMeasuredInWeight?: boolean;
+UOM?: string;
 }
 
 export interface ICartItem {

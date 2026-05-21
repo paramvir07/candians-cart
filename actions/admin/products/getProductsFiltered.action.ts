@@ -42,13 +42,9 @@ export const getStoreProductsFiltered = async (
       if (filters.maxPrice !== undefined) query.price.$lte = filters.maxPrice;
     }
 
-    if (filters.subsidised !== undefined) {
-      query.subsidised = filters.subsidised;
-    }
+    if (filters.subsidised === true) query.subsidised = true;
 
-    if (filters.inStock !== undefined) {
-      query.stock = filters.inStock;
-    }
+if (filters.inStock === true) query.stock = true;
 
     if (filters.taxRates && filters.taxRates.length > 0) {
       query.tax = { $in: filters.taxRates };
@@ -261,9 +257,8 @@ export const searchProductsWithFilters = async (
       if (filters.maxPrice !== undefined)
         matchStage.price.$lte = filters.maxPrice;
     }
-    if (filters.subsidised !== undefined)
-      matchStage.subsidised = filters.subsidised;
-    if (filters.inStock !== undefined) matchStage.stock = filters.inStock;
+if (filters.subsidised === true) matchStage.subsidised = true;
+    if (filters.inStock === true) matchStage.stock = true;
     if (filters.taxRates && filters.taxRates.length > 0)
       matchStage.tax = { $in: filters.taxRates };
     if (filters.markupMin !== undefined || filters.markupMax !== undefined) {

@@ -113,6 +113,8 @@ const scanBufferRef = useRef("");
 const lastKeyTimeRef = useRef(0);
 const androidBufferRef = useRef("");
 const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const androidLastInputRef = useRef(0);
 
   // VERCEL BEST PRACTICE: Use useDebounce to manage rapid user input
   const [searchQuery, setSearchQuery] = useState("");
@@ -124,6 +126,120 @@ const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isAllStores = !storeId;
   const isFilterMode = hasFilters(filters);
   const isSearchMode = debouncedQuery.trim().length > 0;
+
+  // keyboard scanner effect
+useEffect(() => {
+  if (!upcMode) return;
+
+  const HUMAN_THRESHOLD_MS = 100;
+  const COMMIT_TIMEOUT_MS = 100;
+
+  const commitScan = (value: string) => {
+    if (!value || value.length < 4) return;
+    setSearchQuery(value);
+    searchInputRef.current?.focus();
+    setTimeout(() => searchInputRef.current?.select(), 0);
+  };
+
+  const flush = () => {
+    const buf = scanBufferRef.current;
+    scanBufferRef.current = "";
+    if (buf.length >= 4) commitScan(buf);
+  };
+
+  const resetTimer = () => {
+    if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+    scanTimerRef.current = setTimeout(flush, COMMIT_TIMEOUT_MS);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key.length !== 1 && e.key !== "Enter") return;
+
+    const now = Date.now();
+    const gap = now - lastKeyTimeRef.current;
+    lastKeyTimeRef.current = now;
+
+    if (e.key === "Enter") {
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+      const buf = scanBufferRef.current;
+      scanBufferRef.current = "";
+      if (buf.length >= 4) {
+        e.preventDefault();
+        e.stopPropagation();
+        commitScan(buf);
+      }
+      return;
+    }
+
+    if (gap > HUMAN_THRESHOLD_MS && scanBufferRef.current.length > 0) {
+      scanBufferRef.current = "";
+    }
+
+    scanBufferRef.current += e.key;
+    resetTimer();
+  };
+
+  const handleCompositionEnd = (e: CompositionEvent) => {
+    if (!e.data || e.data.length < 4) return;
+    scanBufferRef.current = "";
+    if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+    const value = e.data;
+    setSearchQuery(value);
+    searchInputRef.current?.focus();
+    setTimeout(() => searchInputRef.current?.select(), 0);
+  };
+
+  window.addEventListener("keydown", handleKeyDown, true);
+  window.addEventListener("compositionend", handleCompositionEnd, true);
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown, true);
+    window.removeEventListener("compositionend", handleCompositionEnd, true);
+    if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+  };
+}, [upcMode]);
+
+// Android scanner effect
+useEffect(() => {
+  if (!upcMode) return;
+  const input = searchInputRef.current;
+  if (!input) return;
+
+  const ANDROID_DEBOUNCE_MS = 150;
+
+  const handleInput = (e: Event) => {
+    const inputEvent = e as InputEvent;
+    if (inputEvent.isComposing) return; // compositionend handles it
+
+    const val = (e.target as HTMLInputElement).value;
+    const now = Date.now();
+    const gap = now - androidLastInputRef.current;
+    androidLastInputRef.current = now;
+
+    if (gap > ANDROID_DEBOUNCE_MS * 2) {
+      androidBufferRef.current = "";
+    }
+
+    androidBufferRef.current = val;
+
+    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+
+    androidTimerRef.current = setTimeout(() => {
+      const buf = androidBufferRef.current;
+      androidBufferRef.current = "";
+      if (buf.length >= 4) {
+        setSearchQuery(buf);
+        setTimeout(() => input.select(), 0);
+      }
+    }, ANDROID_DEBOUNCE_MS);
+  };
+
+  input.addEventListener("input", handleInput);
+  return () => {
+    input.removeEventListener("input", handleInput);
+    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+  };
+}, [upcMode]);
 
   // Reset to page 1 when a new search begins
   useEffect(() => {
@@ -205,66 +321,6 @@ const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     isFilterMode,
     upcMode,
   ]);
-
-  // keyboard scanner effect
-useEffect(() => {
-  const THRESHOLD = 50;
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    const now = Date.now();
-    const gap = now - lastKeyTimeRef.current;
-    lastKeyTimeRef.current = now;
-
-    if (e.key === "Enter") {
-      const buf = scanBufferRef.current;
-      scanBufferRef.current = "";
-
-      if (buf.length >= 6) {
-        e.preventDefault();
-        e.stopPropagation();
-        searchInputRef.current?.focus();
-        setSearchQuery(buf);
-        setTimeout(() => searchInputRef.current?.select(), 0);
-      }
-      return;
-    }
-
-    if (e.key.length !== 1) return;
-    if (gap > THRESHOLD && scanBufferRef.current.length > 0)
-      scanBufferRef.current = "";
-    scanBufferRef.current += e.key;
-  };
-
-  window.addEventListener("keydown", handleKeyDown, true);
-  return () => window.removeEventListener("keydown", handleKeyDown, true);
-}, []);
-
-// Android scanner effect
-useEffect(() => {
-  const input = searchInputRef.current;
-  if (!input) return;
-
-  const handleInput = (e: Event) => {
-    const val = (e.target as HTMLInputElement).value;
-    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-    androidBufferRef.current = val;
-
-    androidTimerRef.current = setTimeout(() => {
-      const buf = androidBufferRef.current;
-      if (buf.length >= 6) {
-        setSearchQuery(buf);
-        setTimeout(() => input.select(), 0);
-      }
-      androidBufferRef.current = "";
-    }, 80);
-  };
-
-  input.addEventListener("input", handleInput);
-  return () => {
-    input.removeEventListener("input", handleInput);
-    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-  };
-}, []);
 
   const handleBarcodeScan = (value: string) => {
     setSearchQuery(value);

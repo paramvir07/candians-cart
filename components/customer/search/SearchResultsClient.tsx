@@ -1,4 +1,13 @@
 "use client";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { getStoreProductsFiltered } from "@/actions/admin/products/getProductsFiltered.action";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { IProduct } from "@/types/store/products.types";
@@ -39,7 +48,7 @@ import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { useSearchParams } from "next/navigation";
 
 interface SearchResultsClientProps {
-  isCashier?:boolean;
+  isCashier?: boolean;
   customerId?: string;
   storeId: string;
   searchAction: (
@@ -106,23 +115,33 @@ export function SearchResultsClient({
   const [cartMap, setCartMap] = useState<Record<string, number>>({});
   const [cartInsight, setCartInsight] = useState<CartInsight | null>(null);
   const [upcMode, setUpcMode] = useState(!!customerId);
+  const prevQueryRef = useRef(debouncedQuery);
+const prevFiltersRef = useRef(filters);
+  
   const [pendingFilters, setPendingFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
+    const [currentPage, setCurrentPage] = useState(1);
+const [totalPages, setTotalPages] = useState(1);
+useEffect(() => {
+  const categoryParam = searchParams.get("category");
+  const subsidisedOnly = searchParams.get("subsidisedOnly") === "true";
 
-  useEffect(() => {
-    if (searchParams.get("subsidisedOnly") !== "true") return;
+  if (!categoryParam && !subsidisedOnly) return;
 
-    setFilters((prev) => ({ ...prev, subsidisedOnly: true }));
-    setIsLoading(true);
-    setHasSearched(true);
+  const categories = categoryParam ? [categoryParam] : [];
 
-    getStoreProductsFiltered(storeId, 1, 200, { subsidised: true }).then(
-      (res) => {
-        setAllResults(res.success && res.data ? res.data : []);
-        setIsLoading(false);
-      },
-    );
-  }, []);
+  setFilters((prev) => ({ ...prev, subsidisedOnly, categories }));
+  setIsLoading(true);
+  setHasSearched(true);
+
+  getStoreProductsFiltered(storeId, 1, 16, {
+    subsidised: subsidisedOnly ? true : undefined,
+    categories: categories.length > 0 ? (categories as any) : undefined,
+  }).then((res) => {
+    setAllResults(res.success && res.data ? res.data : []);
+    setIsLoading(false);
+  });
+}, []);
 
   // ── Fetch cart insight whenever cartMap changes ──────────────────────────
   useEffect(() => {
@@ -191,7 +210,7 @@ export function SearchResultsClient({
           [productId]: (prev[productId] || 0) + 1,
         }));
         toast.success(`${product.name} added to cart`);
-        emitCartUpdated()
+        emitCartUpdated();
       } catch {
         toast.error("Failed to add to cart");
       }
@@ -282,112 +301,111 @@ export function SearchResultsClient({
     refetch();
   }, [upcMode]); // intentionally only upcMode — we want this to fire on toggle only
 
-// REPLACE with (two clean separate effects):
-  useEffect(() => {
-    if (!debouncedQuery.trim()) {
-      if (!filters.categories.length) {
-        if (searchParams.get("subsidisedOnly") === "true") return;
-        setAllResults([]);
-        setHasSearched(false);
-      } else {
-        const reload = async () => {
-          setIsLoading(true);
-          setHasSearched(true);
-          const res = await getStoreProductsFiltered(storeId, 1, 200, {
-            categories: filters.categories as any,
-            sortBy: filters.sortBy === "default" ? "recommended" : filters.sortBy,
-          });
-          setAllResults(res.success && res.data ? res.data : []);
-          setIsLoading(false);
-        };
-        reload();
-      }
+// ONE effect to rule them all — handles query+filters, filters-only, and empty state
+useEffect(() => {
+  const hasQuery = debouncedQuery.trim().length > 0;
+  const hasFilters =
+    filters.categories.length > 0 ||
+    filters.subsidisedOnly ||
+    filters.inStockOnly;
+
+    const queryChanged = prevQueryRef.current !== debouncedQuery;
+  const filtersChanged =
+    prevFiltersRef.current.sortBy !== filters.sortBy ||
+    prevFiltersRef.current.categories !== filters.categories ||
+    prevFiltersRef.current.subsidisedOnly !== filters.subsidisedOnly ||
+    prevFiltersRef.current.inStockOnly !== filters.inStockOnly;
+
+  prevQueryRef.current = debouncedQuery;
+  prevFiltersRef.current = filters;
+
+  // If the search params changed, reset to page 1 immediately
+  const pageToUse = queryChanged || filtersChanged ? 1 : currentPage;
+  if (queryChanged || filtersChanged) {
+    setCurrentPage(1);
+  }
+
+  if (!hasQuery && !hasFilters) {
+    if (
+      searchParams.get("subsidisedOnly") === "true" ||
+      searchParams.get("category")
+    )
       return;
-    }
-    const fetchResult = async () => {
-      setIsLoading(true);
-      setHasSearched(true);
+    setAllResults([]);
+    setHasSearched(false);
+    setTotalPages(1);
+    return;
+  }
+
+  const run = async () => {
+    setIsLoading(true);
+    setHasSearched(true);
+
+    if (hasQuery) {
       const res = upcMode
         ? await searchProductsByUPC(debouncedQuery.trim(), storeId)
-        : await searchProductsWithFilters(debouncedQuery.trim(), storeId, 1, 200, {
+        : await searchProductsWithFilters(debouncedQuery.trim(), storeId, pageToUse, 16, {
             sortBy: filters.sortBy === "default" ? "recommended" : filters.sortBy,
+            categories: filters.categories.length > 0 ? (filters.categories as any) : undefined,
+            subsidised: filters.subsidisedOnly ? true : undefined,
+            inStock: filters.inStockOnly ? true : undefined,
           });
       setAllResults(res.success && res.data ? res.data : []);
-      setIsLoading(false);
-    };
-    fetchResult();
-  }, [debouncedQuery, storeId, upcMode, filters.sortBy]);
-
-  useEffect(() => {
-    if (debouncedQuery.trim()) return;
-    if (!hasSearched) return;
-    if (filterSheetOpen) return;
-
-    const load = async () => {
-      setIsLoading(true);
-      if (filters.categories.length === 0 && !filters.subsidisedOnly) {
-        setAllResults([]);
-        setHasSearched(false);
-        setIsLoading(false);
-        return;
-      }
-      const res = await getStoreProductsFiltered(storeId, 1, 200, {
-        categories:
-          filters.categories.length > 0
-            ? (filters.categories as any)
-            : undefined,
+      setTotalPages((res as any).totalPages ?? 1);
+    } else {
+      const res = await getStoreProductsFiltered(storeId, pageToUse, 16, {
+        categories: filters.categories.length > 0 ? (filters.categories as any) : undefined,
         subsidised: filters.subsidisedOnly ? true : undefined,
+        inStock: filters.inStockOnly ? true : undefined,
         sortBy: filters.sortBy === "default" ? "recommended" : filters.sortBy,
       });
       setAllResults(res.success && res.data ? res.data : []);
-      setIsLoading(false);
-    };
-    load();
-  }, [
-    filters.categories,
-    filters.subsidisedOnly,
-    filters.sortBy,
-    storeId,
-    debouncedQuery,
-    hasSearched,
-  ]);
+            setTotalPages((res as any).totalPages ?? 1);
+
+    }
+
+    setIsLoading(false);
+  };
+
+  run();
+}, [debouncedQuery, storeId, upcMode, filters.sortBy, filters.categories, filters.subsidisedOnly, filters.inStockOnly, currentPage]);
 
   // ADD this new effect after the debouncedQuery effect:
-  useEffect(() => {
-    if (!debouncedQuery.trim()) return;
-    if (!hasSearched) return;
+  // useEffect(() => {
+  //   if (!debouncedQuery.trim()) return;
+  //   if (!hasSearched) return;
 
-    setAllResults((prev) => {
-      const result = [...prev];
-      switch (filters.sortBy) {
-        case "price_asc":
-          result.sort(
-            (a, b) =>
-              a.price +
-              a.price * (a.markup / 100) -
-              (b.price + b.price * (b.markup / 100)),
-          );
-          break;
-        case "price_desc":
-          result.sort(
-            (a, b) =>
-              b.price +
-              b.price * (b.markup / 100) -
-              (a.price + a.price * (a.markup / 100)),
-          );
-          break;
-        case "name_asc":
-          result.sort((a, b) => a.name.localeCompare(b.name));
-          break;
-        default:
-          result.sort(
-            (a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0),
-          );
-          break;
-      }
-      return result;
-    });
-  }, [filters.sortBy]);
+  //   setAllResults((prev) => {
+  //     const result = [...prev];
+  //     switch (filters.sortBy) {
+  //       case "price_asc":
+  //         result.sort(
+  //           (a, b) =>
+  //             a.price +
+  //             a.price * (a.markup / 100) -
+  //             (b.price + b.price * (b.markup / 100)),
+  //         );
+  //         break;
+  //       case "price_desc":
+  //         result.sort(
+  //           (a, b) =>
+  //             b.price +
+  //             b.price * (b.markup / 100) -
+  //             (a.price + a.price * (a.markup / 100)),
+  //         );
+  //         break;
+  //       case "name_asc":
+  //         result.sort((a, b) => a.name.localeCompare(b.name));
+  //         break;
+  //       default:
+  //         result.sort(
+  //           (a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0),
+  //         );
+  //         break;
+  //     }
+  //     return result;
+  //   });
+  // }, [filters.sortBy]);
 
   const displayPrice = (p: IProduct) => p.price + p.price * (p.markup / 100);
 
@@ -413,15 +431,22 @@ export function SearchResultsClient({
   // }, [allResults, filters]);
 
   // AFTER
-  const filtered = useMemo(() => {
-    let result = [...allResults];
-    if (filters.categories.length > 0)
-      result = result.filter((p) => filters.categories.includes(p.category));
-    if (filters.inStockOnly) result = result.filter((p) => p.stock);
-    if (filters.subsidisedOnly) result = result.filter((p) => p.subsidised);
-    // Sort is now handled by the backend fetch — no client-side sort here
-    return result;
-  }, [allResults, filters]);
+const filtered = useMemo(() => [...allResults], [allResults]);
+
+  const getPageNumbers = (): (number | "ellipsis")[] => {
+  if (totalPages <= 5)
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  if (currentPage <= 3) return [1, 2, 3, 4, "ellipsis", totalPages];
+  if (currentPage >= totalPages - 2)
+    return [1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+  return [1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages];
+};
+
+const scrollToResults = () => {
+  if (!resultsRef.current) return;
+  const rect = resultsRef.current.getBoundingClientRect();
+  window.scrollTo({ top: window.scrollY + rect.top - 70, behavior: "smooth" });
+};
 
   return (
     <div
@@ -436,6 +461,7 @@ export function SearchResultsClient({
         onQueryChange={setQuery}
         customerData={customerData}
         cartCount={cartCount}
+        upcMode={upcMode}
       />
 
       {/* Cart insight + UPC toggle — cashier only, always visible */}
@@ -567,7 +593,7 @@ export function SearchResultsClient({
                           const res = await getStoreProductsFiltered(
                             storeId,
                             1,
-                            200,
+                            16,
                             {
                               categories: newCategories as any,
                               sortBy:
@@ -644,67 +670,123 @@ export function SearchResultsClient({
                 </div>
 
                 {filtered.length > 0 ? (
-<div className={`grid gap-3 sm:gap-4 ${
-  isCashier
-    ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-    : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-}`}>                    {filtered.map((product) => (
-                      <CustomerProductCard
-                        isCashier={isCashier}
-                        subsidyPage={false}
-                        customerId={customerId}
-                        key={product._id}
-                        product={product}
-                        cartQuantity={cartMap[product._id as string] || 0}
-                      />
-                    ))}
-                  </div>
-                ) : allResults.length > 0 ? (
-                  <div className="py-20 flex flex-col items-center justify-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center">
-                      <PackageOpen className="h-6 w-6 text-muted-foreground/50" />
-                    </div>
-                    <div className="text-center">
-                      <p className="font-bold text-foreground">
-                        No products match your filters
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Try adjusting or clearing your filters
-                      </p>
-                    </div>
-                    <button
-                      onClick={resetFilters}
-                      className="h-9 px-5 rounded-full bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors"
-                    >
-                      Clear filters
-                    </button>
-                  </div>
+  <>
+    <div
+      className={`grid gap-3 sm:gap-4 ${
+        isCashier
+          ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+      }`}
+    >
+      {filtered.map((product) => (
+        <CustomerProductCard
+          isCashier={isCashier}
+          subsidyPage={false}
+          customerId={customerId}
+          key={product._id}
+          product={product}
+          cartQuantity={cartMap[product._id as string] || 0}
+        />
+      ))}
+    </div>
+
+    {totalPages > 1 && (
+      <div className="pt-6 mt-6 border-t border-border/40">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage > 1) {
+                    setCurrentPage((p) => p - 1);
+                    scrollToResults();
+                  }
+                }}
+                className={currentPage === 1 ? "pointer-events-none opacity-40" : "cursor-pointer"}
+              />
+            </PaginationItem>
+
+            {getPageNumbers().map((page, i) => (
+              <PaginationItem key={i}>
+                {page === "ellipsis" ? (
+                  <PaginationEllipsis />
                 ) : (
-                  <div className="py-20 flex flex-col items-center justify-center gap-4">
-                    <div className="w-16 h-16 rounded-3xl bg-card border border-border/60 flex items-center justify-center text-3xl shadow-sm">
-                      🔍
-                    </div>
-                    <div className="text-center">
-                      <p className="font-bold text-foreground text-lg">
-                        Nothing found
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
-                        Try a different spelling or browse by category
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setQuery("");
-                        setAllResults([]);
-                        setHasSearched(false);
-                        setFilters(DEFAULT_FILTERS);
-                      }}
-                      className="h-9 px-5 rounded-full border border-border/60 bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-all"
-                    >
-                      Clear search
-                    </button>
-                  </div>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === page}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(page as number);
+                      scrollToResults();
+                    }}
+                    className="cursor-pointer"
+                  >
+                    {page}
+                  </PaginationLink>
                 )}
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage < totalPages) {
+                    setCurrentPage((p) => p + 1);
+                    scrollToResults();
+                  }
+                }}
+                className={currentPage === totalPages ? "pointer-events-none opacity-40" : "cursor-pointer"}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+    )}
+  </>
+) : allResults.length > 0 ? (
+  <div className="py-20 flex flex-col items-center justify-center gap-4">
+    <div className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center">
+      <PackageOpen className="h-6 w-6 text-muted-foreground/50" />
+    </div>
+    <div className="text-center">
+      <p className="font-bold text-foreground">No products match your filters</p>
+      <p className="text-sm text-muted-foreground mt-1">Try adjusting or clearing your filters</p>
+    </div>
+    <button
+      onClick={resetFilters}
+      className="h-9 px-5 rounded-full bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors"
+    >
+      Clear filters
+    </button>
+  </div>
+) : (
+  <div className="py-20 flex flex-col items-center justify-center gap-4">
+    <div className="w-16 h-16 rounded-3xl bg-card border border-border/60 flex items-center justify-center text-3xl shadow-sm">
+      🔍
+    </div>
+    <div className="text-center">
+      <p className="font-bold text-foreground text-lg">Nothing found</p>
+      <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
+        Try a different spelling or browse by category
+      </p>
+    </div>
+    <button
+      onClick={() => {
+        setQuery("");
+        setAllResults([]);
+        setHasSearched(false);
+        setFilters(DEFAULT_FILTERS);
+      }}
+      className="h-9 px-5 rounded-full border border-border/60 bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-all"
+    >
+      Clear search
+    </button>
+  </div>
+)}
               </>
             )}
           </div>

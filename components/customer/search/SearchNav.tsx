@@ -26,6 +26,7 @@ interface SearchNavProps {
   onBarcodeScan?: (value: string) => void;
   customerData: Customer;
   cartCount: number;
+  upcMode?: boolean;
 }
 
 export function SearchNav({
@@ -35,6 +36,7 @@ export function SearchNav({
   onBarcodeScan,
   customerData,
   cartCount,
+  upcMode = false,
 }: SearchNavProps) {
   const [query, setQuery] = useState(initialQuery);
   const [, startTransition] = useTransition();
@@ -54,7 +56,9 @@ export function SearchNav({
     if (!value || value.length < 4) return;
     setQuery(value);
     startTransition(() => onQueryChange(value));
-    onBarcodeScan?.(value);
+    if (upcMode) {
+      onBarcodeScan?.(value);
+    }
     setTimeout(() => searchInputRef.current?.select(), 0);
   };
 
@@ -70,6 +74,7 @@ export function SearchNav({
   // Scanner gun auto enter
   useEffect(() => {
     if (!customerId) return;
+    if (!upcMode) return;
 
     const HUMAN_THRESHOLD_MS = 100;
     const COMMIT_TIMEOUT_MS = 100;
@@ -133,6 +138,7 @@ export function SearchNav({
 
   useEffect(() => {
     if (!customerId) return;
+    if (!upcMode) return;
     const input = searchInputRef.current;
     if (!input) return;
 
@@ -178,127 +184,129 @@ export function SearchNav({
     setQuery(val);
     startTransition(() => onQueryChange(val));
   };
-  const handleBarcodeScan = (value: string) => {
+const handleBarcodeScan = (value: string) => {
     handleChange(value);
-    onBarcodeScan?.(value);
+    if (upcMode) {
+      onBarcodeScan?.(value);
+    }
   };
 
   const initials = customerData.name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
 
-  return (
-    <nav className="sticky top-0 z-30 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 border-b border-border">
-      <div className="flex items-center gap-5 px-3 sm:px-4 md:px-6 h-14">
-        {/* LEFT */}
-        <div className="flex items-center shrink-0">
-          {!customerId && (
-            <Link href="/customer" className="md:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full h-9 w-9"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-          )}
-          {!customerId && (
-            <div className="hidden md:flex items-center">
-              <Logo variant="icon" />
-            </div>
-          )}
-        </div>
-
-        {/* SEARCH */}
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-1 items-center gap-2 min-w-0"
-        >
-          <div className="relative flex-1 min-w-0">
-            <Input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search products…"
-              value={query}
-              onChange={(e) => handleChange(e.target.value)}
-              autoFocus
-              autoComplete={customerId ? "off" : "on"}
-              autoCorrect={customerId ? "off" : "on"}
-              autoCapitalize={customerId ? "off" : "sentences"}
-              spellCheck={!customerId}
-              inputMode={customerId ? "text" : "text"}
-              className="h-9 w-full rounded-xl bg-muted border-transparent focus-visible:border-border pr-8 text-sm placeholder:text-muted-foreground"
-            />
-            {query && (
-              <button
-                type="button"
-                onClick={() => handleChange("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-muted-foreground/20 hover:bg-muted-foreground/30 flex items-center justify-center transition-colors"
-                aria-label="Clear search"
-              >
-                <X className="h-2.5 w-2.5 text-muted-foreground" />
-              </button>
+    return (
+      <nav className="sticky top-0 z-30 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 border-b border-border">
+        <div className="flex items-center gap-5 px-3 sm:px-4 md:px-6 h-14">
+          {/* LEFT */}
+          <div className="flex items-center shrink-0">
+            {!customerId && (
+              <Link href="/customer" className="md:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full h-9 w-9"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
+            {!customerId && (
+              <div className="hidden md:flex items-center">
+                <Logo variant="icon" />
+              </div>
             )}
           </div>
 
-          {/* Scanner — controlled via state, no ref needed */}
-          <div className="shrink-0">
-            <QrScannerButton
-              usedFor="barcode"
-              onScan={handleBarcodeScan}
-              open={scannerOpen}
-              onOpenChange={setScannerOpen}
-            />
-          </div>
-        </form>
+          {/* SEARCH */}
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-1 items-center gap-2 min-w-0"
+          >
+            <div className="relative flex-1 min-w-0">
+              <Input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search products…"
+                value={query}
+                onChange={(e) => handleChange(e.target.value)}
+                autoFocus
+                autoComplete={customerId ? "off" : "on"}
+                autoCorrect={customerId ? "off" : "on"}
+                autoCapitalize={customerId ? "off" : "sentences"}
+                spellCheck={!customerId}
+                inputMode={customerId ? "text" : "text"}
+                className="h-9 w-full rounded-xl bg-muted border-transparent focus-visible:border-border pr-8 text-sm placeholder:text-muted-foreground"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => handleChange("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-muted-foreground/20 hover:bg-muted-foreground/30 flex items-center justify-center transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-2.5 w-2.5 text-muted-foreground" />
+                </button>
+              )}
+            </div>
 
-        {/* RIGHT — desktop only */}
-        {!customerId && (
-          <div className="hidden md:flex items-center gap-2 shrink-0">
-            <Link href="/customer/cart">
-              <Button
-                variant="outline"
-                size="icon"
-                className="relative h-9 w-9 rounded-xl"
-                aria-label="Cart"
-              >
-                <ShoppingCart className="h-4 w-4" />
-                {cartCount > 0 && (
-                  <Badge
-                    variant="default"
-                    className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] font-bold rounded-full border-2 border-background leading-none"
-                  >
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </Badge>
-                )}
-              </Button>
-            </Link>
+            {/* Scanner — controlled via state, no ref needed */}
+            <div className="shrink-0">
+              <QrScannerButton
+                usedFor="barcode"
+                onScan={handleBarcodeScan}
+                open={scannerOpen}
+                onOpenChange={setScannerOpen}
+              />
+            </div>
+          </form>
 
-            <Link href="/customer/wallet">
-              <div className="flex items-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-xl px-3 py-1.5 transition-colors cursor-pointer">
-                <div className="h-6 w-6 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                  <Wallet className="h-3 w-3 text-primary-foreground" />
+          {/* RIGHT — desktop only */}
+          {!customerId && (
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <Link href="/customer/cart">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="relative h-9 w-9 rounded-xl"
+                  aria-label="Cart"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  {cartCount > 0 && (
+                    <Badge
+                      variant="default"
+                      className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] font-bold rounded-full border-2 border-background leading-none"
+                    >
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
+
+              <Link href="/customer/wallet">
+                <div className="flex items-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-xl px-3 py-1.5 transition-colors cursor-pointer">
+                  <div className="h-6 w-6 rounded-lg bg-primary flex items-center justify-center shrink-0">
+                    <Wallet className="h-3 w-3 text-primary-foreground" />
+                  </div>
+                  <div className="flex flex-col leading-none">
+                    <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Balance
+                    </span>
+                    <span className="text-sm font-bold text-foreground tabular-nums">
+                      {fmtShort(customerData.walletBalance)}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col leading-none">
-                  <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Balance
-                  </span>
-                  <span className="text-sm font-bold text-foreground tabular-nums">
-                    {fmtShort(customerData.walletBalance)}
-                  </span>
-                </div>
-              </div>
-            </Link>
+              </Link>
 
-            <Separator orientation="vertical" className="h-5 mx-1" />
-            <NavAvatarMenu name={customerData.name} initials={initials} />
-          </div>
-        )}
-      </div>
-    </nav>
-  );
-}
+              <Separator orientation="vertical" className="h-5 mx-1" />
+              <NavAvatarMenu name={customerData.name} initials={initials} />
+            </div>
+          )}
+        </div>
+      </nav>
+    );
+  };

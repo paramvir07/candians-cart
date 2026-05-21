@@ -68,7 +68,15 @@ const ContactUs = () => {
           Got a question about savings, pickup, or your family plan? Fill in the
           form and we&apos;ll get back to you shortly.
         </p>
-
+<a
+  href="mailto:info@canadianscart.ca"
+  className="flex items-center gap-2.5 mb-8 px-5 py-3 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-green-200 transition-all group"
+>
+  <span className="text-green-600 text-base">✉️</span>
+  <span className="text-sm font-bold text-gray-800 group-hover:text-green-700 transition-colors">
+    info@canadianscart.ca
+  </span>
+</a>
         <div className="relative w-full max-w-[640px]">
 
           <img
