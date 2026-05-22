@@ -24,11 +24,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || "https://www.canadianscart.ca",
   ),
+  applicationName: "Canadian's Cart",
   alternates: {
     canonical: "https://www.canadianscart.ca",
   },
     appleWebApp: {
-    title: "CC",
+    title: "Canadian's Cart",
   },
   title: {
     default: "Canadian's Cart",
