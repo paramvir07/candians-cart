@@ -103,6 +103,7 @@ const storeSchema = new Schema<IStore>(
       // Contact email for the store
       type: String,
       required: true,
+      unique: true
     },
     address: {
       // Physical address of the store
@@ -113,6 +114,7 @@ const storeSchema = new Schema<IStore>(
       // Contact mobile number for the store
       type: String,
       required: true,
+      unique: true
     },
     description: {
       type: String,

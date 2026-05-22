@@ -41,7 +41,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    // requireEmailVerification: true,
     revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
@@ -57,42 +57,42 @@ export const auth = betterAuth({
       });
     },
   },
-  emailVerification: {
-    sendOnSignUp: true,
-    sendOnSignIn: true,
-    sendVerificationEmail: async ({ user, url }) => {
-      const u = new URL(url);
-      const token = u.searchParams.get("token");
+  // emailVerification: {
+  //   sendOnSignUp: true,
+  //   sendOnSignIn: true,
+  //   sendVerificationEmail: async ({ user, url }) => {
+  //     const u = new URL(url);
+  //     const token = u.searchParams.get("token");
 
-      let requestType = "verify";
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          requestType = payload.requestType ?? "verify";
-        } catch(err) {
-          console.error("[emailVerification] failed to decode token:", err);
-        }
-      }
+  //     let requestType = "verify";
+  //     if (token) {
+  //       try {
+  //         const payload = JSON.parse(atob(token.split(".")[1]));
+  //         requestType = payload.requestType ?? "verify";
+  //       } catch(err) {
+  //         console.error("[emailVerification] failed to decode token:", err);
+  //       }
+  //     }
 
-      if (requestType === "change-email-verification") {
-        u.searchParams.set("callbackURL", "/api/auth/email-change");
-      } else {
-        u.searchParams.set("callbackURL", "/email-updated");
-      }
+  //     if (requestType === "change-email-verification") {
+  //       u.searchParams.set("callbackURL", "/api/auth/email-change");
+  //     } else {
+  //       u.searchParams.set("callbackURL", "/email-updated");
+  //     }
 
-      await sendEmail({
-        to: user.email,
-        subject: "Verify your email address",
-        react: (
-          <VerifyEmail
-            username={user.name}
-            verifyUrl={u.toString()}
-            appName="Canadian's Cart"
-          />
-        ),
-      });
-    },
-  },
+  //     await sendEmail({
+  //       to: user.email,
+  //       subject: "Verify your email address",
+  //       react: (
+  //         <VerifyEmail
+  //           username={user.name}
+  //           verifyUrl={u.toString()}
+  //           appName="Canadian's Cart"
+  //         />
+  //       ),
+  //     });
+  //   },
+  // },
   plugins: [
     admin({
       ac,

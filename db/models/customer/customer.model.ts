@@ -30,6 +30,7 @@ const customerSchema = new Schema<ICustomer>(
     email: {
       type: String,
       required: true,
+      unique: true,
     },
     address: {
       type: String,
@@ -38,6 +39,7 @@ const customerSchema = new Schema<ICustomer>(
     mobile: {
       type: String,
       required: true,
+      unique: true
     },
     city: {
       type: String,
