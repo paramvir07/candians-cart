@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -32,6 +33,9 @@ export default function EditPayoutForm({
   const [isPending, startTransition] = useTransition();
   const [status, setStatus] = useState<"pending" | "paid">(initialData.status);
   const [note, setNote] = useState(initialData.additionalNote);
+  const [additionalCost, setAdditionalCost] = useState(
+    initialData.additionalCost || 0,
+  );
 
   // Existing uploaded receipt from the database
   const [receipt, setReceipt] = useState<{
@@ -98,6 +102,7 @@ export default function EditPayoutForm({
       const result = await updateStorePayoutAction(initialData._id, {
         status,
         additionalNote: note,
+        additionalCost: Number(additionalCost),
         paymentReciept: finalReceiptUrl,
       });
 
@@ -109,6 +114,7 @@ export default function EditPayoutForm({
         // Update local initialData references so the PDF has the newest save state
         initialData.status = status;
         initialData.additionalNote = note;
+        initialData.additionalCost = Number(additionalCost);
         initialData.paymentReciept = finalReceiptUrl;
       } else {
         toast.error(result.message);
@@ -205,6 +211,11 @@ export default function EditPayoutForm({
                 {formatCurrency(initialData.totalDisposableFee)}
               </span>
 
+              <span className="text-muted-foreground">Store Markup Tax:</span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.storeMarkupTax)}
+              </span>
+
               {initialData.totalSubsidy > 0 && (
                 <>
                   <span className="text-muted-foreground">
@@ -236,14 +247,18 @@ export default function EditPayoutForm({
                 {formatCurrency(initialData.storeProfit)}
               </span>
 
-
-              <span className="text-muted-foreground">Total Cash Collected (From Orders):</span>
+              <span className="text-muted-foreground">
+                Total Cash Collected (From Orders):
+              </span>
               <span className="font-medium text-right text-red-500">
                 -{formatCurrency(initialData.totalOrderCashCollected || 0)}
               </span>
-                            <span className="text-muted-foreground">Total Cash Collected (From Wallet Topups):</span>
+              <span className="text-muted-foreground">
+                Total Cash Collected (From Wallet Topups):
+              </span>
               <span className="font-medium text-right text-red-500">
-                -{formatCurrency(initialData.totalWalletTopUpCashCollected || 0)}
+                -
+                {formatCurrency(initialData.totalWalletTopUpCashCollected || 0)}
               </span>
 
               <span className="text-muted-foreground">Cash Collected:</span>
@@ -325,6 +340,23 @@ export default function EditPayoutForm({
               onChange={(e) => setNote(e.target.value)}
               rows={4}
               disabled={isSaving}
+            />
+          </div>
+
+          {/* Additional Price */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">
+              Additional Cost (Optional)
+            </label>
+            <Input
+              type="number"
+              min={0}
+              step={0.01}
+              placeholder="e.g. 12.50"
+              value={additionalCost}
+              onChange={(e) => setAdditionalCost(Number(e.target.value))}
+              disabled={isSaving}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
 
@@ -414,7 +446,7 @@ export default function EditPayoutForm({
                   type="file"
                   ref={fileInputRef}
                   className="hidden"
-                  accept="image/jpeg, image/png, image/webp, application/pdf"
+                  accept="image/*, application/pdf"
                   onChange={handleFileChange}
                 />
               </div>

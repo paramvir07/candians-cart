@@ -2,13 +2,22 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Receipt, Copy, ExternalLink, Calendar, Building2, Tag, Pencil } from "lucide-react";
+import {
+  Receipt,
+  Copy,
+  ExternalLink,
+  Calendar,
+  Building2,
+  Tag,
+  Pencil,
+} from "lucide-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation"; // 1. Import useRouter
+import { usePathname, useRouter } from "next/navigation"; // 1. Import useRouter
 
 export interface InvoiceProps {
-  _id: string; 
+  _id: string;
   vendorName: string;
+  storeId: string;
   DateInvoiceCame: string | Date;
   InvoiceNumber: number;
   documentId: {
@@ -26,6 +35,8 @@ interface InvoiceCardProps {
 
 const InvoiceCard = ({ invoice, onEdit }: InvoiceCardProps) => {
   const router = useRouter(); // 2. Initialize router
+  const pathname = usePathname();
+  const isAdmin = pathname.startsWith("/admin");
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(invoice._id);
@@ -46,16 +57,27 @@ const InvoiceCard = ({ invoice, onEdit }: InvoiceCardProps) => {
   const handleEdit = () => {
     if (onEdit) {
       onEdit(invoice._id);
-    } else {
-      router.push(`/store/invoice/${invoice._id}/edit`);
+      return;
     }
+
+    if (isAdmin) {
+      router.push(
+        `/admin/price-invoices/${invoice._id}/edit?storeId=${invoice.storeId}`,
+      );
+      return;
+    }
+
+    router.push(`/store/invoice/${invoice._id}/edit`);
   };
 
-  const formattedDate = new Date(invoice.DateInvoiceCame).toLocaleDateString("en-CA", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const formattedDate = new Date(invoice.DateInvoiceCame).toLocaleDateString(
+    "en-CA",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    },
+  );
 
   return (
     <Card className="hover:shadow-md transition-shadow duration-200 border-slate-200 bg-white group">
@@ -75,7 +97,7 @@ const InvoiceCard = ({ invoice, onEdit }: InvoiceCardProps) => {
               </h3>
             </div>
           </div>
-          
+
           {/* Action Buttons: Edit & Copy */}
           <div className="flex items-center gap-1">
             <Button
@@ -119,7 +141,9 @@ const InvoiceCard = ({ invoice, onEdit }: InvoiceCardProps) => {
           {invoice.productNameInInvoice && (
             <div className="flex items-center gap-3 text-sm text-slate-600">
               <Tag className="h-4 w-4 text-slate-400 shrink-0" />
-              <span className="truncate">For: {invoice.productNameInInvoice}</span>
+              <span className="truncate">
+                For: {invoice.productNameInInvoice}
+              </span>
             </div>
           )}
         </div>

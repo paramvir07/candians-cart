@@ -7,7 +7,7 @@ import { OrdersList } from "@/components/admin/store/OrdersList";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Orders", // This becomes "Orders | Store Panel - Candian's Cart" in the browser tab
+  title: "Orders", // This becomes "Orders | Store Panel - Canadian's Cart" in the browser tab
 };
 
 const StoreOrdersPage = async () => {

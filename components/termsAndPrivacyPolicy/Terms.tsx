@@ -192,7 +192,7 @@ const TERMS_SECTIONS: Section[] = [
     title: "Contact",
     icon: <Mail className="w-4 h-4" />,
     content:
-      "Questions about these Terms can be sent to our support email or mailed to our business address.",
+      "Questions about these Terms can be sent to our support email.",
   },
 ];
 
@@ -262,11 +262,9 @@ function SectionCard({ section, index }: { section: Section; index: number }) {
 
 function SidebarNav({
   sections,
-  activeId,
   onSelect,
 }: {
   sections: Section[];
-  activeId: string;
   onSelect: (id: string) => void;
 }) {
   return (
@@ -275,18 +273,13 @@ function SidebarNav({
         <button
           key={s.id}
           onClick={() => onSelect(s.id)}
-          className={`group w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 ${
-            activeId === s.id
-              ? "bg-emerald-50 text-emerald-700 font-semibold"
-              : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-          }`}
+          className="group w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-all duration-150"
+
         >
           <span
-            className={`text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full flex-none transition-colors ${
-              activeId === s.id
-                ? "bg-emerald-500 text-white"
-                : "bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-600"
-            }`}
+            className={
+              "text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full flex-none bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-600 transition-colors"
+            }
           >
             {i + 1}
           </span>
@@ -300,21 +293,27 @@ function SidebarNav({
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 export default function Terms() {
-  const [activeSection, setActiveSection] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
 
   const handleSectionClick = (id: string) => {
-    setActiveSection(id);
     const el = document.getElementById(id);
-    const container = mainRef.current;
-    if (!el || !container) return;
-    // Offset = app navbar (~64px) + sticky page header (~64px) + hero banner (~~100px) + breathing room
-    const OFFSET = 232;
-    const elTop = el.getBoundingClientRect().top;
-    const containerTop = container.getBoundingClientRect().top;
-    const scrollTarget = container.scrollTop + (elTop - containerTop) - OFFSET;
-    container.scrollTo({ top: scrollTarget, behavior: "smooth" });
+    if (el && mainRef.current) {
+      const offset = 0;
+
+      const containerTop = mainRef.current.getBoundingClientRect().top;
+
+      const elTop = el.getBoundingClientRect().top;
+
+      const scrollTop = mainRef.current.scrollTop;
+
+      const target = elTop - containerTop + scrollTop - offset;
+
+      mainRef.current.scrollTo({
+        top: target,
+        behavior: "smooth",
+      });
+    }
   };
 
   useEffect(() => {
@@ -322,15 +321,22 @@ export default function Terms() {
     if (!container) return;
     const onScroll = () => {
       setShowScrollTop(container.scrollTop > 300);
-      const OFFSET = 232;
+
       const els = TERMS_SECTIONS.map((s) =>
-        document.getElementById(s.id)
+        document.getElementById(s.id),
       ).filter(Boolean) as HTMLElement[];
+
       let current = "";
+
       for (const el of els) {
-        if (el.getBoundingClientRect().top <= OFFSET) current = el.id;
+        const offsetTop = el.offsetTop;
+        const scrollPosition = container.scrollTop;
+
+        if (scrollPosition >= offsetTop - 20) {
+          current = el.id;
+        }
       }
-      if (current) setActiveSection(current);
+      // ---
     };
     container.addEventListener("scroll", onScroll);
     return () => container.removeEventListener("scroll", onScroll);
@@ -350,7 +356,7 @@ export default function Terms() {
                 Terms of Service
               </h1>
               <p className="text-[11px] text-gray-400 mt-0.5 hidden sm:block tracking-wide">
-                Effective Date: [Insert Date] · British Columbia, Canada
+                Effective Date: 19 May 2026 · British Columbia, Canada
               </p>
             </div>
           </div>
@@ -375,7 +381,6 @@ export default function Terms() {
                 <ScrollArea className="h-[calc(100vh-72px)] px-3 py-3">
                   <SidebarNav
                     sections={TERMS_SECTIONS}
-                    activeId={activeSection}
                     onSelect={handleSectionClick}
                   />
                 </ScrollArea>
@@ -406,7 +411,7 @@ export default function Terms() {
               {TERMS_SECTIONS.length} sections
             </span>
             <span className="w-1 h-1 rounded-full bg-gray-300" />
-            <span className="text-xs text-gray-400">Last updated: [Insert Date]</span>
+            <span className="text-xs text-gray-400">Last updated: 19 May 2026</span>
           </div>
         </div>
       </div>
@@ -424,7 +429,6 @@ export default function Terms() {
               <ScrollArea className="h-[calc(100vh-148px)] pr-1">
                 <SidebarNav
                   sections={TERMS_SECTIONS}
-                  activeId={activeSection}
                   onSelect={handleSectionClick}
                 />
               </ScrollArea>
@@ -449,10 +453,8 @@ export default function Terms() {
                 </div>
                 <p className="text-xs text-gray-400 leading-relaxed">
                   Questions about these Terms?{" "}
-                  <span className="text-emerald-600 font-medium">[Insert support email]</span>
+                  <span className="font-semibold">Contact <span className="text-emerald-600 font-medium"><a href="mailto:info@canadianscart.ca">info@canadianscart.ca</a></span></span>
                   <br className="sm:hidden" />
-                  <span className="hidden sm:inline"> · </span>
-                  <span className="text-gray-500">[Insert business address]</span>
                 </p>
               </div>
             </div>

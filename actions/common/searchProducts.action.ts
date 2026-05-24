@@ -112,7 +112,7 @@ const fetchProductsDB = async (query: string, storeId?: string) => {
 };
 
 /**
- * Role-aware search for Candian's Cart.
+ * Role-aware search for Canadian's Cart.
  *
  */
 
@@ -142,7 +142,7 @@ export const searchProducts = async (
     const products = await fetchProductsDB(searchQuery, targetStoreId);
 
     if (!products) {
-      return { success: false, error: "No products found in Candian's Cart." };
+      return { success: false, error: "No products found in Canadian's Cart." };
     }
 
     // JSON Serialization for safe transfer to Client Components
@@ -160,9 +160,9 @@ export const searchProducts = async (
 };
 
 /**
- * Exact match search for Candian's Cart products by primaryUPC.
+ * Exact match search for Canadian's Cart products by primaryUPC.
  * Skips fuzzy search and directly queries the database.
- * 
+ *
  * @param {string} upc - The exact UPC string to search for.
  * @param {string} [providedStoreId] - Optional store ID.
  * @returns {Promise<ProductActionResponse>} Success with matching products or an error message.
@@ -205,7 +205,23 @@ export const searchProductsByUPC = async (
     }
 
     // Direct find instead of Atlas Search aggregate for exact match
-    const products = await Product.find(findQuery).limit(10).lean();
+    // const products = await Product.find(findQuery).limit(10).lean();
+    // needed this updated version so as to pass store data to products for store and admin view when searching via UPC
+    const products = await Product.aggregate([
+      { $match: findQuery },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: "stores",
+          localField: "storeId",
+          foreignField: "_id",
+          as: "store",
+        },
+      },
+      { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
+      { $addFields: { storeName: "$store.name" } },
+      { $project: { store: 0 } },
+    ]);
 
     if (!products || products.length === 0) {
       return { success: false, error: "No products found for this UPC." };

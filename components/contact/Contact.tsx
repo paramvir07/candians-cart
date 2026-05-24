@@ -56,7 +56,7 @@ const ContactUs = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-16 lg:py-20">
 
         <p className="text-center text-sm text-gray-400 mb-3">
-          Candian&apos;s Cart{" "}
+          Canadian&apos;s Cart{" "}
           <span className="mx-1.5 text-gray-300">•</span>
           <span className="text-gray-500 font-medium">Contact us</span>
         </p>
@@ -68,7 +68,15 @@ const ContactUs = () => {
           Got a question about savings, pickup, or your family plan? Fill in the
           form and we&apos;ll get back to you shortly.
         </p>
-
+<a
+  href="mailto:info@canadianscart.ca"
+  className="flex items-center gap-2.5 mb-8 px-5 py-3 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-green-200 transition-all group"
+>
+  <span className="text-green-600 text-base">✉️</span>
+  <span className="text-sm font-bold text-gray-800 group-hover:text-green-700 transition-colors">
+    info@canadianscart.ca
+  </span>
+</a>
         <div className="relative w-full max-w-[640px]">
 
           <img

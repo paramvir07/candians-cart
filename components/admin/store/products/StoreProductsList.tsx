@@ -26,7 +26,10 @@ import {
   AdminProduct,
   getStoreProductsPaginated,
 } from "@/actions/admin/products/getProducts.action";
-import { searchProducts } from "@/actions/common/searchProducts.action";
+import {
+  searchProducts,
+  searchProductsByUPC,
+} from "@/actions/common/searchProducts.action";
 import {
   getStoreProductsFiltered,
   ProductFilters,
@@ -103,6 +106,15 @@ export const StoreProductsList = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [upcMode, setUpcMode] = useState(false);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+const scanBufferRef = useRef("");
+const lastKeyTimeRef = useRef(0);
+const androidBufferRef = useRef("");
+const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const androidLastInputRef = useRef(0);
 
   // VERCEL BEST PRACTICE: Use useDebounce to manage rapid user input
   const [searchQuery, setSearchQuery] = useState("");
@@ -114,6 +126,120 @@ export const StoreProductsList = ({
   const isAllStores = !storeId;
   const isFilterMode = hasFilters(filters);
   const isSearchMode = debouncedQuery.trim().length > 0;
+
+  // keyboard scanner effect
+useEffect(() => {
+  if (!upcMode) return;
+
+  const HUMAN_THRESHOLD_MS = 100;
+  const COMMIT_TIMEOUT_MS = 100;
+
+  const commitScan = (value: string) => {
+    if (!value || value.length < 4) return;
+    setSearchQuery(value);
+    searchInputRef.current?.focus();
+    setTimeout(() => searchInputRef.current?.select(), 0);
+  };
+
+  const flush = () => {
+    const buf = scanBufferRef.current;
+    scanBufferRef.current = "";
+    if (buf.length >= 4) commitScan(buf);
+  };
+
+  const resetTimer = () => {
+    if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+    scanTimerRef.current = setTimeout(flush, COMMIT_TIMEOUT_MS);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key.length !== 1 && e.key !== "Enter") return;
+
+    const now = Date.now();
+    const gap = now - lastKeyTimeRef.current;
+    lastKeyTimeRef.current = now;
+
+    if (e.key === "Enter") {
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+      const buf = scanBufferRef.current;
+      scanBufferRef.current = "";
+      if (buf.length >= 4) {
+        e.preventDefault();
+        e.stopPropagation();
+        commitScan(buf);
+      }
+      return;
+    }
+
+    if (gap > HUMAN_THRESHOLD_MS && scanBufferRef.current.length > 0) {
+      scanBufferRef.current = "";
+    }
+
+    scanBufferRef.current += e.key;
+    resetTimer();
+  };
+
+  const handleCompositionEnd = (e: CompositionEvent) => {
+    if (!e.data || e.data.length < 4) return;
+    scanBufferRef.current = "";
+    if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+    const value = e.data;
+    setSearchQuery(value);
+    searchInputRef.current?.focus();
+    setTimeout(() => searchInputRef.current?.select(), 0);
+  };
+
+  window.addEventListener("keydown", handleKeyDown, true);
+  window.addEventListener("compositionend", handleCompositionEnd, true);
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown, true);
+    window.removeEventListener("compositionend", handleCompositionEnd, true);
+    if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+  };
+}, [upcMode]);
+
+// Android scanner effect
+useEffect(() => {
+  if (!upcMode) return;
+  const input = searchInputRef.current;
+  if (!input) return;
+
+  const ANDROID_DEBOUNCE_MS = 150;
+
+  const handleInput = (e: Event) => {
+    const inputEvent = e as InputEvent;
+    if (inputEvent.isComposing) return; // compositionend handles it
+
+    const val = (e.target as HTMLInputElement).value;
+    const now = Date.now();
+    const gap = now - androidLastInputRef.current;
+    androidLastInputRef.current = now;
+
+    if (gap > ANDROID_DEBOUNCE_MS * 2) {
+      androidBufferRef.current = "";
+    }
+
+    androidBufferRef.current = val;
+
+    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+
+    androidTimerRef.current = setTimeout(() => {
+      const buf = androidBufferRef.current;
+      androidBufferRef.current = "";
+      if (buf.length >= 4) {
+        setSearchQuery(buf);
+        setTimeout(() => input.select(), 0);
+      }
+    }, ANDROID_DEBOUNCE_MS);
+  };
+
+  input.addEventListener("input", handleInput);
+  return () => {
+    input.removeEventListener("input", handleInput);
+    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+  };
+}, [upcMode]);
 
   // Reset to page 1 when a new search begins
   useEffect(() => {
@@ -129,11 +255,11 @@ export const StoreProductsList = ({
 
       try {
         // Enforce strict typing from the server actions
-        let res: { 
-          success: boolean; 
-          data?: AdminProduct[] | any; // 'any' safely catches the ProductActionResponse interface mismatch if strict types differ 
-          totalPages?: number; 
-          error?: string 
+        let res: {
+          success: boolean;
+          data?: AdminProduct[] | any; // 'any' safely catches the ProductActionResponse interface mismatch if strict types differ
+          totalPages?: number;
+          error?: string;
         };
 
         if (isSearchMode && isFilterMode) {
@@ -145,9 +271,16 @@ export const StoreProductsList = ({
             filters,
           );
         } else if (isSearchMode) {
-          res = await searchProducts(debouncedQuery, storeId);
+          res = upcMode
+            ? await searchProductsByUPC(debouncedQuery, storeId)
+            : await searchProductsWithFilters(debouncedQuery, storeId, currentPage, 12, {});
         } else if (isFilterMode) {
-          res = await getStoreProductsFiltered(storeId, currentPage, 12, filters);
+          res = await getStoreProductsFiltered(
+            storeId,
+            currentPage,
+            12,
+            filters,
+          );
         } else {
           res = await getStoreProductsPaginated(storeId, currentPage, 12);
         }
@@ -158,9 +291,11 @@ export const StoreProductsList = ({
         if (res.success) {
           setProducts(res.data || []);
           // Standard search doesn't paginate, so fallback to 1
-          setTotalPages(res.totalPages ?? 1); 
+          setTotalPages(res.totalPages ?? 1);
         } else {
-          toast.error(res.error || "Failed to fetch products in Candian's Cart");
+          toast.error(
+            res.error || "Failed to fetch products in Canadian's Cart",
+          );
         }
       } catch (error) {
         if (mounted) {
@@ -177,7 +312,15 @@ export const StoreProductsList = ({
     return () => {
       mounted = false;
     };
-  }, [storeId, currentPage, filters, debouncedQuery, isSearchMode, isFilterMode]);
+  }, [
+    storeId,
+    currentPage,
+    filters,
+    debouncedQuery,
+    isSearchMode,
+    isFilterMode,
+    upcMode,
+  ]);
 
   const handleBarcodeScan = (value: string) => {
     setSearchQuery(value);
@@ -238,7 +381,7 @@ export const StoreProductsList = ({
 
   // Build readable chips for active filters
   const filterChips: { label: string; clear: () => void }[] = [];
-  
+
   if ((filters.categories?.length ?? 0) > 0) {
     filters.categories!.forEach((cat) =>
       filterChips.push({
@@ -303,7 +446,7 @@ export const StoreProductsList = ({
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             {titles[role].heading}
@@ -316,7 +459,7 @@ export const StoreProductsList = ({
                 : titles[role].sub}
           </p>
         </div>
-        <div className="relative flex gap-2 w-full sm:max-w-xs">
+        <div className="relative flex gap-2 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           {/* <Input
           ref={searchInputRef}
@@ -327,14 +470,25 @@ export const StoreProductsList = ({
             onChange={(e) => setSearchQuery(e.target.value)}
           /> */}
           <Input
-            // ref={searchInputRef}
+            ref={searchInputRef}
             type="text"
-            placeholder="Search products...."
+            placeholder="Search products..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
+<button
+  onClick={() => setUpcMode((v) => !v)}
+  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold border transition-all shrink-0 ${
+    upcMode
+      ? "bg-green-600 text-white border-green-600"
+      : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
+  }`}
+>
+  <span className={`w-1 h-1 rounded-full shrink-0 ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`} />
+  UPC
+</button>
           {role !== "customer" && (
             <ProductFiltersSheet
               filters={filters}

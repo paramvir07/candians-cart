@@ -78,7 +78,7 @@ const StoreInvoices = ({ storeId }: { storeId: string }) => {
         </p>
         <Button asChild>
           {/* Passing storeId in the URL so the add page knows which store it belongs to */}
-          <Link href={`/store/invoice/add?storeId=${storeId}`} className="flex items-center gap-2">
+          <Link href={`/admin/price-invoices/add`} className="flex items-center gap-2">
             <CirclePlus className="h-4 w-4" />
             Add Invoice
           </Link>

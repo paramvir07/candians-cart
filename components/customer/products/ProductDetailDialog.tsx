@@ -363,10 +363,11 @@ export function ProductDetailDialog({
             <h2 className="text-lg font-black leading-tight text-foreground">
               {product.name}
             </h2>
-            <p>
-              
+            {customerId && product.primaryUPC && (
+            <p className="">
+              <span className="font-semibold">UPC: </span>{product.primaryUPC}
             </p>
-
+            )}
             {product.description && (
               <p className="line-clamp-3 text-sm leading-relaxed text-slate-500">
                 {product.description}

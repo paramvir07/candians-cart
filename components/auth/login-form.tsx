@@ -1,3 +1,159 @@
+// "use client";
+
+// import { cn } from "@/lib/utils";
+// import { Input } from "@/components/ui/input";
+// import Link from "next/link";
+// import { useActionState, useEffect, useState } from "react";
+// import { toast } from "sonner";
+// import { loginAction } from "@/actions/auth/login-logout.actions";
+// import { Spinner } from "../ui/spinner";
+// import { UserRole } from "@/types/auth";
+// import { Eye, EyeOff } from "lucide-react";
+// import { useRouter } from "next/navigation";
+// import { Button } from "../ui/button";
+// import { IFormActionResponse } from "@/types/form";
+// import Logo from "../shared/Logo";
+
+// const initialState: IFormActionResponse = {
+//   success: false,
+//   message: "",
+// };
+
+// type loginProps = React.ComponentProps<"div"> & { userRole: UserRole };
+
+// export function LoginForm({ userRole, className, ...props }: loginProps) {
+//   const customer = userRole === "customer";
+//   const admin = userRole === "admin";
+//   const store = userRole === "store";
+//   const cashier = userRole === "cashier";
+
+//   const router = useRouter();
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [state, formAction, isPending] = useActionState(loginAction, initialState);
+
+//   useEffect(() => {
+//     if (!state.message) return;
+//     if (state.success) {
+//       toast.success(state.message);
+//       router.push(state.redirectTo || "/customer");
+//     } else {
+//       toast.error(state.message);
+//       if (state.redirectTo) {
+//         setTimeout(() => router.push(state.redirectTo!), 2000);
+//       }
+//     }
+//   }, [state, router]);
+
+//   const title = store
+//     ? "Login to your store account"
+//     : admin
+//       ? "Login to your admin account"
+//       : cashier
+//         ? "Login to your cashier account"
+//         : "Login to your account";
+
+//   const formContent = (
+//     <>
+//       <div className="mb-8">
+//         <div className="hidden md:flex h-12 items-center justify-left mb-6">
+//           <Logo variant="icon" href="/" />
+//         </div>
+//         <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
+//           {title}
+//         </h1>
+//         <p className="text-sm text-muted-foreground">
+//           Enter your credentials below to sign in
+//         </p>
+//       </div>
+
+//       <form action={formAction} className="flex flex-col gap-3">
+//         <input type="hidden" name="role" value={userRole} />
+//         <Input
+//           id="email"
+//           name="email"
+//           type="email"
+//           placeholder="Email"
+//           required
+//           className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+//         />
+//         <div className="relative">
+//           <Input
+//             id="password"
+//             name="password"
+//             type={showPassword ? "text" : "password"}
+//             placeholder="Password"
+//             required
+//             className="h-12 rounded-xl border-border bg-background px-4 pr-11 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+//           />
+//           <Button
+//             variant="ghost"
+//             type="button"
+//             onClick={() => setShowPassword((prev) => !prev)}
+//             className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+//           >
+//             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+//           </Button>
+//         </div>
+//         <Button
+//           type="submit"
+//           disabled={isPending}
+//           className="h-12 w-full rounded-full bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all mt-1 flex items-center justify-center"
+//         >
+//           {isPending ? <Spinner /> : "Log in"}
+//         </Button>
+//       </form>
+
+//       <div className="mt-6 flex flex-col gap-1.5">
+//         <p className="text-sm text-muted-foreground">
+//           <Link href="/forgot-password" className="text-primary hover:underline">
+//             Forgot Password?
+//           </Link>
+//         </p>
+//         {customer && (
+//           <p className="text-sm text-muted-foreground">
+//             Don&apos;t have an account?{" "}
+//             <Link href="/customer/signup" className="text-primary hover:underline">
+//               Sign up
+//             </Link>
+//           </p>
+//         )}
+//         {!customer && (
+//           <p className="text-sm text-muted-foreground">
+//             Are you a Customer?{" "}
+//             <Link href="/customer/login" className="text-primary hover:underline">
+//               Login here
+//             </Link>
+//           </p>
+//         )}
+//       </div>
+//     </>
+//   );
+
+//   return (
+//     <>
+//       {/* ── MOBILE: h-dvh, no image, form scrolls internally ── */}
+//       <div
+//         className={cn("flex flex-col w-full md:hidden h-dvh overflow-hidden bg-background", className)}
+//         {...props}
+//       >
+//         {/* Compact header */}
+//         <div className="shrink-0 flex items-center px-6 pt-5 pb-4 border-b border-border">
+//           <Logo variant="icon" href="/" />
+//         </div>
+//         {/* Only the form content scrolls */}
+//         <div className="flex-1 overflow-y-auto px-6 py-8 min-h-0">
+//           {formContent}
+//         </div>
+//       </div>
+
+//       {/* ── DESKTOP: plain form, carousel handled by page ── */}
+//       <div className={cn("hidden md:block w-full max-w-sm", className)} {...props}>
+//         {formContent}
+//       </div>
+//     </>
+//   );
+// }
+
 "use client";
 
 import { cn } from "@/lib/utils";

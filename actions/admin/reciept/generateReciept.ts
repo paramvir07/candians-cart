@@ -31,6 +31,7 @@ export interface AggregatedReciept {
   markupTax: number;
   storebasetaxGST: number;
   storebasetaxPST: number;
+  storeMarkupTax: number;
   platformMarkuptax: number;
   storeFixedValue: number;
   grossMargin: number;
@@ -215,18 +216,16 @@ export async function getRecieptDataByDateRange(
       // Markup tax is simply the remainder of the total tax
       const markupTax = totalTax - baseTax;
       const platformMarkuptax = markupTax;
+      const STORE_PROFIT_MARGIN = 0.35;
+      const storeMarkupTax = Math.round(markupTax * STORE_PROFIT_MARGIN);
 
       // 3. Store Metrics
-      const storeFixedValue = totalBasePrice + totalDisposableFee + baseTax;
+      const storeFixedValue =
+        totalBasePrice + totalDisposableFee + baseTax + storeMarkupTax;
       const grossMargin = totalCustomerPaid - storeFixedValue;
 
-      // Easily adjustable margin variable. Set to 0.35 to match the terminal verification script.
-      const STORE_PROFIT_MARGIN = 0.35;
-
       // Added totalSubsidy back in based on the formula: (grossMargin + [subsidy]) * 0.35
-      const storeProfit = Math.round(
-        (grossMargin + totalSubsidy) * STORE_PROFIT_MARGIN,
-      );
+      const storeProfit = Math.round(grossMargin * STORE_PROFIT_MARGIN);
 
       // 4. Payout Calculations
       const totalCashCollected =
@@ -253,6 +252,7 @@ export async function getRecieptDataByDateRange(
         markupTax,
         storebasetaxGST,
         storebasetaxPST,
+        storeMarkupTax,
         platformMarkuptax,
         storeFixedValue,
         grossMargin,

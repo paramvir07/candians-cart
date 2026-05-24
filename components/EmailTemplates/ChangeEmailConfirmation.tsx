@@ -25,7 +25,7 @@ export function ChangeEmailConfirmationEmail({
   username,
   confirmUrl,
   newEmail,
-  appName = "Candian's Cart",
+  appName = "Canadian's Cart",
   supportEmail = "info@canadianscart.ca",
 }: ChangeEmailProps) {
   return (

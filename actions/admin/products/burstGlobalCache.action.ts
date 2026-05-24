@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidateTag, revalidatePath } from "next/cache";
-import { BurstCacheResponse } from "@/actions/admin/products/revalidateCacheForStore";
+import { BurstCacheResponse } from "@/types/cache/ProductCache";
 
 export async function burstGlobalProductsCache(): Promise<BurstCacheResponse> {
   try {

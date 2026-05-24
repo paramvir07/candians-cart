@@ -121,7 +121,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
       return avgMarkup;
     else if (mid && totalInDollars >= mid && totalInDollars <= current)
-      return 30;
+      return avgMarkup; // If we're above the mid point, we can still give the higher markup as a subsidy, but it won't be reflected in the progress bar markup percentage
     return null;
   })();
   CartItems;
@@ -199,7 +199,7 @@ const miscTotals = calcMiscTotal(MiscItems);
   })();
 
   const MarkupSub = markupBase * (active / 100);
-  const subsidyOnOrder = Math.floor(MarkupSub * 0.6);
+  const subsidyOnOrder = Math.floor(MarkupSub * 0.6); // Subsidy is 60% of the calculated markup based on the active fib bracket
   const TotalSubsidy = Number(
     ((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2),
   );
@@ -487,6 +487,7 @@ const miscTotals = calcMiscTotal(MiscItems);
                 return (
                   <div
                     key={item.productId._id.toString()}
+                    data-cart-item
                     className="flex gap-3 bg-card rounded-xl border border-border/60 p-3"
                   >
                     <div className="relative h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-secondary">
@@ -545,11 +546,13 @@ const miscTotals = calcMiscTotal(MiscItems);
                             />
                           )}
                         </div>
+                        
                         <QuantityControl
                           productId={item.productId._id.toString()}
                           customerId={customerId}
                           initialQuantity={item.quantity}
                           variant="mobile"
+                          isMeasuredInWeight={item.productId.isMeasuredInWeight}
                         />
                       </div>
                     </div>
@@ -746,6 +749,7 @@ const miscTotals = calcMiscTotal(MiscItems);
                     return (
                       <div
                         key={item.productId._id.toString()}
+                        data-cart-item
                         className="flex items-center gap-4 px-5 py-3.5 hover:bg-accent/20 transition-colors group"
                       >
                         <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-secondary">
@@ -819,6 +823,7 @@ const miscTotals = calcMiscTotal(MiscItems);
                             customerId={customerId}
                             initialQuantity={item.quantity}
                             variant="desktop"
+                            isMeasuredInWeight={item.productId.isMeasuredInWeight}
                           />
                         </div>
 

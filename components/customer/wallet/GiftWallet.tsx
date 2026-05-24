@@ -47,7 +47,7 @@ const GiftWallet = ({ giftWalletData }: GiftWalletProps) => {
           {/* Top: label + balance */}
           <div className="relative z-10 flex flex-col gap-1">
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
-              Candian's Gift Card
+              Canadian's Gift Card
             </p>
             <div className="flex items-center justify-between">
               <h1

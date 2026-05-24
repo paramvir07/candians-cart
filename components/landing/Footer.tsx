@@ -51,35 +51,43 @@ const FOOTER_LINKS: Record<
 const SOCIAL = [
   {
     label: "Instagram",
-    href: "https://www.instagram.com/candianscart",
+    href: "https://www.instagram.com/canadianscart",
     icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        width="18"
-        height="18"
-      >
-        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-        <circle cx="12" cy="12" r="4" />
-        <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" stroke="none" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+        <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
       </svg>
     ),
   },
   {
-  label: "Email",
-  href: "mailto:info@canadianscart.ca",
-  icon: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
-      strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <polyline points="2,4 12,13 22,4" />
-    </svg>
-  ),
-},
+    label: "Facebook",
+    href: "https://www.facebook.com/canadianscart",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+      </svg>
+    ),
+  },
+  {
+    label: "TikTok",
+    href: "https://vt.tiktok.com/ZSxjaYrjL/",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.73a4.85 4.85 0 0 1-1.01-.04z"/>
+      </svg>
+    ),
+  },
+    {
+    label: "Email",
+    href: "mailto:info@canadianscart.ca",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <polyline points="2,4 12,13 22,4"/>
+      </svg>
+    ),
+  },
 ];
 
 const NAVBAR_OFFSET = 80;
@@ -295,7 +303,7 @@ export default function Footer({ isLoggedIn = false }: FooterProps) {
         {/* ── Bottom bar ── */}
         <div className="footer-bottom">
           <div className="footer-bottom-inner">
-            <p>© {currentYear} Candian's Cart Inc. All rights reserved.</p>
+            <p>© {currentYear} Canadian's Cart Inc. All rights reserved.</p>
             <div className="footer-badges">
               <span className="footer-badge">🇨🇦 Made in Canada</span>
             </div>

@@ -30,7 +30,7 @@ function calculateOrderMetrics(inputs) {
   const STORE_PROFIT_MARGIN = 0.35;
 
   const totalTax = totalGST + totalPST;
-
+  
   const totalMarkup =
     cartTotal - (totalBasePrice + totalDisposableTax + totalTax);
 
@@ -43,7 +43,7 @@ function calculateOrderMetrics(inputs) {
   const markupTax = totalTax * markupPercentage;
   const storeMarkupTax = markupTax * STORE_PROFIT_MARGIN;
 
-  const sfv = totalBasePrice + totalDisposableTax + baseTax;
+  const sfv = totalBasePrice + totalDisposableTax + baseTax + storeMarkupTax;
 
   const grossMargin = cartTotal - sfv;
 
@@ -99,9 +99,6 @@ async function main() {
     totalCashCollected,
   });
 
-  // Derived comparisons
-  const storeProfit = metrics.grossMargin * 0.35;
-
   console.log("\n--- Tax & Markup Breakdown ---");
   console.log(
     `Total Tax = ${totalGST.toFixed(2)} (GST) + ${totalPST.toFixed(2)} (PST) = $${metrics.totalTax.toFixed(2)}`
@@ -126,7 +123,7 @@ async function main() {
 
   console.log("\n--- Store Metrics ---");
   console.log(
-    `SFV = ${totalBasePrice.toFixed(2)} (base price) + ${totalDisposableTax.toFixed(2)} (disposable fee) + ${metrics.baseTax.toFixed(2)} (base tax) = $${metrics.sfv.toFixed(2)}`
+    `SFV = ${totalBasePrice.toFixed(2)} (base price) + ${totalDisposableTax.toFixed(2)} (disposable fee) + ${metrics.baseTax.toFixed(2)} (base tax) + ${metrics.storeMarkupTax.toFixed(2)} (store markup tax) = $${metrics.sfv.toFixed(2)}`,
   );
 
   console.log(
@@ -134,7 +131,7 @@ async function main() {
   );
 
   console.log(
-    `Store Profit (35%) = ${metrics.grossMargin.toFixed(2)} (Gross Margin) * 0.35 = $${storeProfit.toFixed(2)}`
+    `Store Profit (35%) = ${metrics.grossMargin.toFixed(2)} (Gross Margin) * 0.35 = $${metrics.storeProfit.toFixed(2)}`,
   );
 
   console.log(
@@ -178,3 +175,38 @@ main().catch((err) => {
   console.error("Execution error:", err);
   process.exit(1);
 });
+
+
+
+// --- Order Financials Tester ---
+// Cart Total / Customer Paid ($): 35.94
+// Total base price ($): 28.60
+// Total Subsidy of order ($): 10.90
+// Total Disposable Fee ($): 0
+// Enter total GST ($): 0.80
+// Enter total PST ($): 0
+// Total Cash Collected (Order + Topup) ($): 0
+
+// --- Tax & Markup Breakdown ---
+// Total Tax = 0.80 (GST) + 0.00 (PST) = $0.80
+// Total Markup = 35.94 (Cart Total) - [28.60 (Base Price) + 0.00 (Disposable Fee) + 0.80 (Total Tax)] = $6.54
+
+// --- Value (Val) Metrics ---
+// Val = 28.60 (Base Price) + 6.54 (Total Markup) = 35.14
+// Base % = 81.39% | Markup % = 18.61%
+// Base Tax = $0.65 | Markup Tax = $0.15
+
+// --- Store Metrics ---
+// SFV = 28.60 (base price) + 0.00 (disposable fee) + 0.65 (base tax) + 0.05 (store markup tax) = $29.30
+// Gross Margin = 35.94 (Cart Total) - 29.30 (SFV) = $6.64
+// Store Profit (35%) = 6.64 (Gross Margin) * 0.35 = $2.32
+// Store Payout = 2.32 (Store Profit) + 29.30 (SFV) - 0.00 (Cash Collected) = $31.63
+
+// --- Platform Metrics ---
+// Platform Profit = 35.94 (Cart Total) - [2.32 (Store Profit) + 29.30 (SFV)] = $4.31
+// Platform Commission = 4.31 (Platform Profit) + 10.90 (Subsidy) = $15.21
+
+// --- Verification ---
+// Customer Paid Check: 35.94 vs 35.94
+// Percentage Split Verification: 100.00%
+// Tax Verification Check: 0.65 vs 0.65

@@ -351,6 +351,14 @@ export default function RecieptComponent({
                                 {fmt(r.totalDisposableFee)}
                               </span>
                             </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">
+                                Store Markup Tax
+                              </span>
+                              <span className="font-medium">
+                                {fmt(r.storeMarkupTax)}
+                              </span>
+                            </div>
                             {r.totalSubsidy > 0 && (
                               <div className="flex justify-between items-center text-orange-600">
                                 <span>Subsidies Applied</span>

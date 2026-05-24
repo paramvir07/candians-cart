@@ -42,13 +42,9 @@ export const getStoreProductsFiltered = async (
       if (filters.maxPrice !== undefined) query.price.$lte = filters.maxPrice;
     }
 
-    if (filters.subsidised !== undefined) {
-      query.subsidised = filters.subsidised;
-    }
+    if (filters.subsidised === true) query.subsidised = true;
 
-    if (filters.inStock !== undefined) {
-      query.stock = filters.inStock;
-    }
+if (filters.inStock === true) query.stock = true;
 
     if (filters.taxRates && filters.taxRates.length > 0) {
       query.tax = { $in: filters.taxRates };
@@ -75,7 +71,7 @@ export const getStoreProductsFiltered = async (
     const [products, totalCount] = await Promise.all([
       Product.find(query)
         .select(
-          "_id name description category markup tax price stock subsidised images disposableFee isFeatured",
+          "_id name description category markup tax price stock subsidised images disposableFee isFeatured UOM isMeasuredInWeight primaryUPC",
         )
         .sort(sortOption)
         .skip(skip)
@@ -99,6 +95,90 @@ export const getStoreProductsFiltered = async (
 
 // ------
 
+// export const searchProductsWithFilters = async (
+//   query: string,
+//   storeId: string | undefined,
+//   page: number = 1,
+//   limit: number = 12,
+//   filters: ProductFilters = {},
+// ) => {
+//   try {
+//     await dbConnect();
+
+// const match: Record<string, any> = {
+//   $or: [
+//     { name: { $regex: query, $options: "i" } },
+//     { primaryUPC: query.trim() }, // exact UPC match
+//   ],
+// };
+
+//     if (storeId) {
+//       match.storeId = new mongoose.Types.ObjectId(storeId);
+//     }
+
+//     if (filters.categories && filters.categories.length > 0) {
+//       match.category = { $in: filters.categories };
+//     }
+
+//     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+//       match.price = {};
+//       if (filters.minPrice !== undefined) match.price.$gte = filters.minPrice;
+//       if (filters.maxPrice !== undefined) match.price.$lte = filters.maxPrice;
+//     }
+
+//     if (filters.subsidised !== undefined) match.subsidised = filters.subsidised;
+//     if (filters.inStock !== undefined) match.stock = filters.inStock;
+
+//     if (filters.taxRates && filters.taxRates.length > 0) {
+//       match.tax = { $in: filters.taxRates };
+//     }
+
+//     if (filters.markupMin !== undefined || filters.markupMax !== undefined) {
+//       match.markup = {};
+//       if (filters.markupMin !== undefined)
+//         match.markup.$gte = filters.markupMin;
+//       if (filters.markupMax !== undefined)
+//         match.markup.$lte = filters.markupMax;
+//     }
+
+//     let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
+//     if (filters.sortBy === "price_asc") sortOption = { price: 1 };
+//     else if (filters.sortBy === "price_desc") sortOption = { price: -1 };
+//     else if (filters.sortBy === "name_asc") sortOption = { name: 1 };
+
+//     const skip = (page - 1) * limit;
+
+//     const [products, totalCount] = await Promise.all([
+//       Product.find(match)
+//         .select(
+//           "_id name description category markup tax price stock subsidised images disposableFee isFeatured UOM isMeasuredInWeight primaryUPC",
+//         )
+//         .sort(sortOption)
+//         .skip(skip)
+//         .limit(limit)
+//         .lean(),
+//       Product.countDocuments(match),
+//     ]);
+
+//     return {
+//       success: true,
+//       data: JSON.parse(JSON.stringify(products)),
+//       totalPages: Math.ceil(totalCount / limit),
+//       currentPage: page,
+//       totalCount,
+//     };
+//   } catch (error) {
+//     console.error("Failed to search with filters:", error);
+//     return {
+//       success: false,
+//       data: [],
+//       totalPages: 0,
+//       totalCount: 0,
+//       error: "Failed to search",
+//     };
+//   }
+// };
+
 export const searchProductsWithFilters = async (
   query: string,
   storeId: string | undefined,
@@ -109,57 +189,147 @@ export const searchProductsWithFilters = async (
   try {
     await dbConnect();
 
-    const match: Record<string, any> = {
-      name: { $regex: query, $options: "i" },
-    };
-
-    if (storeId) {
-      match.storeId = new mongoose.Types.ObjectId(storeId);
+    // --- UPC exact match first (no spaces = could be a barcode) ---
+    // const looksLikeUPC = /^[a-zA-Z0-9\-]+$/.test(query.trim()) && !query.includes(" ");
+    const looksLikeUPC =
+      /^[0-9\-]+$/.test(query.trim()) && !query.includes(" ");
+    if (looksLikeUPC) {
+      const upcQuery: Record<string, any> = { primaryUPC: query.trim() };
+      if (storeId) upcQuery.storeId = new mongoose.Types.ObjectId(storeId);
+      // const exactMatches = await Product.find(upcQuery).limit(10).lean();
+      const exactMatches = await Product.aggregate([
+        { $match: upcQuery },
+        { $limit: 10 },
+        {
+          $lookup: {
+            from: "stores",
+            localField: "storeId",
+            foreignField: "_id",
+            as: "store",
+          },
+        },
+        { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
+        { $addFields: { storeName: "$store.name" } },
+        { $project: { store: 0 } },
+      ]);
+      if (exactMatches.length > 0) {
+        return {
+          success: true,
+          data: JSON.parse(JSON.stringify(exactMatches)),
+          totalPages: 1,
+          currentPage: 1,
+          totalCount: exactMatches.length,
+        };
+      }
     }
 
-    if (filters.categories && filters.categories.length > 0) {
-      match.category = { $in: filters.categories };
-    }
+    // --- Atlas fuzzy search pipeline ---
+    const pipeline: any[] = [
+      {
+        $search: {
+          index: "ProductSearch",
+          compound: {
+            should: [
+              {
+                text: {
+                  query: query.trim(),
+                  path: ["name", "description", "category"],
+                  fuzzy: { maxEdits: 2, prefixLength: 1, maxExpansions: 50 },
+                },
+              },
+            ],
+            minimumShouldMatch: 1,
+          },
+        },
+      },
+    ];
 
+    // --- Post-search filters via $match ---
+    const matchStage: Record<string, any> = {};
+
+    if (storeId) matchStage.storeId = new mongoose.Types.ObjectId(storeId);
+    if (filters.categories && filters.categories.length > 0)
+      matchStage.category = { $in: filters.categories };
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-      match.price = {};
-      if (filters.minPrice !== undefined) match.price.$gte = filters.minPrice;
-      if (filters.maxPrice !== undefined) match.price.$lte = filters.maxPrice;
+      matchStage.price = {};
+      if (filters.minPrice !== undefined)
+        matchStage.price.$gte = filters.minPrice;
+      if (filters.maxPrice !== undefined)
+        matchStage.price.$lte = filters.maxPrice;
     }
-
-    if (filters.subsidised !== undefined) match.subsidised = filters.subsidised;
-    if (filters.inStock !== undefined) match.stock = filters.inStock;
-
-    if (filters.taxRates && filters.taxRates.length > 0) {
-      match.tax = { $in: filters.taxRates };
-    }
-
+if (filters.subsidised === true) matchStage.subsidised = true;
+    if (filters.inStock === true) matchStage.stock = true;
+    if (filters.taxRates && filters.taxRates.length > 0)
+      matchStage.tax = { $in: filters.taxRates };
     if (filters.markupMin !== undefined || filters.markupMax !== undefined) {
-      match.markup = {};
+      matchStage.markup = {};
       if (filters.markupMin !== undefined)
-        match.markup.$gte = filters.markupMin;
+        matchStage.markup.$gte = filters.markupMin;
       if (filters.markupMax !== undefined)
-        match.markup.$lte = filters.markupMax;
+        matchStage.markup.$lte = filters.markupMax;
     }
 
-    let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
-    if (filters.sortBy === "price_asc") sortOption = { price: 1 };
-    else if (filters.sortBy === "price_desc") sortOption = { price: -1 };
-    else if (filters.sortBy === "name_asc") sortOption = { name: 1 };
+    if (Object.keys(matchStage).length > 0) {
+      pipeline.push({ $match: matchStage });
+    }
 
+    // --- Sort ---
+    if (filters.sortBy === "price_asc")
+      pipeline.push({ $sort: { price: 1, _id: 1 } });
+    else if (filters.sortBy === "price_desc")
+      pipeline.push({ $sort: { price: -1, _id: -1 } });
+    else if (filters.sortBy === "name_asc")
+      pipeline.push({ $sort: { name: 1, _id: 1 } });
+    // default: Atlas search score order (most relevant first)
+
+    // ADD these three stages right before the $project push
+    pipeline.push(
+      {
+        $lookup: {
+          from: "stores",
+          localField: "storeId",
+          foreignField: "_id",
+          as: "store",
+        },
+      },
+      { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
+      { $addFields: { storeName: "$store.name" } },
+    );
+
+    // UPDATE the $project to include storeId and storeName
+    pipeline.push({
+      $project: {
+        _id: 1,
+        name: 1,
+        description: 1,
+        category: 1,
+        markup: 1,
+        tax: 1,
+        price: 1,
+        stock: 1,
+        subsidised: 1,
+        images: 1,
+        disposableFee: 1,
+        isFeatured: 1,
+        UOM: 1,
+        isMeasuredInWeight: 1,
+        primaryUPC: 1,
+        storeId: 1,
+        storeName: 1, // ← add these two
+      },
+    });
+
+    // --- Count total (before pagination) ---
+    const countPipeline = [...pipeline, { $count: "total" }];
     const skip = (page - 1) * limit;
+    pipeline.push({ $skip: skip }, { $limit: limit });
 
-    const [products, totalCount] = await Promise.all([
-      Product.find(match)
-        .select(
-          "_id name description category markup tax price stock subsidised images disposableFee isFeatured UOM isMeasuredInWeight",
-        )
-        .sort(sortOption)
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Product.countDocuments(match),
+    const [products, countResult] = await Promise.all([
+      Product.aggregate(pipeline),
+      Product.aggregate(countPipeline),
     ]);
+
+    const totalCount = countResult[0]?.total ?? 0;
 
     return {
       success: true,

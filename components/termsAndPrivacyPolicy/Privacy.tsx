@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -165,7 +165,7 @@ const PRIVACY_SECTIONS: Section[] = [
     title: "Contact Us",
     icon: <Mail className="w-4 h-4" />,
     content:
-      "To ask questions, make a privacy request, or complain about how we handle personal information, please contact our privacy contact via email or at our business address.",
+      "To ask questions, make a privacy request, or complain about how we handle personal information, please contact our privacy contact via email.",
   },
 ];
 
@@ -217,7 +217,10 @@ function SectionCard({ section, index }: { section: Section; index: number }) {
             {section.bullets && (
               <ul className="space-y-2">
                 {section.bullets.map((b, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-sm text-gray-500">
+                  <li
+                    key={i}
+                    className="flex items-start gap-2.5 text-sm text-gray-500"
+                  >
                     <ChevronRight className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
                     <span>{b}</span>
                   </li>
@@ -235,11 +238,9 @@ function SectionCard({ section, index }: { section: Section; index: number }) {
 
 function SidebarNav({
   sections,
-  activeId,
   onSelect,
 }: {
   sections: Section[];
-  activeId: string;
   onSelect: (id: string) => void;
 }) {
   return (
@@ -248,18 +249,12 @@ function SidebarNav({
         <button
           key={s.id}
           onClick={() => onSelect(s.id)}
-          className={`group w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 ${
-            activeId === s.id
-              ? "bg-emerald-50 text-emerald-700 font-semibold"
-              : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-          }`}
+          className="group w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-all duration-150"
         >
           <span
-            className={`text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full flex-none transition-colors ${
-              activeId === s.id
-                ? "bg-emerald-500 text-white"
-                : "bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-600"
-            }`}
+            className={
+              "text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full flex-none bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-600 transition-colors"
+            }
           >
             {i + 1}
           </span>
@@ -273,14 +268,27 @@ function SidebarNav({
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 export default function Privacy() {
-  const [activeSection, setActiveSection] = useState("");
   const [showScrollTop, setShowScrollTop] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
 
   const handleSectionClick = (id: string) => {
-    setActiveSection(id);
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (el && mainRef.current) {
+      const offset = 0;
+
+      const containerTop = mainRef.current.getBoundingClientRect().top;
+
+      const elTop = el.getBoundingClientRect().top;
+
+      const scrollTop = mainRef.current.scrollTop;
+
+      const target = elTop - containerTop + scrollTop - offset;
+
+      mainRef.current.scrollTo({
+        top: target,
+        behavior: "smooth",
+      });
+    }
   };
 
   useEffect(() => {
@@ -288,14 +296,22 @@ export default function Privacy() {
     if (!container) return;
     const onScroll = () => {
       setShowScrollTop(container.scrollTop > 300);
+
       const els = PRIVACY_SECTIONS.map((s) =>
-        document.getElementById(s.id)
+        document.getElementById(s.id),
       ).filter(Boolean) as HTMLElement[];
+
       let current = "";
+
       for (const el of els) {
-        if (el.getBoundingClientRect().top <= 160) current = el.id;
+        const offsetTop = el.offsetTop;
+        const scrollPosition = container.scrollTop;
+
+        if (scrollPosition >= offsetTop - 20) {
+          current = el.id;
+        }
       }
-      if (current) setActiveSection(current);
+      // ---
     };
     container.addEventListener("scroll", onScroll);
     return () => container.removeEventListener("scroll", onScroll);
@@ -315,7 +331,7 @@ export default function Privacy() {
                 Privacy Policy
               </h1>
               <p className="text-[11px] text-gray-400 mt-0.5 hidden sm:block tracking-wide">
-                Effective Date: [Insert Date] · British Columbia, Canada
+                Effective Date: 19 May 2026 · British Columbia, Canada
               </p>
             </div>
           </div>
@@ -327,7 +343,11 @@ export default function Privacy() {
             </span>
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="lg:hidden rounded-xl border-gray-200">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="lg:hidden rounded-xl border-gray-200"
+                >
                   <Menu className="w-4 h-4" />
                 </Button>
               </SheetTrigger>
@@ -340,7 +360,6 @@ export default function Privacy() {
                 <ScrollArea className="h-[calc(100vh-72px)] px-3 py-3">
                   <SidebarNav
                     sections={PRIVACY_SECTIONS}
-                    activeId={activeSection}
                     onSelect={handleSectionClick}
                   />
                 </ScrollArea>
@@ -361,10 +380,10 @@ export default function Privacy() {
               </div>
             </div>
             <p className="text-gray-500 text-sm sm:text-[15px] leading-relaxed">
-              This Privacy Policy explains how we collect, use, disclose, store, and protect
-              personal information when you use our Service. We operate in British Columbia and
-              our practices comply with BC's private-sector privacy law and applicable Canadian
-              requirements.
+              This Privacy Policy explains how we collect, use, disclose, store,
+              and protect personal information when you use our Service. We
+              operate in British Columbia and our practices comply with BC's
+              private-sector privacy law and applicable Canadian requirements.
             </p>
           </div>
           <div className="flex items-center gap-4 mt-4">
@@ -372,7 +391,9 @@ export default function Privacy() {
               {PRIVACY_SECTIONS.length} sections
             </span>
             <span className="w-1 h-1 rounded-full bg-gray-300" />
-            <span className="text-xs text-gray-400">Last updated: [Insert Date]</span>
+            <span className="text-xs text-gray-400">
+              Last updated: 19 May 2026
+            </span>
           </div>
         </div>
       </div>
@@ -380,7 +401,6 @@ export default function Privacy() {
       {/* ── Body ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8">
         <div className="flex gap-8 lg:gap-10">
-
           {/* Sidebar */}
           <aside className="hidden lg:block w-52 xl:w-60 shrink-0">
             <div className="sticky top-[84px]">
@@ -390,7 +410,6 @@ export default function Privacy() {
               <ScrollArea className="h-[calc(100vh-148px)] pr-1">
                 <SidebarNav
                   sections={PRIVACY_SECTIONS}
-                  activeId={activeSection}
                   onSelect={handleSectionClick}
                 />
               </ScrollArea>
@@ -415,10 +434,12 @@ export default function Privacy() {
                 </div>
                 <p className="text-xs text-gray-400 leading-relaxed">
                   Privacy requests or questions? Contact{" "}
-                  <span className="text-emerald-600 font-medium">[Insert privacy email]</span>
+                  <span className="text-emerald-600 font-medium">
+                    <a href="mailto:info@canadianscart.ca">
+                      info@canadianscart.ca
+                    </a>
+                  </span>
                   <br className="sm:hidden" />
-                  <span className="hidden sm:inline"> · </span>
-                  <span className="text-gray-500">[Insert business address]</span>
                 </p>
               </div>
             </div>
@@ -429,7 +450,9 @@ export default function Privacy() {
       {/* Scroll to top FAB */}
       {showScrollTop && (
         <button
-          onClick={() => mainRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+          onClick={() =>
+            mainRef.current?.scrollTo({ top: 0, behavior: "smooth" })
+          }
           className="fixed bottom-6 right-6 w-10 h-10 rounded-full bg-emerald-500 text-white shadow-lg hover:bg-emerald-600 active:scale-95 transition-all z-50 flex items-center justify-center"
           aria-label="Scroll to top"
         >

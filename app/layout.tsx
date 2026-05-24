@@ -24,14 +24,15 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || "https://www.canadianscart.ca",
   ),
+  applicationName: "Canadian's Cart",
   alternates: {
     canonical: "https://www.canadianscart.ca",
   },
     appleWebApp: {
-    title: "CC",
+    title: "Canadian's Cart",
   },
   title: {
-    default: "CC",
+    default: "Canadian's Cart",
     template: "%s | CC",
   },
   description:
@@ -41,35 +42,35 @@ export const metadata: Metadata = {
     "grocery deals",
     "budget groceries",
     "fresh produce",
-    "Candian's Cart",
+    "Canadian's Cart",
     "online grocery",
     "in-store grocery savings",
     "online grocery savings",
   ],
-  authors: [{ name: "Candian's Cart Team" }],
-  creator: "Candian's Cart",
+  authors: [{ name: "Canadian's Cart Team" }],
+  creator: "Canadian's Cart",
   openGraph: {
     type: "website",
     locale: "en_CA",
     url: "/",
-    title: "Candian's Cart | Smart grocery shopping for families",
+    title: "Canadian's Cart | Smart grocery shopping for families",
     description:
       "Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.",
-    siteName: "Candian's Cart",
+    siteName: "Canadian's Cart",
     images: [
       {
         url: "https://ik.imagekit.io/h7w5h0hou/opengraph-cc-logo.png",
         width: 1200,
         height: 630,
-        alt: "Candian's Cart Logo",
+        alt: "Canadian's Cart Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Candian's Cart | Smart grocery shopping for families",
+    title: "Canadian's Cart | Smart grocery shopping for families",
     description:
-      "Save money on groceries with ease—discover deals, compare prices, and shop smarter in-store or online with Candian’s Cart.",
+      "Save money on groceries with ease—discover deals, compare prices, and shop smarter in-store or online with Canadian’s Cart.",
     images: ["https://ik.imagekit.io/h7w5h0hou/opengraph-cc-logo.png"],
   },
   robots: {

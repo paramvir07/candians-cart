@@ -37,7 +37,6 @@ export default function QrScannerButton({
 }: QrScannerButtonProps) {
   const [internalOpen, setInternalOpen] = useState(false);
 
-  // If controlled props are provided, use them; otherwise use internal state
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : internalOpen;
 
@@ -69,9 +68,24 @@ export default function QrScannerButton({
     setOpen(false);
   }
 
-  function handleScan(results: { rawValue: string }[]) {
+  function handleScan(results: { rawValue: string; format?: string }[]) {
     if (results && results.length > 0) {
-      const value = results[0].rawValue;
+      const detected = results[0];
+      let value = detected.rawValue;
+
+      // UPC-A barcodes are physically identical to EAN-13 with a leading zero.
+      // Some browsers/devices decode them as EAN-13 and prepend a "0", turning a
+      // 12-digit UPC into a 13-digit value. Strip that phantom leading zero so the
+      // raw UPC printed on the product is returned as-is.
+      if (
+        isBarcode &&
+        detected.format === "ean_13" &&
+        value.length === 13 &&
+        value.startsWith("0")
+      ) {
+        value = value.slice(1);
+      }
+
       if (value) {
         handleClose();
         onScan(value);
@@ -126,7 +140,15 @@ export default function QrScannerButton({
                 components={{ finder: true }}
                 formats={
                   isBarcode
-                    ? ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "itf"]
+                    ? [
+                        "ean_13",
+                        "ean_8",
+                        "upc_a",
+                        "upc_e",
+                        "code_128",
+                        "code_39",
+                        "itf",
+                      ]
                     : undefined
                 }
                 styles={{

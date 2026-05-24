@@ -92,7 +92,6 @@ export const ReOrder = async (orderId: string) => {
 
     // If no cart exists, create a fresh one
     const cartItems = cart?.items ? [...cart.items] : [];
-    const cartSubsidyItems = cart?.subsidyItems ? [...cart.subsidyItems] : [];
 
     // Helper to add/increment product in array
     const upsertCartItem = (
@@ -133,7 +132,7 @@ export const ReOrder = async (orderId: string) => {
       userOrder.subsidyItems.length > 0
     ) {
       for (const subsidyItem of userOrder.subsidyItems) {
-        upsertCartItem(cartSubsidyItems, {
+        upsertCartItem(cartItems, {
           productId: subsidyItem.productId,
           quantity: subsidyItem.quantity,
           storeId: userOrder.storeId,
@@ -146,8 +145,7 @@ export const ReOrder = async (orderId: string) => {
       {
         $set: {
           customerId: userOrder.userId,
-          items: cartItems,
-          subsidyItems: cartSubsidyItems,
+          items: cartItems
         },
       },
       {

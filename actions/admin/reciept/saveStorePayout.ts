@@ -52,6 +52,7 @@ export async function saveStorePayoutAction(
       markupTax: receipt.markupTax,
       storebasetaxGST: receipt.storebasetaxGST,
       storebasetaxPST: receipt.storebasetaxPST,
+      storeMarkupTax: receipt.storeMarkupTax,
       platformMarkuptax: receipt.platformMarkuptax,
       totalDisposableFee: receipt.totalDisposableFee,
       storeFixedValue: receipt.storeFixedValue,

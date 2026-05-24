@@ -108,21 +108,28 @@ export const BaseProductFormSchema = z.object({
 
 export const createProductFormSchema = (role: "admin" | "store") => {
   return BaseProductFormSchema.extend({
-    InvoiceId:
-      role === "store"
-        ? z
-            .string()
-            .trim()
-            .regex(/^[0-9a-fA-F]{24}$/, {
-              message: "Invoice ID is required and must be valid",
-            })
-        : z
+    InvoiceId: z
             .string()
             .trim()
             .optional()
             .refine((val) => !val || /^[0-9a-fA-F]{24}$/.test(val), {
               message: "Invalid Invoice ID format",
             }),
+      // role === "store"
+      //   ? z
+      //       .string()
+      //       .trim()
+      //       .optional() // Made optional for store
+      //       .regex(/^[0-9a-fA-F]{24}$/, {
+      //         message: "Invoice ID is required and must be valid",
+      //       })
+      //   : z
+      //       .string()
+      //       .trim()
+      //       .optional()
+      //       .refine((val) => !val || /^[0-9a-fA-F]{24}$/.test(val), {
+      //         message: "Invalid Invoice ID format",
+      //       }),
   }).superRefine((data, ctx) => {
     const excludedCategories = ["Fruits", "Vegetables", "Dairy"];
 

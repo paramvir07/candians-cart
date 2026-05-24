@@ -28,8 +28,8 @@ export const HelpFormConfirmation = async (data: HelpFormEmailData) => {
     const response = await resend.emails.send({
       from:
         process.env.NODE_ENV === "development"
-          ? "Candian's Cart <onboarding@resend.dev>"
-          : "Candian's Cart <no-reply@canadianscart.ca>",
+          ? "Canadian's Cart <onboarding@resend.dev>"
+          : "Canadian's Cart <no-reply@canadianscart.ca>",
       to:
         process.env.NODE_ENV === "development"
           ? [process.env.DEV_EMAIL!]
@@ -60,8 +60,8 @@ export const SendtoAdmin = async (data:HelpFormEmailData) =>{
     const response = await resend.emails.send({
       from:
         process.env.NODE_ENV === "development"
-          ? "Candian's Cart <onboarding@resend.dev>"
-          : "Candian's Cart <no-reply@canadianscart.ca>",
+          ? "Canadian's Cart <onboarding@resend.dev>"
+          : "Canadian's Cart <no-reply@canadianscart.ca>",
       to:
         process.env.NODE_ENV === "development"
           ? [process.env.DEV_EMAIL!]
@@ -91,8 +91,8 @@ export const SendContactAdmin = async (data:ContactFormData) =>{
     const response = await resend.emails.send({
       from:
         process.env.NODE_ENV === "development"
-          ? "Candian's Cart <onboarding@resend.dev>"
-          : "Candian's Cart <no-reply@canadianscart.ca>",
+          ? "Canadian's Cart <onboarding@resend.dev>"
+          : "Canadian's Cart <no-reply@canadianscart.ca>",
       to:
         process.env.NODE_ENV === "development"
           ? [process.env.DEV_EMAIL!]

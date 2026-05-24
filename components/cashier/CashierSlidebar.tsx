@@ -209,7 +209,7 @@ function SidebarContent({
       {/* Profile + Logout */}
       <div className="shrink-0 border-t border-gray-100 pt-3 mt-3 space-y-1">
         <Link
-          href="/cashier/profile"
+          href="#"
           onClick={onNav}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full"
         >
