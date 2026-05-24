@@ -22,7 +22,12 @@ export interface ISubsidyItems {
 }
 
 export interface IMiscCartItem {
-  itemId: Types.ObjectId;
+  itemId: {
+    _id: Types.ObjectId;
+    productName: string;
+    primaryUPC?: string;
+    price: number;
+  };
   quantity: number;
   priceAtAdd: number;
 }

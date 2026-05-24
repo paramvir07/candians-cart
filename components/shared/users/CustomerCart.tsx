@@ -26,13 +26,15 @@ import { ICartItem } from "@/types/customer/CustomerCart";
 import Navbar from "@/components/customer/landing/Navbar";
 import CheckoutActions from "./CheckOutActions";
 import { SubsidyItemsSection } from "@/components/customer/products/SubsidyItemsSection";
-import { ISubsidyItems } from "@/db/models/customer/cart.model";
+import { IMiscCartItem, ISubsidyItems } from "@/db/models/customer/cart.model";
 import { AddtoSubsidyBtn } from "@/components/customer/products/CartActionBtns";
 import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
 import { getFibBracketFrom21 } from "@/lib/FibBracket";
 import { RemoveButton } from "@/components/customer/products/RemoveButton";
 import { QuantityControl } from "@/components/customer/products/QuantityControls";
 import { cn } from "@/lib/utils";
+import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
+import { MiscItemsSection } from "@/components/cashier/MiscItemSection";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -77,6 +79,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const giftWalletBalance = UserData?.giftWalletBalance ?? 0;
   const items = CartItems?.items as ICartItem[] | null;
   const subItems = (CartItems?.subItems as ISubsidyItems[]) ?? [];
+  const MiscItems = (CartItems?.miscItems as IMiscCartItem[]) ?? [];
   const subItemProductIds = subItems.map((s) => s.productId._id.toString());
 
   if (!items || (items.length === 0 && !subItems))
@@ -160,13 +163,27 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
   );
 
+  const calcMiscTotal = (miscItems: IMiscCartItem[]) => {
+  return miscItems.reduce(
+    (acc, item) => {
+      const lineTotal = item.priceAtAdd * item.quantity;
+      acc.subtotal += lineTotal;
+      acc.total += lineTotal;
+      return acc;
+    },
+    { subtotal: 0, total: 0 },
+  );
+};
+
+const miscTotals = calcMiscTotal(MiscItems);
+
   const totals = {
-    subtotal: itemTotals.subtotal + subsidyTotals.subtotal,
+    subtotal: itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal,
     gst: itemTotals.gst + subsidyTotals.gst,
     pst: itemTotals.pst + subsidyTotals.pst,
     totalTax: itemTotals.totalTax + subsidyTotals.totalTax,
     disposable: itemTotals.disposable + subsidyTotals.disposable,
-    total: itemTotals.total + subsidyTotals.total,
+    total: itemTotals.total + subsidyTotals.total + miscTotals.subtotal,
   };
 
   const showGST = totals.gst > 0;
@@ -430,6 +447,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             >
               {totalItemCount}
             </Badge>
+            {isCashier && <AddMiscItemModalTrigger customerId={customerId || ""} /> }
           </div>
 
           {/* Progress */}
@@ -449,11 +467,16 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
           {/* Cart items */}
           <section>
-            <div className="flex items-center gap-2 mb-3">
-              <Package className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Items ({items.length})
-              </span>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Package className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Items ({items.length})
+                </span>
+              </div>
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tabular-nums text-primary">
+                  CA${fmt(itemTotals.total)}
+                </span>
             </div>
 
             {/* Scrollable items list */}
@@ -538,6 +561,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
           {/* Subsidy items */}
           <SubsidyItemsSection subItems={subItems} customerId={customerId} />
+          <MiscItemsSection miscItems={MiscItems} customerId={customerId} />
 
           {/* Wallets */}
           <section>
@@ -641,7 +665,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       <div className="hidden xl:block">
         <div className="max-w-5xl mx-auto px-6 lg:px-8 py-8">
           {/* Page header */}
-          <div className="flex items-center gap-3 mb-6 flex-wrap">
+          <div className="flex items-center gap-3 mb-6 flex-wrap justify-between">
+            <div className="flex items-center justify-center gap-2">
             <Link
               href={isCashier ? `/cashier/customer/${customerId}` : "/customer"}
             >
@@ -653,7 +678,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0 ">
               <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                 <ShoppingCart className="h-4 w-4 text-primary" />
               </div>
@@ -674,6 +699,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             >
               {totalItemCount} {totalItemCount === 1 ? "item" : "items"}
             </Badge>
+            </div>
+            {isCashier && <AddMiscItemModalTrigger customerId={customerId || ""} /> }
           </div>
 
           {/* Progress bar */}
@@ -697,14 +724,19 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             <div className="flex-1 min-w-0 space-y-5">
               {/* Items card */}
               <Card className="border-border/60 shadow-none overflow-hidden">
-                <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50 sticky top-0 z-10">
+              <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50 sticky top-0 z-10">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Package className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {items.length} {items.length === 1 ? "item" : "items"}
                     </span>
                   </div>
-                </CardHeader>
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tabular-nums text-primary">
+                    CA${fmt(itemTotals.total)}
+                  </span>
+                </div>
+              </CardHeader>
 
                 {/* Scrollable items */}
                 <div className="max-h-[420px] overflow-y-auto divide-y divide-border/50">
@@ -814,6 +846,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 subItems={subItems}
                 customerId={customerId}
               />
+              <MiscItemsSection miscItems={MiscItems} customerId={customerId} />
 
               {/* Wallets */}
               <section>

@@ -1,11 +1,11 @@
 "use server";
 
-import CartModel, { ISubsidyItems } from "@/db/models/customer/cart.model";
+import CartModel, { IMiscCartItem, ISubsidyItems } from "@/db/models/customer/cart.model";
 import "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
 import mongoose, { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
-import { getCustomerDataAction, getUser } from "../User.action";
+import { getCustomerDataAction } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
 import { ICartItem } from "@/types/customer/CustomerCart";
 import { CartTotals } from "@/components/shared/users/CheckOutActions";
@@ -13,6 +13,7 @@ import { IProduct } from "@/types/store/products.types";
 import Customer from "@/db/models/customer/customer.model";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import OrderModel from "@/db/models/customer/Orders.Model";
+import "@/db/models/customer/MiscItem.model";
 
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
@@ -299,11 +300,12 @@ export const getCart = async (
   isSavedtoWallet: boolean;
   items: ICartItem[];
   subItems: ISubsidyItems[];
+  miscItems: IMiscCartItem[];
 } | null> => {
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
   if (!user)
-    return { success: false, isSavedtoWallet: false, items: [], subItems: [] };
+    return { success: false, isSavedtoWallet: false, items: [], subItems: [], miscItems:[] };
 
   await dbConnect();
   try {
@@ -311,14 +313,18 @@ export const getCart = async (
       customerId: user._id,
     })
       .populate("items.productId")
-      .populate("subsidyItems.productId");
+      .populate("miscItems.itemId")
+      .populate("subsidyItems.productId")
+      .lean();
 
     if (!foundCart) return null;
+    const serialized = JSON.parse(JSON.stringify(foundCart));
     return {
       success: true,
-      isSavedtoWallet: foundCart.isSavedtoWallet,
-      items: foundCart.items as unknown as ICartItem[],
-      subItems: foundCart.subsidyItems,
+      isSavedtoWallet: serialized.isSavedtoWallet,
+      items: serialized.items as ICartItem[],
+      subItems: serialized.subsidyItems as ISubsidyItems[],
+      miscItems: serialized.miscItems as IMiscCartItem[],
     };
     // return foundCart.items;
   } catch (error) {

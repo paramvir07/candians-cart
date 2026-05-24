@@ -7,6 +7,7 @@ export interface IMiscellaneousItems {
   productName: string;
   primaryUPC?: string;
   price: number;
+  isAdded:boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,6 +37,11 @@ const miscellaneousItemsSchema = new Schema<IMiscellaneousItems>(
       type: Number,
       required: true,
     },
+    isAdded:{
+        type: Boolean,
+        required:true,
+        default:false
+    }
   },
   { timestamps: true }
 );
