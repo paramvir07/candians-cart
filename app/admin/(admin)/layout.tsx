@@ -1,7 +1,6 @@
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import AdminFooter from "@/components/admin/footer/Footer";
 
