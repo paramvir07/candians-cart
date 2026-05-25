@@ -78,7 +78,7 @@ const productSchema = new Schema(
 
     isAvailable: {
       type: Boolean,
-      default: false
+      default: true
     },
 
     // This is the invoice Id, have to keep this required false because otherwise the admin validation will fail
