@@ -139,9 +139,6 @@ export function BasicInfoSection({
               value={UOM}
               onChange={(e) => onChange("UOM", e.target.value)}
             />
-            <p className="text-[11px] text-muted-foreground">
-              e.g. kg, lbs, grams, liters
-            </p>
           </div>
         )}
 

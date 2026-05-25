@@ -88,6 +88,9 @@ export async function updateProduct(
       ...otherData
     } = validationResult.data;
 
+    const normalizedInvoiceId =
+  InvoiceId && InvoiceId.trim() !== "" ? InvoiceId.trim() : undefined;
+
     const newPriceInCents = Math.round(price * 100);
     const priceHasChanged = existingProduct.price !== newPriceInCents;
 
@@ -121,20 +124,25 @@ export async function updateProduct(
      * Store users must provide invoice only when changing price.
      * Admin can change invoice without price changing.
      */
-    if (storeRole && priceHasChanged && !InvoiceId) {
-      return {
-        success: false,
-        message:
-          "An Invoice Id is required when changing the price of a product",
-      };
-    }
+
+    // Enable this later when InvoiceId should be required for store users
+    // when changing the product price.
+    //
+
+    // if (storeRole && priceHasChanged && !normalizedInvoiceId) {
+    //   return {
+    //     success: false,
+    //     message:
+    //       "An Invoice Id is required when changing the price of a product",
+    //   };
+    // }
 
     /**
      * If invoice is provided, it must belong to the product's store.
      */
-    if (InvoiceId) {
+    if (normalizedInvoiceId) {
       const invoice = await ProductInvoice.findOne({
-        _id: InvoiceId,
+        _id: normalizedInvoiceId,
         storeId: existingProduct.storeId,
       }).lean();
 
@@ -146,26 +154,29 @@ export async function updateProduct(
       }
     }
 
-    const dbPayload = {
+    const dbPayload: any = {
       ...otherData,
       images: images || [],
       tax: tax > 0 ? tax / 100 : 0,
       price: newPriceInCents,
       disposableFee: Math.round((disposableFee || 0) * 100),
-      InvoiceId: InvoiceId ?? existingProduct.InvoiceId,
       subsidised: isSubsidized,
       isMeasuredInWeight,
       UOM,
       primaryUPC: newPrimaryUPC,
     };
 
+    if (normalizedInvoiceId) {
+      dbPayload.InvoiceId = normalizedInvoiceId;
+    }
+
     const mongoSession = await mongoose.startSession();
 
     try {
       await mongoSession.withTransaction(async () => {
-        if (InvoiceId) {
+        if (normalizedInvoiceId) {
           const oldInvoiceId = existingProduct.InvoiceId?.toString();
-          const newInvoiceId = InvoiceId.toString();
+          const newInvoiceId = normalizedInvoiceId.toString();
 
           if (oldInvoiceId && oldInvoiceId !== newInvoiceId) {
             await ProductInvoice.updateOne(
@@ -227,44 +238,38 @@ export async function updateProduct(
           }
         }
 
-        if (adminRole) {
-          const adminDbPayload: any = { ...dbPayload };
-
-          const adminUpdateQuery =
-            InvoiceId === ""
-              ? {
-                  $set: adminDbPayload,
-                  $unset: { InvoiceId: "" },
-                }
-              : {
-                  $set: adminDbPayload,
-                };
-
-          if (InvoiceId === "") {
-            delete adminDbPayload.InvoiceId;
+        const updateQuery =
+      InvoiceId === ""
+        ? {
+            $set: dbPayload,
+            $unset: { InvoiceId: "" },
           }
+        : {
+            $set: dbPayload,
+          };
 
-          updatedProduct = await Product.findByIdAndUpdate(
-            productId,
-            adminUpdateQuery,
-            {
-              returnDocument: "after",
-              session: mongoSession,
-            },
-          );
-        } else if (storeRole) {
-          updatedProduct = await Product.findOneAndUpdate(
-            {
-              _id: productId,
-              storeId: store._id,
-            },
-            { $set: dbPayload },
-            {
-              returnDocument: "after",
-              session: mongoSession,
-            },
-          );
-        }
+    if (adminRole) {
+      updatedProduct = await Product.findByIdAndUpdate(
+        productId,
+        updateQuery,
+        {
+          returnDocument: "after",
+          session: mongoSession,
+        },
+      );
+    } else if (storeRole) {
+      updatedProduct = await Product.findOneAndUpdate(
+        {
+          _id: productId,
+          storeId: store._id,
+        },
+        updateQuery,
+        {
+          returnDocument: "after",
+          session: mongoSession,
+        },
+      );
+    }
 
         if (!updatedProduct) {
           throw new Error(

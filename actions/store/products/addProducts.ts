@@ -74,30 +74,36 @@ export async function createProduct(
       ...otherData
     } = validationResult.data;
 
-    if (storeRole && !InvoiceId) {
-      return {
-        success: false,
-        message: "An Invoice Id is required when adding a new product",
-      };
-    }
+    const normalizedInvoiceId =
+    InvoiceId && InvoiceId.trim() !== "" ? InvoiceId.trim() : undefined;
+  
+    // Enable this later when InvoiceId should be required for store users
+    // when adding a new product.
+    //
+    // if (storeRole && !normalizedInvoiceId) {
+    //   return {
+    //     success: false,
+    //     message: "An Invoice Id is required when adding a new product",
+    //   };
+    // }
 
     /**
      * If invoice is provided, validate that it belongs to this store.
      * Store: required
      * Admin: optional, but if provided must be valid
      */
-    if (InvoiceId) {
-      const invoice = await ProductInvoice.findOne({
-        _id: InvoiceId,
-        storeId,
-      }).lean();
+    if (normalizedInvoiceId) {
+    const invoice = await ProductInvoice.findOne({
+      _id: normalizedInvoiceId,
+      storeId,
+    }).lean();
 
-      if (!invoice) {
-        return {
-          success: false,
-          message: "Invoice does not exist for this store",
-        };
-      }
+    if (!invoice) {
+      return {
+        success: false,
+        message: "Invoice does not exist for this store",
+      };
+    }
     }
 
     /**
@@ -126,19 +132,22 @@ export async function createProduct(
     const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
     const isSubsidized = subsidyCategories.includes(otherData.category);
 
-    const dbPayload = {
+    const dbPayload: any = {
       ...otherData,
       storeId,
       images: images ?? [],
       tax: newTaxRate,
       price: newPriceInCents,
       disposableFee: newDisposableFeeInCents,
-      InvoiceId: InvoiceId || undefined,
       subsidised: isSubsidized,
       isMeasuredInWeight,
       UOM,
       primaryUPC: primaryUPC,
     };
+
+    if (normalizedInvoiceId) {
+      dbPayload.InvoiceId = normalizedInvoiceId;
+    }
 
     const mongoSession = await mongoose.startSession();
 
@@ -159,24 +168,24 @@ export async function createProduct(
          * If InvoiceId exists, add newly created product into invoice products.
          * This is inside transaction, so product create + invoice update succeed/fail together.
          */
-        if (InvoiceId) {
-          await ProductInvoice.updateOne(
-            {
-              _id: InvoiceId,
-              storeId,
+      if (normalizedInvoiceId) {
+      await ProductInvoice.updateOne(
+        {
+          _id: normalizedInvoiceId,
+          storeId,
+        },
+        {
+          $push: {
+            products: {
+              productId: newProduct._id,
+              newPrice: newPriceInCents,
+              status: "PENDING",
             },
-            {
-              $push: {
-                products: {
-                  productId: newProduct._id,
-                  newPrice: newPriceInCents,
-                  status: "PENDING",
-                },
-              },
-            },
-            { session: mongoSession },
-          );
-        }
+          },
+        },
+        { session: mongoSession },
+      );
+    }
       });
     } catch (error) {
       console.error("Transaction failed:", error);

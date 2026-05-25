@@ -109,27 +109,35 @@ export const BaseProductFormSchema = z.object({
 export const createProductFormSchema = (role: "admin" | "store") => {
   return BaseProductFormSchema.extend({
     InvoiceId: z
-            .string()
-            .trim()
-            .optional()
-            .refine((val) => !val || /^[0-9a-fA-F]{24}$/.test(val), {
-              message: "Invalid Invoice ID format",
-            }),
-      // role === "store"
-      //   ? z
-      //       .string()
-      //       .trim()
-      //       .optional() // Made optional for store
-      //       .regex(/^[0-9a-fA-F]{24}$/, {
-      //         message: "Invoice ID is required and must be valid",
-      //       })
-      //   : z
-      //       .string()
-      //       .trim()
-      //       .optional()
-      //       .refine((val) => !val || /^[0-9a-fA-F]{24}$/.test(val), {
-      //         message: "Invalid Invoice ID format",
-      //       }),
+      .string()
+      .trim()
+      .optional()
+      .refine((val) => !val || /^[0-9a-fA-F]{24}$/.test(val), {
+        message: "Invalid Invoice ID format",
+      }),
+
+    // When you want InvoiceId required for store users, replace the InvoiceId above with this:
+    //
+
+    // InvoiceId:
+    //   role === "store"
+    //     ? z
+    //         .string()
+    //         .trim()
+    //         .min(1, {
+    //           message: "Invoice ID is required",
+    //         })
+    //         .regex(/^[0-9a-fA-F]{24}$/, {
+    //           message: "Invoice ID must be valid",
+    //         })
+    //     : z
+    //         .string()
+    //         .trim()
+    //         .optional()
+    //         .refine((val) => !val || /^[0-9a-fA-F]{24}$/.test(val), {
+    //           message: "Invalid Invoice ID format",
+    //         }),
+    
   }).superRefine((data, ctx) => {
     const excludedCategories = ["Fruits", "Vegetables", "Dairy"];
 
@@ -138,18 +146,6 @@ export const createProductFormSchema = (role: "admin" | "store") => {
         code: "custom",
         path: ["price"],
         message: "Price must be at least 0.01",
-      });
-    }
-
-    if (
-      role === "store" &&
-      !excludedCategories.includes(data.category) &&
-      (data.markup < 30 || data.markup > 35)
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["markup"],
-        message: "Markup must be between 30% and 35%",
       });
     }
   });
