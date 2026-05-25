@@ -139,8 +139,8 @@ const SelectStore = ({
                     <div className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
                       <Users className="h-3.5 w-3.5 shrink-0" />
                       <span>
-                        {s.members.length} member
-                        {s.members.length !== 1 ? "s" : ""}
+                        {s.members} member
+                        {s.members !== 1 ? "s" : ""}
                       </span>
                     </div>
                   </div>

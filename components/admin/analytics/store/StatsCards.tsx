@@ -33,7 +33,7 @@ export default function StatCards({ stats }: StatCardsProps) {
       value: stats.totalStores.toLocaleString(),
       sub: `+${stats.newStoresThisMonth} new stores this month`,
       growth: stats.newStoresThisMonth,
-      href: undefined,
+      href: "/admin/stores",
       icon: Store,
       iconColor: "text-blue-600",
       iconBg: "bg-blue-100",

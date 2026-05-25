@@ -37,7 +37,7 @@ export interface IStore {
   address: string;
   mobile: string;
   description: string;
-  members: Types.ObjectId[];
+  members: number;
   timezone: string;
   hours: IStoreHours;
   bankDetails: string;
@@ -120,9 +120,8 @@ const storeSchema = new Schema<IStore>(
       type: String,
     },
     members: {
-      type: [Schema.Types.ObjectId],
-      ref: "Customer",
-      default: [],
+      type: Number,
+      default: 0,
     },
     timezone: {
       type: String,

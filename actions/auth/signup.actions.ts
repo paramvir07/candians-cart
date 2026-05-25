@@ -136,7 +136,7 @@ export const signupAction = async (
 
         const newStoreMember = await Store.findByIdAndUpdate(
           data.associatedStore,
-          { $addToSet: { members: customer[0]._id } },
+          { $inc: { members: 1 } },
           { returnDocument: "after" },
         );
 
