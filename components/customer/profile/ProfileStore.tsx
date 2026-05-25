@@ -68,7 +68,7 @@ export default function ProfileStore({ store }: Props) {
     { icon: MapPin, href: mapsUrl, content: store.address },
     ...(store.mobile ? [{ icon: Phone, href: `tel:${store.mobile.replace(/\s+/g, "")}`, content: store.mobile }] : []),
     ...(store.email  ? [{ icon: Mail, href: `mailto:${store.email}`, content: store.email }] : []),
-    { icon: Users, content: `${store.members.length} member${store.members.length !== 1 ? "s" : ""}` },
+    { icon: Users, content: `${store.members} member${store.members !== 1 ? "s" : ""}` },
   ];
 
   const StoreBody = () => (

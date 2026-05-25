@@ -119,7 +119,7 @@ export function StoreInfoDialog({
           <div className="flex-1 overflow-hidden">
             {/* STATS */}
             <div className="grid grid-cols-3 divide-x divide-border border-b border-border bg-muted/20">
-              <StatCell label="Members" value={String(store.members.length)} />
+              <StatCell label="Members" value={String(store.members)} />
               <StatCell
                 label="Status"
                 value={storeOpen ? "Open" : "Closed"}

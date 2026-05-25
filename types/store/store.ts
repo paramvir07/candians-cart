@@ -1,9 +1,8 @@
 import { IStore } from "@/db/models/store/store.model";
-import { Types } from "mongoose";
 
 export type StoreDetails = {
   name: string;
-  members: Types.ObjectId[];
+  members: Number;
   address: string;
   description: string;
 };

@@ -408,7 +408,7 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
                 </div>
                 <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                   <Users className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
-                  <span>{Data.members.length} Team Members</span>
+                  <span>{Data.members} Team Members</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
                   <Globe className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />

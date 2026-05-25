@@ -25,7 +25,7 @@ const StoreDetailPage = async ({
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-400 mx-auto p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
           <Link
-            href="/admin/store"
+            href="/admin/stores"
             className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
