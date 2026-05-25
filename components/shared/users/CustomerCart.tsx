@@ -591,44 +591,6 @@ const miscTotals = calcMiscTotal(MiscItems);
               <OrderSummaryContent />
             </CardContent>
           </Card>
-
-          {/* Cashier order info (mobile/tablet) */}
-          {isCashier && (
-            <Card className="border-border/60 shadow-none bg-muted/30">
-              <CardContent className="px-4 py-3.5 space-y-2">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <BadgePercent className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Order Info
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs gap-4">
-                  <span className="text-muted-foreground shrink-0">
-                    Active markup
-                  </span>
-                  <span className="font-semibold text-foreground">
-                    {active > 0 ? `${active}%` : "—"}
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs gap-4">
-                  <span className="text-muted-foreground shrink-0">
-                    Subsidy on order
-                  </span>
-                  <span className="font-semibold text-primary">
-                    CA${fmt(subsidyOnOrder)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-xs gap-4">
-                  <span className="text-muted-foreground shrink-0">
-                    Gift wallet
-                  </span>
-                  <span className="font-semibold text-foreground">
-                    CA${fmt(giftWalletBalance)}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Mobile/Tablet CTA — sticky above footer */}
@@ -889,44 +851,6 @@ const miscTotals = calcMiscTotal(MiscItems);
                   </div>
                 </div>
               </Card>
-
-              {isCashier && (
-                <Card className="border-border/60 shadow-none bg-muted/30 overflow-hidden">
-                  <CardContent className="px-4 py-3.5 space-y-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <BadgePercent className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Order Info
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between text-xs gap-4">
-                      <span className="text-muted-foreground shrink-0">
-                        Active markup
-                      </span>
-                      <span className="font-semibold text-foreground">
-                        {active > 0 ? `${active}%` : "—"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-xs gap-4">
-                      <span className="text-muted-foreground shrink-0">
-                        Subsidy on order
-                      </span>
-                      <span className="font-semibold text-primary">
-                        CA${fmt(subsidyOnOrder)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-xs gap-4">
-                      <span className="text-muted-foreground shrink-0">
-                        Gift wallet
-                      </span>
-                      <span className="font-semibold text-foreground">
-                        CA${fmt(giftWalletBalance)}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           </div>
         </div>

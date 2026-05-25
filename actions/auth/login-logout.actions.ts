@@ -103,7 +103,7 @@ if (actualRole !== expectedRole) {
       return {
         success: false,
         message:
-          "Your email is not verified. We've sent you a verification email. Please verify your email and then log in again.",
+          "Your email is not verified. We've sent you a verification email. Please verify your email.", // and then log in again
       };
     }
 

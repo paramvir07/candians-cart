@@ -167,7 +167,7 @@ export const signupAction = async (
       return {
         success: true,
         message:
-          "Your account has been created. We’ve sent a verification link to your email. Please verify your email and then log in.",
+          "Your account has been created. We’ve sent a verification link to your email. Please verify your email." // and then login
       };
     } else if (userRole === "store") {
       const session = await getUserSession();
