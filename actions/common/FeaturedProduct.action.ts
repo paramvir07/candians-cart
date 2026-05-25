@@ -35,3 +35,37 @@ export async function featuredProduct(
     };
   }
 }
+
+
+// remove after availability check
+export async function availableProduct(
+  productId: string,
+  isAvailable: boolean,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await dbConnect();
+
+    const product = await productsModel.findByIdAndUpdate(
+      productId,
+      { isAvailable },
+      { returnDocument: "after" },
+    );
+
+    if (!product) {
+      return { success: false, error: "Product not found" };
+    }
+
+    const tagToBust = `products-${product.storeId.toString()}`;
+    revalidateTag(tagToBust, "max");
+    revalidateTag("global-products", "max");
+    revalidatePath("/admin/products");
+    console.log(`[Cache] Successfully marked tag '${tagToBust}' as stale`);
+
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message ?? "Failed to update product",
+    };
+  }
+}
