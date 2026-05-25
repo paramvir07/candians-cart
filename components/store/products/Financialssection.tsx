@@ -110,7 +110,7 @@ export function FinancialsSection({
               <Input
                 type="number"
                 step="0.01"
-                placeholder="0.00"
+                placeholder="e.g. 0.00"
                 value={targetPriceStr}
                 onChange={(e) => handleTargetPriceChange(e.target.value)}
                 onFocus={() => setIsTargetFocused(true)} // Suspend formatting
@@ -131,13 +131,12 @@ export function FinancialsSection({
             </Label>
             <Input
               type="number"
-              placeholder="30"
+              placeholder="e.g. 30"
               min={30}
               max={35}
               value={markup}
               onChange={(e) => handleMarkupChange(e.target.value)}
             />
-            <p className="text-[11px] text-muted-foreground">Range: 30 – 35%</p>
           </div>
 
           {/* Tax Rate */}
@@ -170,7 +169,7 @@ export function FinancialsSection({
               <Input
                 type="number"
                 step="0.01"
-                placeholder="0.10"
+                placeholder="e.g. 0.10"
                 value={disposableFee}
                 onChange={(e) => onChange("disposableFee", e.target.value)}
                 className="pl-7"

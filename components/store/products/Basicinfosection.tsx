@@ -35,7 +35,7 @@ export function BasicInfoSection({
   price,
   onChange,
 }: BasicInfoSectionProps) {
-  const upcDigitCount = primaryUPC.replace(/\D/g, "").length;
+  const upcCharCount = primaryUPC.replace(/[^\p{L}\p{N}]/gu, "").length;
 
   return (
     <Card className="border border-border/60 shadow-sm bg-card overflow-hidden">
@@ -102,11 +102,11 @@ export function BasicInfoSection({
               />
 
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground select-none">
-                {upcDigitCount} digits
+                {upcCharCount} characters
               </span>
             </div>
 
-            <p className="text-[11px] text-muted-foreground">Barcode number</p>
+            <p className="text-[11px] text-muted-foreground">Barcode value</p>
           </div>
 
           <div className="space-y-1.5">
@@ -208,15 +208,12 @@ export function BasicInfoSection({
             <Input
               type="number"
               step="0.01"
-              placeholder="0.00"
+              placeholder="e.g. 0.00"
               value={price}
               onChange={(e) => onChange("price", e.target.value)}
               className="pl-7"
             />
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            Stored as: {Math.round((parseFloat(price) || 0) * 100)} cents
-          </p>
         </div>
       </CardContent>
     </Card>
