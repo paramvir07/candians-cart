@@ -494,6 +494,7 @@ useEffect(() => {
               filters={filters}
               onApply={handleApplyFilters}
               role={role}
+              storeId={storeId}
             />
           )}
         </div>
