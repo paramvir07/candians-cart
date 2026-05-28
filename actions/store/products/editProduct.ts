@@ -97,28 +97,32 @@ export async function updateProduct(
     const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
     const isSubsidized = subsidyCategories.includes(otherData.category);
 
-    const newPrimaryUPC = primaryUPC;
+    const normalizedPrimaryUPC =
+  typeof primaryUPC === "string" && primaryUPC.trim() !== ""
+    ? primaryUPC.trim()
+    : undefined;
 
-    const primaryUPCHasChanged =
-      newPrimaryUPC !== undefined &&
-      existingProduct.primaryUPC !== newPrimaryUPC;
+const existingPrimaryUPC = existingProduct.primaryUPC || undefined;
 
-    if (primaryUPCHasChanged) {
-      const productWithSameUPC = await Product.findOne({
-        primaryUPC: newPrimaryUPC,
-        storeId: existingProduct.storeId,
-        _id: { $ne: productId },
-      }).lean();
+const primaryUPCHasChanged =
+  normalizedPrimaryUPC !== existingPrimaryUPC;
 
-      if (productWithSameUPC) {
-        return {
-          success: false,
-          message: `Primary UPC is already in use by another product: ${
-            productWithSameUPC.name || "Unknown Product"
-          }`,
-        };
-      }
-    }
+    if (primaryUPCHasChanged && normalizedPrimaryUPC) {
+  const productWithSameUPC = await Product.findOne({
+    primaryUPC: normalizedPrimaryUPC,
+    storeId: existingProduct.storeId,
+    _id: { $ne: productId },
+  }).lean();
+
+  if (productWithSameUPC) {
+    return {
+      success: false,
+      message: `Primary UPC is already in use by another product: ${
+        productWithSameUPC.name || "Unknown Product"
+      }`,
+    };
+  }
+}
 
     /**
      * Store users must provide invoice only when changing price.
@@ -153,7 +157,6 @@ export async function updateProduct(
         };
       }
     }
-
     const dbPayload: any = {
       ...otherData,
       images: images || [],
@@ -163,9 +166,11 @@ export async function updateProduct(
       subsidised: isSubsidized,
       isMeasuredInWeight,
       UOM,
-      primaryUPC: newPrimaryUPC,
     };
 
+    if (normalizedPrimaryUPC) {
+  dbPayload.primaryUPC = normalizedPrimaryUPC;
+}
     if (normalizedInvoiceId) {
       dbPayload.InvoiceId = normalizedInvoiceId;
     }
@@ -238,11 +243,21 @@ export async function updateProduct(
           }
         }
 
-        const updateQuery =
-      InvoiceId === ""
+       const unsetPayload: Record<string, ""> = {};
+
+    if (InvoiceId === "") {
+      unsetPayload.InvoiceId = "";
+    }
+
+    if (!normalizedPrimaryUPC) {
+      unsetPayload.primaryUPC = "";
+    }
+
+    const updateQuery =
+      Object.keys(unsetPayload).length > 0
         ? {
             $set: dbPayload,
-            $unset: { InvoiceId: "" },
+            $unset: unsetPayload,
           }
         : {
             $set: dbPayload,
