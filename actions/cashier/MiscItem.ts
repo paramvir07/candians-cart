@@ -25,7 +25,7 @@ export const createMiscProduct = async (data: MiscItemFormData, customerId: stri
         const StoreId = user.customerData.associatedStoreId;
         if (!StoreId) return { success: false, message: "No associated Store Found" };
 
-        const UPC = data.primaryUPC || "";
+        const UPC = data.primaryUPC?.trim() || undefined;
 
         const MiscProduct = await MiscellaneousItemsModel.create({
             storeId: StoreId,
@@ -50,7 +50,8 @@ export const createMiscProduct = async (data: MiscItemFormData, customerId: stri
                 },
             }
         );
-
+        revalidatePath(`/cashier/customer/${user.customerData._id}/cart`)
+        revalidatePath("/customer/cart")
         return { success: true, message: "Misc Item added" };
     } catch (err) {
         console.log(err);

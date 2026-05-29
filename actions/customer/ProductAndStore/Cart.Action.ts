@@ -399,6 +399,7 @@ export const PlaceOrder = async ({
     const customerCart = await CartModel.findOne({ customerId: User._id })
       .populate("items.productId")
       .populate("subsidyItems.productId")
+      .populate("miscItems.itemId")
       .session(session);
 
     if (!customerCart) {
@@ -408,7 +409,9 @@ export const PlaceOrder = async ({
 
     const CartItems = customerCart.items as unknown as ICartItem[];
     const SubItems = customerCart.subsidyItems;
+    const MiscItems = customerCart.miscItems;
 
+    // console.log(MiscItems)
     let baseTotal = 0;
     let TotalUsedSubsidy = 0;
 
@@ -471,6 +474,24 @@ export const PlaceOrder = async ({
       };
     });
 
+    const miscItems = MiscItems.map((item) => {
+      const populated = item.itemId as unknown as {
+        _id: Types.ObjectId;
+        productName: string;
+        price: number;
+      };
+
+      const total = populated.price * item.quantity;
+
+      return {
+        miscItemId: new Types.ObjectId(populated._id),
+        productName: populated.productName,
+        price: populated.price,
+        quantity: item.quantity,
+        total,
+      };
+    });
+
     const cartTotal = TotalCart.total;
     const walletBalance = User.walletBalance ?? 0;
 
@@ -486,6 +507,7 @@ export const PlaceOrder = async ({
     const OrderData = {
       products,
       subsidyItems,
+      miscItems,
       TotalGST: TotalCart.gst,
       TotalPST: TotalCart.pst,
       TotalDisposableFee: TotalCart.disposable,
@@ -508,6 +530,8 @@ export const PlaceOrder = async ({
       status: receivedCustomerId ? "completed" : "pending",
       ...(receivedCustomerId && { cashierId }),
     };
+
+    // console.log(OrderData)
 
     await OrderModel.create([OrderData], { session });
 
