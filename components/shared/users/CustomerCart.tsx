@@ -368,7 +368,7 @@ const miscTotals = calcMiscTotal(MiscItems);
       </div>
       <TaxRows />
       <DisposableRow />
-      <SubsidyCart subsidy={subsidyOnOrder} />
+      <SubsidyCart subsidy={subsidyOnOrder} total={totals.total} />
       <Separator className="my-1" />
       <div className="flex justify-between items-center gap-4 pt-0.5">
         <span className="font-semibold text-foreground shrink-0">Total</span>
