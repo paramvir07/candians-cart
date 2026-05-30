@@ -153,6 +153,15 @@ export async function createProduct(
 
     try {
       await mongoSession.withTransaction(async () => {
+        if (
+          !dbPayload.primaryUPC ||
+          typeof dbPayload.primaryUPC !== "string" ||
+          dbPayload.primaryUPC.trim() === ""
+        ) {
+          delete dbPayload.primaryUPC;
+        } else {
+          dbPayload.primaryUPC = dbPayload.primaryUPC.trim();
+        }
         const createdProducts = await Product.create([dbPayload], {
           session: mongoSession,
         });

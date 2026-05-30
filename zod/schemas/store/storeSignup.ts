@@ -5,5 +5,8 @@ export const storeSignupSchema = z.object({
   email: z.email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   address: z.string().min(1, "Address is required"),
-  mobile: z.string().length(10, "Mobile number must be exactly 10 digits"),
+  mobile: z
+  .string()
+  .transform((v) => v.replace(/\D/g, ""))
+  .pipe(z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits")),
 });

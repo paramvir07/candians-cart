@@ -10,9 +10,18 @@ export interface PlaceOrderProduct {
   subsidy?: number;
 }
 
+export interface PlaceOrderMiscItem {
+  miscItemId: Types.ObjectId;
+  productName: string;
+  price: number;
+  quantity: number;
+  total: number;
+}
+
 export interface PlaceOrderI {
   products: PlaceOrderProduct[];
   subsidyItems:PlaceOrderProduct[];
+  miscItems: PlaceOrderMiscItem[];
   TotalGST: number;
   TotalPST: number;
   TotalDisposableFee: number;
@@ -29,6 +38,21 @@ export interface PlaceOrderI {
   paymentMode?: "wallet" | "pending";
   cashierId?: Types.ObjectId;
 }
+
+const placeOrderMiscItemSchema = new Schema<PlaceOrderMiscItem>(
+  {
+    miscItemId: {
+      type: Schema.Types.ObjectId,
+      ref: "MiscellaneousItems",
+      required: true,
+    },
+    productName: { type: String, required: true },
+    price:       { type: Number, required: true, min: 0 },
+    quantity:    { type: Number, required: true, min: 0.01 },
+    total:       { type: Number, required: true, min: 0 },
+  },
+  { _id: false },
+);
 
 const placeOrderProductSchema = new Schema<PlaceOrderProduct>(
   {
@@ -82,6 +106,11 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       type:[placeOrderProductSchema],
       required: true,
       default:[]
+    },
+    miscItems: {
+      type: [placeOrderMiscItemSchema],
+      required: true,
+      default: [],
     },
     TotalGST: {
       type: Number,

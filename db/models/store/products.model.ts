@@ -90,10 +90,10 @@ const productSchema = new Schema(
 
     // this is the bar code, required false as of now
     primaryUPC: {
-      index: true,
       type: String,
-      unique: true,
+      trim: true,
       required: false,
+      default: undefined,
     },
 
     isMeasuredInWeight: {
@@ -117,6 +117,16 @@ const productSchema = new Schema(
     },
   },
   { timestamps: true },
+);
+
+productSchema.index(
+  { storeId: 1, primaryUPC: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      primaryUPC: { $type: "string" },
+    },
+  },
 );
 
 export default models.Product || model("Product", productSchema);

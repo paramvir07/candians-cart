@@ -4,6 +4,7 @@ import { Schema, model, models, Model, Types } from "mongoose";
 export interface IMiscellaneousItems {
   _id: Types.ObjectId;
   storeId: Types.ObjectId;
+  productId?:Types.ObjectId;
   productName: string;
   primaryUPC?: string;
   price: number;
@@ -19,7 +20,11 @@ const miscellaneousItemsSchema = new Schema<IMiscellaneousItems>(
       required: true,
       index: true,
     },
-
+    productId:{
+      type:Schema.Types.ObjectId,
+      ref:"Order",
+      required:false
+    },
     productName: {
       type: String,
       required: true,
@@ -29,8 +34,6 @@ const miscellaneousItemsSchema = new Schema<IMiscellaneousItems>(
     primaryUPC: {
       type: String,
       required: false,
-      unique: true,
-      index: true,
     },
 
     price: {
@@ -44,6 +47,16 @@ const miscellaneousItemsSchema = new Schema<IMiscellaneousItems>(
     }
   },
   { timestamps: true }
+);
+
+miscellaneousItemsSchema.index(
+  { primaryUPC: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      primaryUPC: { $type: "string" },
+    },
+  },
 );
 
 export const MiscellaneousItemsModel: Model<IMiscellaneousItems> =
