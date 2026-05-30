@@ -52,7 +52,7 @@ export function ReferralCodeForm() {
             <Input
               id="code"
               name="code"
-              placeholder="e.g. WELCOME2026"
+              placeholder="e.g. WELCOMETOCC"
               required
               minLength={minLength}
               maxLength={maxLength}
