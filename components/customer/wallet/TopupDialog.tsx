@@ -34,18 +34,39 @@ export function TopUpDialog({
   userRole?: string;
 }) {
   const adminRole = userRole === "admin";
-  const needsConfirmation = adminRole || !!customerId; // admin or cashier
+  const isCashier = !!customerId && !adminRole;
+  const needsConfirmation = adminRole || isCashier; // admin or cashier
 
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("amount");
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState<number | null>(200);
   const [inputVal, setInputVal] = useState("200");
-  const [paymentMode, setPaymentMode] = useState<"cash" | "card" | "gift">("card");
+  const [paymentMode, setPaymentMode] = useState<"cash" | "card" | "gift">(
+    "card",
+  );
+  const [cashReceived, setCashReceived] = useState<number | null>(null);
+  const [cashReceivedInput, setCashReceivedInput] = useState("");
+
+  const isCashPayment = isCashier && paymentMode === "cash";
+
+  const changeDue =
+    isCashPayment && cashReceived !== null && amount !== null
+      ? cashReceived - amount
+      : null;
+
+  const cashReceivedIsValid =
+    !isCashPayment ||
+    (cashReceived !== null && amount !== null && cashReceived >= amount);
 
   const handlePreset = (preset: number) => {
     setAmount(preset);
     setInputVal(String(preset));
+
+    if (isCashPayment) {
+      setCashReceived(preset);
+      setCashReceivedInput(String(preset));
+    }
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,9 +75,17 @@ export function TopUpDialog({
     setAmount(val === "" ? null : Number(val));
   };
 
+  const handleCashReceivedInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setCashReceivedInput(val);
+    setCashReceived(val === "" ? null : Number(val));
+  };
+
   const handleClear = () => {
     setAmount(null);
     setInputVal("");
+    setCashReceived(null);
+    setCashReceivedInput("");
   };
 
   const handleClose = () => {
@@ -68,17 +97,27 @@ export function TopUpDialog({
   // Called when user clicks the primary CTA on step 1
   const handleProceed = () => {
     if (!amount) return;
+
+    if (!cashReceivedIsValid) {
+      toast.error("Cash received must be at least the top-up amount.");
+      return;
+    }
+
     if (needsConfirmation) {
-      // Go to confirmation step instead of firing immediately
       setStep("confirm");
     } else {
-      // Regular customer self top-up — go straight to Stripe
       handleCheckout();
     }
   };
 
   const handleCheckout = async () => {
     if (!amount) return;
+
+    if (!cashReceivedIsValid) {
+      toast.error("Cash received must be at least the top-up amount.");
+      return;
+    }
+
     setLoading(true);
     try {
       if (adminRole && customerId) {
@@ -269,22 +308,70 @@ export function TopUpDialog({
               />
             )}
 
-            {/* CTA */}
-            {/* <Button
-              disabled={!amount}
-              onClick={handleProceed}
-              className="w-full py-5 rounded-2xl font-bold text-base transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{
-                background: "var(--color-primary)",
-                color: "var(--color-primary-foreground)",
-                boxShadow: amount ? "0 8px 24px rgba(0,0,0,0.15)" : "none",
-              }}
-            >
-              {amount ? `Continue — $${amount.toFixed(2)}` : "Enter an Amount"}
-            </Button> */}
+            {isCashPayment && (
+              <div
+                className="rounded-2xl p-4 space-y-3"
+                style={{ background: "var(--color-secondary)" }}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-gray-700">
+                    Cash Received
+                  </p>
+                  <Banknote
+                    size={16}
+                    style={{ color: "var(--color-primary)" }}
+                  />
+                </div>
+
+                <div className="flex items-baseline gap-1.5">
+                  <span
+                    className="text-xl font-light"
+                    style={{ color: "var(--color-primary)", opacity: 0.6 }}
+                  >
+                    $
+                  </span>
+
+                  <input
+                    type="number"
+                    min={amount ?? 0}
+                    value={cashReceivedInput}
+                    onChange={handleCashReceivedInput}
+                    placeholder="0"
+                    className="text-3xl font-bold bg-transparent border-none outline-none w-full placeholder:text-gray-300"
+                    style={{
+                      color: "var(--color-foreground)",
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  />
+                </div>
+
+                {amount && cashReceived !== null && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span style={{ color: "var(--color-muted-foreground)" }}>
+                      Change due
+                    </span>
+
+                    <span
+                      className="font-bold"
+                      style={{
+                        color:
+                          changeDue !== null && changeDue >= 0
+                            ? "var(--color-primary)"
+                            : "#ef4444",
+                      }}
+                    >
+                      {changeDue !== null && changeDue >= 0
+                        ? `$${changeDue.toFixed(2)}`
+                        : "Insufficient cash"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* CTA */}
             <Button
-              disabled={!amount}
+              disabled={!amount || !cashReceivedIsValid}
               onClick={handleProceed}
               className="w-full py-5 rounded-2xl font-bold text-base transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
@@ -293,7 +380,11 @@ export function TopUpDialog({
                 boxShadow: amount ? "0 8px 24px rgba(0,0,0,0.15)" : "none",
               }}
             >
-              {amount ? `Continue — $${amount.toFixed(2)}` : "Enter an Amount"}
+              {!amount
+                ? "Enter an Amount"
+                : isCashPayment && !cashReceivedIsValid
+                  ? "Enter Cash Received"
+                  : `Continue — $${amount.toFixed(2)}`}
             </Button>
             <Button
               variant="ghost"
@@ -367,7 +458,7 @@ export function TopUpDialog({
                             Gift
                           </span>
                         </>
-                      ): (
+                      ) : (
                         <>
                           <Banknote
                             size={15}
@@ -382,6 +473,44 @@ export function TopUpDialog({
                         </>
                       )}
                     </div>
+                  </div>
+                </>
+              )}
+
+              {isCashPayment && (
+                <>
+                  <Separator style={{ opacity: 0.15 }} />
+
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--color-muted-foreground)" }}
+                    >
+                      Cash received
+                    </span>
+
+                    <span
+                      className="text-sm font-semibold"
+                      style={{ color: "var(--color-foreground)" }}
+                    >
+                      ${cashReceived?.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--color-muted-foreground)" }}
+                    >
+                      Change due
+                    </span>
+
+                    <span
+                      className="text-lg font-bold"
+                      style={{ color: "var(--color-primary)" }}
+                    >
+                      ${changeDue?.toFixed(2)}
+                    </span>
                   </div>
                 </>
               )}
