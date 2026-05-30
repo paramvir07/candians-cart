@@ -213,10 +213,9 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
 
 export default ProgressBarCart
 
-export const SubsidyCart = ({ subsidy }: { subsidy: number }) => {
+export const SubsidyCart = ({ subsidy,total }: { subsidy: number,total:number }) => {
   const [totalSubsidy] = useAtom(SubsidyValue);
   const [usedSubsidy] = useAtom(UsedSubsidy);
-
   const safeSubsidy = subsidy ?? 0;
   const safeTotal = totalSubsidy ?? 0;
   const safeUsed = usedSubsidy ?? 0;
@@ -228,6 +227,7 @@ export const SubsidyCart = ({ subsidy }: { subsidy: number }) => {
   if (safeSubsidy <= 0) return null;
 
   return (
+    <>
     <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-emerald-200/70 bg-emerald-100/50">
         <Gift className="w-4 h-4 text-emerald-700" />
@@ -264,6 +264,18 @@ export const SubsidyCart = ({ subsidy }: { subsidy: number }) => {
         )}
       </div>
     </div>
+     <div className="flex justify-between items-center gap-4 pt-0.5">
+      <span className="font-semibold text-muted-foreground shrink-0">Was</span>
+      <div className="flex items-baseline gap-0.5 min-w-0">
+        <span className="text-xs font-medium text-muted-foreground/70 shrink-0 line-through">
+          CA$
+        </span>
+        <span className="text-2xl font-bold tabular-nums text-muted-foreground/70 truncate line-through">
+          {((total + safeUsed) / 100)}
+        </span>
+      </div>
+    </div>
+    </>
   );
 };
 

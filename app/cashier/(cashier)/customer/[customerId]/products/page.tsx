@@ -4,9 +4,6 @@ import { searchProducts } from "@/actions/common/searchProducts.action"; // adju
 import { SearchResultsClient } from "@/components/customer/search/SearchResultsClient";
 import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
 import { Suspense } from "react";
 
 const CustomerProducts = async ({ params }: CustomerIdParams) => {
@@ -19,36 +16,26 @@ const CustomerProducts = async ({ params }: CustomerIdParams) => {
     getCartItemsCount(customerId),
   ]);
 
-if (!response.success) {
-  throw new Error("Request failed");
-}
+  if (!response.success) {
+    throw new Error("Request failed");
+  }
 
   // Pull storeId — adjust the field name if your response shape differs
   const storeId = response.storeId ?? response.products?.[0]?.storeId ?? "";
-return (
-  <>
-    {/* <div className="flex pl-4 items-center gap-2 md:pl-0 lg:pl-0 pb-4 pt-4">
-      <Link href={`/cashier/customer/${customerId}`}>
-        <Button className="rounded-full" variant="outline" size="icon">
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
-      </Link>
-      <h1 className="text-xl font-bold tracking-tight text-gray-950">
-        Customer Products
-      </h1>
-    </div> */}
-    <Suspense>
-      <SearchResultsClient
-        isCashier={true}
-        customerId={customerId}
-        storeId={storeId}
-        searchAction={searchProducts}
-        customerData={customerDataResponse.customerData}
-        cartCount={cartCount ?? 0}
-      />
-    </Suspense>
-  </>
-);
+  return (
+    <>
+      <Suspense>
+        <SearchResultsClient
+          isCashier={true}
+          customerId={customerId}
+          storeId={storeId}
+          searchAction={searchProducts}
+          customerData={customerDataResponse.customerData}
+          cartCount={cartCount ?? 0}
+        />
+      </Suspense>
+    </>
+  );
 };
 
 export default CustomerProducts;

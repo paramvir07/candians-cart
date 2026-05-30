@@ -164,21 +164,22 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   );
 
   const calcMiscTotal = (miscItems: IMiscCartItem[]) => {
-  return miscItems.reduce(
-    (acc, item) => {
-      const lineTotal = item.priceAtAdd * item.quantity;
-      acc.subtotal += lineTotal;
-      acc.total += lineTotal;
-      return acc;
-    },
-    { subtotal: 0, total: 0 },
-  );
-};
+    return miscItems.reduce(
+      (acc, item) => {
+        const lineTotal = item.priceAtAdd * item.quantity;
+        acc.subtotal += lineTotal;
+        acc.total += lineTotal;
+        return acc;
+      },
+      { subtotal: 0, total: 0 },
+    );
+  };
 
-const miscTotals = calcMiscTotal(MiscItems);
+  const miscTotals = calcMiscTotal(MiscItems);
 
   const totals = {
-    subtotal: itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal,
+    subtotal:
+      itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal,
     gst: itemTotals.gst + subsidyTotals.gst,
     pst: itemTotals.pst + subsidyTotals.pst,
     totalTax: itemTotals.totalTax + subsidyTotals.totalTax,
@@ -368,7 +369,7 @@ const miscTotals = calcMiscTotal(MiscItems);
       </div>
       <TaxRows />
       <DisposableRow />
-      <SubsidyCart subsidy={subsidyOnOrder} />
+      <SubsidyCart subsidy={subsidyOnOrder} total={totals.total} />
       <Separator className="my-1" />
       <div className="flex justify-between items-center gap-4 pt-0.5">
         <span className="font-semibold text-foreground shrink-0">Total</span>
@@ -388,34 +389,6 @@ const miscTotals = calcMiscTotal(MiscItems);
     <div className={cn("min-h-screen", !isCashier && "bg-background")}>
       {!isCashier && <Navbar />}
 
-      {/* ── Cashier banner ── */}
-      {/* {isCashier && (
-        <div className="border-b border-border bg-background px-4 py-2.5">
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-              <Store className="h-3 w-3 text-primary" />
-            </div>
-            <Badge
-              variant="secondary"
-              className="font-semibold text-xs gap-1 px-2"
-            >
-              <User className="h-3 w-3" />
-              Cashier View
-            </Badge>
-            <div className="ml-auto flex items-center gap-1.5">
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                Live session
-              </span>
-            </div>
-          </div>
-        </div>
-      )} */}
-
-      {/* ════════════════════════════════════════
-          MOBILE + TABLET LAYOUT  (< lg / < 1024px)
-          Covers phones AND iPads (768px portrait & landscape)
-      ════════════════════════════════════════ */}
       <div
         className="xl:hidden flex flex-col"
         style={{ minHeight: "calc(100dvh - 0px)" }}
@@ -447,7 +420,9 @@ const miscTotals = calcMiscTotal(MiscItems);
             >
               {totalItemCount}
             </Badge>
-            {isCashier && <AddMiscItemModalTrigger customerId={customerId || ""} /> }
+            {isCashier && (
+              <AddMiscItemModalTrigger customerId={customerId || ""} />
+            )}
           </div>
 
           {/* Progress */}
@@ -474,9 +449,9 @@ const miscTotals = calcMiscTotal(MiscItems);
                   Items ({items.length})
                 </span>
               </div>
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tabular-nums text-primary">
-                  CA${fmt(itemTotals.total)}
-                </span>
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tabular-nums text-primary">
+                CA${fmt(itemTotals.total)}
+              </span>
             </div>
 
             {/* Scrollable items list */}
@@ -510,19 +485,21 @@ const miscTotals = calcMiscTotal(MiscItems);
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div>
-                          <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2 flex gap-2 items-center">
-                            {item.productId.name}
-                            {item.productId?.PriceDrop ? <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm w-fit">
-                                            <BadgePercent
-                                              className="h-2.5 w-2.5 shrink-0 "
-                                              strokeWidth={2}
-                                            />
-                                            PRICE DROP
-                                          </div> : ""}
-                          </p>
-                          <p className="text-xs font-semibold text-muted-foreground">
-                            
-                          </p>
+                            <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2 flex gap-2 items-center">
+                              {item.productId.name}
+                              {item.productId?.PriceDrop ? (
+                                <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm w-fit">
+                                  <BadgePercent
+                                    className="h-2.5 w-2.5 shrink-0 "
+                                    strokeWidth={2}
+                                  />
+                                  PRICE DROP
+                                </div>
+                              ) : (
+                                ""
+                              )}
+                            </p>
+                            <p className="text-xs font-semibold text-muted-foreground"></p>
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5 truncate">
                             {item.productId.category}
@@ -546,7 +523,7 @@ const miscTotals = calcMiscTotal(MiscItems);
                             />
                           )}
                         </div>
-                        
+
                         <QuantityControl
                           productId={item.productId._id.toString()}
                           customerId={customerId}
@@ -632,40 +609,44 @@ const miscTotals = calcMiscTotal(MiscItems);
           {/* Page header */}
           <div className="flex items-center gap-3 mb-6 flex-wrap justify-between">
             <div className="flex items-center justify-center gap-2">
-            <Link
-              href={isCashier ? `/cashier/customer/${customerId}` : "/customer"}
-            >
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full h-9 w-9 shrink-0"
+              <Link
+                href={
+                  isCashier ? `/cashier/customer/${customerId}` : "/customer"
+                }
               >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2.5 min-w-0 ">
-              <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <ShoppingCart className="h-4 w-4 text-primary" />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full h-9 w-9 shrink-0"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <div className="flex items-center gap-2.5 min-w-0 ">
+                <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <ShoppingCart className="h-4 w-4 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-xl font-bold tracking-tight text-foreground leading-tight truncate">
+                    {isCashier ? "Customer's Cart" : "My Cart"}
+                  </h1>
+                  {isCashier && (
+                    <p className="text-xs text-muted-foreground leading-tight">
+                      Managing order on behalf of customer
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="min-w-0">
-                <h1 className="text-xl font-bold tracking-tight text-foreground leading-tight truncate">
-                  {isCashier ? "Customer's Cart" : "My Cart"}
-                </h1>
-                {isCashier && (
-                  <p className="text-xs text-muted-foreground leading-tight">
-                    Managing order on behalf of customer
-                  </p>
-                )}
-              </div>
+              <Badge
+                variant="secondary"
+                className="rounded-full font-semibold ml-1 shrink-0"
+              >
+                {totalItemCount} {totalItemCount === 1 ? "item" : "items"}
+              </Badge>
             </div>
-            <Badge
-              variant="secondary"
-              className="rounded-full font-semibold ml-1 shrink-0"
-            >
-              {totalItemCount} {totalItemCount === 1 ? "item" : "items"}
-            </Badge>
-            </div>
-            {isCashier && <AddMiscItemModalTrigger customerId={customerId || ""} /> }
+            {isCashier && (
+              <AddMiscItemModalTrigger customerId={customerId || ""} />
+            )}
           </div>
 
           {/* Progress bar */}
@@ -689,19 +670,19 @@ const miscTotals = calcMiscTotal(MiscItems);
             <div className="flex-1 min-w-0 space-y-5">
               {/* Items card */}
               <Card className="border-border/60 shadow-none overflow-hidden">
-              <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50 sticky top-0 z-10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      {items.length} {items.length === 1 ? "item" : "items"}
+                <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50 sticky top-0 z-10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        {items.length} {items.length === 1 ? "item" : "items"}
+                      </span>
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tabular-nums text-primary">
+                      CA${fmt(itemTotals.total)}
                     </span>
                   </div>
-                  <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tabular-nums text-primary">
-                    CA${fmt(itemTotals.total)}
-                  </span>
-                </div>
-              </CardHeader>
+                </CardHeader>
 
                 {/* Scrollable items */}
                 <div className="max-h-[420px] overflow-y-auto divide-y divide-border/50">
@@ -757,14 +738,18 @@ const miscTotals = calcMiscTotal(MiscItems);
                               {item.productId.name}
                             </p>
                             <p className="text-xs font-semibold text-muted-foreground">
-                            {item.productId?.PriceDrop ? 
-                            <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm">
-                                            <BadgePercent
-                                              className="h-2.5 w-2.5 shrink-0 "
-                                              strokeWidth={2}
-                                            />
-                                            PRICE DROP
-                                          </div> : ""}</p>
+                              {item.productId?.PriceDrop ? (
+                                <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm">
+                                  <BadgePercent
+                                    className="h-2.5 w-2.5 shrink-0 "
+                                    strokeWidth={2}
+                                  />
+                                  PRICE DROP
+                                </div>
+                              ) : (
+                                ""
+                              )}
+                            </p>
                             {item.productId.subsidised && (
                               <span className="shrink-0">
                                 <AddtoSubsidyBtn
@@ -785,7 +770,9 @@ const miscTotals = calcMiscTotal(MiscItems);
                             customerId={customerId}
                             initialQuantity={item.quantity}
                             variant="desktop"
-                            isMeasuredInWeight={item.productId.isMeasuredInWeight}
+                            isMeasuredInWeight={
+                              item.productId.isMeasuredInWeight
+                            }
                           />
                         </div>
 

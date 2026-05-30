@@ -46,6 +46,8 @@ import CartInsightBar from "@/components/cashier/CartInsightsBar";
 import { emitCartUpdated, onCartUpdated } from "@/lib/cartEvent";
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { useSearchParams } from "next/navigation";
+import AddMiscItemModal from "@/components/cashier/AddMiscItem";
+import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
 
 interface SearchResultsClientProps {
   isCashier?: boolean;
@@ -116,32 +118,32 @@ export function SearchResultsClient({
   const [cartInsight, setCartInsight] = useState<CartInsight | null>(null);
   const [upcMode, setUpcMode] = useState(!!customerId);
   const prevQueryRef = useRef(debouncedQuery);
-const prevFiltersRef = useRef(filters);
-  
+  const prevFiltersRef = useRef(filters);
+
   const [pendingFilters, setPendingFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
-    const [currentPage, setCurrentPage] = useState(1);
-const [totalPages, setTotalPages] = useState(1);
-useEffect(() => {
-  const categoryParam = searchParams.get("category");
-  const subsidisedOnly = searchParams.get("subsidisedOnly") === "true";
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    const subsidisedOnly = searchParams.get("subsidisedOnly") === "true";
 
-  if (!categoryParam && !subsidisedOnly) return;
+    if (!categoryParam && !subsidisedOnly) return;
 
-  const categories = categoryParam ? [categoryParam] : [];
+    const categories = categoryParam ? [categoryParam] : [];
 
-  setFilters((prev) => ({ ...prev, subsidisedOnly, categories }));
-  setIsLoading(true);
-  setHasSearched(true);
+    setFilters((prev) => ({ ...prev, subsidisedOnly, categories }));
+    setIsLoading(true);
+    setHasSearched(true);
 
-  getStoreProductsFiltered(storeId, 1, 16, {
-    subsidised: subsidisedOnly ? true : undefined,
-    categories: categories.length > 0 ? (categories as any) : undefined,
-  }).then((res) => {
-    setAllResults(res.success && res.data ? res.data : []);
-    setIsLoading(false);
-  });
-}, []);
+    getStoreProductsFiltered(storeId, 1, 16, {
+      subsidised: subsidisedOnly ? true : undefined,
+      categories: categories.length > 0 ? (categories as any) : undefined,
+    }).then((res) => {
+      setAllResults(res.success && res.data ? res.data : []);
+      setIsLoading(false);
+    });
+  }, []);
 
   // ── Fetch cart insight whenever cartMap changes ──────────────────────────
   useEffect(() => {
@@ -159,34 +161,6 @@ useEffect(() => {
     const unsubscribe = onCartUpdated(fetchInsight);
     return unsubscribe;
   }, [customerId]);
-
-  // const handleBarcodeScan = async (value: string) => {
-  //   setIsLoading(true);
-  //   setHasSearched(true);
-
-  //   const res = await searchAction(value.trim(), storeId);
-  //   const results = res.success && res.data ? res.data : [];
-  //   setAllResults(results);
-  //   setIsLoading(false);
-
-  //   if (results.length === 1) {
-  //     const product = results[0];
-  //     const productId = product._id as string;
-  //     try {
-  //       await AddtoCart(productId, customerId);
-  //       setCartMap((prev) => ({
-  //         ...prev,
-  //         [productId]: (prev[productId] || 0) + 1,
-  //       }));
-  //       toast.success(`${product.name} added to cart`);
-  //     } catch {
-  //       toast.error("Failed to add to cart");
-  //     }
-  //   }
-  // };
-
-  // 1. Fetch Cart State
-  // ---
 
   const handleBarcodeScan = async (value: string) => {
     setIsLoading(true);
@@ -255,36 +229,6 @@ useEffect(() => {
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
   const activeFilterCount = getActiveFilterCount(filters);
 
-  // useEffect(() => {
-  //   if (!debouncedQuery.trim()) {
-  //     if (!filters.categories.length) {
-  //       setAllResults([]);
-  //       setHasSearched(false);
-  //     } else {
-  //       const reload = async () => {
-  //         setIsLoading(true);
-  //         setHasSearched(true);
-  //         const res = await getStoreProductsFiltered(storeId, 1, 200, {
-  //           categories: filters.categories as any,
-  //         });
-  //         setAllResults(res.success && res.data ? res.data : []);
-  //         setIsLoading(false);
-  //       };
-  //       reload();
-  //     }
-  //     return;
-  //   }
-  //   const fetchResult = async () => {
-  //     setIsLoading(true);
-  //     setHasSearched(true);
-  //     const res = await searchAction(debouncedQuery.trim(), storeId);
-  //     setAllResults(res.success && res.data ? res.data : []);
-  //     setIsLoading(false);
-  //   };
-  //   fetchResult();
-  // }, [debouncedQuery, storeId]);
-
-  // Re-run search immediately when upcMode toggles, if there's an active query
   useEffect(() => {
     if (!debouncedQuery.trim()) return;
 
@@ -301,152 +245,132 @@ useEffect(() => {
     refetch();
   }, [upcMode]); // intentionally only upcMode — we want this to fire on toggle only
 
-// ONE effect to rule them all — handles query+filters, filters-only, and empty state
-useEffect(() => {
-  const hasQuery = debouncedQuery.trim().length > 0;
-  const hasFilters =
-    filters.categories.length > 0 ||
-    filters.subsidisedOnly ||
-    filters.inStockOnly;
+  // ONE effect to rule them all — handles query+filters, filters-only, and empty state
+  useEffect(() => {
+    const hasQuery = debouncedQuery.trim().length > 0;
+    const hasFilters =
+      filters.categories.length > 0 ||
+      filters.subsidisedOnly ||
+      filters.inStockOnly;
 
     const queryChanged = prevQueryRef.current !== debouncedQuery;
-  const filtersChanged =
-    prevFiltersRef.current.sortBy !== filters.sortBy ||
-    prevFiltersRef.current.categories !== filters.categories ||
-    prevFiltersRef.current.subsidisedOnly !== filters.subsidisedOnly ||
-    prevFiltersRef.current.inStockOnly !== filters.inStockOnly;
+    const filtersChanged =
+      prevFiltersRef.current.sortBy !== filters.sortBy ||
+      prevFiltersRef.current.categories !== filters.categories ||
+      prevFiltersRef.current.subsidisedOnly !== filters.subsidisedOnly ||
+      prevFiltersRef.current.inStockOnly !== filters.inStockOnly;
 
-  prevQueryRef.current = debouncedQuery;
-  prevFiltersRef.current = filters;
+    prevQueryRef.current = debouncedQuery;
+    prevFiltersRef.current = filters;
 
-  // If the search params changed, reset to page 1 immediately
-  const pageToUse = queryChanged || filtersChanged ? 1 : currentPage;
-  if (queryChanged || filtersChanged) {
-    setCurrentPage(1);
-  }
-
-  if (!hasQuery && !hasFilters) {
-    if (
-      searchParams.get("subsidisedOnly") === "true" ||
-      searchParams.get("category")
-    )
-      return;
-    setAllResults([]);
-    setHasSearched(false);
-    setTotalPages(1);
-    return;
-  }
-
-  const run = async () => {
-    setIsLoading(true);
-    setHasSearched(true);
-
-    if (hasQuery) {
-      const res = upcMode
-        ? await searchProductsByUPC(debouncedQuery.trim(), storeId)
-        : await searchProductsWithFilters(debouncedQuery.trim(), storeId, pageToUse, 16, {
-            sortBy: filters.sortBy === "default" ? "recommended" : filters.sortBy,
-            categories: filters.categories.length > 0 ? (filters.categories as any) : undefined,
-            subsidised: filters.subsidisedOnly ? true : undefined,
-            inStock: filters.inStockOnly ? true : undefined,
-          });
-      setAllResults(res.success && res.data ? res.data : []);
-      setTotalPages((res as any).totalPages ?? 1);
-    } else {
-      const res = await getStoreProductsFiltered(storeId, pageToUse, 16, {
-        categories: filters.categories.length > 0 ? (filters.categories as any) : undefined,
-        subsidised: filters.subsidisedOnly ? true : undefined,
-        inStock: filters.inStockOnly ? true : undefined,
-        sortBy: filters.sortBy === "default" ? "recommended" : filters.sortBy,
-      });
-      setAllResults(res.success && res.data ? res.data : []);
-            setTotalPages((res as any).totalPages ?? 1);
-
+    // If the search params changed, reset to page 1 immediately
+    const pageToUse = queryChanged || filtersChanged ? 1 : currentPage;
+    if (queryChanged || filtersChanged) {
+      setCurrentPage(1);
     }
 
-    setIsLoading(false);
-  };
+    if (!hasQuery && !hasFilters) {
+      if (
+        searchParams.get("subsidisedOnly") === "true" ||
+        searchParams.get("category")
+      )
+        return;
+      setAllResults([]);
+      setHasSearched(false);
+      setTotalPages(1);
+      return;
+    }
 
-  run();
-}, [debouncedQuery, storeId, upcMode, filters.sortBy, filters.categories, filters.subsidisedOnly, filters.inStockOnly, currentPage]);
+    const run = async () => {
+      setIsLoading(true);
+      setHasSearched(true);
 
-  // ADD this new effect after the debouncedQuery effect:
-  // useEffect(() => {
-  //   if (!debouncedQuery.trim()) return;
-  //   if (!hasSearched) return;
+      if (hasQuery) {
+        const res = upcMode
+          ? await searchProductsByUPC(debouncedQuery.trim(), storeId)
+          : await searchProductsWithFilters(
+              debouncedQuery.trim(),
+              storeId,
+              pageToUse,
+              16,
+              {
+                sortBy:
+                  filters.sortBy === "default" ? "recommended" : filters.sortBy,
+                categories:
+                  filters.categories.length > 0
+                    ? (filters.categories as any)
+                    : undefined,
+                subsidised: filters.subsidisedOnly ? true : undefined,
+                inStock: filters.inStockOnly ? true : undefined,
+              },
+            );
+        setAllResults(res.success && res.data ? res.data : []);
+        setTotalPages((res as any).totalPages ?? 1);
+      } else {
+        const res = await getStoreProductsFiltered(storeId, pageToUse, 16, {
+          categories:
+            filters.categories.length > 0
+              ? (filters.categories as any)
+              : undefined,
+          subsidised: filters.subsidisedOnly ? true : undefined,
+          inStock: filters.inStockOnly ? true : undefined,
+          sortBy: filters.sortBy === "default" ? "recommended" : filters.sortBy,
+        });
+        setAllResults(res.success && res.data ? res.data : []);
+        setTotalPages((res as any).totalPages ?? 1);
+      }
 
-  //   setAllResults((prev) => {
-  //     const result = [...prev];
-  //     switch (filters.sortBy) {
-  //       case "price_asc":
-  //         result.sort(
-  //           (a, b) =>
-  //             a.price +
-  //             a.price * (a.markup / 100) -
-  //             (b.price + b.price * (b.markup / 100)),
-  //         );
-  //         break;
-  //       case "price_desc":
-  //         result.sort(
-  //           (a, b) =>
-  //             b.price +
-  //             b.price * (b.markup / 100) -
-  //             (a.price + a.price * (a.markup / 100)),
-  //         );
-  //         break;
-  //       case "name_asc":
-  //         result.sort((a, b) => a.name.localeCompare(b.name));
-  //         break;
-  //       default:
-  //         result.sort(
-  //           (a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0),
-  //         );
-  //         break;
-  //     }
-  //     return result;
-  //   });
-  // }, [filters.sortBy]);
+      setIsLoading(false);
+    };
+
+    run();
+  }, [
+    debouncedQuery,
+    storeId,
+    upcMode,
+    filters.sortBy,
+    filters.categories,
+    filters.subsidisedOnly,
+    filters.inStockOnly,
+    currentPage,
+  ]);
 
   const displayPrice = (p: IProduct) => p.price + p.price * (p.markup / 100);
 
-  // const filtered = useMemo(() => {
-  //   let result = [...allResults];
-  //   if (filters.categories.length > 0)
-  //     result = result.filter((p) => filters.categories.includes(p.category));
-  //   if (filters.inStockOnly) result = result.filter((p) => p.stock);
-  //   if (filters.subsidisedOnly) result = result.filter((p) => p.subsidised);
-  //   switch (filters.sortBy) {
-  //     case "price_asc":
-  //       result.sort((a, b) => displayPrice(a) - displayPrice(b));
-  //       break;
-  //     case "price_desc":
-  //       result.sort((a, b) => displayPrice(b) - displayPrice(a));
-  //       break;
-  //     case "name_asc":
-  //       result.sort((a, b) => a.name.localeCompare(b.name));
-  //       break;
-  //   }
-  //   result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
-  //   return result;
-  // }, [allResults, filters]);
-
-  // AFTER
-const filtered = useMemo(() => [...allResults], [allResults]);
+  const filtered = useMemo(() => [...allResults], [allResults]);
 
   const getPageNumbers = (): (number | "ellipsis")[] => {
-  if (totalPages <= 5)
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
-  if (currentPage <= 3) return [1, 2, 3, 4, "ellipsis", totalPages];
-  if (currentPage >= totalPages - 2)
-    return [1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-  return [1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages];
-};
+    if (totalPages <= 5)
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (currentPage <= 3) return [1, 2, 3, 4, "ellipsis", totalPages];
+    if (currentPage >= totalPages - 2)
+      return [
+        1,
+        "ellipsis",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ];
+    return [
+      1,
+      "ellipsis",
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      "ellipsis",
+      totalPages,
+    ];
+  };
 
-const scrollToResults = () => {
-  if (!resultsRef.current) return;
-  const rect = resultsRef.current.getBoundingClientRect();
-  window.scrollTo({ top: window.scrollY + rect.top - 70, behavior: "smooth" });
-};
+  const scrollToResults = () => {
+    if (!resultsRef.current) return;
+    const rect = resultsRef.current.getBoundingClientRect();
+    window.scrollTo({
+      top: window.scrollY + rect.top - 70,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <div
@@ -463,6 +387,7 @@ const scrollToResults = () => {
         cartCount={cartCount}
         upcMode={upcMode}
       />
+      
 
       {/* Cart insight + UPC toggle — cashier only, always visible */}
       {customerId && (
@@ -473,7 +398,8 @@ const scrollToResults = () => {
             total={cartInsight?.total ?? 0}
             customerId={customerId}
           />
-          <button
+          <div className="flex justify-between items-center">
+            <button
             onClick={() => setUpcMode((v) => !v)}
             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all w-fit ${
               upcMode
@@ -486,10 +412,14 @@ const scrollToResults = () => {
             />
             {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
           </button>
+          <AddMiscItemModalTrigger customerId={customerId || ""}/>
+          </div>
+          
         </div>
       )}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+
         <div className="flex gap-6">
           {/* ── Desktop sidebar ── */}
           {hasSearched && allResults.length > 0 && !customerId && (
@@ -670,123 +600,137 @@ const scrollToResults = () => {
                 </div>
 
                 {filtered.length > 0 ? (
-  <>
-    <div
-      className={`grid gap-3 sm:gap-4 ${
-        isCashier
-          ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-      }`}
-    >
-      {filtered.map((product) => (
-        <CustomerProductCard
-          isCashier={isCashier}
-          subsidyPage={false}
-          customerId={customerId}
-          key={product._id}
-          product={product}
-          cartQuantity={cartMap[product._id as string] || 0}
-        />
-      ))}
-    </div>
+                  <>
+                    <div
+                      className={`grid gap-3 sm:gap-4 ${
+                        isCashier
+                          ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                          : "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+                      }`}
+                    >
+                      {filtered.map((product) => (
+                        <CustomerProductCard
+                          isCashier={isCashier}
+                          subsidyPage={false}
+                          customerId={customerId}
+                          key={product._id}
+                          product={product}
+                          cartQuantity={cartMap[product._id as string] || 0}
+                        />
+                      ))}
+                    </div>
 
-    {totalPages > 1 && (
-      <div className="pt-6 mt-6 border-t border-border/40">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (currentPage > 1) {
-                    setCurrentPage((p) => p - 1);
-                    scrollToResults();
-                  }
-                }}
-                className={currentPage === 1 ? "pointer-events-none opacity-40" : "cursor-pointer"}
-              />
-            </PaginationItem>
+                    {totalPages > 1 && (
+                      <div className="pt-6 mt-6 border-t border-border/40">
+                        <Pagination>
+                          <PaginationContent>
+                            <PaginationItem>
+                              <PaginationPrevious
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (currentPage > 1) {
+                                    setCurrentPage((p) => p - 1);
+                                    scrollToResults();
+                                  }
+                                }}
+                                className={
+                                  currentPage === 1
+                                    ? "pointer-events-none opacity-40"
+                                    : "cursor-pointer"
+                                }
+                              />
+                            </PaginationItem>
 
-            {getPageNumbers().map((page, i) => (
-              <PaginationItem key={i}>
-                {page === "ellipsis" ? (
-                  <PaginationEllipsis />
+                            {getPageNumbers().map((page, i) => (
+                              <PaginationItem key={i}>
+                                {page === "ellipsis" ? (
+                                  <PaginationEllipsis />
+                                ) : (
+                                  <PaginationLink
+                                    href="#"
+                                    isActive={currentPage === page}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setCurrentPage(page as number);
+                                      scrollToResults();
+                                    }}
+                                    className="cursor-pointer"
+                                  >
+                                    {page}
+                                  </PaginationLink>
+                                )}
+                              </PaginationItem>
+                            ))}
+
+                            <PaginationItem>
+                              <PaginationNext
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (currentPage < totalPages) {
+                                    setCurrentPage((p) => p + 1);
+                                    scrollToResults();
+                                  }
+                                }}
+                                className={
+                                  currentPage === totalPages
+                                    ? "pointer-events-none opacity-40"
+                                    : "cursor-pointer"
+                                }
+                              />
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
+                      </div>
+                    )}
+                  </>
+                ) : allResults.length > 0 ? (
+                  <div className="py-20 flex flex-col items-center justify-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center">
+                      <PackageOpen className="h-6 w-6 text-muted-foreground/50" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-foreground">
+                        No products match your filters
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Try adjusting or clearing your filters
+                      </p>
+                    </div>
+                    <button
+                      onClick={resetFilters}
+                      className="h-9 px-5 rounded-full bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors"
+                    >
+                      Clear filters
+                    </button>
+                  </div>
                 ) : (
-                  <PaginationLink
-                    href="#"
-                    isActive={currentPage === page}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCurrentPage(page as number);
-                      scrollToResults();
-                    }}
-                    className="cursor-pointer"
-                  >
-                    {page}
-                  </PaginationLink>
+                  <div className="py-20 flex flex-col items-center justify-center gap-4">
+                    <div className="w-16 h-16 rounded-3xl bg-card border border-border/60 flex items-center justify-center text-3xl shadow-sm">
+                      🔍
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-foreground text-lg">
+                        Nothing found
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
+                        Try a different spelling or browse by category
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setQuery("");
+                        setAllResults([]);
+                        setHasSearched(false);
+                        setFilters(DEFAULT_FILTERS);
+                      }}
+                      className="h-9 px-5 rounded-full border border-border/60 bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-all"
+                    >
+                      Clear search
+                    </button>
+                  </div>
                 )}
-              </PaginationItem>
-            ))}
-
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (currentPage < totalPages) {
-                    setCurrentPage((p) => p + 1);
-                    scrollToResults();
-                  }
-                }}
-                className={currentPage === totalPages ? "pointer-events-none opacity-40" : "cursor-pointer"}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
-    )}
-  </>
-) : allResults.length > 0 ? (
-  <div className="py-20 flex flex-col items-center justify-center gap-4">
-    <div className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center">
-      <PackageOpen className="h-6 w-6 text-muted-foreground/50" />
-    </div>
-    <div className="text-center">
-      <p className="font-bold text-foreground">No products match your filters</p>
-      <p className="text-sm text-muted-foreground mt-1">Try adjusting or clearing your filters</p>
-    </div>
-    <button
-      onClick={resetFilters}
-      className="h-9 px-5 rounded-full bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors"
-    >
-      Clear filters
-    </button>
-  </div>
-) : (
-  <div className="py-20 flex flex-col items-center justify-center gap-4">
-    <div className="w-16 h-16 rounded-3xl bg-card border border-border/60 flex items-center justify-center text-3xl shadow-sm">
-      🔍
-    </div>
-    <div className="text-center">
-      <p className="font-bold text-foreground text-lg">Nothing found</p>
-      <p className="text-sm text-muted-foreground mt-1.5 max-w-xs">
-        Try a different spelling or browse by category
-      </p>
-    </div>
-    <button
-      onClick={() => {
-        setQuery("");
-        setAllResults([]);
-        setHasSearched(false);
-        setFilters(DEFAULT_FILTERS);
-      }}
-      className="h-9 px-5 rounded-full border border-border/60 bg-card text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-border transition-all"
-    >
-      Clear search
-    </button>
-  </div>
-)}
               </>
             )}
           </div>
@@ -840,20 +784,6 @@ const scrollToResults = () => {
                 )}
               </button>
             </div>
-            {/* <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
-              <button
-                onClick={() => setFilterSheetOpen(false)}
-                className="w-full h-12 rounded-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
-              >
-                Show {filtered.length} Result{filtered.length !== 1 ? "s" : ""}
-                {activeFilterCount > 0 && (
-                  <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {activeFilterCount} filter
-                    {activeFilterCount !== 1 ? "s" : ""}
-                  </span>
-                )}
-              </button>
-            </div> */}
           </div>
         </SheetContent>
       </Sheet>

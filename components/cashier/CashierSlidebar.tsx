@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   HomeIcon,
   Package,
-  ReceiptText,
   ShoppingBag,
   ShoppingCartIcon,
   Wallet,
@@ -13,6 +12,7 @@ import {
   X,
   UserCircle2,
   List,
+  ShoppingBasket,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import LogoutButton from "../shared/LogoutButton";
@@ -127,6 +127,12 @@ function SidebarContent({
               href="/cashier/subsidy-list"
               label="Subsidy List"
               icon={List}
+              onClick={onNav}
+            />
+            <NavItem
+              href="/cashier/misc-items"
+              label="Misc Items"
+              icon={ShoppingBasket}
               onClick={onNav}
             />
           </div>
