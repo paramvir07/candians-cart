@@ -1,17 +1,17 @@
 import { Schema, model, models, Model, Types } from "mongoose";
 
-
 export interface IMiscellaneousItems {
   _id: Types.ObjectId;
   storeId: Types.ObjectId;
-  productId?:Types.ObjectId;
+  productId?: Types.ObjectId;
   productName: string;
   primaryUPC?: string;
   price: number;
-  isAdded:boolean;
+  isAdded: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
+
 const miscellaneousItemsSchema = new Schema<IMiscellaneousItems>(
   {
     storeId: {
@@ -20,43 +20,32 @@ const miscellaneousItemsSchema = new Schema<IMiscellaneousItems>(
       required: true,
       index: true,
     },
-    productId:{
-      type:Schema.Types.ObjectId,
-      ref:"Order",
-      required:false
+    productId: {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+      required: false,
     },
     productName: {
       type: String,
       required: true,
       trim: true,
     },
-
     primaryUPC: {
       type: String,
       required: false,
+      index: true,
     },
-
     price: {
       type: Number,
       required: true,
     },
-    isAdded:{
-        type: Boolean,
-        required:true,
-        default:false
-    }
-  },
-  { timestamps: true }
-);
-
-miscellaneousItemsSchema.index(
-  { primaryUPC: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      primaryUPC: { $type: "string" },
+    isAdded: {
+      type: Boolean,
+      required: true,
+      default: false,
     },
   },
+  { timestamps: true },
 );
 
 export const MiscellaneousItemsModel: Model<IMiscellaneousItems> =
