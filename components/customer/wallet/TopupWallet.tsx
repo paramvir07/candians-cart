@@ -66,7 +66,7 @@ const TopupWallet = ({ topupWalletData, customerId, userRole }: TopupWalletProps
                 <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "1.75rem", fontWeight: 300 }}>
                   $
                 </span>
-                {topupWalletData.balance / 100}
+                {(topupWalletData.balance / 100).toFixed(2)}
               </h1>
               <WalletInfo />
             </div>
