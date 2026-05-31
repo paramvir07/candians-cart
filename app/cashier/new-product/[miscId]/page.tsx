@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createProductFromMisc, getSingleMiscItem } from "@/actions/cashier/MiscItem";
 import {
@@ -10,6 +10,9 @@ import {
   LockIcon,
   ShieldCheckIcon,
   ArrowLeftIcon,
+  ImageIcon,
+  X,
+  Upload,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -25,6 +28,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { categories as CATEGORIES } from "@/lib/categories";
+
 // ── types ─────────────────────────────────────────────────────────────────────
 
 interface MiscItem {
@@ -32,7 +36,7 @@ interface MiscItem {
   storeId: string;
   productName: string;
   primaryUPC?: string;
-  price: number; // cents
+  price: number;
   createdAt: string;
 }
 
@@ -57,8 +61,6 @@ interface ProductFormData {
 
 // ── constants ─────────────────────────────────────────────────────────────────
 
-
-
 const TAX_OPTIONS = [
   { label: "No Tax (0%)", value: "0" },
   { label: "GST 5%", value: "0.05" },
@@ -74,7 +76,7 @@ function buildDefaultForm(item: MiscItem): ProductFormData {
     miscItemId: item._id,
     name: item.productName,
     primaryUPC: item.primaryUPC?.trim() ?? "",
-    price: (item.price / 100).toFixed(2), // cents → dollars
+    price: (item.price / 100).toFixed(2),
     description: "",
     category: "",
     markup: "",
@@ -140,7 +142,7 @@ function ToggleCard({ label, description, checked, onCheckedChange }: {
       tabIndex={0}
       onClick={() => onCheckedChange(!checked)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onCheckedChange(!checked);
         }
@@ -183,13 +185,16 @@ export default function NewProductPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof ProductFormData, string>>>({});
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const router = useRouter();
 
   useEffect(() => {
     (async () => {
       try {
         const res = await getSingleMiscItem(miscId);
-        console.log(res);
         if (!res.success || !res.data) {
           setError("Item not found");
           toast.error("Item not found");
@@ -235,6 +240,23 @@ export default function NewProductPage() {
     if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: undefined }));
   }
 
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      toast.error("File size must be less than 4MB");
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  function handleRemoveImage() {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   function validate(): boolean {
     const next: typeof formErrors = {};
     if (!form!.name.trim()) next.name = "Product name is required";
@@ -259,37 +281,50 @@ export default function NewProductPage() {
     if (!validate()) return;
     setSubmitting(true);
 
-    const payload = {
-      storeId: form!.storeId,
-      miscItemId: form!.miscItemId,
-      name: form!.name.trim(),
-      description: form!.description.trim(),
-      category: form!.category,
-      markup: parseFloat(form!.markup),
-      tax: parseFloat(form!.tax),
-      disposableFee: form!.disposableFee ? Math.round(parseFloat(form!.disposableFee) * 100) : 0,
-      price: Math.round(parseFloat(form!.price) * 100),
-      stock: form!.stock,
-      subsidised: form!.subsidised,
-      isFeatured: form!.isFeatured,
-      isMeasuredInWeight: form!.isMeasuredInWeight,
-      UOM: form!.UOM.trim() || undefined,
-      PriceDrop: form!.PriceDrop,
-      ...(form!.primaryUPC.trim() ? { primaryUPC: form!.primaryUPC.trim() } : {}),
-    };
+    try {
+      let finalImages: { url: string }[] = [];
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append("file", imageFile);
+        const uploadRes = await fetch("/imagekit", { method: "POST", body: fd });
+        const uploadData = await uploadRes.json();
+        if (!uploadData.success) {
+          toast.error(uploadData.error || "Failed to upload image");
+          return;
+        }
+        finalImages = uploadData.images;
+      }
 
-   try {
-    const res = await createProductFromMisc(payload, miscId);
-    if (!res.success) {
-      toast.error(res.message || "Error");
-      return;
+      const payload = {
+        storeId: form!.storeId,
+        miscItemId: form!.miscItemId,
+        name: form!.name.trim(),
+        description: form!.description.trim(),
+        category: form!.category,
+        markup: parseFloat(form!.markup),
+        tax: parseFloat(form!.tax),
+        disposableFee: form!.disposableFee ? Math.round(parseFloat(form!.disposableFee) * 100) : 0,
+        price: Math.round(parseFloat(form!.price) * 100),
+        stock: form!.stock,
+        subsidised: form!.subsidised,
+        isFeatured: form!.isFeatured,
+        isMeasuredInWeight: form!.isMeasuredInWeight,
+        UOM: form!.UOM.trim() || undefined,
+        PriceDrop: form!.PriceDrop,
+        images: finalImages,
+        ...(form!.primaryUPC.trim() ? { primaryUPC: form!.primaryUPC.trim() } : {}),
+      };
+
+      const res = await createProductFromMisc(payload, miscId);
+      if (!res.success) {
+        toast.error(res.message || "Error");
+        return;
+      }
+      toast.success("Product created!");
+      router.push("/cashier");
+    } finally {
+      setSubmitting(false);
     }
-    toast.success("Product created!");
-    router.push("/cashier");
-  } finally {
-    setSubmitting(false);
-  }
-
   }
 
   // ── form render ──
@@ -322,6 +357,66 @@ export default function NewProductPage() {
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <LockedField label="Store ID" value={form.storeId} />
             <LockedField label="Misc Item ID" value={form.miscItemId} />
+          </div>
+        </section>
+
+        {/* product image */}
+        <section>
+          <SectionLabel icon={<ImageIcon className="h-3 w-3" />} label="Product Image" />
+          <div className="mt-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+            {imagePreview ? (
+              <div className="relative w-full overflow-hidden rounded-xl border border-border bg-muted/30">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imagePreview}
+                  alt="Product preview"
+                  className="h-48 w-full object-contain p-2"
+                />
+                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all hover:bg-black/30 hover:opacity-100">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="gap-1.5 shadow"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-3.5 w-3.5" />
+                    Change
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    className="gap-1.5 shadow"
+                    onClick={handleRemoveImage}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/30 px-6 py-10 text-center transition-colors hover:border-primary/40 hover:bg-primary/5"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted ring-1 ring-border">
+                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Click to upload image</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">PNG, JPG, WEBP · Max 4 MB</p>
+                </div>
+              </button>
+            )}
           </div>
         </section>
 
@@ -358,9 +453,15 @@ export default function NewProductPage() {
             <Field label="Primary UPC" hint="Optional · editable">
               <Input
                 value={form.primaryUPC}
-                onChange={(e) => set("primaryUPC", e.target.value)}
+                onChange={(e) => set("primaryUPC", e.target.value.replace(/\D/g, ""))}
+                onKeyDown={(e) => {
+                  if (!/[\d\b]/.test(e.key) && !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
                 placeholder="Barcode / UPC"
                 className="font-mono text-sm tracking-wider"
+                inputMode="numeric"
               />
             </Field>
 

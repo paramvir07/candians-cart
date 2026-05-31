@@ -191,6 +191,10 @@ const MiscProductSchema = z.object({
     .max(18)
     .transform((val) => (val === "" ? undefined : val.toUpperCase()))
     .optional(),
+  images: z.array(z.object({
+  url: z.string(),
+  fileId: z.string().optional(),
+})).optional().default([]),
 });
 
 type MiscProductPayload = z.input<typeof MiscProductSchema>;
@@ -255,7 +259,7 @@ export const createProductFromMisc = async (data: MiscProductPayload,miscId:stri
       UOM,
       PriceDrop,
       storeId,
-      images: [],
+      images: parsed.data.images ?? [],
     };
 
     if (primaryUPC) dbPayload.primaryUPC = primaryUPC;
