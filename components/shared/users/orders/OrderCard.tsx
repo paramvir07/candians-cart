@@ -10,7 +10,6 @@ import {
   CreditCard,
   Wallet,
   X,
-  ChevronRight,
   Package,
 } from "lucide-react";
 import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
@@ -103,7 +102,12 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
   const hasSubsidyUsed = subsidyUsed > 0;
   const hasSubsidyGenerated = subsidyGenerated > 0;
 
-  const totalItems = (order.products?.length ?? 0) + (order.subsidyItems?.length ?? 0);
+  // ✅ miscItems included in count
+  const totalItems =
+    (order.products?.length ?? 0) +
+    (order.subsidyItems?.length ?? 0) +
+    (order.miscItems?.length ?? 0);
+
   const isCompleted = order.status === "completed";
   const isPendingPayment = order.paymentMode === "pending";
 
@@ -181,16 +185,14 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
                   </p>
                 </div>
 
-                {/* Row 3: badges — clearly labelled to avoid "PENDING PENDING" confusion */}
+                {/* Row 3: badges */}
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  {/* Order status */}
                   <div className="flex items-center gap-1">
                     <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
                       Order
                     </span>
                     <StatusBadge status={order.status} />
                   </div>
-                  {/* Payment */}
                   <div className="flex items-center gap-1">
                     <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
                       Pay
@@ -201,69 +203,69 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
               </div>
             </div>
 
-{/* ══════════════════════════════════
-    DESKTOP  (hidden below lg)
-══════════════════════════════════ */}
-<div className="hidden lg:flex items-center gap-3 pl-5 pr-4 py-4">
-  {/* Thumbnail */}
-  <div
-    className="relative shrink-0 rounded-xl overflow-hidden"
-    style={{ width: 54, height: 54, border: "1.5px solid rgba(0,0,0,0.07)", background: "#f8f8f6", boxShadow: "0 2px 6px rgba(0,0,0,0.06)" }}
-  >
-    {thumbUrl ? (
-      <Image src={thumbUrl} alt="Order" fill className="object-cover" />
-    ) : (
-      <CategoryIllustration category={firstCat} />
-    )}
-    {(hasSubsidyUsed || hasSubsidyGenerated) && (
-      <div className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg" style={{ background: "#f59e0b" }}>
-        <Sparkles className="w-2.5 h-2.5 text-white" />
-      </div>
-    )}
-  </div>
+            {/* ══════════════════════════════════
+                DESKTOP  (hidden below lg)
+            ══════════════════════════════════ */}
+            <div className="hidden lg:flex items-center gap-3 pl-5 pr-4 py-4">
+              {/* Thumbnail */}
+              <div
+                className="relative shrink-0 rounded-xl overflow-hidden"
+                style={{ width: 54, height: 54, border: "1.5px solid rgba(0,0,0,0.07)", background: "#f8f8f6", boxShadow: "0 2px 6px rgba(0,0,0,0.06)" }}
+              >
+                {thumbUrl ? (
+                  <Image src={thumbUrl} alt="Order" fill className="object-cover" />
+                ) : (
+                  <CategoryIllustration category={firstCat} />
+                )}
+                {(hasSubsidyUsed || hasSubsidyGenerated) && (
+                  <div className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg" style={{ background: "#f59e0b" }}>
+                    <Sparkles className="w-2.5 h-2.5 text-white" />
+                  </div>
+                )}
+              </div>
 
-  {/* Data columns — grid so columns never overflow */}
-  <div className="flex-1 grid grid-cols-[1.4fr_1.3fr_0.5fr_1fr_1.1fr_1fr] items-center gap-x-2 min-w-0">
-    {/* Order # */}
-    <div className="min-w-0">
-      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Order</p>
-      <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider truncate">#{orderId}</p>
-    </div>
+              {/* Data columns */}
+              <div className="flex-1 grid grid-cols-[1.4fr_1.3fr_0.5fr_1fr_1.1fr_1fr] items-center gap-x-2 min-w-0">
+                {/* Order # */}
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Order</p>
+                  <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider truncate">#{orderId}</p>
+                </div>
 
-    {/* Date */}
-    <div className="min-w-0">
-      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Date</p>
-      <p className="text-[13px] font-semibold text-stone-600 truncate">{date}</p>
-    </div>
+                {/* Date */}
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Date</p>
+                  <p className="text-[13px] font-semibold text-stone-600 truncate">{date}</p>
+                </div>
 
-    {/* Items */}
-    <div className="min-w-0">
-      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Items</p>
-      <div className="flex items-center gap-1">
-        <Package className="w-3 h-3 text-stone-400 shrink-0" />
-        <p className="text-[13px] font-bold text-stone-700">{totalItems}</p>
-      </div>
-    </div>
+                {/* Items */}
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Items</p>
+                  <div className="flex items-center gap-1">
+                    <Package className="w-3 h-3 text-stone-400 shrink-0" />
+                    <p className="text-[13px] font-bold text-stone-700">{totalItems}</p>
+                  </div>
+                </div>
 
-    {/* Payment */}
-    <div className="min-w-0 overflow-hidden">
-      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">Payment</p>
-      <PaymentBadge mode={order.paymentMode} />
-    </div>
+                {/* Payment */}
+                <div className="min-w-0 overflow-hidden">
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">Payment</p>
+                  <PaymentBadge mode={order.paymentMode} />
+                </div>
 
-    {/* Status */}
-    <div className="min-w-0 overflow-hidden">
-      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">Status</p>
-      <StatusBadge status={order.status} />
-    </div>
+                {/* Status */}
+                <div className="min-w-0 overflow-hidden">
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">Status</p>
+                  <StatusBadge status={order.status} />
+                </div>
 
-    {/* Total */}
-    <div className="min-w-0 text-right">
-      <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Total</p>
-      <p className="tabular-nums font-bold text-[15px] text-green-700 truncate">{fmt(order.cartTotal)}</p>
-    </div>
-  </div>
-</div>
+                {/* Total */}
+                <div className="min-w-0 text-right">
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Total</p>
+                  <p className="tabular-nums font-bold text-[15px] text-green-700 truncate">{fmt(order.cartTotal)}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </button>
       </DialogTrigger>

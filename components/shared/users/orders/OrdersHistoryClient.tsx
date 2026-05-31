@@ -30,6 +30,7 @@ export default function OrdersHistoryClient({
 
   const handleScanResult = (scannedId: string) => setQ(scannedId);
 
+
   const filteredOrders = useMemo(() => {
     const query = norm(q);
     return orders.filter((order: any) => {
