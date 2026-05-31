@@ -15,6 +15,7 @@ export interface IProductDB {
   images: (ProductImage & { _id?: Types.ObjectId })[];
   subsidised: boolean;
   isFeatured: boolean;
+  isAvailable?: boolean;
   InvoiceId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -75,6 +76,7 @@ export interface IProduct {
   images: ProductImage[];
   subsidised: boolean;
   isFeatured: boolean;
+  isAvailable?: boolean;
   InvoiceId: string;
   isMeasuredInWeight?: boolean; // Optional field for weight-based products
   UOM?: string; // Optional field for unit of measurement (e.g., kg, lb)

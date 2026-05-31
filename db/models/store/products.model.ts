@@ -76,6 +76,11 @@ const productSchema = new Schema(
       required: true,
     },
 
+    isAvailable: {
+      type: Boolean,
+      default: true
+    },
+
     // This is the invoice Id, have to keep this required false because otherwise the admin validation will fail
     InvoiceId: {
       type: Schema.Types.ObjectId,

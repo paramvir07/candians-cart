@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Edit, Trash2, Sparkles, PackageX, Star } from "lucide-react";
+import { Edit, Trash2, Sparkles, PackageX, Star, CheckSquare } from "lucide-react";
 import { IProduct } from "@/types/store/products.types";
 import { fmt } from "@/lib/fomatPrice";
 import { ProductDetailDialog } from "./ProductDetailDialog";
@@ -25,7 +25,7 @@ import {
   CategoryIllustration,
   getCategoryConfig,
 } from "@/components/customer/shared/CategoryIllustration";
-import { featuredProduct } from "@/actions/common/FeaturedProduct.action";
+import { availableProduct, featuredProduct } from "@/actions/common/FeaturedProduct.action";
 
 export type ProductCardRole = "admin" | "store" | "customer";
 
@@ -38,8 +38,12 @@ interface ProductCardProps {
 export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
   const [isSubsidised, setIsSubsidised] = useState(product.subsidised ?? false);
   const [isFeatured, setIsFeatured] = useState(product.isFeatured ?? false);
+  // remove after availability check
+  const [isAvailable, setIsAvailable] = useState(product.isAvailable ?? false);
   const [isSubsidyLoading, setIsSubsidyLoading] = useState(false);
   const [isFeaturedLoading, setIsFeaturedLoading] = useState(false);
+  // remove after availability check
+  const [isAvailableLoading, setIsAvailableLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -95,6 +99,29 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
       toast.error("An unexpected error occurred.");
     } finally {
       setIsFeaturedLoading(false);
+    }
+  };
+
+
+  // remove after availability check
+  const handleAvailableToggle = async (checked: boolean) => {
+    setIsAvailable(checked);
+    setIsAvailableLoading(true);
+    try {
+      const result = await availableProduct(product._id, checked);
+      if (result.success) {
+        toast.success(
+          `${product.name} ${checked ? "marked as available" : "removed from available"}.`,
+        );
+      } else {
+        setIsAvailable(!checked);
+        toast.error(result.error || "Failed to update.");
+      }
+    } catch {
+      setIsAvailable(!checked);
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setIsAvailableLoading(false);
     }
   };
 
@@ -261,6 +288,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
           >
             {/* Featured toggle — admin + store */}
             {canToggleFeatured && (
+              <>
               <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-amber-50/60 border border-amber-100">
                 <div className="flex items-center gap-2">
                   <Star
@@ -279,6 +307,27 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
                   className="data-[state=checked]:bg-amber-400 h-5 w-9"
                 />
               </div>
+
+            {/* remove after availability check   */}
+              <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-primary/20 border">
+                <div className="flex items-center gap-2">
+                  <CheckSquare
+                    className={`h-3.5 w-3.5 ${isFeatured ? "text-amber-500 fill-amber-400" : "text-muted-foreground"}`}
+                  />
+                  <span
+                    className={`text-xs font-medium ${isFeatured ? "text-amber-700" : "text-muted-foreground"}`}
+                  >
+                    {isAvailable ? "Available" : "Not Available"}
+                  </span>
+                </div>
+                <Switch
+                  checked={isAvailable}
+                  onCheckedChange={handleAvailableToggle}
+                  disabled={isAvailableLoading}
+                  className="data-[state=checked]:bg-primary h-5 w-9"
+                />
+              </div>
+              </>
             )}
 
             {/* Subsidised toggle — admin only */}

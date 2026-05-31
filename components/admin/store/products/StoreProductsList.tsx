@@ -27,7 +27,6 @@ import {
   getStoreProductsPaginated,
 } from "@/actions/admin/products/getProducts.action";
 import {
-  searchProducts,
   searchProductsByUPC,
 } from "@/actions/common/searchProducts.action";
 import {
