@@ -4,10 +4,15 @@ Check the following link for the logic
 https://docs.google.com/document/d/1msayLur-Ofb5cjI1PPnytFw_ohjKGi9cmftKTKQy6AE/edit?usp=sharing
 */
 import mongoose, { PipelineStage, Types } from "mongoose";
-import OrderModel, { PlaceOrderI } from "@/db/models/customer/Orders.Model";
+import OrderModel, {
+  PlaceOrderI,
+  PlaceOrderMiscItem,
+} from "@/db/models/customer/Orders.Model";
 import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 import { dbConnect } from "@/db/dbConnect";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
+import { MiscellaneousItemsModel } from "@/db/models/customer/MiscItem.model";
+import ProductModel from "@/db/models/store/products.model";
 
 export interface GetRecieptParams {
   startDate: Date;
@@ -56,6 +61,7 @@ type OrderAggregateResult = {
   totalPST: number;
   totalSubsidy: number;
   totalOrderCashCollected: number;
+  allMiscItems: PlaceOrderMiscItem[][];
 };
 
 export async function getRecieptDataByDateRange(
@@ -76,6 +82,12 @@ export async function getRecieptDataByDateRange(
 
     await dbConnect();
 
+    const parsedStoreId = storeId
+      ? typeof storeId === "string"
+        ? new mongoose.Types.ObjectId(storeId)
+        : storeId
+      : undefined;
+
     const matchStage: PipelineStage.Match = {
       $match: {
         createdAt: {
@@ -83,17 +95,50 @@ export async function getRecieptDataByDateRange(
           $lte: endDate,
         },
         status: status,
+        ...(parsedStoreId && { storeId: parsedStoreId }),
       },
     };
 
-    const parsedStoreId = storeId
-      ? typeof storeId === "string"
-        ? new mongoose.Types.ObjectId(storeId)
-        : storeId
-      : undefined;
+    // if (parsedStoreId) {
+    //   matchStage.$match.storeId = parsedStoreId;
+    // }
 
-    if (parsedStoreId) {
-      matchStage.$match.storeId = parsedStoreId;
+    const ordersWithMisc = await OrderModel.find({
+      ...matchStage.$match,
+      "miscItems.0": { $exists: true }, // Only query orders that actually have misc items
+    })
+      .select("miscItems")
+      .lean();
+
+    const uniqueMiscItemIds = [
+      ...new Set(
+        ordersWithMisc.flatMap((o) =>
+          o.miscItems.map((m) => m.miscItemId.toString()),
+        ),
+      ),
+    ];
+
+    // map holding our product data
+    const miscProductDataMap = new Map<string, any>();
+
+    if (uniqueMiscItemIds.length > 0) {
+      const fetchedMiscItems = await MiscellaneousItemsModel.find({
+        _id: { $in: uniqueMiscItemIds },
+      })
+        .populate("productId")
+        .lean();
+      const unaddedItems = fetchedMiscItems.filter((item) => !item.isAdded);
+      if (unaddedItems.length > 0) {
+        const errorNames = unaddedItems.map((i) => i.productName).join(", ");
+        throw new Error(
+          `Cannot calculate payout. The following miscellaneous items must be added as products first: ${errorNames}`,
+        );
+      }
+      fetchedMiscItems.forEach((item) => {
+        if (item.productId) {
+          miscProductDataMap.set(item._id.toString(), item.productId);
+        }
+      });
     }
 
     // Keep the DB pipeline simple: Just group and sum the raw metrics
@@ -115,6 +160,7 @@ export async function getRecieptDataByDateRange(
               $cond: [{ $eq: ["$paymentMode", "cash"] }, "$cartTotal", 0],
             },
           },
+          allMiscItems: { $push: "$miscItems" },
         },
       },
       {
@@ -185,12 +231,58 @@ export async function getRecieptDataByDateRange(
     return receiptsRaw.map((receipt) => {
       const storeKey = receipt._id ? receipt._id.toString() : "global";
 
+      // Totals for linked product data
+      const storeMiscItems = receipt.allMiscItems.flat();
+      let miscBaseAdjustment = 0;
+      let miscTaxGSTAdjustment = 0;
+      let miscTaxPSTAdjustment = 0;
+      let miscDisposableAdjustment = 0;
+      let oldMiscGenericTotal = 0;
+
+      storeMiscItems.forEach((miscItem) => {
+        oldMiscGenericTotal += miscItem.total;
+
+        const product = miscProductDataMap.get(miscItem.miscItemId.toString());
+        if (product) {
+          const basePrice = product.price * miscItem.quantity;
+          const disposableFee =
+            (product.disposableFee || 0) * miscItem.quantity;
+
+          let gst = 0;
+          let pst = 0;
+          if (product.tax === 0.05) gst = basePrice * 0.05;
+          else if (product.tax === 0.07) pst = basePrice * 0.07;
+          else if (product.tax === 0.12) {
+            gst = basePrice * 0.05;
+            pst = basePrice * 0.07;
+          }
+          miscBaseAdjustment += basePrice;
+          miscDisposableAdjustment += disposableFee;
+          miscTaxGSTAdjustment += gst;
+          miscTaxPSTAdjustment += pst;
+        }
+      });
+
+      console.log(
+        "Misc Data: ",
+        miscBaseAdjustment,
+        miscTaxGSTAdjustment,
+        miscTaxPSTAdjustment,
+        miscDisposableAdjustment,
+        "Old Misc generic total",
+        oldMiscGenericTotal,
+      );
+
       // Ensure all raw values are cleanly rounded to integers (cents)
       const totalCustomerPaid = Math.round(receipt.totalCustomerPaid);
-      const totalBasePrice = Math.round(receipt.totalBasePrice);
-      const totalDisposableFee = Math.round(receipt.totalDisposableFee);
-      const totalGST = Math.round(receipt.totalGST);
-      const totalPST = Math.round(receipt.totalPST);
+      const totalBasePrice = Math.round(
+        receipt.totalBasePrice - oldMiscGenericTotal + miscBaseAdjustment,
+      );
+      const totalDisposableFee = Math.round(
+        receipt.totalDisposableFee + miscDisposableAdjustment,
+      );
+      const totalGST = Math.round(receipt.totalGST + miscTaxGSTAdjustment);
+      const totalPST = Math.round(receipt.totalPST + miscTaxPSTAdjustment);
       const totalSubsidy = Math.round(receipt.totalSubsidy);
       const totalOrderCashCollected = Math.round(
         receipt.totalOrderCashCollected,
@@ -216,7 +308,7 @@ export async function getRecieptDataByDateRange(
       // Markup tax is simply the remainder of the total tax
       const markupTax = totalTax - baseTax;
       const platformMarkuptax = markupTax;
-      const STORE_PROFIT_MARGIN = 0.35;
+      const STORE_PROFIT_MARGIN = 0.50;
       const storeMarkupTax = Math.round(markupTax * STORE_PROFIT_MARGIN);
 
       // 3. Store Metrics

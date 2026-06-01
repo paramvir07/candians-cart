@@ -31,7 +31,7 @@ const StorePayoutReciepts = async ({
       </Suspense>
 
       {/* Auto-Payout Schedule + Manual Trigger side by side */}
-      <div>
+      {/* <div>
         <div className="mb-4">
           <h2 className="text-xl font-semibold tracking-tight text-gray-900">
             Auto-Payout Settings
@@ -44,7 +44,8 @@ const StorePayoutReciepts = async ({
           <PayoutScheduleConfig storeId={storeId} />
           <ManualPayoutTrigger />
         </div>
-      </div>
+      </div> */}
+      
       {/* History & Filters */}
       <div className="space-y-4">
         <StorePayoutHistory storeId={storeId} />
