@@ -308,7 +308,7 @@ export async function getRecieptDataByDateRange(
       // Markup tax is simply the remainder of the total tax
       const markupTax = totalTax - baseTax;
       const platformMarkuptax = markupTax;
-      const STORE_PROFIT_MARGIN = 0.35;
+      const STORE_PROFIT_MARGIN = 0.50;
       const storeMarkupTax = Math.round(markupTax * STORE_PROFIT_MARGIN);
 
       // 3. Store Metrics
