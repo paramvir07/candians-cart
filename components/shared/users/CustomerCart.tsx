@@ -166,25 +166,41 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const calcMiscTotal = (miscItems: IMiscCartItem[]) => {
     return miscItems.reduce(
       (acc, item) => {
-        const lineTotal = item.priceAtAdd * item.quantity;
-        acc.subtotal += lineTotal;
-        acc.total += lineTotal;
+        const taxRate = item.taxAtAdd ?? (item.itemId as any)?.tax ?? 0;
+        const linePreTax = item.priceAtAdd * item.quantity;
+
+        let gst = 0, pst = 0;
+        if (taxRate === 0.05) gst = Math.round(linePreTax * 0.05);
+        else if (taxRate === 0.07) pst = Math.round(linePreTax * 0.07);
+        else if (taxRate === 0.12) {
+          gst = Math.round(linePreTax * 0.05);
+          pst = Math.round(linePreTax * 0.07);
+        }
+
+        const totalTax = gst + pst;
+        acc.subtotal += linePreTax;
+        acc.gst += gst;
+        acc.pst += pst;
+        acc.totalTax += totalTax;
+        acc.total += linePreTax + totalTax;
         return acc;
       },
-      { subtotal: 0, total: 0 },
+      { subtotal: 0, gst: 0, pst: 0, totalTax: 0, total: 0 },
     );
   };
 
   const miscTotals = calcMiscTotal(MiscItems);
 
+  // console.log(miscTotals)
+
   const totals = {
     subtotal:
       itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal,
-    gst: itemTotals.gst + subsidyTotals.gst,
-    pst: itemTotals.pst + subsidyTotals.pst,
-    totalTax: itemTotals.totalTax + subsidyTotals.totalTax,
+    gst: itemTotals.gst + subsidyTotals.gst + miscTotals.gst,
+    pst: itemTotals.pst + subsidyTotals.pst + miscTotals.pst,
+    totalTax: itemTotals.totalTax + subsidyTotals.totalTax +miscTotals.totalTax,
     disposable: itemTotals.disposable + subsidyTotals.disposable,
-    total: itemTotals.total + subsidyTotals.total + miscTotals.subtotal,
+    total: itemTotals.total + subsidyTotals.total + miscTotals.total,
   };
 
   const showGST = totals.gst > 0;

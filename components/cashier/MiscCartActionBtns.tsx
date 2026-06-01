@@ -1,4 +1,3 @@
-// components/cashier/MiscCartActionBtns.tsx
 "use client";
 
 import { Trash2, Plus, Minus } from "lucide-react";
@@ -10,16 +9,23 @@ import {
   RemoveMiscItem,
 } from "@/actions/cashier/MiscItem";
 
+const fmt = (cents: number) => (cents / 100).toFixed(2);
+
+const withTax = (price: number, taxRate: number) =>
+  price + Math.round(price * taxRate);
+
 const MiscCartActionBtns = ({
   itemId,
   initialQty,
   priceAtAdd,
+  taxAtAdd = 0,
   customerId,
   variant = "desktop",
 }: {
   itemId: string;
   initialQty: number;
   priceAtAdd: number;
+  taxAtAdd?: number;
   customerId?: string;
   variant?: "mobile" | "desktop";
 }) => {
@@ -27,7 +33,7 @@ const MiscCartActionBtns = ({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingRef = useRef<"inc" | "dec" | null>(null);
 
-  const fmt = (cents: number) => (cents / 100).toFixed(2);
+  const unitWithTax = withTax(priceAtAdd, taxAtAdd);
 
   const sync = (direction: "inc" | "dec") => {
     pendingRef.current = direction;
@@ -126,10 +132,10 @@ const MiscCartActionBtns = ({
 
       <div className="w-24 text-right">
         <p className="text-sm font-bold text-gray-900 tabular-nums">
-          CA${fmt(priceAtAdd * qty)}
+          CA${fmt(unitWithTax * qty)}
         </p>
         <p className="text-xs text-gray-400 tabular-nums mt-0.5">
-          CA${fmt(priceAtAdd)} ea.
+          CA${fmt(unitWithTax)} ea.
         </p>
       </div>
 

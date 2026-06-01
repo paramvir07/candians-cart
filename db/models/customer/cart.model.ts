@@ -30,6 +30,7 @@ export interface IMiscCartItem {
   };
   quantity: number;
   priceAtAdd: number;
+  taxAtAdd:number;
 }
 
 export interface ICart extends Document {
@@ -118,6 +119,11 @@ const miscCartItemSchema = new Schema<IMiscCartItem>(
       type: Number,
       required: true,
       min: 0,
+    },
+    taxAtAdd: {
+      type: Number,
+      required: true,
+      enum: [0.0, 0.05, 0.07, 0.12],
     },
   },
   { _id: false, timestamps: true }

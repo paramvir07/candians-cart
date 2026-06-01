@@ -16,6 +16,7 @@ interface MiscItemFormData {
   primaryUPC?: string;
   price: number;
   quantity: number;
+  tax:number;
 }
 
 interface ProductFormData {
@@ -54,6 +55,7 @@ export const createMiscProduct = async (data: MiscItemFormData, customerId: stri
             price: data.price,
             productName: data.productName,
             primaryUPC: UPC,
+            tax: data.tax,
         });
         if (!MiscProduct) return { success: false, message: "Error creating Misc product" };
 
@@ -68,6 +70,7 @@ export const createMiscProduct = async (data: MiscItemFormData, customerId: stri
                         itemId: MiscProduct._id,
                         quantity: data.quantity,
                         priceAtAdd: MiscProduct.price,
+                        taxAtAdd:MiscProduct.tax,
                     },
                 },
             }
