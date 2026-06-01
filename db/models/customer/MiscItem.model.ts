@@ -6,6 +6,7 @@ export interface IMiscellaneousItems {
   productId?: Types.ObjectId;
   productName: string;
   primaryUPC?: string;
+  tax:number,
   price: number;
   isAdded: boolean;
   createdAt: Date;
@@ -24,6 +25,11 @@ const miscellaneousItemsSchema = new Schema<IMiscellaneousItems>(
       type: Schema.Types.ObjectId,
       ref: "Product",
       required: false,
+    },
+    tax: {
+      type: Number,
+      enum: [0.0, 0.05, 0.07, 0.12], 
+      required: true,
     },
     productName: {
       type: String,

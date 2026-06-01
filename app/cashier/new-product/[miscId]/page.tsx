@@ -37,6 +37,7 @@ interface MiscItem {
   productName: string;
   primaryUPC?: string;
   price: number;
+  tax:number;
   createdAt: string;
 }
 
@@ -80,7 +81,7 @@ function buildDefaultForm(item: MiscItem): ProductFormData {
     description: "",
     category: "",
     markup: "",
-    tax: "0.05",
+     tax: String(item.tax ?? 0.05),
     disposableFee: "",
     stock: true,
     subsidised: false,

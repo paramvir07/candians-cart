@@ -66,6 +66,7 @@ export function MiscItemsSection({ miscItems, customerId }: MiscItemsSectionProp
                     itemId={item.itemId._id.toString()}
                     initialQty={item.quantity}
                     priceAtAdd={item.priceAtAdd}
+                    taxAtAdd={item.taxAtAdd ?? (item.itemId as any)?.tax ?? 0}
                     customerId={customerId}
                     variant="mobile"
                   />
@@ -125,6 +126,7 @@ export function MiscItemsSection({ miscItems, customerId }: MiscItemsSectionProp
               itemId={item.itemId._id.toString()}
               initialQty={item.quantity}
               priceAtAdd={item.priceAtAdd}
+              taxAtAdd={item.taxAtAdd ?? (item.itemId as any)?.tax ?? 0}
               customerId={customerId}
               variant="desktop"
             />

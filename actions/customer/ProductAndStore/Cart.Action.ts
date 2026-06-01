@@ -342,6 +342,7 @@ export const PlaceOrder = async ({
   paymentMode?: "wallet" | "pending";
   TotalCart: CartTotals;
 }) => {
+  console.log(TotalCart)
   await dbConnect();
   const session = await mongoose.startSession();
 
@@ -514,16 +515,8 @@ export const PlaceOrder = async ({
       BaseTotal: baseTotal,
       cartTotal,
       subsidy: customerCart.cartSubsidy,
-      subsidyLeft:
-        Number(
-          (
-            (User.giftWalletBalance +
-              customerCart.cartSubsidy -
-              TotalUsedSubsidy) /
-            100
-          ).toFixed(2),
-        ) * 100,
-      subsidyUsed: Number((TotalUsedSubsidy / 100).toFixed(2)) * 100,
+      subsidyLeft: Number(((User.giftWalletBalance + customerCart.cartSubsidy - TotalUsedSubsidy)).toFixed(2)),
+      subsidyUsed: Number((TotalUsedSubsidy).toFixed(2)),
       userId: User._id,
       storeId: User.associatedStoreId,
       paymentMode,

@@ -5,7 +5,6 @@ import {
 } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { CartTotals } from "@/components/shared/users/CheckOutActions";
 import { Button } from "@/components/ui/button";
-import { PaymentMode } from "@/types/customer/OrdersClient";
 import { ArrowRight, Store } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
