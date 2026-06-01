@@ -202,14 +202,14 @@ const MiscProductSchema = z.object({
 
 type MiscProductPayload = z.input<typeof MiscProductSchema>;
 
-export const createProductFromMisc = async (data: MiscProductPayload,miscId:string) => {
+export const createProductFromMisc = async (data: MiscProductPayload, miscId: string) => {
   if (!data || !miscId) return { success: false, message: "No data provided" };
 
   try {
     const session = await getUserSession();
     if (!session?.user?.id) return { success: false, message: "Unauthorized" };
 
-    const parsed = MiscProductSchema.safeParse(data);createMiscProduct
+    const parsed = MiscProductSchema.safeParse(data);
     if (!parsed.success) {
       const message = parsed.error.issues.map((e: z.ZodIssue) => e.message).join(", ");
       return { success: false, message };
@@ -252,9 +252,9 @@ export const createProductFromMisc = async (data: MiscProductPayload,miscId:stri
       description,
       category,
       markup,
-      tax,           
-      disposableFee, 
-      price,         
+      tax,
+      disposableFee,
+      price,
       stock,
       subsidised: isSubsidized,
       isFeatured,
@@ -282,9 +282,12 @@ export const createProductFromMisc = async (data: MiscProductPayload,miscId:stri
       await mongoSession.endSession();
     }
 
-    // change misc product item
-
-    await MiscellaneousItemsModel.findByIdAndUpdate(miscId,{isAdded:true,productId:createdProductId})
+    await MiscellaneousItemsModel.findByIdAndUpdate(miscId, {
+      isAdded: true,
+      productId: createdProductId,
+      tax,
+      price,  
+    });
 
     revalidateTag(`products-${storeId}`, "max");
     revalidatePath("/cashier/misc-items");
