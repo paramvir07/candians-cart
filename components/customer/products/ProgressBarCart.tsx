@@ -271,7 +271,7 @@ export const SubsidyCart = ({ subsidy,total }: { subsidy: number,total:number })
           CA$
         </span>
         <span className="text-2xl font-bold tabular-nums text-muted-foreground/70 truncate line-through">
-          {((total + safeUsed) / 100)}
+          {((total + safeUsed) / 100).toFixed(2)}
         </span>
       </div>
     </div>
