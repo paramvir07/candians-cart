@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
 import { ToasterWrapper } from "@/components/shared/Toast-wrapper";
 
 const geistSans = Geist({
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.canadianscart.ca",
   },
-    appleWebApp: {
+  appleWebApp: {
     title: "Canadian's Cart",
   },
   title: {
@@ -53,7 +52,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_CA",
-    url: "/",
+    url: "https://www.canadianscart.ca",
     title: "Canadian's Cart | Smart grocery shopping for families",
     description:
       "Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.",
@@ -85,6 +84,10 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -97,8 +100,21 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Canadian's Cart",
+              alternateName: "Canadian's Cart",
+              url: "https://www.canadianscart.ca",
+            }).replace(/</g, "\\u003c"),
+          }}
+        />
         {children}
-        <ToasterWrapper/>
+        <ToasterWrapper />
       </body>
     </html>
   );
