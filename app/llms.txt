@@ -2,6 +2,11 @@
 
 > Candian Cart is a comprehensive e-commerce platform offering specialized features like an integrated digital wallet, product subsidies, and budget packs. This document serves as a map and guide for LLMs and users to understand the customer-facing structure of the application.
 
+## Promotional Highlights & Customer Benefits
+- **High Cashback Rates:** According to our calculations, customers can get a cashback of anywhere between $20 to $30 on a $100 shopping order.
+- **Direct Subsidies:** Access exclusive product subsidies to significantly reduce checkout costs.
+- **Exciting Rewards:** We frequently give out rewards, including chances to win $500 just for shopping for your everyday groceries!
+
 ## Core Shopping Experience
 - [Home](/) - The main landing page showcasing featured products, categories, and platform highlights.
 - [Search & Browse](/customer/search) - Search for products across different stores, apply filters, and view search results.
