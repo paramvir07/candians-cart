@@ -308,7 +308,7 @@ export async function getRecieptDataByDateRange(
       // Markup tax is simply the remainder of the total tax
       const markupTax = totalTax - baseTax;
       const platformMarkuptax = markupTax;
-      const STORE_PROFIT_MARGIN = 0.50;
+      const STORE_PROFIT_MARGIN = 0.5;
       const storeMarkupTax = Math.round(markupTax * STORE_PROFIT_MARGIN);
 
       // 3. Store Metrics
@@ -361,7 +361,8 @@ export async function getRecieptDataByDateRange(
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("[getReceiptDataByDateRange] Database error:", errorMessage);
     throw new Error(
-      "Failed to fetch aggregate receipt data for the specified date range.",
+      errorMessage ||
+        "An error occurred while generating the receipt. Please try again later.",
     );
   }
 }

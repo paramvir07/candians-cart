@@ -63,6 +63,7 @@ export default function RecieptComponent({
   const [stores, setStores] = useState<StoreDocument[]>([]);
   const [storeId, setStoreId] = useState<string>(initialStoreId || "all");
   const [isStoresLoading, setIsStoresLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchStores() {
@@ -86,6 +87,7 @@ export default function RecieptComponent({
     async function fetchData() {
       if (date?.from && date?.to) {
         setIsLoading(true);
+        setFetchError(null);
 
         const startDate = new Date(date.from);
         startDate.setUTCHours(0, 0, 0, 0);
@@ -103,9 +105,17 @@ export default function RecieptComponent({
           });
 
           setReceipts(data);
-        } catch (error) {
+          setFetchError(null);
+        } catch (error: unknown) {
           console.error("Failed to fetch receipt data:", error);
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "An unexpected error occurred while fetching receipts.";
+
+          toast.error(errorMessage);
           setReceipts(null);
+          setFetchError(errorMessage);
         } finally {
           setIsLoading(false);
         }
@@ -460,7 +470,20 @@ export default function RecieptComponent({
         )}
 
         {/* Empty States */}
-        {!isLoading && date?.from && date?.to && !hasData && (
+        {!isLoading && fetchError && (
+          <Alert
+            variant="destructive"
+            className="bg-destructive/10 border-destructive/20"
+          >
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle className="font-semibold">Action Required</AlertTitle>
+            <AlertDescription className="mt-2 text-destructive/90">
+              {fetchError}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {!isLoading && date?.from && date?.to && !hasData && !fetchError && (
           <Alert className="bg-muted/50 border-dashed">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>No data found</AlertTitle>
@@ -471,7 +494,7 @@ export default function RecieptComponent({
           </Alert>
         )}
 
-        {!isLoading && (!date?.from || !date?.to) && (
+        {!isLoading && (!date?.from || !date?.to) && !fetchError && (
           <Alert className="bg-muted/30 border-dashed">
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
             <AlertTitle className="text-muted-foreground">

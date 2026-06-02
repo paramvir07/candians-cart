@@ -1,0 +1,39 @@
+# Candian Cart - Customer LLM Guide
+
+> Candian Cart is a comprehensive e-commerce platform offering specialized features like an integrated digital wallet, product subsidies, and budget packs. This document serves as a map and guide for LLMs and users to understand the customer-facing structure of the application.
+
+## Core Shopping Experience
+- [Home](/) - The main landing page showcasing featured products, categories, and platform highlights.
+- [Search & Browse](/customer/search) - Search for products across different stores, apply filters, and view search results.
+- [Shopping Cart](/customer/cart) - Review items added to your cart, adjust quantities, apply available subsidies, and proceed to checkout.
+- [Budget Packs](/customer/budget-packs) - Browse curated, cost-effective product bundles designed for specific customer needs.
+- [Subsidy Programs](/customer/subsidy) - Access and view details regarding available product subsidies and how they reduce your overall costs.
+
+## Account & Authentication
+- [Customer Login](/customer/login) - Secure access to your existing customer account.
+- [Customer Signup](/customer/signup) - Register for a new Candian Cart customer account, select your location, and set up your budget.
+- [Forgot Password](/forgot-password) - Initiate the password recovery process.
+- [Reset Password](/reset-password) - Securely reset your password.
+
+## Orders & Payments
+- [Order Dashboard](/customer/orders) - View active orders, browse past purchase history, quickly reorder items, and download order invoices.
+- [Digital Wallet](/customer/wallet) - View your Candian Cart digital wallet balance, manage funds, and use the gift wallet feature.
+- [Wallet History](/customer/wallet/history) - Review a detailed log of past wallet transactions, top-ups, and expenditures with downloadable PDF receipts.
+- [Wallet Top-Up](/customer/wallet) - Add funds securely to your wallet using Stripe checkout integration.
+
+## User Profile & Settings
+- [Profile Overview](/customer/profile) - The main hub for your account details, displaying your personal QR code, linked store, and general stats.
+- [Edit Profile](/customer/profile/edit) - Update your personal information and contact details.
+- [Change Email](/customer/change-email) - Securely update and verify your registered email address.
+- [Change Password](/customer/change-password) - Update your account password to maintain security.
+- [Shopping Analytics](/customer/analytics) - View personalized spending insights, top purchased products, and shopping trends.
+
+## Help & Support
+- [Help Center](/customer/help) - Access frequently asked questions and submit support requests directly to admins.
+- [Contact Us](/contact) - Reach out to the Candian Cart support team for general inquiries.
+
+## Legal & Platform Information
+- [About Us](/about) - Learn more about the Candian Cart mission, vision, and team.
+- [Careers](/careers) - Explore current job opportunities to join the Candian Cart team.
+- [Terms of Service](/terms) - The rules, guidelines, and terms for using the platform.
+- [Privacy Policy](/privacy) - Detailed information on how your data is collected, handled, and protected.
