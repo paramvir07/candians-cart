@@ -519,3 +519,70 @@ export const AddToSubsidyCart = async (
     return { success: false, message: "Failed to add to subsidy cart" };
   }
 };
+
+export const movebacktoCart = async (
+  productId: string,
+  receivedcustomerId?: string,
+) => {
+  try {
+    await dbConnect();
+
+    const user = await getUser(receivedcustomerId);
+    if (!user) return { success: false, message: "User not found" };
+
+    const customerId = user._id;
+
+    const [cart, totalSubsidy] = await Promise.all([
+      CartModel.findOne({ customerId })
+        .populate("subsidyItems.productId"),
+      getTotalSubsidy(customerId),
+    ]);
+
+    if (!cart) return { success: false, message: "Cart not found" };
+
+    const index = cart.subsidyItems.findIndex(
+      (item) =>
+        (item.productId as unknown as IProduct)._id.toString() === productId,
+    );
+
+    if (index === -1) return { success: false, message: "Item not found" };
+
+    const [removedSubsidyItem] = cart.subsidyItems.splice(index, 1);
+    const product = removedSubsidyItem.productId as unknown as IProduct;
+
+    const existingCartItemIndex = cart.items.findIndex(
+      (item) => item.productId.toString() === product._id.toString(),
+    );
+
+    if (existingCartItemIndex > -1) {
+      const merged =
+        cart.items[existingCartItemIndex].quantity +
+        removedSubsidyItem.quantity;
+      cart.items[existingCartItemIndex].quantity = Math.min(merged, 99);
+    } else {
+      cart.items.push({
+        productId: product._id as unknown as Types.ObjectId,
+        storeId: removedSubsidyItem.storeId,
+        quantity: removedSubsidyItem.quantity,
+      });
+    }
+
+    const remainingSubsidyItems: PlainSubsidyItem[] = cart.subsidyItems.map(
+      (s) =>
+        (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject(),
+    );
+
+    const distributed = distributeSubsidy(remainingSubsidyItems, totalSubsidy);
+
+    await CartModel.findOneAndUpdate(
+      { customerId },
+      { $set: { items: cart.items, subsidyItems: distributed } },
+    );
+
+    revalidatePath("/customer/cart");
+    return { success: true, message: "Item moved back to cart" };
+  } catch (err) {
+    console.log(err);
+    return { success: false, message: "Failed to move item back to cart" };
+  }
+};

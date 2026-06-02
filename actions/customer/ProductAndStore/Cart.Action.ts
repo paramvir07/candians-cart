@@ -15,6 +15,7 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import "@/db/models/customer/MiscItem.model";
 
+
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
@@ -326,7 +327,6 @@ export const getCart = async (
       subItems: serialized.subsidyItems as ISubsidyItems[],
       miscItems: serialized.miscItems as IMiscCartItem[],
     };
-    // return foundCart.items;
   } catch (error) {
     console.log(error);
     return null;

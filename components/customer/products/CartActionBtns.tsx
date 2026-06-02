@@ -3,13 +3,14 @@
 import {
   DecrementSubsidyItem,
   IncrementSubsidyItem,
+  movebacktoCart,
   movetoSubsidy,
   RemoveSubsidyItem,
 } from "@/actions/customer/SubsidyItems.Action";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -34,15 +35,15 @@ const CartActionBtns = ({
 
   const afterSubsidy = Math.max(beforeSubsidy * qty - subsidy, 0);
 
-  const sync = (direction: "inc" | "dec") => {
-    pendingRef.current = direction;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      if (pendingRef.current === "inc") IncrementSubsidyItem(productId, customerId);
-      else DecrementSubsidyItem(productId, customerId);
-      pendingRef.current = null;
-    }, 400);
-  };
+const sync = (direction: "inc" | "dec") => {
+  pendingRef.current = direction;
+  if (debounceRef.current) clearTimeout(debounceRef.current);
+  debounceRef.current = setTimeout(async () => {
+    if (pendingRef.current === "inc") await IncrementSubsidyItem(productId, customerId);  
+    else await DecrementSubsidyItem(productId, customerId);  
+    pendingRef.current = null;
+  }, 400);
+};
 
   const increment = () => {
     if (qty >= 99) return;
@@ -58,6 +59,10 @@ const CartActionBtns = ({
     setQty((q) => q - 1);
     sync("dec");
   };
+
+  useEffect(() => {
+  setQty(quantity);
+}, [quantity]);
 
   const remove = () => RemoveSubsidyItem(productId, customerId);
 
@@ -188,5 +193,45 @@ export const AddtoSubsidyBtn = ({
     >
       Use Subsidy
     </button>
+  );
+};
+
+
+export const MovebacktoCart = ({
+  ProductId,
+  customerId,
+}: {
+  ProductId: string;
+  customerId?: string;
+}) => {
+  const handleBtnClick = async () => {
+    try {
+      const res = await movebacktoCart(ProductId, customerId);
+
+      if (!res.success) {
+        if (res.message === "User not found") {
+          toast.error("User session expired. Please login again.");
+        } else if (res.message === "Item not found") {
+          toast.error("Item no longer exists in subsidy.");
+        } else {
+          toast.error("Something went wrong. Please try again.");
+        }
+        return;
+      }
+
+      toast.success("Item moved back to cart");
+    } catch (err) {
+      console.error(err);
+      toast.error("Server error. Please try again later.");
+    }
+  };
+
+  return (
+  <button
+    onClick={handleBtnClick}
+    className="cursor-pointer shrink-0 flex items-center gap-1 text-[10px] font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 active:scale-95 transition-all px-2 py-0.5 rounded-md"
+  >
+    Remove Subsidy
+  </button>
   );
 };
