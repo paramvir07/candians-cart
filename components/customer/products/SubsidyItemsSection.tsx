@@ -1,7 +1,7 @@
 import { ISubsidyItems } from "@/db/models/customer/cart.model";
 import { BadgePercent, Tag } from "lucide-react";
 import Image from "next/image";
-import CartActionBtns from "./CartActionBtns";
+import CartActionBtns, { MovebacktoCart } from "./CartActionBtns";
 import { CategoryIllustration } from "../shared/CategoryIllustration";
 import GetUsedSubsidy from "./getUsedSubsidy";
 
@@ -85,6 +85,7 @@ export const SubsidyItemsSection = ({
                                                                   />
                                                                   PRICE DROP
                                                                 </div> : ""}
+                    <MovebacktoCart ProductId={item.productId._id} customerId={customerId}/>
                     </p>
                     <p className="text-[11px] mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                       {item.productId.category}
@@ -179,6 +180,7 @@ export const SubsidyItemsSection = ({
                                                                   />
                                                                   PRICE DROP
                                                                 </div> : ""}
+                    <MovebacktoCart ProductId={item.productId._id} customerId={customerId}/>
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                   {item.productId.category}

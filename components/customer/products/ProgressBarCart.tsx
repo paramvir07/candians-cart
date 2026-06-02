@@ -264,7 +264,8 @@ export const SubsidyCart = ({ subsidy,total }: { subsidy: number,total:number })
         )}
       </div>
     </div>
-     <div className="flex justify-between items-center gap-4 pt-0.5">
+    {safeUsed > 0 && (
+    <div className="flex justify-between items-center gap-4 pt-0.5">
       <span className="font-semibold text-muted-foreground shrink-0">Was</span>
       <div className="flex items-baseline gap-0.5 min-w-0">
         <span className="text-xs font-medium text-muted-foreground/70 shrink-0 line-through">
@@ -275,6 +276,9 @@ export const SubsidyCart = ({ subsidy,total }: { subsidy: number,total:number })
         </span>
       </div>
     </div>
+
+    )}
+     
     </>
   );
 };

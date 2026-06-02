@@ -3,6 +3,8 @@ import CustomerCart from "@/components/shared/users/CustomerCart";
 import { Metadata } from "next";
 import CartSkeleton from "@/components/skeletons/CartSkeleton";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Cart",
 };
