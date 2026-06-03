@@ -59,8 +59,8 @@ export const createMiscProduct = async (data: MiscItemFormData, customerId: stri
         });
         if (!MiscProduct) return { success: false, message: "Error creating Misc product" };
 
-        const UserCart = await getCart(customerId);
-        if (!UserCart) return { success: false, message: "Cart not found" };
+        // const UserCart = await getCart(customerId);
+        // if (!UserCart) return { success: false, message: "Cart not found" };
 
         await CartModel.findOneAndUpdate(
             { customerId:user.customerData._id },
@@ -73,7 +73,8 @@ export const createMiscProduct = async (data: MiscItemFormData, customerId: stri
                         taxAtAdd:MiscProduct.tax,
                     },
                 },
-            }
+            },
+            {upsert:true, returnDocument:'after'}
         );
         revalidatePath(`/cashier/customer/${user.customerData._id}/cart`)
         revalidatePath("/customer/cart")

@@ -82,7 +82,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const MiscItems = (CartItems?.miscItems as IMiscCartItem[]) ?? [];
   const subItemProductIds = subItems.map((s) => s.productId._id.toString());
 
-  if (!items || (items.length === 0 && !subItems))
+    if (!items || (items.length === 0 && subItems.length === 0 && MiscItems.length === 0))
     return <EmptyCart customerId={customerId} />;
 
   const itemTotals = items.reduce(

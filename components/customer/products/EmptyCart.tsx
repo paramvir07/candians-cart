@@ -1,8 +1,9 @@
 import Navbar from "@/components/customer/landing/Navbar"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ShoppingCart } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import { AnimatedEmptyCart } from "./emptyCartAnimation";
+import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
 
 export const EmptyCart = ({ customerId }: { customerId?: string }) => {
   return (
@@ -10,6 +11,9 @@ export const EmptyCart = ({ customerId }: { customerId?: string }) => {
       className={`min-h-screen ${!customerId ? "bg-[#F7F6F3]" : ""}`}
     >
       {!customerId && <Navbar />}
+      <div className="absolute top-20 right-4">
+        {customerId && <AddMiscItemModalTrigger customerId={customerId || ""} />}
+      </div>
 
       <div className="px-5 pt-6 max-w-md mx-auto">
         {/* Header */}
