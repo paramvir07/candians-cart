@@ -287,7 +287,7 @@ export const RemoveSubsidyItem = async (
         (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject(),
       );
 
-    if (remaining.length === 0 && cart.items.length === 0) {
+    if (remaining.length === 0 && cart.items.length === 0 && cart.miscItems.length === 0) {
       await CartModel.findOneAndDelete({ customerId: user._id });
       revalidatePath("/customer/cart");
       return { success: true };
