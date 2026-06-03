@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
+  RefreshCw,
   Package,
   ShoppingBag,
   ShoppingCartIcon,
@@ -19,6 +20,16 @@ import LogoutButton from "../shared/LogoutButton";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import Logo from "../shared/Logo";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 type CustomerData = {
@@ -53,7 +64,7 @@ function NavItem({
   icon: React.ElementType;
   badge?: number;
   exact?: boolean;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const active = useIsActive(href, exact);
   return (
@@ -105,138 +116,227 @@ function SidebarContent({
   onNav?: () => void;
 }) {
   const customerId = customerData?.id;
+  const pathname = usePathname();
+  const router = useRouter();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  const isInsideCustomer =
+    Boolean(customerId) &&
+    pathname.startsWith(`/cashier/customer/${customerId}`);
+
+  const handleReload = () => {
+    window.location.reload();
+  };
+
+  const handleNav = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
+    const isCustomerRoute =
+      Boolean(customerId) && href.startsWith(`/cashier/customer/${customerId}`);
+
+    if (isInsideCustomer && !isCustomerRoute) {
+      event.preventDefault();
+      setPendingHref(href);
+      setConfirmOpen(true);
+      return;
+    }
+
+    onNav?.();
+  };
+
+  const handleLeaveCustomer = () => {
+    if (!pendingHref) return;
+
+    setConfirmOpen(false);
+    onNav?.();
+
+    if (pendingHref === "#") {
+      setPendingHref(null);
+      return;
+    }
+
+    router.push(pendingHref);
+    setPendingHref(null);
+  };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Nav groups */}
-      <nav className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-0.5">
-        {/* General */}
-        <div>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.08em] px-3 mb-1">
-            General
-          </p>
-          <div className="space-y-0.5">
-            <NavItem
-              href="/cashier"
-              label="Dashboard"
-              icon={HomeIcon}
-              exact
-              onClick={onNav}
-            />
-            <NavItem
-              href="/cashier/subsidy-list"
-              label="Subsidy List"
-              icon={List}
-              onClick={onNav}
-            />
-            <NavItem
-              href="/cashier/misc-items"
-              label="Misc Items"
-              icon={ShoppingBasket}
-              onClick={onNav}
-            />
-          </div>
-        </div>
+    <>
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave this customer?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are currently working with{" "}
+              {customerData?.name ?? "this customer"}. Are you sure you want to
+              leave this customer and open a different section?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
 
-        {/* Customer section — only when a customer is selected */}
-        {customerId && (
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingHref(null)}>
+              Stay with customer
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleLeaveCustomer}>
+              Leave customer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className="flex flex-col h-full">
+        {/* Nav groups */}
+        <nav className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-0.5">
+          {/* General */}
           <div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.08em] px-3 mb-1">
-              Current Customer
+              General
             </p>
-
-            {/* Customer identity chip */}
-            <Link
-              href={`/cashier/customer/${customerId}`}
-              onClick={onNav}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50/60 transition-colors mb-1"
-            >
-              <Avatar className="h-8 w-8 shrink-0 ring-2 ring-emerald-200">
-                <AvatarImage
-                  // src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
-                  src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
-                />
-                <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-xs">
-                  {(customerData?.name ?? "U").slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-800 truncate">
-                  {customerData?.name ?? "Customer"}
-                </p>
-                <p className="text-xs text-gray-400">{customerData?.id ?? "Couldn't find ID"}</p>
-              </div>
-            </Link>
-
             <div className="space-y-0.5">
+              <button
+                type="button"
+                onClick={handleReload}
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 w-full relative text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+              >
+                <RefreshCw className="w-[18px] h-[18px] shrink-0 text-gray-400 group-hover:text-gray-600" />
+                <span className="text-sm font-medium flex-1 text-left text-gray-600">
+                  Reload Page
+                </span>
+              </button>
               <NavItem
-                href={`/cashier/customer/${customerId}/cart`}
-                label="Cart"
-                icon={ShoppingCartIcon}
-                badge={customerData?.cartCount}
-                onClick={onNav}
+                href="/cashier"
+                label="Dashboard"
+                icon={HomeIcon}
+                exact
+                onClick={(event) => handleNav(event, "/cashier")}
               />
               <NavItem
-                href={`/cashier/customer/${customerId}/orders`}
-                label="Orders"
-                icon={Package}
-                onClick={onNav}
+                href="/cashier/subsidy-list"
+                label="Subsidy List"
+                icon={List}
+                onClick={(event) => handleNav(event, "/cashier/subsidy-list")}
               />
               <NavItem
-                href={`/cashier/customer/${customerId}/products`}
-                label="Products"
-                icon={ShoppingBag}
-                onClick={onNav}
-              />
-              <NavItem
-                href={`/cashier/customer/${customerId}/wallet`}
-                label="Wallet"
-                icon={Wallet}
-                onClick={onNav}
+                href="/cashier/misc-items"
+                label="Misc Items"
+                icon={ShoppingBasket}
+                onClick={(event) => handleNav(event, "/cashier/misc-items")}
               />
             </div>
           </div>
-        )}
 
-        {/* Placeholder when no customer selected */}
-        {!customerId && (
-          <div className="mx-1 px-4 py-4 rounded-xl bg-gray-50 border border-dashed border-gray-200 text-center">
-            <UserCircle2 className="w-7 h-7 text-gray-300 mx-auto mb-1.5" />
-            <p className="text-xs text-gray-400 font-medium">
-              No customer selected
-            </p>
-            <p className="text-[10px] text-gray-300 mt-0.5">
-              Select a customer to see their actions
-            </p>
-          </div>
-        )}
-      </nav>
+          {/* Customer section — only when a customer is selected */}
+          {customerId && (
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.08em] px-3 mb-1">
+                Current Customer
+              </p>
 
-      {/* Profile + Logout */}
-      <div className="shrink-0 border-t border-gray-100 pt-3 mt-3 space-y-1">
-        <Link
-          href="#"
-          onClick={onNav}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full"
-        >
-          <Avatar className="h-8 w-8 shrink-0">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback className="text-xs bg-emerald-100 text-emerald-700 font-semibold">
-              CS
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-800 leading-tight">
-              Profile
-            </p>
-            <p className="text-xs text-gray-400 leading-tight">Cashier</p>
+              {/* Customer identity chip */}
+              <Link
+                href={`/cashier/customer/${customerId}`}
+                onClick={(event) =>
+                  handleNav(event, `/cashier/customer/${customerId}`)
+                }
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50/60 transition-colors mb-1"
+              >
+                <Avatar className="h-8 w-8 shrink-0 ring-2 ring-emerald-200">
+                  <AvatarImage
+                    src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
+                  />
+                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-xs">
+                    {(customerData?.name ?? "U").slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 truncate">
+                    {customerData?.name ?? "Customer"}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    #{customerId.slice(-6).toUpperCase() ?? "Couldn't find ID"}
+                  </p>
+                </div>
+              </Link>
+
+              <div className="space-y-0.5">
+                <NavItem
+                  href={`/cashier/customer/${customerId}/cart`}
+                  label="Cart"
+                  icon={ShoppingCartIcon}
+                  badge={customerData?.cartCount}
+                  onClick={(event) =>
+                    handleNav(event, `/cashier/customer/${customerId}/cart`)
+                  }
+                />
+                <NavItem
+                  href={`/cashier/customer/${customerId}/orders`}
+                  label="Orders"
+                  icon={Package}
+                  onClick={(event) =>
+                    handleNav(event, `/cashier/customer/${customerId}/orders`)
+                  }
+                />
+                <NavItem
+                  href={`/cashier/customer/${customerId}/products`}
+                  label="Products"
+                  icon={ShoppingBag}
+                  onClick={(event) =>
+                    handleNav(event, `/cashier/customer/${customerId}/products`)
+                  }
+                />
+                <NavItem
+                  href={`/cashier/customer/${customerId}/wallet`}
+                  label="Wallet"
+                  icon={Wallet}
+                  onClick={(event) =>
+                    handleNav(event, `/cashier/customer/${customerId}/wallet`)
+                  }
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Placeholder when no customer selected */}
+          {!customerId && (
+            <div className="mx-1 px-4 py-4 rounded-xl bg-gray-50 border border-dashed border-gray-200 text-center">
+              <UserCircle2 className="w-7 h-7 text-gray-300 mx-auto mb-1.5" />
+              <p className="text-xs text-gray-400 font-medium">
+                No customer selected
+              </p>
+              <p className="text-[10px] text-gray-300 mt-0.5">
+                Select a customer to see their actions
+              </p>
+            </div>
+          )}
+        </nav>
+
+        {/* Profile + Logout */}
+        <div className="shrink-0 border-t border-gray-100 pt-3 mt-3 space-y-1">
+          <Link
+            href="#"
+            onClick={(event) => handleNav(event, "#")}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full"
+          >
+            <Avatar className="h-8 w-8 shrink-0">
+              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarFallback className="text-xs bg-emerald-100 text-emerald-700 font-semibold">
+                CS
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-800 leading-tight">
+                Profile
+              </p>
+              <p className="text-xs text-gray-400 leading-tight">Cashier</p>
+            </div>
+          </Link>
+          <div className="px-1">
+            <LogoutButton />
           </div>
-        </Link>
-        <div className="px-1">
-          <LogoutButton />
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

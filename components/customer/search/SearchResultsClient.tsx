@@ -46,7 +46,6 @@ import CartInsightBar from "@/components/cashier/CartInsightsBar";
 import { emitCartUpdated, onCartUpdated } from "@/lib/cartEvent";
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { useSearchParams } from "next/navigation";
-import AddMiscItemModal from "@/components/cashier/AddMiscItem";
 import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
 
 interface SearchResultsClientProps {
@@ -387,7 +386,6 @@ export function SearchResultsClient({
         cartCount={cartCount}
         upcMode={upcMode}
       />
-      
 
       {/* Cart insight + UPC toggle — cashier only, always visible */}
       {customerId && (
@@ -400,26 +398,24 @@ export function SearchResultsClient({
           />
           <div className="flex justify-between items-center">
             <button
-            onClick={() => setUpcMode((v) => !v)}
-            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all w-fit ${
-              upcMode
-                ? "bg-green-600 text-white border-green-600 shadow-sm"
-                : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
-            }`}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`}
-            />
-            {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
-          </button>
-          <AddMiscItemModalTrigger customerId={customerId || ""}/>
+              onClick={() => setUpcMode((v) => !v)}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all w-fit ${
+                upcMode
+                  ? "bg-green-600 text-white border-green-600 shadow-sm"
+                  : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`}
+              />
+              {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
+            </button>
+            <AddMiscItemModalTrigger customerId={customerId || ""} />
           </div>
-          
         </div>
       )}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-
         <div className="flex gap-6">
           {/* ── Desktop sidebar ── */}
           {hasSearched && allResults.length > 0 && !customerId && (

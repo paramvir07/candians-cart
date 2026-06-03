@@ -39,10 +39,7 @@ export default async function RootLayout({ children, params }: Props) {
             cartCount={cartCount ?? 0}
           />
         </div>
-        {/* Page content */}
-        {/* <div className="flex-1 p-6 md:pl-20"> */}
           {children}
-          {/* </div> */}
       </TooltipProvider>
     </>
   );
