@@ -34,8 +34,8 @@ export function TopUpDialog({
 }: {
   customerId?: string;
   userRole?: string;
-  cartTotal: number;
-  WalletBalance: number;
+  cartTotal?: number;
+  WalletBalance?: number;
 }) {
   const adminRole = userRole === "admin";
   const isCashier = !!customerId && !adminRole;
@@ -64,7 +64,7 @@ export function TopUpDialog({
     (cashReceived !== null && amount !== null && cashReceived >= amount);
 
   // exact amount owed in dollars (both cartTotal and WalletBalance are in cents)
-  const exactOwedCents = Math.max(cartTotal - WalletBalance, 0);
+  const exactOwedCents = Math.max((cartTotal ?? 0) - (WalletBalance ?? 0), 0);
   const exactOwedDollars = exactOwedCents / 100;
 
   const handlePreset = (preset: number) => {
