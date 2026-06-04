@@ -29,13 +29,17 @@ type Step = "amount" | "confirm";
 export function TopUpDialog({
   customerId,
   userRole,
+  cartTotal,
+  WalletBalance,
 }: {
   customerId?: string;
   userRole?: string;
+  cartTotal: number;
+  WalletBalance: number;
 }) {
   const adminRole = userRole === "admin";
   const isCashier = !!customerId && !adminRole;
-  const needsConfirmation = adminRole || isCashier; // admin or cashier
+  const needsConfirmation = adminRole || isCashier;
 
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("amount");
@@ -58,6 +62,10 @@ export function TopUpDialog({
   const cashReceivedIsValid =
     !isCashPayment ||
     (cashReceived !== null && amount !== null && cashReceived >= amount);
+
+  // exact amount owed in dollars (both cartTotal and WalletBalance are in cents)
+  const exactOwedCents = Math.max(cartTotal - WalletBalance, 0);
+  const exactOwedDollars = exactOwedCents / 100;
 
   const handlePreset = (preset: number) => {
     setAmount(preset);
@@ -94,15 +102,12 @@ export function TopUpDialog({
     setTimeout(() => setStep("amount"), 200);
   };
 
-  // Called when user clicks the primary CTA on step 1
   const handleProceed = () => {
     if (!amount) return;
-
     if (!cashReceivedIsValid) {
       toast.error("Cash received must be at least the top-up amount.");
       return;
     }
-
     if (needsConfirmation) {
       setStep("confirm");
     } else {
@@ -112,7 +117,6 @@ export function TopUpDialog({
 
   const handleCheckout = async () => {
     if (!amount) return;
-
     if (!cashReceivedIsValid) {
       toast.error("Cash received must be at least the top-up amount.");
       return;
@@ -179,7 +183,8 @@ export function TopUpDialog({
         className="sm:max-w-sm p-0 overflow-hidden gap-0 border-0"
         style={{
           borderRadius: "24px",
-          boxShadow: "0 32px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06)",
+          boxShadow:
+            "0 32px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06)",
         }}
       >
         <DialogTitle className="sr-only">Top Up Wallet</DialogTitle>
@@ -271,7 +276,7 @@ export function TopUpDialog({
                 Quick Select
               </p>
               <div className="grid grid-cols-4 gap-2">
-                {PRESETS.map((preset) => {
+                {PRESETS.filter((p) => p !== 250).map((preset) => {
                   const isSelected =
                     amount === preset && inputVal === String(preset);
                   return (
@@ -297,6 +302,61 @@ export function TopUpDialog({
                     </button>
                   );
                 })}
+
+              {exactOwedCents > 0 ? (() => {
+                const isExactSelected = amount === exactOwedDollars && inputVal === String(exactOwedDollars);
+                return (
+                  <button
+                    onClick={() => handlePreset(exactOwedDollars)}
+                    className="rounded-xl py-2.5 transition-all active:scale-95 flex flex-col items-center justify-center gap-0.5 relative overflow-hidden"
+                    style={{
+                      background: isExactSelected
+                        ? "var(--color-primary)"
+                        : "color-mix(in srgb, var(--color-primary) 10%, transparent)",
+                      color: isExactSelected
+                        ? "var(--color-primary-foreground)"
+                        : "var(--color-primary)",
+                      fontWeight: 700,
+                      fontSize: "11px",
+                      lineHeight: 1.2,
+                      border: isExactSelected
+                        ? "1.5px solid var(--color-primary)"
+                        : "1.5px solid color-mix(in srgb, var(--color-primary) 35%, transparent)",
+                      transform: isExactSelected ? "scale(1.04)" : "scale(1)",
+                      boxShadow: isExactSelected ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+                    }}
+                  >
+                    <span style={{ fontSize: "12px", fontWeight: 800, letterSpacing: "-0.3px" }}>
+                      ${exactOwedDollars.toFixed(2)}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "9px",
+                        fontWeight: 600,
+                        letterSpacing: "0.04em",
+                        textTransform: "uppercase",
+                        opacity: isExactSelected ? 0.75 : 0.55,
+                      }}
+                    >
+                      exact
+                    </span>
+                  </button>
+                );
+              })() : (
+                <button
+                  onClick={() => handlePreset(250)}
+                  className="rounded-xl py-2.5 text-sm transition-all active:scale-95"
+                  style={{
+                    background: amount === 250 && inputVal === "250" ? "var(--color-primary)" : "var(--color-secondary)",
+                    color: amount === 250 && inputVal === "250" ? "var(--color-primary-foreground)" : "var(--color-secondary-foreground)",
+                    fontWeight: amount === 250 && inputVal === "250" ? 700 : 500,
+                    transform: amount === 250 && inputVal === "250" ? "scale(1.04)" : "scale(1)",
+                    boxShadow: amount === 250 && inputVal === "250" ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+                  }}
+                >
+                  $250
+                </button>
+              )}
               </div>
             </div>
 
@@ -330,7 +390,6 @@ export function TopUpDialog({
                   >
                     $
                   </span>
-
                   <input
                     type="number"
                     min={amount ?? 0}
@@ -350,7 +409,6 @@ export function TopUpDialog({
                     <span style={{ color: "var(--color-muted-foreground)" }}>
                       Change due
                     </span>
-
                     <span
                       className="font-bold"
                       style={{
@@ -480,7 +538,6 @@ export function TopUpDialog({
               {isCashPayment && (
                 <>
                   <Separator style={{ opacity: 0.15 }} />
-
                   <div className="flex items-center justify-between">
                     <span
                       className="text-sm"
@@ -488,7 +545,6 @@ export function TopUpDialog({
                     >
                       Cash received
                     </span>
-
                     <span
                       className="text-sm font-semibold"
                       style={{ color: "var(--color-foreground)" }}
@@ -496,7 +552,6 @@ export function TopUpDialog({
                       ${cashReceived?.toFixed(2)}
                     </span>
                   </div>
-
                   <div className="flex items-center justify-between">
                     <span
                       className="text-sm"
@@ -504,7 +559,6 @@ export function TopUpDialog({
                     >
                       Change due
                     </span>
-
                     <span
                       className="text-lg font-bold"
                       style={{ color: "var(--color-primary)" }}
@@ -586,16 +640,6 @@ export function TopUpDialog({
               )}
             </Button>
 
-            {/* <Button
-              variant="ghost"
-              disabled={loading}
-              onClick={() => setStep("amount")}
-              className="w-full rounded-2xl font-medium"
-              style={{ color: "var(--color-muted-foreground)" }}
-            >
-              <ArrowLeft size={14} className="mr-1.5" />
-              {adminRole ? "Cancel" : "Change method"}
-            </Button> */}
             <div className="flex gap-2">
               {!adminRole && (
                 <Button

@@ -50,34 +50,44 @@ export const createMiscProduct = async (data: MiscItemFormData, customerId: stri
 
         const UPC = data.primaryUPC?.trim() || undefined;
 
-        const MiscProduct = await MiscellaneousItemsModel.create({
-            storeId: StoreId,
-            price: data.price,
-            productName: data.productName,
-            primaryUPC: UPC,
-            tax: data.tax,
-        });
-        if (!MiscProduct) return { success: false, message: "Error creating Misc product" };
+        let miscItem: mongoose.Document & { _id: mongoose.Types.ObjectId; price: number; tax: number };
 
-        // const UserCart = await getCart(customerId);
-        // if (!UserCart) return { success: false, message: "Cart not found" };
+        if (UPC) {
+            const existingProduct = await MiscellaneousItemsModel.findOne({ primaryUPC: UPC });
+            if (existingProduct) {
+                miscItem = existingProduct;
+            }
+        }
+
+        if (!miscItem!) {
+            const newProduct = await MiscellaneousItemsModel.create({
+                storeId: StoreId,
+                price: data.price,
+                productName: data.productName,
+                primaryUPC: UPC,
+                tax: data.tax,
+            });
+            if (!newProduct) return { success: false, message: "Error creating Misc product" };
+            miscItem = newProduct;
+        }
 
         await CartModel.findOneAndUpdate(
-            { customerId:user.customerData._id },
+            { customerId: user.customerData._id },
             {
                 $push: {
                     miscItems: {
-                        itemId: MiscProduct._id,
+                        itemId: miscItem._id,
                         quantity: data.quantity,
-                        priceAtAdd: MiscProduct.price,
-                        taxAtAdd:MiscProduct.tax,
+                        priceAtAdd: miscItem.price,
+                        taxAtAdd: miscItem.tax,
                     },
                 },
             },
-            {upsert:true, returnDocument:'after'}
+            { upsert: true, returnDocument: "after" }
         );
-        revalidatePath(`/cashier/customer/${user.customerData._id}/cart`)
-        revalidatePath("/customer/cart")
+
+        revalidatePath(`/cashier/customer/${user.customerData._id}/cart`);
+        revalidatePath("/customer/cart");
         return { success: true, message: "Misc Item added" };
     } catch (err) {
         console.log(err);

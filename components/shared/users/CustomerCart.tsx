@@ -77,7 +77,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   ]);
 
   const giftWalletBalance = UserData?.giftWalletBalance ?? 0;
-  const items = CartItems?.items as ICartItem[] | null;
+  const items = (CartItems?.items as ICartItem[] | null)
+  ?.slice()
+  .sort((a, b) => Number(a.productId.subsidised) - Number(b.productId.subsidised)) ?? [];
   const subItems = (CartItems?.subItems as ISubsidyItems[]) ?? [];
   const MiscItems = (CartItems?.miscItems as IMiscCartItem[]) ?? [];
   const subItemProductIds = subItems.map((s) => s.productId._id.toString());
@@ -302,7 +304,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </span>
             {fmt(UserData?.walletBalance ?? 0)}
           </p>
-          <TopUpDialog customerId={customerId} />
+          <TopUpDialog customerId={customerId} cartTotal={totals.total} WalletBalance={UserData?.walletBalance ?? 0} />
         </CardContent>
       </Card>
 
