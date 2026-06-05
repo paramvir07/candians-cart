@@ -3,7 +3,7 @@ import { z } from "zod";
 export const createReferralCodeSchema = z.object({
   code: z
     .string()
-    .min(10, "Code must be at least 10 characters")
+    .min(8, "Code must be at least 8 characters")
     .max(12, "Code must be at most 12 characters")
     .transform((v) => v.trim().toUpperCase()),
 

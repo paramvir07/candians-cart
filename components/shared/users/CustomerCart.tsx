@@ -24,7 +24,7 @@ import ProgressBarCart, {
 } from "@/components/customer/products/ProgressBarCart";
 import { ICartItem } from "@/types/customer/CustomerCart";
 import Navbar from "@/components/customer/landing/Navbar";
-import CheckoutActions from "./CheckOutActions";TopUpDialog
+import CheckoutActions from "./CheckOutActions";
 import { SubsidyItemsSection } from "@/components/customer/products/SubsidyItemsSection";
 import { IMiscCartItem, ISubsidyItems } from "@/db/models/customer/cart.model";
 import { AddtoSubsidyBtn } from "@/components/customer/products/CartActionBtns";

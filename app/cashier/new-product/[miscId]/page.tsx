@@ -78,8 +78,8 @@ function buildDefaultForm(item: MiscItem): ProductFormData {
     miscItemId: item._id,
     name: item.productName,
     primaryUPC: item.primaryUPC?.trim() ?? "",
-    price: (item.price / 100).toFixed(2),
-    finalPrice: "",
+    price: "",
+finalPrice: (item.price / 100).toFixed(2),
     description: "",
     category: "",
     markup: "",
@@ -299,8 +299,12 @@ export default function NewProductPage() {
     if (!form!.category) next.category = "Category is required";
     const markup = parseFloat(form!.markup);
     if (!form!.markup || isNaN(markup) || markup < 0) next.markup = "Enter a valid markup %";
-    const price = parseFloat(form!.price);
-    if (!form!.price || isNaN(price) || price <= 0) next.price = "Price must be greater than zero";
+const price = parseFloat(form!.price);
+const finalPrice = parseFloat(form!.finalPrice);
+
+if ((!form!.price || isNaN(price) || price <= 0) && (!form!.finalPrice || isNaN(finalPrice) || finalPrice <= 0)) {
+  next.price = "Enter either base price or final price";
+}
     if (form!.isMeasuredInWeight && !form!.UOM.trim()) next.UOM = "Unit of measurement is required when measured by weight";
 
     setFormErrors(next);
@@ -340,7 +344,7 @@ export default function NewProductPage() {
         markup: parseFloat(form!.markup),
         tax: parseFloat(form!.tax),
         disposableFee: form!.disposableFee ? Math.round(parseFloat(form!.disposableFee) * 100) : 0,
-        price: Math.round(parseFloat(form!.price) * 100),
+        price: Math.round(parseFloat(form!.finalPrice || form!.price) * 100),
         stock: form!.stock,
         subsidised: form!.subsidised,
         isFeatured: form!.isFeatured,

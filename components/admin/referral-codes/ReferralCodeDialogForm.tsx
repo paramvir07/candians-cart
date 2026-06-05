@@ -118,7 +118,7 @@ export function ReferralCodeDialogForm({
                   name={create ? "code" : "code_display"}
                   placeholder="e.g. WELCOME2024"
                   required
-                  minLength={10}
+                  minLength={8}
                   maxLength={12}
                   disabled={update}
                   defaultValue={create ? code : data?.code}
