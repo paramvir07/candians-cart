@@ -17,25 +17,32 @@ export async function proxy(request: NextRequest) {
   });
 
   if (!session) {
-    if (pathname.startsWith("/admin")) return NextResponse.redirect(new URL("/admin/login", request.url));
-    if (pathname.startsWith("/cashier")) return NextResponse.redirect(new URL("/cashier/login", request.url));
-    if (pathname.startsWith("/store")) return NextResponse.redirect(new URL("/store/login", request.url));
+    if (pathname.startsWith("/admin"))
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    if (pathname.startsWith("/cashier"))
+      return NextResponse.redirect(new URL("/cashier/login", request.url));
+    if (pathname.startsWith("/store"))
+      return NextResponse.redirect(new URL("/store/login", request.url));
     return NextResponse.redirect(new URL("/customer/login", request.url));
   }
 
   const role = session.user.role as string;
   const home = ROLE_HOME[role];
 
-  if (pathname.startsWith("/customer") && role !== "customer") return NextResponse.redirect(new URL(home, request.url));
-  if (pathname.startsWith("/admin") && role !== "admin") return NextResponse.redirect(new URL(home, request.url));
-  if (pathname.startsWith("/cashier") && role !== "cashier") return NextResponse.redirect(new URL(home, request.url));
-  if (pathname.startsWith("/store") && role !== "store") return NextResponse.redirect(new URL(home, request.url));
+  if (pathname.startsWith("/customer") && role !== "customer")
+    return NextResponse.redirect(new URL(home, request.url));
+  if (pathname.startsWith("/admin") && role !== "admin")
+    return NextResponse.redirect(new URL(home, request.url));
+  if (pathname.startsWith("/cashier") && role !== "cashier")
+    return NextResponse.redirect(new URL(home, request.url));
+  if (pathname.startsWith("/store") && role !== "store")
+    return NextResponse.redirect(new URL(home, request.url));
 
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    "/((?!$|api/auth|store/login|admin/login|customer/login|cashier/login|customer/signup|partner-access|about|contact|terms|careers|privacy|forgot-password|reset-password|_next|favicon.ico|icon.png|apple-icon.png|api/stripe/webhook).*)",
+    "/((?!$|api/auth|store/login|admin/login|customer/login|cashier/login|customer/signup|partner-access|about|contact|terms|careers|privacy|forgot-password|reset-password|_next|favicon.ico|icon.png|apple-icon.png|api/stripe/webhook|sitemap\\.xml|robots\\.txt|google0e73eb402c7f3d0e\\.html).*)",
   ],
 };
