@@ -89,7 +89,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const itemTotals = items.reduce(
     (acc, item) => {
-      const { afterMarkup, gst, pst, totalTax, disposable, lineTotal } =
+      const { afterMarkup, gst, pst, totalTax, disposable, lineTotal, markup } =
         calcLine(item);
       acc.subtotal += afterMarkup;
       acc.gst += gst;
@@ -97,10 +97,19 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       acc.totalTax += totalTax;
       acc.disposable += disposable;
       acc.total += lineTotal;
+      acc.totalMarkup += markup;
       return acc;
     },
-    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
+    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0, totalMarkup: 0 },
   );
+  const nonSubsidisedMarkup = items.reduce((acc, item) => {
+    if (item.productId.subsidised) return acc;
+    return acc + calcLine(item).markup;
+  }, 0);
+
+  // console.log("Total Markup : ",nonSubsidisedMarkup)
+  const newSubisdyCalc = nonSubsidisedMarkup*0.6;
+  // console.log("Subsidy given:", (nonSubsidisedMarkup * 0.6)/100);
 
   const progressTotal = items.reduce(
     (acc, item) => {
@@ -220,7 +229,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const MarkupSub = markupBase * (active / 100);
   const subsidyOnOrder = Math.floor(MarkupSub * 0.6); // Subsidy is 60% of the calculated markup based on the active fib bracket
   const TotalSubsidy = Number(
-    ((subsidyOnOrder + giftWalletBalance) / 100).toFixed(2),
+    ((newSubisdyCalc + giftWalletBalance) / 100).toFixed(2),
   );
   const totalItemCount = items.length + subItems.length;
 
@@ -387,7 +396,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       </div>
       <TaxRows />
       <DisposableRow />
-      <SubsidyCart subsidy={subsidyOnOrder} total={totals.total} />
+      <SubsidyCart subsidy={newSubisdyCalc} total={totals.total} />
       <Separator className="my-1" />
       <div className="flex justify-between items-center gap-4 pt-0.5">
         <span className="font-semibold text-foreground shrink-0">Total</span>
@@ -452,7 +461,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 giftWalletBalance={giftWalletBalance}
                 totalMarkup={totalActiveMarkup}
                 Totalsubsidy={TotalSubsidy}
-                SubsidyonOrder={subsidyOnOrder}
+                SubsidyonOrder={Math.round(newSubisdyCalc)}
                 subItemIds={subItemProductIds}
               />
             </CardContent>
@@ -676,7 +685,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 giftWalletBalance={giftWalletBalance}
                 totalMarkup={totalActiveMarkup}
                 Totalsubsidy={TotalSubsidy}
-                SubsidyonOrder={subsidyOnOrder}
+                SubsidyonOrder={Math.round(newSubisdyCalc)}
                 subItemIds={subItemProductIds}
               />
             </CardContent>

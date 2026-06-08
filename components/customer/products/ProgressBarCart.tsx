@@ -74,6 +74,9 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
   return (
     <>
       <div className="relative w-full">
+        <span className="inline-flex mb-3 items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-bold tabular-nums text-primary">
+          CA${amount.toFixed(2)}
+        </span>
         <div className="relative flex justify-between items-end mb-2.5 px-0.5">
           <span className="text-[11px] font-semibold tracking-widest uppercase text-muted-foreground">
             ${prev}
