@@ -2,7 +2,9 @@ import { z } from "zod";
 
 export const CustomerSchema = z.object({
   name: z.string().min(1, "Name is Required"),
-  email: z.email("Invalid email address").transform((v) => v.trim().toLowerCase()),
+  email: z
+    .email("Invalid email address")
+    .transform((v) => v.trim().toLowerCase()),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -14,10 +16,12 @@ export const CustomerSchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   province: z.string().min(1, "Province is required"),
-mobile: z
-  .string()
-  .transform((v) => v.replace(/\D/g, ""))
-  .pipe(z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits")),
+  mobile: z
+    .string()
+    .transform((v) => v.replace(/\D/g, ""))
+    .pipe(
+      z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits"),
+    ),
 
   monthlyBudget: z.coerce
     .number()
@@ -25,7 +29,7 @@ mobile: z
   associatedStore: z.string().min(1, "Store is Required"),
   referralCode: z
     .string()
-    .min(10, "Code must be at least 10 characters")
+    .min(8, "Code must be at least 8 characters")
     .max(12, "Code must be at most 12 characters")
     .transform((v) => v.trim().toUpperCase()),
 });

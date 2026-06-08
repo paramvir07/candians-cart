@@ -353,7 +353,7 @@ export default function Terms() {
             </div>
             <div>
               <h1 className="font-bold text-gray-900 text-[15px] sm:text-base leading-none">
-                Terms of Service
+                Terms & Conditions
               </h1>
               <p className="text-[11px] text-gray-400 mt-0.5 hidden sm:block tracking-wide">
                 Effective Date: 19 May 2026 · British Columbia, Canada
