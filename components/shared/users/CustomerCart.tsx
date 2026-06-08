@@ -108,7 +108,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   }, 0);
 
   // console.log("Total Markup : ",nonSubsidisedMarkup)
-  const newSubisdyCalc = nonSubsidisedMarkup*0.6;
+  let newSubisdyCalc = 0
   // console.log("Subsidy given:", (nonSubsidisedMarkup * 0.6)/100);
 
   const progressTotal = items.reduce(
@@ -128,6 +128,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const { prev, current, mid } = getFibBracketFrom21(totalInDollars);
   const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
 
+  
+  if(prev>=21){
+    newSubisdyCalc = nonSubsidisedMarkup*0.6;
+  }
   const activeMarkup = (() => {
     if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
       return avgMarkup;
