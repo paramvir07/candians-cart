@@ -21,8 +21,8 @@ const LINKS = {
   Company: [
     { label: "About Us", href: "/about" },
     { label: "Contact", href: "/contact" },
-    { label: "Terms", href: "/terms" },
-    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms & Conditions", href: "/terms-and-conditions" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
     { label: "Careers", href: "/careers"},
   ],
 };
@@ -138,17 +138,6 @@ export function Footer() {
             <p className="text-xs text-muted-foreground">
               © {new Date().getFullYear()}{" "}Canadian&apos;s Cart. All rights reserved.
             </p>
-            {/* <div className="flex items-center gap-4">
-              {["Privacy Policy", "Terms of Service"].map((t) => (
-                <Link
-                  key={t}
-                  href="#"
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
-                >
-                  {t}
-                </Link>
-              ))}
-            </div> */}
           </div>
         </div>
       </div>

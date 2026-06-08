@@ -40,5 +40,5 @@
 ## Legal & Platform Information
 - [About Us](/about) - Learn more about the Candian Cart mission, vision, and team.
 - [Careers](/careers) - Explore current job opportunities to join the Candian Cart team.
-- [Terms of Service](/terms) - The rules, guidelines, and terms for using the platform.
-- [Privacy Policy](/privacy) - Detailed information on how your data is collected, handled, and protected.
+- [Terms & Conditions](/terms-and-conditions) - The rules, guidelines, and terms for using the platform.
+- [Privacy Policy](/privacy-policy) - Detailed information on how your data is collected, handled, and protected.

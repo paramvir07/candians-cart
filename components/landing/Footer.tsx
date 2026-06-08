@@ -29,8 +29,8 @@ const FOOTER_LINKS: Record<
   Support: [
     { label: "Contact Us", href: "/contact" },
     { label: "FAQ", href: "/#faq", scrollTo: "faq", scrollPage: "/" },
-    { label: "Terms and conditions", href: "/terms" },
-    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms & Conditions", href: "/terms-and-conditions" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
   ],
   Tools: [
     {

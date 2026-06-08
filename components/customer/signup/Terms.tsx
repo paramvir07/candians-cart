@@ -6,8 +6,12 @@ import { stepAtom } from "@/atoms/customer/signUp";
 import { useState } from "react";
 
 const POLICY_LINKS = [
-  { href: "/terms", label: "Terms of Service", key: "terms" },
-  { href: "/privacy", label: "Privacy Policy", key: "privacy" },
+  {
+    href: "/terms-and-conditions",
+    label: "Terms & Conditions",
+    key: "terms",
+  },
+  { href: "/privacy-policy", label: "Privacy Policy", key: "privacy" },
 ];
 
 const Terms = () => {
@@ -23,24 +27,20 @@ const Terms = () => {
     <div className="w-full space-y-4">
       {/* Terms text */}
       <div className="w-full rounded-xl border border-border/60 bg-muted/30 overflow-hidden">
-<div className="px-4 py-3.5 text-xs text-muted-foreground leading-relaxed space-y-2">
-  <p>
-    By using Canadian&apos;s Cart, you agree to our Terms of Service and Privacy
-    Policy.
-  </p>
+        <div className="px-4 py-3.5 text-xs text-muted-foreground leading-relaxed space-y-2">
+          <p>
+            By using Canadian&apos;s Cart, you agree to our Terms & Conditions and
+            Privacy Policy.
+          </p>
 
-  <p>
-    Your selected store is generally final after registration.
-  </p>
+          <p>Your selected store is generally final after registration.</p>
 
-  <p>
-    Subsidies and promotions may have eligibility rules or limits.
-  </p>
+          <p>Subsidies and promotions may have eligibility rules or limits.</p>
 
-    <p className="text-[12px] font-semibold">
-    Please review the Terms of Service and Privacy Policy below.
-  </p>
-</div>
+          <p className="text-[12px] font-semibold">
+            Please review the Terms & Conditions and Privacy Policy below.
+          </p>
+        </div>
 
         {/* Policy links with checkboxes */}
         <div className="border-t border-border/60 px-4 py-3 space-y-2 bg-card/40">
