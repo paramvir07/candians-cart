@@ -39,7 +39,7 @@ export function ReferralCodeForm() {
 
   const charCount = value.length;
   const maxLength = 12;
-  const minLength = 10;
+  const minLength = 8;
   const isReady = charCount >= minLength;
 
   return (

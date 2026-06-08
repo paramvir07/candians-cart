@@ -35,6 +35,9 @@ export const metadata: Metadata = {
     default: "Canadian's Cart",
     template: "%s | CC",
   },
+  verification: {
+    google: "K1hJenaTamdZ3ahQkaJ8SiM3Ou8qOilAeRNlKlDy1ec",
+  },
   description:
     "Purchase items and save up to 30% on everyday groceries — subsidised exclusively for Canadian families.",
   keywords: [
