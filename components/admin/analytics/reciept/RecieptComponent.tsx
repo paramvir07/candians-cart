@@ -445,12 +445,25 @@ export default function RecieptComponent({
                             </div>
 
                             {/* --- FIXED: Platform Breakdown UI --- */}
-                            <Separator className="my-2 bg-primary/20" />
-                            <div className="flex justify-between items-center text-sm font-medium text-slate-700">
-                              <span>Platform Markup Tax</span>
-                              <span>{fmt(r.platformMarkuptax)}</span>
+                            <Separator className="my-2 bg-primary/10" />
+                            <div className="space-y-1 pt-1">
+                              <div className="flex justify-between items-center text-sm font-medium text-slate-700">
+                                <span>Platform Markup Tax</span>
+                                <span>{fmt(r.platformMarkuptax)}</span>
+                              </div>
+                              {/* Left border creates a clean nested tree look */}
+                              <div className="pl-3 border-l-2 border-muted-foreground/20 ml-1 space-y-1.5 mt-1">
+                                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                  <span>GST Portion</span>
+                                  <span>{fmt(r.platformMarkupGSTTax)}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                  <span>PST Portion</span>
+                                  <span>{fmt(r.platformMarkupPSTTax)}</span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex justify-between items-center text-sm font-medium text-blue-700">
+                            <div className="flex justify-between items-center text-sm font-medium text-blue-700 mt-2">
                               <span>Platform Profit</span>
                               <span>{fmt(r.platformProfit)}</span>
                             </div>

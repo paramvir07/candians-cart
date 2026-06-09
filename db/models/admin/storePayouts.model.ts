@@ -15,7 +15,6 @@ export interface IStorePayout {
   storebasetaxGST: number;
   storebasetaxPST: number;
   storeMarkupTax: number;
-  platformMarkuptax: number;
   totalSubsidy: number;
   totalDisposableFee: number;
   storeFixedValue: number;
@@ -24,6 +23,8 @@ export interface IStorePayout {
   totalWalletTopUpCashCollected: number;
   totalOrderCashCollected: number;
   totalCashCollected: number;
+  platformMarkupGSTTax: number;
+  platformMarkupPSTTax: number;
   platformProfit: number;
   platformCommision: number;
   status: "pending" | "paid";
@@ -102,10 +103,6 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       type: Number,
       required: true,
     },
-    platformMarkuptax: {
-      type: Number,
-      required: true,
-    },
     totalSubsidy: {
       type: Number,
       default: 0,
@@ -138,6 +135,14 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
     totalCashCollected: {
       type: Number,
       default: 0,
+    },
+    platformMarkupGSTTax: {
+      type: Number,
+      required: true,
+    },
+    platformMarkupPSTTax: {
+      type: Number,
+      required: true,
     },
     platformProfit: {
       type: Number,

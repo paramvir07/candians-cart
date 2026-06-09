@@ -42,6 +42,8 @@ export interface AggregatedReciept {
   grossMargin: number;
   storeProfit: number;
   storePayout: number;
+  platformMarkupGSTTax: number;
+  platformMarkupPSTTax: number;
   platformProfit: number;
   platformCommision: number;
   totalWalletTopUpCashCollected: number;
@@ -263,15 +265,15 @@ export async function getRecieptDataByDateRange(
         }
       });
 
-      console.log(
-        "Misc Data: ",
-        miscBaseAdjustment,
-        miscTaxGSTAdjustment,
-        miscTaxPSTAdjustment,
-        miscDisposableAdjustment,
-        "Old Misc generic total",
-        oldMiscGenericTotal,
-      );
+      // console.log(
+      //   "Misc Data: ",
+      //   miscBaseAdjustment,
+      //   miscTaxGSTAdjustment,
+      //   miscTaxPSTAdjustment,
+      //   miscDisposableAdjustment,
+      //   "Old Misc generic total",
+      //   oldMiscGenericTotal,
+      // );
 
       // Ensure all raw values are cleanly rounded to integers (cents)
       const totalCustomerPaid = Math.round(receipt.totalCustomerPaid);
@@ -308,6 +310,12 @@ export async function getRecieptDataByDateRange(
       // Markup tax is simply the remainder of the total tax
       const markupTax = totalTax - baseTax;
       const platformMarkuptax = markupTax;
+
+      // Breaking up the total platform markup tax
+      const gstPercentage = totalGST > 0 ? totalGST / totalTax : 0;
+      const platformMarkupGSTTax = Math.round(markupTax * gstPercentage);
+      const platformMarkupPSTTax = markupTax - platformMarkupGSTTax;
+
       const STORE_PROFIT_MARGIN = 0.5;
       const storeMarkupTax = Math.round(markupTax * STORE_PROFIT_MARGIN);
 
@@ -342,6 +350,8 @@ export async function getRecieptDataByDateRange(
         totalSubsidy,
         baseTax,
         markupTax,
+        platformMarkupGSTTax,
+        platformMarkupPSTTax,
         storebasetaxGST,
         storebasetaxPST,
         storeMarkupTax,

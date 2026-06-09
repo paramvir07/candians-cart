@@ -53,7 +53,8 @@ export async function saveStorePayoutAction(
       storebasetaxGST: receipt.storebasetaxGST,
       storebasetaxPST: receipt.storebasetaxPST,
       storeMarkupTax: receipt.storeMarkupTax,
-      platformMarkuptax: receipt.platformMarkuptax,
+      platformMarkupGSTTax: receipt.platformMarkupGSTTax,
+      platformMarkupPSTTax: receipt.platformMarkupPSTTax,
       totalDisposableFee: receipt.totalDisposableFee,
       storeFixedValue: receipt.storeFixedValue,
       storeProfit: receipt.storeProfit,
@@ -66,7 +67,7 @@ export async function saveStorePayoutAction(
       status: "pending",
     });
 
-    console.log("saved")
+    console.log("Payout Receipt Saved");
 
     return {
       success: true,
