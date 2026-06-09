@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Logo from "../shared/Logo";
+import PromotionBanner from "../promotions/PromotionsBanner";
+import { PromoStats } from "@/types/promotions/promo.types";
+import { motion } from "framer-motion";
 
 const TABS = [
   { icon: "🛒", label: "Order Online" },
@@ -108,10 +111,14 @@ const SAVINGS_ITEMS = [
 ];
 
 interface HeroSectionProps {
-  isLoggedIn?: boolean;
+  isLoggedIn: boolean;
+  initialPromoStats: PromoStats;
 }
 
-export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
+export default function HeroSection({
+  isLoggedIn,
+  initialPromoStats,
+}: HeroSectionProps) {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
@@ -303,6 +310,21 @@ export default function HeroSection({ isLoggedIn = false }: HeroSectionProps) {
             <span>🇨🇦 Family-exclusive access</span>
           </div>
         </div>
+        <motion.div
+          initial={{ opacity: 0, y: 24, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{
+            duration: 0.65,
+            delay: 0.55,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          className="mx-auto mb-6 w-full max-w-[min(92vw,760px)] sm:mt-7 lg:mt-8"
+        >
+          <PromotionBanner
+            initialStats={initialPromoStats}
+            variant="banner"
+          />
+        </motion.div>
 
         {/* ── TAB STRIP ── */}
         <div

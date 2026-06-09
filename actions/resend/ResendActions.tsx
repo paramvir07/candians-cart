@@ -129,13 +129,13 @@ export const SendReferralCode = async (data: ContactUsReferral) => {
     const response = await resend.emails.send({
       from:
         process.env.NODE_ENV === "development"
-          ? "Canadian's Cart <onboarding@resend.dev>"
-          : "Canadian's Cart <no-reply@canadianscart.ca>",
+          ? "Candian's Cart <onboarding@resend.dev>"
+          : "Candian's Cart <no-reply@canadianscart.ca>",
       to:
         process.env.NODE_ENV === "development"
           ? [process.env.DEV_EMAIL!]
           : [data.email],
-      subject: "🎟️ Your Canadian's Cart referral code is here",
+      subject: "🎟️ Your Candian's Cart referral code is here",
       html: await render(
         <ReferralCodeEmail
           recipientName={data.name}

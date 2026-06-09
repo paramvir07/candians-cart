@@ -490,6 +490,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               {items.map((item: ICartItem) => {
                 const { afterMarkup } = calcLine(item);
                 const hasImage = item.productId.images?.[0]?.url;
+                const isMeasuredInWeight = item.productId.isMeasuredInWeight;
                 return (
                   <div
                     key={item.productId._id.toString()}
@@ -517,7 +518,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                         <div className="min-w-0 flex-1">
                           <div>
                             <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2 flex gap-2 items-center">
-                              {item.productId.name}
+                              {item.productId.name}{isMeasuredInWeight && `/${item.productId.UOM?.toLowerCase()}`}
                               {item.productId?.PriceDrop ? (
                                 <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm w-fit">
                                   <BadgePercent
@@ -720,6 +721,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                   {items.map((item: ICartItem) => {
                     const { afterMarkup } = calcLine(item);
                     const hasImage = item.productId.images?.[0]?.url;
+                    const isMeasuredInWeight = item.productId.isMeasuredInWeight;
                     return (
                       <div
                         key={item.productId._id.toString()}
@@ -766,7 +768,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                             {" "}
                             {/* changed items-center to items-start */}
                             <p className="text-sm font-semibold text-foreground truncate flex-1 min-w-0">
-                              {item.productId.name}
+                              {item.productId.name}{isMeasuredInWeight && `/${item.productId.UOM?.toLowerCase()}`}
                             </p>
                             <p className="text-xs font-semibold text-muted-foreground">
                               {item.productId?.PriceDrop ? (
