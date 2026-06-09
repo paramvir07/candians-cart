@@ -7,6 +7,7 @@ export interface IStorePayout {
   totalNumberofOrders: number;
   orderIds: Types.ObjectId[];
   totalCustomerPaid: number;
+  totalBasePrice: number;
   totalGST: number;
   totalPST: number;
   totalTax: number;
@@ -68,6 +69,11 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       index: true,
     },
     totalCustomerPaid: {
+      type: Number,
+      required: true,
+    },
+    // This is the total base price of all items sold, before any taxes, fees, or discounts
+    totalBasePrice: {
       type: Number,
       required: true,
     },

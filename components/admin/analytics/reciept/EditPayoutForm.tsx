@@ -183,6 +183,10 @@ export default function EditPayoutForm({
             <span className="font-medium text-right">
               {format(new Date(initialData.endDate), "MMM dd, yyyy")}
             </span>
+            <span className="text-muted-foreground">Total Orders:</span>
+            <span className="font-medium text-right">
+              {initialData.totalNumberofOrders}
+            </span>
           </div>
 
           {/* Order Breakdown */}
@@ -196,24 +200,68 @@ export default function EditPayoutForm({
                 {formatCurrency(initialData.totalCustomerPaid)}
               </span>
 
-              <span className="text-muted-foreground">Total GST:</span>
+              <span className="text-muted-foreground">Total Base Price:</span>
               <span className="font-medium text-right">
-                {formatCurrency(initialData.totalGST)}
+                {formatCurrency(initialData.totalBasePrice)}
               </span>
 
-              <span className="text-muted-foreground">Total PST:</span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.totalPST)}
+              <div className="col-span-2 border-t my-1 border-dashed" />
+
+              {/* Detailed Tax Breakdown */}
+              <span className="text-muted-foreground">
+                Total Tax Collected:
               </span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.totalTax)}
+              </span>
+
+              <span className="text-muted-foreground ml-4">
+                - Base Tax (Total):
+              </span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.baseTax)}
+              </span>
+
+              <span className="text-muted-foreground ml-4">
+                - Markup Tax (Total):
+              </span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.markupTax)}
+              </span>
+
+              <div className="col-span-2 border-t my-1 border-dashed" />
+
+              <span className="text-muted-foreground">
+                Store Tax Liability:
+              </span>
+              <span className="font-medium text-right"></span>
+
+              <span className="text-muted-foreground ml-4">
+                - Store Base GST:
+              </span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.storebasetaxGST)}
+              </span>
+
+              <span className="text-muted-foreground ml-4">
+                - Store Base PST:
+              </span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.storebasetaxPST)}
+              </span>
+
+              <span className="text-muted-foreground ml-4">
+                - Store Markup Tax:
+              </span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.storeMarkupTax)}
+              </span>
+
+              <div className="col-span-2 border-t my-1 border-dashed" />
 
               <span className="text-muted-foreground">Disposable Fees:</span>
               <span className="font-medium text-right">
                 {formatCurrency(initialData.totalDisposableFee)}
-              </span>
-
-              <span className="text-muted-foreground">Store Markup Tax:</span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.storeMarkupTax)}
               </span>
 
               {initialData.totalSubsidy > 0 && (
@@ -247,27 +295,47 @@ export default function EditPayoutForm({
                 {formatCurrency(initialData.storeProfit)}
               </span>
 
+              <div className="col-span-2 border-t my-1 border-dashed" />
+
               <span className="text-muted-foreground">
-                Total Cash Collected (From Orders):
+                Cash Collected (Orders):
               </span>
               <span className="font-medium text-right text-red-500">
                 -{formatCurrency(initialData.totalOrderCashCollected || 0)}
               </span>
               <span className="text-muted-foreground">
-                Total Cash Collected (From Wallet Topups):
+                Cash Collected (Topups):
               </span>
               <span className="font-medium text-right text-red-500">
                 -
                 {formatCurrency(initialData.totalWalletTopUpCashCollected || 0)}
               </span>
 
-              <span className="text-muted-foreground">Cash Collected:</span>
-              <span className="font-medium text-right text-red-500">
+              <span className="font-medium">Net Cash Deducted:</span>
+              <span className="font-bold text-right text-red-600">
                 -{formatCurrency(initialData.totalCashCollected || 0)}
               </span>
 
-              <span className="text-muted-foreground">Platform Comm.:</span>
+              <div className="col-span-2 border-t my-1 border-dashed" />
+
+              <span className="text-muted-foreground">
+                Platform Markup GST:
+              </span>
               <span className="font-medium text-right">
+                {formatCurrency(initialData.platformMarkupGSTTax)}
+              </span>
+
+              <span className="text-muted-foreground">
+                Platform Markup PST:
+              </span>
+              <span className="font-medium text-right">
+                {formatCurrency(initialData.platformMarkupPSTTax)}
+              </span>
+
+              <span className="font-medium mt-1">
+                Platform Comm. (Fees/Subsidy):
+              </span>
+              <span className="font-bold text-right mt-1">
                 {formatCurrency(initialData.platformCommision)}
               </span>
             </div>

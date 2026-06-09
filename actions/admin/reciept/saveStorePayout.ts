@@ -45,6 +45,7 @@ export async function saveStorePayoutAction(
       orderIds: receipt.orderIds.map((id) => new mongoose.Types.ObjectId(id)),
       storeId: new mongoose.Types.ObjectId(receipt._id),
       totalCustomerPaid: receipt.totalCustomerPaid,
+      totalBasePrice: receipt.totalBasePrice,
       totalGST: receipt.totalGST,
       totalPST: receipt.totalPST,
       totalTax: receipt.totalTax,

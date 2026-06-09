@@ -14,18 +14,23 @@ export interface SerializedStorePayout {
   startDate: string;
   endDate: string;
   totalCustomerPaid: number;
+  totalBasePrice: number;
+  storeProfit: number;
+  storeMarkupTax: number;
+  storeFixedValue: number;
   storePayout: number;
-  platformProfit: number;
   status: PayoutStatus;
   createdAt: string;
   additionalNote: string;
   paymentReciept: { url: string; fileId: string } | null;
-  totalGST?: number;
-  totalPST?: number;
-    totalWalletTopUpCashCollected?: number;
+  storebasetaxGST: number;
+  storebasetaxPST: number;
+  totalDisposableFee: number;
+  totalWalletTopUpCashCollected: number;
+  platformCommision: number;
+  totalSubsidy: number;
   totalOrderCashCollected?: number;
   totalCashCollected?: number;
-  storeProfit?: number;
 }
 
 type LeanPayout = IStorePayout & {
@@ -37,7 +42,7 @@ export interface PayoutAnalyticsStats {
   totalPayouts: number;
   totalEarnings: number;
   currentMonthEarnings: number;
-  monthlyEarningsIncrease: number; 
+  monthlyEarningsIncrease: number;
   newPayoutsThisMonth: number;
 }
 
@@ -76,6 +81,10 @@ export async function getVendorPayoutsAction(
       startDate: p.startDate.toISOString(),
       endDate: p.endDate.toISOString(),
       totalCustomerPaid: p.totalCustomerPaid,
+      totalBasePrice: p.totalBasePrice || 0, // Added
+      storeProfit: p.storeProfit || 0,
+      storeMarkupTax: p.storeMarkupTax || 0, // Added
+      storeFixedValue: p.storeFixedValue || 0, // Added
       storePayout: p.storePayout,
       platformProfit: p.platformProfit,
       status: p.status,
@@ -87,6 +96,14 @@ export async function getVendorPayoutsAction(
             fileId: p.paymentReciept.fileId,
           }
         : null,
+      storebasetaxGST: p.storebasetaxGST || 0, // Added
+      storebasetaxPST: p.storebasetaxPST || 0, // Added
+      totalDisposableFee: p.totalDisposableFee || 0, // Added
+      totalWalletTopUpCashCollected: p.totalWalletTopUpCashCollected || 0,
+      platformCommision: p.platformCommision || 0, // Added
+      totalSubsidy: p.totalSubsidy || 0, // Added
+      totalOrderCashCollected: p.totalOrderCashCollected || 0,
+      totalCashCollected: p.totalCashCollected || 0,
     }));
 
     return { success: true, data: serializedData };
@@ -96,7 +113,10 @@ export async function getVendorPayoutsAction(
   }
 }
 
-export async function getSingleVendorPayoutAction(payoutId: string, storeId: string) {
+export async function getSingleVendorPayoutAction(
+  payoutId: string,
+  storeId: string,
+) {
   try {
     const session = await getUserSession();
     if (!session?.user?.id || session.user.role === "Customer") {
@@ -120,21 +140,38 @@ export async function getSingleVendorPayoutAction(payoutId: string, storeId: str
       startDate: payout.startDate.toISOString(),
       endDate: payout.endDate.toISOString(),
       totalCustomerPaid: payout.totalCustomerPaid,
+      totalBasePrice: payout.totalBasePrice,
+      storeProfit: payout.storeProfit || 0,
+      storeMarkupTax: payout.storeMarkupTax || 0, // Added
+      storeFixedValue: payout.storeFixedValue || 0, // Added
       storePayout: payout.storePayout,
-      platformProfit: payout.platformProfit,
       status: payout.status,
       createdAt: payout.createdAt.toISOString(),
       additionalNote: payout.additionalNote || "",
-      paymentReciept: payout.paymentReciept ? {
-        url: payout.paymentReciept.url,
-        fileId: payout.paymentReciept.fileId,
-      } : null,
+      paymentReciept: payout.paymentReciept
+        ? {
+            url: payout.paymentReciept.url,
+            fileId: payout.paymentReciept.fileId,
+          }
+        : null,
+      storebasetaxGST: payout.storebasetaxGST || 0, // Added
+      storebasetaxPST: payout.storebasetaxPST || 0, // Added
+      totalDisposableFee: payout.totalDisposableFee || 0, // Added
+      totalWalletTopUpCashCollected: payout.totalWalletTopUpCashCollected || 0,
+      platformCommision: payout.platformCommision || 0, // Added
+      totalOrderCashCollected: payout.totalOrderCashCollected || 0,
+      totalCashCollected: payout.totalCashCollected || 0,
+      totalSubsidy: payout.totalSubsidy || 0,
     };
 
     return { success: true, data: serializedData };
   } catch (error) {
     console.error(`[getSingleVendorPayoutAction] Error:`, error);
-    return { success: false, message: "Failed to fetch payout details", data: null };
+    return {
+      success: false,
+      message: "Failed to fetch payout details",
+      data: null,
+    };
   }
 }
 
@@ -144,7 +181,7 @@ export async function getPayoutAnalyticsAction(storeId: string) {
     if (!session?.user?.id || session.user.role === "Customer") {
       return { success: false, message: "Unauthorized", data: null };
     }
-    
+
     await dbConnect();
 
     // Calculate dates for current vs previous month comparisons
@@ -156,7 +193,7 @@ export async function getPayoutAnalyticsAction(storeId: string) {
     // Only count 'paid' status for revenue numbers
     const payouts = await StorePayoutModel.find({
       storeId: new mongoose.Types.ObjectId(storeId),
-      status: "paid"
+      status: "paid",
     }).lean<LeanPayout[]>();
 
     const totalPayouts = payouts.length;
@@ -168,7 +205,7 @@ export async function getPayoutAnalyticsAction(storeId: string) {
     for (const p of payouts) {
       const payoutAmount = p.storePayout || 0;
       totalEarnings += payoutAmount;
-      
+
       const pDate = new Date(p.createdAt);
       if (pDate >= startOfCurrentMonth && pDate < startOfNextMonth) {
         currentMonthEarnings += payoutAmount;
@@ -180,7 +217,9 @@ export async function getPayoutAnalyticsAction(storeId: string) {
 
     let monthlyEarningsIncrease = 0;
     if (lastMonthEarnings > 0) {
-      monthlyEarningsIncrease = Math.round(((currentMonthEarnings - lastMonthEarnings) / lastMonthEarnings) * 100);
+      monthlyEarningsIncrease = Math.round(
+        ((currentMonthEarnings - lastMonthEarnings) / lastMonthEarnings) * 100,
+      );
     } else if (currentMonthEarnings > 0) {
       monthlyEarningsIncrease = 100;
     }
@@ -196,6 +235,10 @@ export async function getPayoutAnalyticsAction(storeId: string) {
     return { success: true, data };
   } catch (error) {
     console.error(`[getPayoutAnalyticsAction] Error:`, error);
-    return { success: false, message: "Failed to fetch payout analytics", data: null };
+    return {
+      success: false,
+      message: "Failed to fetch payout analytics",
+      data: null,
+    };
   }
 }
