@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { FormState } from "@/types/customer/helpForm";
 import { ContactSubmit } from "@/actions/customer/Contact";
+import { ReferCodeModal } from "./ReferCodeModal";
 
 const TOPICS = [
   "General Inquiry",
@@ -29,6 +30,7 @@ const ContactUs = () => {
   const [state, action, pending] = useActionState(ContactSubmit, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const [topic, setTopic] = useState("");
+  const [open, setopen] = useState(false)
 
 
   useEffect(() => {
@@ -68,15 +70,37 @@ const ContactUs = () => {
           Got a question about savings, pickup, or your family plan? Fill in the
           form and we&apos;ll get back to you shortly.
         </p>
-<a
-  href="mailto:info@canadianscart.ca"
-  className="flex items-center gap-2.5 mb-8 px-5 py-3 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-green-200 transition-all group"
->
-  <span className="text-green-600 text-base">✉️</span>
-  <span className="text-sm font-bold text-gray-800 group-hover:text-green-700 transition-colors">
-    info@canadianscart.ca
-  </span>
-</a>
+
+        <div className="flex flex-wrap gap-2 items-center mb-6">
+          <a
+            href="mailto:info@canadianscart.ca"
+            className="flex items-center gap-2.5 px-5 py-3 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-green-200 transition-all group"
+          >
+            <span className="text-green-600 text-base">✉️</span>
+            <span className="text-sm font-bold text-gray-800 group-hover:text-green-700 transition-colors">
+              info@canadianscart.ca
+            </span>
+          </a>
+
+        <button
+          onClick={() => setopen(true)}
+          className="flex items-center gap-2.5 px-5 py-3 rounded-full shadow-sm transition-all hover:opacity-90 active:scale-[0.97]"
+          style={{
+            background: "var(--primary)",
+            color: "var(--primary-foreground)",
+          }}
+        >
+          <span className="text-base">🎟️</span>
+          <span className="text-sm font-bold" style={{ letterSpacing: "-0.01em" }}>
+            Request a referral code
+          </span>
+        </button>
+
+          <ReferCodeModal open={open} onOpenChange={setopen} />
+        </div>
+
+
+
         <div className="relative w-full max-w-[640px]">
 
           <img
