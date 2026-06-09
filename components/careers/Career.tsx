@@ -54,7 +54,7 @@ const JOB_POSTINGS: JobPosting[] = [
     type: "Full-Time",
     salary: "$18.25 / hr",
     summary:
-      "Be the friendly voice behind Canadian's Cart — helping families with orders, accounts, and anything else they need.",
+      "Be the friendly voice behind Candian's Cart — helping families with orders, accounts, and anything else they need.",
     description:
       "Our customers rely on us for their weekly groceries, and you'll make sure their experience is smooth and delightful. You'll handle inbound queries via email and chat, resolve issues, and help families get the most out of the platform.",
     responsibilities: [
@@ -88,7 +88,7 @@ const JOB_POSTINGS: JobPosting[] = [
     summary:
       "Process customer pickups at our Abbotsford location — the last smile families see before heading home with their groceries.",
     description:
-      "As a Cashier you'll be at the front line of the Canadian's Cart pickup experience. You'll process orders, verify items, handle payments, and make sure every family leaves happy.",
+      "As a Cashier you'll be at the front line of the Candian's Cart pickup experience. You'll process orders, verify items, handle payments, and make sure every family leaves happy.",
     responsibilities: [
       "Process customer pickup orders accurately using our point-of-sale system.",
       "Verify order contents against the packing list before handoff.",
@@ -119,24 +119,36 @@ const JOB_POSTINGS: JobPosting[] = [
 const CONTACT_EMAIL = "info@canadianscart.ca";
 
 const TYPE_META: Record<JobPosting["type"], { pill: string; dot: string }> = {
-  "Full-Time":  { pill: "bg-green-50 text-green-700 border-green-200",  dot: "bg-green-500" },
-  "Part-Time":  { pill: "bg-sky-50 text-sky-700 border-sky-200",        dot: "bg-sky-500" },
-  Contract:     { pill: "bg-amber-50 text-amber-700 border-amber-200",  dot: "bg-amber-500" },
-  Volunteer:    { pill: "bg-violet-50 text-violet-700 border-violet-200", dot: "bg-violet-500" },
+  "Full-Time": {
+    pill: "bg-green-50 text-green-700 border-green-200",
+    dot: "bg-green-500",
+  },
+  "Part-Time": {
+    pill: "bg-sky-50 text-sky-700 border-sky-200",
+    dot: "bg-sky-500",
+  },
+  Contract: {
+    pill: "bg-amber-50 text-amber-700 border-amber-200",
+    dot: "bg-amber-500",
+  },
+  Volunteer: {
+    pill: "bg-violet-50 text-violet-700 border-violet-200",
+    dot: "bg-violet-500",
+  },
 };
 
 // Coloured monogram backgrounds per department
 const DEPT_STYLE: Record<string, { bg: string; text: string }> = {
-  Logistics:            { bg: "bg-orange-100",  text: "text-orange-600" },
-  Operations:           { bg: "bg-teal-100",    text: "text-teal-600" },
-  "Customer Experience":{ bg: "bg-blue-100",    text: "text-blue-600" },
-  Marketing:            { bg: "bg-pink-100",    text: "text-pink-600" },
+  Logistics: { bg: "bg-orange-100", text: "text-orange-600" },
+  Operations: { bg: "bg-teal-100", text: "text-teal-600" },
+  "Customer Experience": { bg: "bg-blue-100", text: "text-blue-600" },
+  Marketing: { bg: "bg-pink-100", text: "text-pink-600" },
 };
 
 function buildMailto(job: JobPosting) {
   const subject = encodeURIComponent(`Application – ${job.title}`);
   const body = encodeURIComponent(
-    `Hi Canadian's Cart team,\n\nI'm interested in applying for the ${job.title} (${job.type}) position in ${job.location}.\n\nPlease find my details below:\n\nName:\nPhone:\nLinkedIn / Portfolio:\n\n[Attach your resume]\n\nLooking forward to hearing from you!`
+    `Hi Candian's Cart team,\n\nI'm interested in applying for the ${job.title} (${job.type}) position in ${job.location}.\n\nPlease find my details below:\n\nName:\nPhone:\nLinkedIn / Portfolio:\n\n[Attach your resume]\n\nLooking forward to hearing from you!`,
   );
   return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
 }
@@ -164,14 +176,24 @@ function useCountUp(target: number, duration = 700) {
 // ─────────────────────────────────────────────────────────────────────────────
 // StatCard — matches your homepage's pill/card style
 // ─────────────────────────────────────────────────────────────────────────────
-function StatCard({ icon: Icon, value, label }: { icon: React.ElementType; value: string; label: string }) {
+function StatCard({
+  icon: Icon,
+  value,
+  label,
+}: {
+  icon: React.ElementType;
+  value: string;
+  label: string;
+}) {
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
       <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
         <Icon className="w-4 h-4 text-green-600" />
       </div>
       <div>
-        <p className="text-[15px] font-black text-[#1a3a1a] leading-none">{value}</p>
+        <p className="text-[15px] font-black text-[#1a3a1a] leading-none">
+          {value}
+        </p>
         <p className="text-[11px] text-gray-500 mt-0.5">{label}</p>
       </div>
     </div>
@@ -181,9 +203,20 @@ function StatCard({ icon: Icon, value, label }: { icon: React.ElementType; value
 // ─────────────────────────────────────────────────────────────────────────────
 // JobCard
 // ─────────────────────────────────────────────────────────────────────────────
-function JobCard({ job, index, onClick }: { job: JobPosting; index: number; onClick: () => void }) {
+function JobCard({
+  job,
+  index,
+  onClick,
+}: {
+  job: JobPosting;
+  index: number;
+  onClick: () => void;
+}) {
   const meta = TYPE_META[job.type];
-  const dept = DEPT_STYLE[job.department] ?? { bg: "bg-gray-100", text: "text-gray-600" };
+  const dept = DEPT_STYLE[job.department] ?? {
+    bg: "bg-gray-100",
+    text: "text-gray-600",
+  };
 
   return (
     <button
@@ -194,7 +227,9 @@ function JobCard({ job, index, onClick }: { job: JobPosting; index: number; onCl
       {/* Top row */}
       <div className="flex items-start gap-3.5 mb-4">
         {/* Dept monogram */}
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-[15px] font-black shrink-0 ${dept.bg} ${dept.text}`}>
+        <div
+          className={`w-11 h-11 rounded-xl flex items-center justify-center text-[15px] font-black shrink-0 ${dept.bg} ${dept.text}`}
+        >
           {job.department.charAt(0)}
         </div>
         <div className="flex-1 min-w-0">
@@ -215,7 +250,9 @@ function JobCard({ job, index, onClick }: { job: JobPosting; index: number; onCl
 
       {/* Footer row */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${meta.pill}`}>
+        <span
+          className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${meta.pill}`}
+        >
           <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
           {job.type}
         </span>
@@ -246,10 +283,21 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function JobDrawer({ job, open, onClose }: { job: JobPosting | null; open: boolean; onClose: () => void }) {
+function JobDrawer({
+  job,
+  open,
+  onClose,
+}: {
+  job: JobPosting | null;
+  open: boolean;
+  onClose: () => void;
+}) {
   if (!job) return null;
   const meta = TYPE_META[job.type];
-  const dept = DEPT_STYLE[job.department] ?? { bg: "bg-gray-100", text: "text-gray-600" };
+  const dept = DEPT_STYLE[job.department] ?? {
+    bg: "bg-gray-100",
+    text: "text-gray-600",
+  };
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
@@ -261,7 +309,9 @@ function JobDrawer({ job, open, onClose }: { job: JobPosting | null; open: boole
         <div className="shrink-0 px-7 pt-7 pb-5 border-b border-gray-100 bg-white">
           <SheetHeader>
             <div className="flex items-center gap-3 mb-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black shrink-0 ${dept.bg} ${dept.text}`}>
+              <div
+                className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black shrink-0 ${dept.bg} ${dept.text}`}
+              >
                 {job.department.charAt(0)}
               </div>
               <div>
@@ -275,7 +325,9 @@ function JobDrawer({ job, open, onClose }: { job: JobPosting | null; open: boole
             </div>
             <SheetDescription asChild>
               <div className="flex flex-wrap gap-2">
-                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${meta.pill}`}>
+                <span
+                  className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${meta.pill}`}
+                >
                   <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
                   {job.type}
                 </span>
@@ -296,7 +348,9 @@ function JobDrawer({ job, open, onClose }: { job: JobPosting | null; open: boole
         <div className="flex-1 overflow-y-auto px-7 py-6 space-y-6">
           <div>
             <SectionLabel>About the Role</SectionLabel>
-            <p className="text-sm text-gray-600 leading-relaxed">{job.description}</p>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {job.description}
+            </p>
           </div>
 
           <Separator className="bg-gray-100" />
@@ -305,7 +359,10 @@ function JobDrawer({ job, open, onClose }: { job: JobPosting | null; open: boole
             <SectionLabel>Responsibilities</SectionLabel>
             <ul className="space-y-2.5">
               {job.responsibilities.map((r, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                <li
+                  key={i}
+                  className="flex items-start gap-3 text-sm text-gray-700"
+                >
                   <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{r}</span>
                 </li>
@@ -319,7 +376,10 @@ function JobDrawer({ job, open, onClose }: { job: JobPosting | null; open: boole
             <SectionLabel>Requirements</SectionLabel>
             <ul className="space-y-2.5">
               {job.requirements.map((r, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
+                <li
+                  key={i}
+                  className="flex items-start gap-3 text-sm text-gray-700"
+                >
                   <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{r}</span>
                 </li>
@@ -334,7 +394,10 @@ function JobDrawer({ job, open, onClose }: { job: JobPosting | null; open: boole
                 <SectionLabel>Nice to Have</SectionLabel>
                 <ul className="space-y-2.5">
                   {job.niceToHave.map((r, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-gray-400">
+                    <li
+                      key={i}
+                      className="flex items-start gap-3 text-sm text-gray-400"
+                    >
                       <Circle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-gray-300" />
                       <span className="leading-relaxed">{r}</span>
                     </li>
@@ -356,11 +419,15 @@ function JobDrawer({ job, open, onClose }: { job: JobPosting | null; open: boole
             </div>
             <p className="text-xs text-green-700 leading-relaxed">
               Send your resume to{" "}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold underline underline-offset-2">
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="font-semibold underline underline-offset-2"
+              >
                 {CONTACT_EMAIL}
               </a>{" "}
               with subject{" "}
-              <span className="font-semibold">"Application – {job.title}"</span>.
+              <span className="font-semibold">"Application – {job.title}"</span>
+              .
             </p>
           </div>
           <Button
@@ -417,26 +484,34 @@ export default function CareersPage() {
       `}</style>
 
       <main className="min-h-screen bg-white">
-
         {/* ══════════════════════ HERO ══════════════════════ */}
         <section className="relative overflow-hidden border-b border-gray-100">
           {/* Dot grid — same as homepage */}
-          <div aria-hidden className="cc-dotgrid pointer-events-none absolute inset-0 opacity-40" />
+          <div
+            aria-hidden
+            className="cc-dotgrid pointer-events-none absolute inset-0 opacity-40"
+          />
 
           {/* Soft green radial glow top-right (homepage signature) */}
           <div
             aria-hidden
             className="pointer-events-none absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(220,252,231,0.7) 0%, transparent 70%)" }}
+            style={{
+              background:
+                "radial-gradient(circle, rgba(220,252,231,0.7) 0%, transparent 70%)",
+            }}
           />
 
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-16 sm:pt-28 sm:pb-20 text-center">
-
             {/* Eyebrow pill — matches your site's pill style exactly */}
-            <div className="cc-fadein flex justify-center mb-7" style={{ animationDelay: "0ms" }}>
+            <div
+              className="cc-fadein flex justify-center mb-7"
+              style={{ animationDelay: "0ms" }}
+            >
               <span className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                We're Hiring · {count} Open Role{JOB_POSTINGS.length !== 1 ? "s" : ""}
+                We're Hiring · {count} Open Role
+                {JOB_POSTINGS.length !== 1 ? "s" : ""}
               </span>
             </div>
 
@@ -445,8 +520,8 @@ export default function CareersPage() {
               className="cc-fadein text-4xl sm:text-5xl lg:text-[62px] font-black tracking-tight leading-[1.06] text-[#1a3a1a] mb-5"
               style={{ animationDelay: "60ms" }}
             >
-              Join the team behind{" "}<br />
-              <span className="block sm:inline cc-shimmer">Canadian's Cart</span>
+              Join the team behind <br />
+              <span className="block sm:inline cc-shimmer">Candian's Cart</span>
             </h1>
 
             {/* Subhead */}
@@ -464,9 +539,17 @@ export default function CareersPage() {
               className="cc-fadein flex flex-wrap justify-center gap-3"
               style={{ animationDelay: "180ms" }}
             >
-              <StatCard icon={Users}  value={`${JOB_POSTINGS.length} Roles`} label="Currently open" />
-              <StatCard icon={MapPin} value="Abbotsford" label="+ Remote options" />
-              <StatCard icon={Heart}  value="Mission"    label="Driven team" />
+              <StatCard
+                icon={Users}
+                value={`${JOB_POSTINGS.length} Roles`}
+                label="Currently open"
+              />
+              <StatCard
+                icon={MapPin}
+                value="Abbotsford"
+                label="+ Remote options"
+              />
+              <StatCard icon={Heart} value="Mission" label="Driven team" />
             </div>
           </div>
         </section>
@@ -482,12 +565,19 @@ export default function CareersPage() {
                 Open Positions
               </h2>
             </div>
-            <p className="text-sm text-gray-400">Click any role to see full details</p>
+            <p className="text-sm text-gray-400">
+              Click any role to see full details
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {JOB_POSTINGS.map((job, i) => (
-              <JobCard key={job.id} job={job} index={i} onClick={() => setSelected(job)} />
+              <JobCard
+                key={job.id}
+                job={job}
+                index={i}
+                onClick={() => setSelected(job)}
+              />
             ))}
           </div>
         </section>
@@ -497,17 +587,33 @@ export default function CareersPage() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {[
-                { icon: Leaf,  title: "Real Impact",       desc: "Your work directly helps families afford quality groceries every week." },
-                { icon: Users, title: "Small & Tight-Knit", desc: "No bureaucracy. Your ideas matter and get shipped fast." },
-                { icon: Heart, title: "Community First",   desc: "We're rooted in Abbotsford and proud of the community we serve." },
+                {
+                  icon: Leaf,
+                  title: "Real Impact",
+                  desc: "Your work directly helps families afford quality groceries every week.",
+                },
+                {
+                  icon: Users,
+                  title: "Small & Tight-Knit",
+                  desc: "No bureaucracy. Your ideas matter and get shipped fast.",
+                },
+                {
+                  icon: Heart,
+                  title: "Community First",
+                  desc: "We're rooted in Abbotsford and proud of the community we serve.",
+                },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
                     <Icon className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[#1a3a1a] mb-1">{title}</p>
-                    <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
+                    <p className="text-sm font-bold text-[#1a3a1a] mb-1">
+                      {title}
+                    </p>
+                    <p className="text-sm text-gray-500 leading-relaxed">
+                      {desc}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -522,7 +628,10 @@ export default function CareersPage() {
             <div
               aria-hidden
               className="pointer-events-none absolute top-0 right-0 w-72 h-72 rounded-full translate-x-1/3 -translate-y-1/3"
-              style={{ background: "radial-gradient(circle, rgba(220,252,231,0.8) 0%, transparent 70%)" }}
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(220,252,231,0.8) 0%, transparent 70%)",
+              }}
             />
             {/* Dot grid accent */}
             <div
@@ -550,7 +659,9 @@ export default function CareersPage() {
                   size="lg"
                   className="gap-2 h-12 px-6 text-sm font-semibold rounded-xl bg-green-600 hover:bg-green-700 text-white shadow-sm"
                 >
-                  <a href={`mailto:${CONTACT_EMAIL}?subject=General%20Application`}>
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}?subject=General%20Application`}
+                  >
                     <Mail className="w-4 h-4" />
                     Get in Touch
                     <ArrowRight className="w-4 h-4" />
@@ -570,7 +681,11 @@ export default function CareersPage() {
         </section>
 
         {/* Drawer */}
-        <JobDrawer job={selected} open={!!selected} onClose={() => setSelected(null)} />
+        <JobDrawer
+          job={selected}
+          open={!!selected}
+          onClose={() => setSelected(null)}
+        />
       </main>
     </>
   );

@@ -1,7 +1,6 @@
 "use client";
-// components/customer/products/CustomerProductCard.tsx
 
-import { useState, useTransition, useEffect, useCallback } from "react";
+import { useState, useTransition, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import {
   BadgeDollarSign,
@@ -31,14 +30,6 @@ import { Button } from "@/components/ui/button";
 import { emitCartUpdated } from "@/lib/cartEvent";
 import PriceDropBtn from "./PriceDropBtn";
 
-async function removeAllFromServer(
-  productId: string,
-  customerId: string | undefined,
-) {
-  const formData = new FormData();
-  formData.append("productId", productId);
-  await RemoveItem(customerId, formData);
-}
 function useCashierMobile() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -61,18 +52,17 @@ export function CustomerProductCard({
   cartQuantity?: number;
   subsidyPage: boolean;
 }) {
-  // const vegetablesCategory = product.category === "Vegetables";
-  // const fruitsCategory = product.category === "Fruits";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [quantity, setQuantity] = useState(cartQuantity);
   const [inputValue, setInputValue] = useState(String(cartQuantity));
   const [isQtyDirty, setIsQtyDirty] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cashierMobile = useCashierMobile();
-const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks for sizing
+  const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks for sizing
 
-  const quantityStep = product.isMeasuredInWeight ? 1 : 1;
+  const quantityStep = 1;
 
   const formatQtyForInput = useCallback(
     (value: number) => {
@@ -118,6 +108,52 @@ const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks 
   const hasImage = product.images?.length > 0 && !imgError;
   const catConfig = getCategoryConfig(product.category);
 
+  const syncQuantity = useCallback(
+    (newQty: number) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+
+      debounceRef.current = setTimeout(async () => {
+        const fd = new FormData();
+        fd.append("productId", product._id as string);
+        fd.append("quantity", String(newQty));
+
+        const res = await UpdateItemQuantity(customerId, fd);
+
+        if (res?.success) {
+          emitCartUpdated();
+        }
+      }, 400);
+    },
+    [product._id, customerId],
+  );
+
+  const removeFromCartFast = useCallback(
+    async (rollbackQty?: number) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+
+      setQuantity(0);
+      setInputValue("0");
+      setIsQtyDirty(false);
+
+      try {
+        const fd = new FormData();
+        fd.append("productId", product._id as string);
+
+        await RemoveItem(customerId, fd);
+        emitCartUpdated();
+        toast.success(`${product.name} removed from cart`);
+      } catch {
+        if (rollbackQty !== undefined) {
+          setQuantity(rollbackQty);
+          setInputValue(formatQtyForInput(rollbackQty));
+        }
+
+        toast.error("Failed to remove item");
+      }
+    },
+    [product._id, product.name, customerId, formatQtyForInput],
+  );
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -147,8 +183,9 @@ const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks 
   const handleIncrement = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    const prev = quantity;
-    const next = Math.min(99, prev + quantityStep);
+    if (quantity >= 99) return;
+
+    const next = quantity + 1;
     const normalizedNext = product.isMeasuredInWeight
       ? Math.round(next * 100) / 100
       : Math.trunc(next);
@@ -157,28 +194,18 @@ const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks 
     setInputValue(formatQtyForInput(normalizedNext));
     setIsQtyDirty(false);
 
-    startTransition(async () => {
-      try {
-        const fd = new FormData();
-        fd.append("productId", product._id as string);
-        fd.append("quantity", String(normalizedNext));
-
-        const res = await UpdateItemQuantity(customerId, fd);
-        if (!res?.success) throw new Error(res?.message || "Failed");
-        emitCartUpdated();
-      } catch {
-        setQuantity(prev);
-        setInputValue(formatQtyForInput(prev));
-        toast.error("Failed to update quantity");
-      }
-    });
+    syncQuantity(normalizedNext);
   };
 
   const handleDecrement = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    const prev = quantity;
-    const next = Math.max(0, prev - quantityStep);
+    if (quantity <= 1) {
+      void removeFromCartFast(quantity);
+      return;
+    }
+
+    const next = quantity - 1;
     const normalizedNext = product.isMeasuredInWeight
       ? Math.round(next * 100) / 100
       : Math.trunc(next);
@@ -187,44 +214,12 @@ const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks 
     setInputValue(formatQtyForInput(normalizedNext));
     setIsQtyDirty(false);
 
-    startTransition(async () => {
-      try {
-        const fd = new FormData();
-        fd.append("productId", product._id as string);
-        fd.append("quantity", String(normalizedNext));
-
-        const res = await UpdateItemQuantity(customerId, fd);
-        if (!res?.success) throw new Error(res?.message || "Failed");
-        emitCartUpdated();
-        if (normalizedNext === 0) {
-          toast.success(`${product.name} removed from cart`);
-        }
-      } catch {
-        setQuantity(prev);
-        setInputValue(formatQtyForInput(prev));
-        toast.error("Failed to update quantity");
-      }
-    });
+    syncQuantity(normalizedNext);
   };
 
   const handleRemoveAll = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const prev = quantity;
-    setQuantity(0);
-    setInputValue("0");
-    setIsQtyDirty(false);
-
-    startTransition(async () => {
-      try {
-        await removeAllFromServer(product._id as string, customerId);
-        toast.success(`${product.name} removed from cart`);
-        emitCartUpdated();
-      } catch {
-        setQuantity(prev);
-        setInputValue(formatQtyForInput(prev));
-        toast.error("Failed to remove item");
-      }
-    });
+    void removeFromCartFast(quantity);
   };
 
   const handleQuantityInputCommit = useCallback(() => {
@@ -243,45 +238,29 @@ const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks 
       setIsQtyDirty(false);
       return;
     }
+    if (newQty === 0) {
+      void removeFromCartFast(prevQty);
+      return;
+    }
 
     setQuantity(newQty);
     setInputValue(formatQtyForInput(newQty));
     setIsQtyDirty(false);
 
-    startTransition(async () => {
-      try {
-        const fd = new FormData();
-        fd.append("productId", product._id as string);
-        fd.append("quantity", String(newQty));
-
-        const res = await UpdateItemQuantity(customerId, fd);
-        if (!res?.success) throw new Error(res?.message || "Failed");
-        emitCartUpdated();
-        if (newQty === 0) {
-          toast.success(`${product.name} removed from cart`);
-        }
-      } catch {
-        setQuantity(prevQty);
-        setInputValue(formatQtyForInput(prevQty));
-        setIsQtyDirty(false);
-        toast.error("Failed to update quantity");
-      }
-    });
+    syncQuantity(newQty);
   }, [
     inputValue,
     quantity,
-    product._id,
-    product.name,
-    customerId,
     normalizeQuantity,
     formatQtyForInput,
+    removeFromCartFast,
+    syncQuantity,
   ]);
 
   const normalizedInputQty = normalizeQuantity(inputValue);
 
   const showConfirm =
     isQtyDirty &&
-    !isPending &&
     normalizedInputQty !== null &&
     normalizedInputQty !== quantity;
 
@@ -432,7 +411,6 @@ const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks 
                   <button
                     type="button"
                     onClick={handleRemoveAll}
-                    disabled={isPending}
                     className={`group/trash shrink-0 rounded-xl border border-white/25 bg-white/15 backdrop-blur-sm transition-colors hover:bg-red-500/40 disabled:opacity-40 ${
                       cashier ? "h-11 w-11" : "h-8 w-8"
                     }`}
@@ -450,7 +428,6 @@ const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks 
                     <button
                       type="button"
                       onClick={handleDecrement}
-                      disabled={isPending}
                       className={`flex shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/20 transition-colors hover:bg-white/35 disabled:opacity-50 ${
                         cashier ? "h-9 w-9" : "h-6 w-6"
                       }`}
@@ -497,10 +474,10 @@ const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks 
                           e.stopPropagation();
                           if (e.key === "Enter") e.currentTarget.blur();
                         }}
-                        disabled={isPending}
-className={`rounded-md border border-white/30 bg-white/20 text-center font-bold text-white tabular-nums outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
-  cashier ? "h-9 w-14 text-base" : "h-6 w-10 text-sm"
-}`}                      />
+                        className={`rounded-md border border-white/30 bg-white/20 text-center font-bold text-white tabular-nums outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+                          cashier ? "h-9 w-14 text-base" : "h-6 w-10 text-sm"
+                        }`}
+                      />
 
                       {showConfirm && (
                         <button
@@ -510,10 +487,10 @@ className={`rounded-md border border-white/30 bg-white/20 text-center font-bold 
                             e.stopPropagation();
                             handleQuantityInputCommit();
                           }}
-                          disabled={isPending}
-className={`flex shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50 ${
-  cashier ? "h-9 w-9" : "h-6 w-6"
-}`}                        >
+                          className={`flex shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50 ${
+                            cashier ? "h-9 w-9" : "h-6 w-6"
+                          }`}
+                        >
                           <Check
                             size={11}
                             strokeWidth={3}
@@ -527,11 +504,16 @@ className={`flex shrink-0 items-center justify-center rounded-full bg-primary tr
                       <button
                         type="button"
                         onClick={handleIncrement}
-                        disabled={isPending || quantity >= 99}
-className={`flex shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50 ${
-  cashier ? "h-9 w-9" : "h-6 w-6"
-}`}                      >
-<Plus size={cashier ? 16 : 11} strokeWidth={2.5} className="text-primary-foreground" />
+                        disabled={quantity >= 99}
+                        className={`flex shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50 ${
+                          cashier ? "h-9 w-9" : "h-6 w-6"
+                        }`}
+                      >
+                        <Plus
+                          size={cashier ? 16 : 11}
+                          strokeWidth={2.5}
+                          className="text-primary-foreground"
+                        />
                       </button>
                     )}
                   </div>
@@ -541,9 +523,10 @@ className={`flex shrink-0 items-center justify-center rounded-full bg-primary tr
                   type="button"
                   disabled={!product.stock || isPending}
                   onClick={handleAddToCart}
-className={`flex w-full items-center justify-center gap-1.5 rounded-xl border border-primary/20 bg-secondary font-bold text-primary shadow-sm transition-all hover:bg-primary/15 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${
-  cashier ? "h-12 text-sm" : "h-9 text-xs"
-}`}                >
+                  className={`flex w-full items-center justify-center gap-1.5 rounded-xl border border-primary/20 bg-secondary font-bold text-primary shadow-sm transition-all hover:bg-primary/15 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${
+                    cashier ? "h-12 text-sm" : "h-9 text-xs"
+                  }`}
+                >
                   {isPending ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (

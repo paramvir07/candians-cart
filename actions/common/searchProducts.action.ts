@@ -112,7 +112,7 @@ const fetchProductsDB = async (query: string, storeId?: string) => {
 };
 
 /**
- * Role-aware search for Canadian's Cart.
+ * Role-aware search for Candian's Cart.
  *
  */
 
@@ -142,7 +142,7 @@ export const searchProducts = async (
     const products = await fetchProductsDB(searchQuery, targetStoreId);
 
     if (!products) {
-      return { success: false, error: "No products found in Canadian's Cart." };
+      return { success: false, error: "No products found in Candian's Cart." };
     }
 
     // JSON Serialization for safe transfer to Client Components
@@ -160,7 +160,7 @@ export const searchProducts = async (
 };
 
 /**
- * Exact match search for Canadian's Cart products by primaryUPC.
+ * Exact match search for Candian's Cart products by primaryUPC.
  * Skips fuzzy search and directly queries the database.
  *
  * @param {string} upc - The exact UPC string to search for.

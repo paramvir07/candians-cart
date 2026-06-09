@@ -26,9 +26,7 @@ import {
   AdminProduct,
   getStoreProductsPaginated,
 } from "@/actions/admin/products/getProducts.action";
-import {
-  searchProductsByUPC,
-} from "@/actions/common/searchProducts.action";
+import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import {
   getStoreProductsFiltered,
   ProductFilters,
@@ -108,12 +106,12 @@ export const StoreProductsList = ({
   const [upcMode, setUpcMode] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-const scanBufferRef = useRef("");
-const lastKeyTimeRef = useRef(0);
-const androidBufferRef = useRef("");
-const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-const androidLastInputRef = useRef(0);
+  const scanBufferRef = useRef("");
+  const lastKeyTimeRef = useRef(0);
+  const androidBufferRef = useRef("");
+  const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const androidLastInputRef = useRef(0);
 
   // VERCEL BEST PRACTICE: Use useDebounce to manage rapid user input
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,118 +125,118 @@ const androidLastInputRef = useRef(0);
   const isSearchMode = debouncedQuery.trim().length > 0;
 
   // keyboard scanner effect
-useEffect(() => {
-  if (!upcMode) return;
+  useEffect(() => {
+    if (!upcMode) return;
 
-  const HUMAN_THRESHOLD_MS = 100;
-  const COMMIT_TIMEOUT_MS = 100;
+    const HUMAN_THRESHOLD_MS = 100;
+    const COMMIT_TIMEOUT_MS = 100;
 
-  const commitScan = (value: string) => {
-    if (!value || value.length < 4) return;
-    setSearchQuery(value);
-    searchInputRef.current?.focus();
-    setTimeout(() => searchInputRef.current?.select(), 0);
-  };
+    const commitScan = (value: string) => {
+      if (!value || value.length < 4) return;
+      setSearchQuery(value);
+      searchInputRef.current?.focus();
+      setTimeout(() => searchInputRef.current?.select(), 0);
+    };
 
-  const flush = () => {
-    const buf = scanBufferRef.current;
-    scanBufferRef.current = "";
-    if (buf.length >= 4) commitScan(buf);
-  };
-
-  const resetTimer = () => {
-    if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
-    scanTimerRef.current = setTimeout(flush, COMMIT_TIMEOUT_MS);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key.length !== 1 && e.key !== "Enter") return;
-
-    const now = Date.now();
-    const gap = now - lastKeyTimeRef.current;
-    lastKeyTimeRef.current = now;
-
-    if (e.key === "Enter") {
-      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+    const flush = () => {
       const buf = scanBufferRef.current;
       scanBufferRef.current = "";
-      if (buf.length >= 4) {
-        e.preventDefault();
-        e.stopPropagation();
-        commitScan(buf);
-      }
-      return;
-    }
+      if (buf.length >= 4) commitScan(buf);
+    };
 
-    if (gap > HUMAN_THRESHOLD_MS && scanBufferRef.current.length > 0) {
+    const resetTimer = () => {
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+      scanTimerRef.current = setTimeout(flush, COMMIT_TIMEOUT_MS);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.length !== 1 && e.key !== "Enter") return;
+
+      const now = Date.now();
+      const gap = now - lastKeyTimeRef.current;
+      lastKeyTimeRef.current = now;
+
+      if (e.key === "Enter") {
+        if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+        const buf = scanBufferRef.current;
+        scanBufferRef.current = "";
+        if (buf.length >= 4) {
+          e.preventDefault();
+          e.stopPropagation();
+          commitScan(buf);
+        }
+        return;
+      }
+
+      if (gap > HUMAN_THRESHOLD_MS && scanBufferRef.current.length > 0) {
+        scanBufferRef.current = "";
+      }
+
+      scanBufferRef.current += e.key;
+      resetTimer();
+    };
+
+    const handleCompositionEnd = (e: CompositionEvent) => {
+      if (!e.data || e.data.length < 4) return;
       scanBufferRef.current = "";
-    }
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+      const value = e.data;
+      setSearchQuery(value);
+      searchInputRef.current?.focus();
+      setTimeout(() => searchInputRef.current?.select(), 0);
+    };
 
-    scanBufferRef.current += e.key;
-    resetTimer();
-  };
+    window.addEventListener("keydown", handleKeyDown, true);
+    window.addEventListener("compositionend", handleCompositionEnd, true);
 
-  const handleCompositionEnd = (e: CompositionEvent) => {
-    if (!e.data || e.data.length < 4) return;
-    scanBufferRef.current = "";
-    if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
-    const value = e.data;
-    setSearchQuery(value);
-    searchInputRef.current?.focus();
-    setTimeout(() => searchInputRef.current?.select(), 0);
-  };
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+      window.removeEventListener("compositionend", handleCompositionEnd, true);
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+    };
+  }, [upcMode]);
 
-  window.addEventListener("keydown", handleKeyDown, true);
-  window.addEventListener("compositionend", handleCompositionEnd, true);
+  // Android scanner effect
+  useEffect(() => {
+    if (!upcMode) return;
+    const input = searchInputRef.current;
+    if (!input) return;
 
-  return () => {
-    window.removeEventListener("keydown", handleKeyDown, true);
-    window.removeEventListener("compositionend", handleCompositionEnd, true);
-    if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
-  };
-}, [upcMode]);
+    const ANDROID_DEBOUNCE_MS = 150;
 
-// Android scanner effect
-useEffect(() => {
-  if (!upcMode) return;
-  const input = searchInputRef.current;
-  if (!input) return;
+    const handleInput = (e: Event) => {
+      const inputEvent = e as InputEvent;
+      if (inputEvent.isComposing) return; // compositionend handles it
 
-  const ANDROID_DEBOUNCE_MS = 150;
+      const val = (e.target as HTMLInputElement).value;
+      const now = Date.now();
+      const gap = now - androidLastInputRef.current;
+      androidLastInputRef.current = now;
 
-  const handleInput = (e: Event) => {
-    const inputEvent = e as InputEvent;
-    if (inputEvent.isComposing) return; // compositionend handles it
-
-    const val = (e.target as HTMLInputElement).value;
-    const now = Date.now();
-    const gap = now - androidLastInputRef.current;
-    androidLastInputRef.current = now;
-
-    if (gap > ANDROID_DEBOUNCE_MS * 2) {
-      androidBufferRef.current = "";
-    }
-
-    androidBufferRef.current = val;
-
-    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-
-    androidTimerRef.current = setTimeout(() => {
-      const buf = androidBufferRef.current;
-      androidBufferRef.current = "";
-      if (buf.length >= 4) {
-        setSearchQuery(buf);
-        setTimeout(() => input.select(), 0);
+      if (gap > ANDROID_DEBOUNCE_MS * 2) {
+        androidBufferRef.current = "";
       }
-    }, ANDROID_DEBOUNCE_MS);
-  };
 
-  input.addEventListener("input", handleInput);
-  return () => {
-    input.removeEventListener("input", handleInput);
-    if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-  };
-}, [upcMode]);
+      androidBufferRef.current = val;
+
+      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+
+      androidTimerRef.current = setTimeout(() => {
+        const buf = androidBufferRef.current;
+        androidBufferRef.current = "";
+        if (buf.length >= 4) {
+          setSearchQuery(buf);
+          setTimeout(() => input.select(), 0);
+        }
+      }, ANDROID_DEBOUNCE_MS);
+    };
+
+    input.addEventListener("input", handleInput);
+    return () => {
+      input.removeEventListener("input", handleInput);
+      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+    };
+  }, [upcMode]);
 
   // Reset to page 1 when a new search begins
   useEffect(() => {
@@ -272,7 +270,13 @@ useEffect(() => {
         } else if (isSearchMode) {
           res = upcMode
             ? await searchProductsByUPC(debouncedQuery, storeId)
-            : await searchProductsWithFilters(debouncedQuery, storeId, currentPage, 12, {});
+            : await searchProductsWithFilters(
+                debouncedQuery,
+                storeId,
+                currentPage,
+                12,
+                {},
+              );
         } else if (isFilterMode) {
           res = await getStoreProductsFiltered(
             storeId,
@@ -293,7 +297,7 @@ useEffect(() => {
           setTotalPages(res.totalPages ?? 1);
         } else {
           toast.error(
-            res.error || "Failed to fetch products in Canadian's Cart",
+            res.error || "Failed to fetch products in Candian's Cart",
           );
         }
       } catch (error) {
@@ -477,17 +481,19 @@ useEffect(() => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <QrScannerButton usedFor="barcode" onScan={handleBarcodeScan} />
-<button
-  onClick={() => setUpcMode((v) => !v)}
-  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold border transition-all shrink-0 ${
-    upcMode
-      ? "bg-green-600 text-white border-green-600"
-      : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
-  }`}
->
-  <span className={`w-1 h-1 rounded-full shrink-0 ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`} />
-  UPC
-</button>
+          <button
+            onClick={() => setUpcMode((v) => !v)}
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold border transition-all shrink-0 ${
+              upcMode
+                ? "bg-green-600 text-white border-green-600"
+                : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
+            }`}
+          >
+            <span
+              className={`w-1 h-1 rounded-full shrink-0 ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`}
+            />
+            UPC
+          </button>
           {role !== "customer" && (
             <ProductFiltersSheet
               filters={filters}

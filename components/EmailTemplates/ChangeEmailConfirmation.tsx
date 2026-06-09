@@ -25,32 +25,26 @@ export function ChangeEmailConfirmationEmail({
   username,
   confirmUrl,
   newEmail,
-  appName = "Canadian's Cart",
+  appName = "Candian's Cart",
   supportEmail = "info@canadianscart.ca",
 }: ChangeEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>
-        Confirm your email change request for {appName}
-      </Preview>
+      <Preview>Confirm your email change request for {appName}</Preview>
 
       <Body style={main}>
         <Container style={container}>
           <Section style={card}>
             <Section style={heroSection}>
-              <Heading style={heading}>
-                Confirm your email change
-              </Heading>
+              <Heading style={heading}>Confirm your email change</Heading>
 
               <Text style={heroText}>
-                Hi{username ? ` ${username}` : ""}, we received a request to change
-                your account email to:
+                Hi{username ? ` ${username}` : ""}, we received a request to
+                change your account email to:
               </Text>
 
-              <Text style={{ ...heroText, fontWeight: 700 }}>
-                {newEmail}
-              </Text>
+              <Text style={{ ...heroText, fontWeight: 700 }}>{newEmail}</Text>
 
               <Section style={buttonWrap}>
                 <Button href={confirmUrl} style={button}>
@@ -66,16 +60,15 @@ export function ChangeEmailConfirmationEmail({
             <div style={divider} />
 
             <Section style={contentSection}>
-              <Text style={noticeTitle}>
-                Didn’t request this change?
-              </Text>
+              <Text style={noticeTitle}>Didn’t request this change?</Text>
 
               <Text style={noticeText}>
-                If you did not request this, your account may be at risk.
-                Please ignore this email and contact support immediately at{" "}
+                If you did not request this, your account may be at risk. Please
+                ignore this email and contact support immediately at{" "}
                 <Link href={`mailto:${supportEmail}`} style={footerLink}>
                   {supportEmail}
-                </Link>.
+                </Link>
+                .
               </Text>
             </Section>
           </Section>

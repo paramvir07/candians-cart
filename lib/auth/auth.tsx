@@ -32,7 +32,7 @@ export const auth = betterAuth({
               username={user.name}
               confirmUrl={u.toString()}
               newEmail={newEmail}
-              appName="Canadian's Cart"
+              appName="Candian's Cart"
             />
           ),
         });
@@ -46,12 +46,12 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
-        subject: "Reset your Canadian's Cart account password",
+        subject: "Reset your Candian's Cart account password",
         react: (
           <ForgotPasswordEmail
             username={user.name}
             resetUrl={url}
-            appName="Canadian's Cart"
+            appName="Candian's Cart"
           />
         ),
       });
@@ -69,7 +69,7 @@ export const auth = betterAuth({
         try {
           const payload = JSON.parse(atob(token.split(".")[1]));
           requestType = payload.requestType ?? "verify";
-        } catch(err) {
+        } catch (err) {
           console.error("[emailVerification] failed to decode token:", err);
         }
       }
@@ -87,7 +87,7 @@ export const auth = betterAuth({
           <VerifyEmail
             username={user.name}
             verifyUrl={u.toString()}
-            appName="Canadian's Cart"
+            appName="Candian's Cart"
           />
         ),
       });

@@ -10,7 +10,7 @@ import StoreFooter from "@/components/store/StoreFooter";
 export const metadata: Metadata = {
   title: {
     default: "Store Dashboard",
-    template: "%s | Store Panel - Canadian's Cart",
+    template: "%s | Store Panel - Candian's Cart",
   },
   robots: {
     index: false, // Prevents indexing of all store dashboard routes
@@ -35,7 +35,7 @@ export default async function RootLayout({
         <div className="flex flex-1 items-start min-h-screen bg-gray-50">
           <StoreSidebar name={name} />
           <main className="flex-1 min-w-0 pt-14 md:pt-0 min-h-screen p-4">
-            <CustomerAdvertisements maxHeight={250}/>
+            <CustomerAdvertisements maxHeight={250} />
             {children}
           </main>
         </div>

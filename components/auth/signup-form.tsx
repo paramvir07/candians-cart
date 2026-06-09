@@ -75,7 +75,7 @@
 //       ? "Enter admin details to create access"
 //       : cashier
 //         ? "Enter cashier details to register"
-//         : "Join the Canadian's Cart family today";
+//         : "Join the Candian's Cart family today";
 
 //   const formContent = (
 //     <>
@@ -363,7 +363,7 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
       ? "Enter admin details to create access"
       : cashier
         ? "Enter cashier details to register"
-        : "Join the Canadian's Cart family today";
+        : "Join the Candian's Cart family today";
 
   const formContent = (
     <>
@@ -463,78 +463,95 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
           </div>
         )} */}
         {/* City + Province — customer only */}
-{customer && (
-  <div className="flex gap-3">
-    <select
-      id="city"
-      name="city"
-      required
-      defaultValue=""
-      className="flex-1 h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-    >
-      <option value="" disabled>City</option>
-      {[
-        "Vancouver", "Burnaby", "New Westminster", "Coquitlam",
-        "Port Coquitlam", "Port Moody", "Surrey", "Delta", "Langley",
-        "Maple Ridge", "Pitt Meadows", "Abbotsford", "Mission",
-        "Chilliwack", "Agassiz", "Hope",
-      ].map((city) => (
-        <option key={city} value={city}>{city}</option>
-      ))}
-    </select>
+        {customer && (
+          <div className="flex gap-3">
+            <select
+              id="city"
+              name="city"
+              required
+              defaultValue=""
+              className="flex-1 h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="" disabled>
+                City
+              </option>
+              {[
+                "Vancouver",
+                "Burnaby",
+                "New Westminster",
+                "Coquitlam",
+                "Port Coquitlam",
+                "Port Moody",
+                "Surrey",
+                "Delta",
+                "Langley",
+                "Maple Ridge",
+                "Pitt Meadows",
+                "Abbotsford",
+                "Mission",
+                "Chilliwack",
+                "Agassiz",
+                "Hope",
+              ].map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
 
-    <select
-      id="province"
-      name="province"
-      required
-      defaultValue="BC"
-      className="w-28 h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-    >
-      <option value="BC">BC</option>
-    </select>
-  </div>
-)}
+            <select
+              id="province"
+              name="province"
+              required
+              defaultValue="BC"
+              className="w-28 h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="BC">BC</option>
+            </select>
+          </div>
+        )}
 
         {/* Mobile */}
         {/* Mobile */}
-{!admin && (
-  <Input
-    id="mobile"
-    name="mobile"
-    type="tel"
-    placeholder="Mobile Number (10 digits)"
-    required={customer || store || cashier}
-    maxLength={14}
-    className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-    onChange={(e) => {
-      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-      let formatted = digits;
-      if (digits.length >= 7) {
-        formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-      } else if (digits.length >= 4) {
-        formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-      } else if (digits.length >= 1) {
-        formatted = `(${digits}`;
-      }
-      e.target.value = formatted;
-    }}
-    onKeyDown={(e) => {
-      // Allow backspace to delete naturally
-      if (e.key === "Backspace") {
-        const input = e.currentTarget;
-        const pos = input.selectionStart ?? 0;
-        // If cursor is right after a formatting char, skip it
-        if ([")", " ", "-"].includes(input.value[pos - 1])) {
-          e.preventDefault();
-          input.value = input.value.slice(0, pos - 1) + input.value.slice(pos);
-          // Re-trigger onChange to reformat
-          input.dispatchEvent(new Event("input", { bubbles: true }));
-        }
-      }
-    }}
-    pattern="\(\d{3}\) \d{3}-\d{4}"
-  />
-)}
+        {!admin && (
+          <Input
+            id="mobile"
+            name="mobile"
+            type="tel"
+            placeholder="Mobile Number (10 digits)"
+            required={customer || store || cashier}
+            maxLength={14}
+            className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+            onChange={(e) => {
+              const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+              let formatted = digits;
+              if (digits.length >= 7) {
+                formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+              } else if (digits.length >= 4) {
+                formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+              } else if (digits.length >= 1) {
+                formatted = `(${digits}`;
+              }
+              e.target.value = formatted;
+            }}
+            onKeyDown={(e) => {
+              // Allow backspace to delete naturally
+              if (e.key === "Backspace") {
+                const input = e.currentTarget;
+                const pos = input.selectionStart ?? 0;
+                // If cursor is right after a formatting char, skip it
+                if ([")", " ", "-"].includes(input.value[pos - 1])) {
+                  e.preventDefault();
+                  input.value =
+                    input.value.slice(0, pos - 1) + input.value.slice(pos);
+                  // Re-trigger onChange to reformat
+                  input.dispatchEvent(new Event("input", { bubbles: true }));
+                }
+              }
+            }}
+            pattern="\(\d{3}\) \d{3}-\d{4}"
+          />
+        )}
 
         {/* Cashier store picker */}
         {cashier && (

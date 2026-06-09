@@ -270,7 +270,7 @@ export default function FAQsSection() {
             <p
               style={{ color: "#78716c", fontSize: "0.9rem", lineHeight: 1.7 }}
             >
-              Everything you need to know about Canadian's Cart and how it works
+              Everything you need to know about Candian's Cart and how it works
               for your family.
             </p>
 

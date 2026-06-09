@@ -1,46 +1,49 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   type CarouselApi,
-} from "@/components/ui/carousel"
-import Autoplay from "embla-carousel-autoplay"
-import { ShoppingCart } from "lucide-react"
-import Image from "next/image"
-import Logo from "@/components/shared/Logo"
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { ShoppingCart } from "lucide-react";
+import Image from "next/image";
+import Logo from "@/components/shared/Logo";
 
 const slides = [
   {
-    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80",
     title: "Join Your\nLocal Community",
-    sub: "CANADIAN'S CART",
+    sub: "CANDIAN'S CART",
   },
   {
-    image: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80",
     title: "Fresh Groceries,\nDelivered Fast",
-    sub: "CANADIAN'S CART",
+    sub: "CANDIAN'S CART",
   },
   {
-    image: "https://images.unsplash.com/photo-1506617564039-2f3b650b7010?w=800&q=80",
+    image:
+      "https://images.unsplash.com/photo-1506617564039-2f3b650b7010?w=800&q=80",
     title: "Save More\nEvery Week",
-    sub: "CANADIAN'S CART",
+    sub: "CANDIAN'S CART",
   },
-]
+];
 
-const autoplayPlugin = Autoplay({ delay: 3000, stopOnInteraction: false })
+const autoplayPlugin = Autoplay({ delay: 3000, stopOnInteraction: false });
 
 export function SignupCarousel() {
-  const [api, setApi] = React.useState<CarouselApi>()
-  const [current, setCurrent] = React.useState(0)
+  const [api, setApi] = React.useState<CarouselApi>();
+  const [current, setCurrent] = React.useState(0);
 
   React.useEffect(() => {
-    if (!api) return
-    setCurrent(api.selectedScrollSnap())
-    api.on("select", () => setCurrent(api.selectedScrollSnap()))
-  }, [api])
+    if (!api) return;
+    setCurrent(api.selectedScrollSnap());
+    api.on("select", () => setCurrent(api.selectedScrollSnap()));
+  }, [api]);
 
   return (
     <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-2xl">
@@ -54,7 +57,6 @@ export function SignupCarousel() {
           {slides.map((slide, index) => (
             <CarouselItem key={index} className="h-full pl-0">
               <div className="relative h-full w-full flex flex-col min-h-[575px]">
-
                 <Image
                   src={slide.image}
                   alt={slide.title}
@@ -82,7 +84,8 @@ export function SignupCarousel() {
                         className="h-[3px] cursor-pointer rounded-full transition-all duration-300"
                         style={{
                           width: i === current ? "28px" : "10px",
-                          background: i === current ? "white" : "rgba(255,255,255,0.35)",
+                          background:
+                            i === current ? "white" : "rgba(255,255,255,0.35)",
                         }}
                       />
                     ))}
@@ -94,5 +97,5 @@ export function SignupCarousel() {
         </CarouselContent>
       </Carousel>
     </div>
-  )
+  );
 }

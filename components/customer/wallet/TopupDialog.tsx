@@ -44,8 +44,8 @@ export function TopUpDialog({
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("amount");
   const [loading, setLoading] = useState(false);
-  const [amount, setAmount] = useState<number | null>(200);
-  const [inputVal, setInputVal] = useState("200");
+  const [amount, setAmount] = useState<number | null>(0);
+  const [inputVal, setInputVal] = useState("0");
   const [paymentMode, setPaymentMode] = useState<"cash" | "card" | "gift">(
     "card",
   );
@@ -99,7 +99,7 @@ export function TopUpDialog({
   const handleClose = () => {
     if (loading) return;
     setOpen(false);
-    setTimeout(() => setStep("amount"), 200);
+    handleClear();
   };
 
   const handleProceed = () => {

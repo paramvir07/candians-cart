@@ -12,7 +12,11 @@ type TopupWalletProps = {
   userRole?: string;
 };
 
-const TopupWallet = ({ topupWalletData, customerId, userRole }: TopupWalletProps) => {
+const TopupWallet = ({
+  topupWalletData,
+  customerId,
+  userRole,
+}: TopupWalletProps) => {
   return (
     <div>
       <div className="p-4">
@@ -20,7 +24,8 @@ const TopupWallet = ({ topupWalletData, customerId, userRole }: TopupWalletProps
           className="relative rounded-2xl p-6 overflow-hidden flex flex-col justify-between w-full h-52"
           style={{
             backgroundColor: "#2d6a35",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
+            boxShadow:
+              "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
           }}
         >
           {/* Blob — top right */}
@@ -59,11 +64,17 @@ const TopupWallet = ({ topupWalletData, customerId, userRole }: TopupWalletProps
           {/* Top: label + balance */}
           <div className="relative z-10 flex flex-col gap-1 text-white">
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
-              Canadian's Cart Wallet
+              Candian's Cart Wallet
             </p>
             <div className="flex items-center justify-between">
               <h1 className="flex items-baseline gap-1 text-4xl font-bold">
-                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "1.75rem", fontWeight: 300 }}>
+                <span
+                  style={{
+                    color: "rgba(255,255,255,0.4)",
+                    fontSize: "1.75rem",
+                    fontWeight: 300,
+                  }}
+                >
                   $
                 </span>
                 {(topupWalletData.balance / 100).toFixed(2)}
@@ -77,7 +88,9 @@ const TopupWallet = ({ topupWalletData, customerId, userRole }: TopupWalletProps
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
               Member Since
             </p>
-            <p className="font-semibold text-sm">{topupWalletData.memberSince}</p>
+            <p className="font-semibold text-sm">
+              {topupWalletData.memberSince}
+            </p>
           </div>
         </div>
       </div>

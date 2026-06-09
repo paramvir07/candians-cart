@@ -7,7 +7,7 @@ import CashierSidebar from "@/components/cashier/CashierSlidebar";
 export const metadata: Metadata = {
   title: {
     default: "Cashier Terminal",
-    template: "%s | Terminal - Canadian's Cart",
+    template: "%s | Terminal - Candian's Cart",
   },
   robots: {
     index: false, // Prevents indexing of all cashier routes
@@ -22,12 +22,12 @@ export default async function RootLayout({
 }>) {
   return (
     <div className="scroll-smooth">
-        <div className="min-h-screen bg-gray-50">
-          <main>
-            <CashierSidebar />
-            {children}
-          </main>
-        </div>
+      <div className="min-h-screen bg-gray-50">
+        <main>
+          <CashierSidebar />
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
