@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState, useTransition, useCallback } from "react";
-import { Minus, Plus, Check, Loader2 } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import {
   UpdateItemQuantity,
   RemoveItem,

@@ -1,16 +1,15 @@
 "use client";
 
 import {
-  DecrementSubsidyItem,
-  IncrementSubsidyItem,
   movebacktoCart,
   movetoSubsidy,
   RemoveSubsidyItem,
+  UpdateSubsidyItemQuantity,
 } from "@/actions/customer/SubsidyItems.Action";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -21,6 +20,7 @@ const CartActionBtns = ({
   subsidy,
   productId,
   variant = "desktop",
+  isMeasuredInWeight,
 }: {
   customerId?: string;
   quantity: number;
@@ -28,43 +28,120 @@ const CartActionBtns = ({
   subsidy: number;
   productId: string;
   variant?: "mobile" | "desktop";
+  isMeasuredInWeight?: boolean;
 }) => {
   const [qty, setQty] = useState(quantity);
+  const [inputValue, setInputValue] = useState(String(quantity));
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingRef = useRef<"inc" | "dec" | null>(null);
 
   const afterSubsidy = Math.max(beforeSubsidy * qty - subsidy, 0);
 
-const sync = (direction: "inc" | "dec") => {
-  pendingRef.current = direction;
-  if (debounceRef.current) clearTimeout(debounceRef.current);
-  debounceRef.current = setTimeout(async () => {
-    if (pendingRef.current === "inc") await IncrementSubsidyItem(productId, customerId);  
-    else await DecrementSubsidyItem(productId, customerId);  
-    pendingRef.current = null;
-  }, 400);
-};
+  const formatQty = useCallback(
+    (value: number) =>
+      isMeasuredInWeight
+        ? String(Math.round(value * 100) / 100)
+        : String(Math.trunc(value)),
+    [isMeasuredInWeight],
+  );
 
-  const increment = () => {
+  const normalizeQty = useCallback(
+    (raw: string) => {
+      const trimmed = raw.trim();
+      if (trimmed === "") return null;
+      const parsed = Number(trimmed);
+      if (!Number.isFinite(parsed)) return null;
+      const bounded = Math.max(0, Math.min(99, parsed));
+      if (isMeasuredInWeight) return Math.round(bounded * 100) / 100;
+      return Math.trunc(bounded);
+    },
+    [isMeasuredInWeight],
+  );
+
+  const syncValue = useCallback(
+    (newQty: number) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        UpdateSubsidyItemQuantity(productId, customerId, newQty);
+      }, 400);
+    },
+    [productId, customerId],
+  );
+
+  const remove = useCallback(
+    () => RemoveSubsidyItem(productId, customerId),
+    [productId, customerId],
+  );
+
+  const increment = useCallback(() => {
     if (qty >= 99) return;
-    setQty((q) => q + 1);
-    sync("inc");
-  };
+    const next = isMeasuredInWeight
+      ? Math.round((qty + 0.5) * 100) / 100
+      : qty + 1;
+    setQty(next);
+    setInputValue(formatQty(next));
+    syncValue(next);
+  }, [qty, isMeasuredInWeight, formatQty, syncValue]);
 
-  const decrement = () => {
-    if (qty <= 1) {
-      RemoveSubsidyItem(productId, customerId);
+  const decrement = useCallback(() => {
+    const threshold = isMeasuredInWeight ? 0.49 : 1;
+    if (qty <= threshold) {
+      remove();
       return;
     }
-    setQty((q) => q - 1);
-    sync("dec");
-  };
+    const next = isMeasuredInWeight
+      ? Math.round((qty - 0.5) * 100) / 100
+      : qty - 1;
+    setQty(next);
+    setInputValue(formatQty(next));
+    syncValue(next);
+  }, [qty, isMeasuredInWeight, formatQty, syncValue, remove]);
+
+  const handleInputCommit = useCallback(() => {
+    const newQty = normalizeQty(inputValue);
+    if (newQty === null || newQty === qty) {
+      setInputValue(formatQty(qty));
+      return;
+    }
+    if (newQty === 0) {
+      remove();
+      return;
+    }
+    setQty(newQty);
+    setInputValue(formatQty(newQty));
+    syncValue(newQty);
+  }, [inputValue, qty, normalizeQty, formatQty, syncValue, remove]);
+
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (value === "") {
+        setInputValue(value);
+        return;
+      }
+      if (!isMeasuredInWeight) {
+        if (!/^\d+$/.test(value)) return;
+      } else {
+        if (!/^\d*\.?\d{0,2}$/.test(value)) return;
+      }
+      setInputValue(value);
+    },
+    [isMeasuredInWeight],
+  );
 
   useEffect(() => {
-  setQty(quantity);
-}, [quantity]);
+    setQty(quantity);
+    setInputValue(formatQty(quantity));
+  }, [quantity, formatQty]);
 
-  const remove = () => RemoveSubsidyItem(productId, customerId);
+  const inputCls = `rounded-md border text-center font-bold tabular-nums outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+    variant === "mobile" ? "h-6 w-10 text-sm" : "h-7 w-12 text-sm"
+  }`;
+
+  const inputStyleObj = {
+    borderColor: "var(--border)",
+    background: "var(--secondary)",
+    color: "var(--foreground)",
+  };
 
   if (variant === "mobile") {
     return (
@@ -87,9 +164,17 @@ const sync = (direction: "inc" | "dec") => {
             <Minus size={12} strokeWidth={2} />
           </button>
 
-          <span className="text-sm font-semibold text-gray-900 w-5 text-center tabular-nums">
-            {qty}
-          </span>
+          <input
+            type={isMeasuredInWeight ? "text" : "number"}
+            inputMode={isMeasuredInWeight ? "decimal" : "numeric"}
+            {...(!isMeasuredInWeight && { min: 0, max: 99, step: "1" })}
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={handleInputCommit}
+            onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+            className={inputCls}
+            style={inputStyleObj}
+          />
 
           <button
             type="button"
@@ -116,9 +201,17 @@ const sync = (direction: "inc" | "dec") => {
           <Minus size={13} strokeWidth={2} />
         </Button>
 
-        <span className="text-sm font-semibold text-gray-900 w-6 text-center tabular-nums">
-          {qty}
-        </span>
+        <input
+          type={isMeasuredInWeight ? "text" : "number"}
+          inputMode={isMeasuredInWeight ? "decimal" : "numeric"}
+          {...(!isMeasuredInWeight && { min: 0, max: 99, step: "1" })}
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={handleInputCommit}
+          onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+          className={inputCls}
+          style={inputStyleObj}
+        />
 
         <Button
           type="button"
@@ -165,7 +258,6 @@ export const AddtoSubsidyBtn = ({
   const handleBtnClick = async () => {
     try {
       const res = await movetoSubsidy(ProductId, customerId);
-
       if (!res.success) {
         if (res.message === "insufficient gift Wallet Balance") {
           toast.error("Insufficient gift wallet balance");
@@ -178,7 +270,6 @@ export const AddtoSubsidyBtn = ({
         }
         return;
       }
-
       toast.success("Item moved to subsidy");
     } catch (err) {
       console.error(err);
@@ -196,7 +287,6 @@ export const AddtoSubsidyBtn = ({
   );
 };
 
-
 export const MovebacktoCart = ({
   ProductId,
   customerId,
@@ -207,7 +297,6 @@ export const MovebacktoCart = ({
   const handleBtnClick = async () => {
     try {
       const res = await movebacktoCart(ProductId, customerId);
-
       if (!res.success) {
         if (res.message === "User not found") {
           toast.error("User session expired. Please login again.");
@@ -218,7 +307,6 @@ export const MovebacktoCart = ({
         }
         return;
       }
-
       toast.success("Item moved back to cart");
     } catch (err) {
       console.error(err);
@@ -227,11 +315,11 @@ export const MovebacktoCart = ({
   };
 
   return (
-  <button
-    onClick={handleBtnClick}
-    className="cursor-pointer shrink-0 flex items-center gap-1 text-[10px] font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 active:scale-95 transition-all px-2 py-0.5 rounded-md"
-  >
-    Remove Subsidy
-  </button>
+    <button
+      onClick={handleBtnClick}
+      className="cursor-pointer shrink-0 flex items-center gap-1 text-[10px] font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 active:scale-95 transition-all px-2 py-0.5 rounded-md"
+    >
+      Remove Subsidy
+    </button>
   );
 };

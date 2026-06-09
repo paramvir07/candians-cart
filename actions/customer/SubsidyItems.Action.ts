@@ -586,3 +586,51 @@ export const movebacktoCart = async (
     return { success: false, message: "Failed to move item back to cart" };
   }
 };
+
+export const UpdateSubsidyItemQuantity = async (
+  productId: string,
+  customerId: string | undefined,
+  quantity: number,
+) => {
+  try {
+    await dbConnect();
+
+    const user = await getUser(customerId);
+    if (!user) return { success: false, message: "User not found" };
+
+    const [cart, totalSubsidy] = await Promise.all([
+      CartModel.findOne({ customerId: user._id }),
+      getTotalSubsidy(user._id),
+    ]);
+    if (!cart) return { success: false, message: "Cart not found" };
+
+    const plainItems: PlainSubsidyItem[] = cart.subsidyItems.map((s) =>
+      (s as ISubsidyItems & { toObject: () => PlainSubsidyItem }).toObject(),
+    );
+
+    const exists = plainItems.find((s) => s.productId.toString() === productId);
+    if (!exists) return { success: false, message: "Item not found" };
+
+    if (quantity <= 0) {
+      // delegate to remove so cart cleanup logic runs correctly
+      return RemoveSubsidyItem(productId, customerId);
+    }
+
+    const updated = plainItems.map((s) =>
+      s.productId.toString() === productId ? { ...s, quantity } : s,
+    );
+
+    const distributed = distributeSubsidy(updated, totalSubsidy);
+
+    await CartModel.findOneAndUpdate(
+      { customerId: user._id },
+      { $set: { subsidyItems: distributed } },
+    );
+
+    revalidatePath("/customer/cart");
+    return { success: true };
+  } catch (err) {
+    console.log(err);
+    return { success: false, message: "Update failed" };
+  }
+};

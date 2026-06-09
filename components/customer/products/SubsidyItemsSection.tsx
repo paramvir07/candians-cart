@@ -114,6 +114,7 @@ export const SubsidyItemsSection = ({
                       beforeSubsidy={item.TotalPrice}
                       subsidy={item.subsidy}
                       productId={productId}
+                      isMeasuredInWeight={item.productId.isMeasuredInWeight}
                     />
                   </div>
                 </div>
@@ -194,6 +195,7 @@ export const SubsidyItemsSection = ({
                 quantity={item.quantity}
                 beforeSubsidy={item.TotalPrice}
                 productId={item.productId._id.toString()}
+                isMeasuredInWeight={item.productId.isMeasuredInWeight}
               />
             </div>
           );
