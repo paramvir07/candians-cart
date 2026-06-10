@@ -284,9 +284,8 @@ export const RemoveItem = async (
 
   if (index === -1) return;
 
-  if (cart.items[index].quantity >= 1) {
-    cart.items.splice(index, 1);
-  }
+  cart.items.splice(index, 1);
+
   await cart.save();
   if (cart.items.length === 0 && cart.subsidyItems.length === 0 && cart.miscItems.length === 0) {
     await CartModel.findOneAndDelete({ customerId: user._id });
