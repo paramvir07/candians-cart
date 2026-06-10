@@ -1,12 +1,12 @@
 # Core Utilities & Developer Ergonomics (Auth, Errors, Roles)
 
-This document outlines the foundational utilities for validation, session handling, and role-based access in **Canadian's Cart**. These patterns are standardized across the app to reduce boilerplate, ensure type safety, and prevent redundant security checks.
+This document outlines the foundational utilities for validation, session handling, and role-based access in **Candian's Cart**. These patterns are standardized across the app to reduce boilerplate, ensure type safety, and prevent redundant security checks.
 
 ## 1. Automated Session Handling (`getUserSession`)
 
 The `getUserSession` utility is designed to handle missing sessions automatically. When invoked in a Server Action or Route Handler, it guarantees that a valid session is returned. If a user is not authenticated, it throws an error or automatically redirects them to the login page.
 
-**Rule:** Do *not* write manual `if (!session)` or `if (!session.user)` checks after calling this function.
+**Rule:** Do _not_ write manual `if (!session)` or `if (!session.user)` checks after calling this function.
 
 ```ts
 // actions/auth/getUserSession.actions.ts (Conceptual Usage)
@@ -14,10 +14,10 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 
 export const performSecureAction = async () => {
   // Automatically halts execution and redirects if unauthenticated
-  const session = await getUserSession(); 
-  
+  const session = await getUserSession();
+
   const { id: userId, role } = session.user;
-  
+
   // Proceed with secure logic...
 };
 ```
@@ -47,9 +47,9 @@ const validPayload = validationResult.data;
 
 ## 3. Implicit Role-Based Access (`lib/auth/roles.ts`)
 
-Canadian's Cart operates on a strict multi-tenant role system: `admin`, `store`, `cashier`, and `customer`. 
+Candian's Cart operates on a strict multi-tenant role system: `admin`, `store`, `cashier`, and `customer`.
 
-Role enforcement is handled *implicitly* at the query level to prevent data leaks. Instead of just returning unauthorized errors, the system actively overrides query targets based on the user's role.
+Role enforcement is handled _implicitly_ at the query level to prevent data leaks. Instead of just returning unauthorized errors, the system actively overrides query targets based on the user's role.
 
 ```ts
 // Example: Query enforcement based on role
@@ -62,7 +62,10 @@ let targetStoreId = providedStoreId;
 if (role === "customer") {
   const customer = await getCustomerProfile(userId);
   if (!customer?.associatedStoreId) {
-    return { success: false, error: "Associated store not found for customer." };
+    return {
+      success: false,
+      error: "Associated store not found for customer.",
+    };
   }
   // Hard override: Ignore what the client requested, strictly use the DB truth
   targetStoreId = customer.associatedStoreId.toString();
@@ -93,14 +96,14 @@ export interface IProductDB {
 
 // Interface for the Frontend (Serialized data coming from Server Action)
 export interface IProduct {
-  _id: string;          // Serialized ObjectId
-  storeId: string;      // Serialized ObjectId
+  _id: string; // Serialized ObjectId
+  storeId: string; // Serialized ObjectId
   name: string;
   stock: boolean;
-  price: number;        // Stored in cents
-  InvoiceId: string;    // Serialized ObjectId
-  createdAt: string;    // ISO Date string
-  updatedAt: string;    // ISO Date string
+  price: number; // Stored in cents
+  InvoiceId: string; // Serialized ObjectId
+  createdAt: string; // ISO Date string
+  updatedAt: string; // ISO Date string
 }
 ```
 

@@ -34,7 +34,7 @@ const GREEN_DARK = rgb(0.18, 0.35, 0.22);
 const GRAY_LINE = rgb(0.88, 0.93, 0.88);
 const MUTED = rgb(0.52, 0.6, 0.54);
 const WHITE = rgb(1, 1, 1);
-const BLUE_LINK = rgb(0.14, 0.38, 0.88); 
+const BLUE_LINK = rgb(0.14, 0.38, 0.88);
 
 export default function StorePayoutDetailClient({
   payout,
@@ -67,7 +67,7 @@ export default function StorePayoutDetailClient({
       });
 
       // --- Header Text ---
-      page.drawText("Canadian's Cart", {
+      page.drawText("Candian's Cart", {
         x: margin,
         y: height - 44,
         font: boldFont,
@@ -156,7 +156,7 @@ export default function StorePayoutDetailClient({
       };
 
       // --- Meta Information ---
-      drawLabel("RECEIPT ID", payout._id.slice(-8).toUpperCase(), y);
+      drawLabel("RECEIPT ID", payout._id.toString(), y);
       const periodStr = `${format(new Date(payout.startDate), "MMM dd, yyyy")} - ${format(new Date(payout.endDate), "MMM dd, yyyy")}`;
       drawLabelRight("PERIOD", periodStr, y);
 
@@ -202,23 +202,18 @@ export default function StorePayoutDetailClient({
           bold: false,
         },
         {
+          label: "Total Base Price",
+          value: formatCurrency(payout.totalBasePrice),
+          bold: false,
+        },
+        {
           label: "Total GST Collected",
-          value: formatCurrency(payout.totalGST),
+          value: formatCurrency(payout.storebasetaxGST),
           bold: false,
         },
         {
           label: "Total PST Collected",
-          value: formatCurrency(payout.totalPST),
-          bold: false,
-        },
-        {
-          label: "Store Profit",
-          value: formatCurrency(payout.storeProfit),
-          bold: false,
-        },
-        {
-          label: "Cash Collected (From Orders)",
-          value: `-${formatCurrency(payout.totalOrderCashCollected)}`,
+          value: formatCurrency(payout.storebasetaxPST),
           bold: false,
         },
         {
@@ -226,14 +221,25 @@ export default function StorePayoutDetailClient({
           value: `-${formatCurrency(payout.totalWalletTopUpCashCollected)}`,
           bold: false,
         },
+
         {
           label: "Total Cash Collected",
           value: `-${formatCurrency(payout.totalCashCollected)}`,
           bold: true,
         },
         {
-          label: "Platform Profit / Fee",
-          value: `-${formatCurrency(payout.platformProfit)}`,
+          label: "Platform Commision & Fees",
+          value: `-${formatCurrency(payout.platformCommision)}`,
+          bold: false,
+        },
+        {
+          label: "Store Fixed Value",
+          value: formatCurrency(payout.storeFixedValue),
+          bold: false,
+        },
+        {
+          label: "Store Profit",
+          value: formatCurrency(payout.storeProfit),
           bold: false,
         },
         {
@@ -313,7 +319,7 @@ export default function StorePayoutDetailClient({
         });
         page.drawText(line, { x: margin, y, font, size: 9, color: MUTED });
 
-        y -= 8; 
+        y -= 8;
       }
 
       // --- Payment Receipt URL Section ---
@@ -376,19 +382,35 @@ export default function StorePayoutDetailClient({
         color: GRAY_LINE,
       });
 
-      page.drawText("Thank you for partnering with Canadian's Cart!", {
+      page.drawText("Thank you for partnering with Candian's Cart!", {
         x: margin,
         y: footerY - 18,
         font,
         size: 9,
         color: MUTED,
       });
+
+      // Calculate widths for right-aligned text
+      const prefixText = "For any queries reach out to ";
       const supportText = "info@canadianscart.ca";
+      const prefixW = font.widthOfTextAtSize(prefixText, 9);
       const supportW = font.widthOfTextAtSize(supportText, 9);
+      const totalRightW = prefixW + supportW;
+
+      // Draw "For any queries reach out to "
+      page.drawText(prefixText, {
+        x: width - margin - totalRightW,
+        y: footerY - 18,
+        font,
+        size: 9,
+        color: MUTED,
+      });
+
+      // Draw the email address right after it
       page.drawText(supportText, {
         x: width - margin - supportW,
         y: footerY - 18,
-        font,
+        font, // You can change this to boldFont if you want the email to stand out more
         size: 9,
         color: GREEN_PRIMARY,
       });
@@ -424,9 +446,7 @@ export default function StorePayoutDetailClient({
             </CardTitle>
             <CardDescription>
               Receipt ID:{" "}
-              <span className="font-mono text-xs">
-                {payout._id.toUpperCase()}
-              </span>
+              <span className="font-mono text-xs">{payout._id.toString()}</span>
             </CardDescription>
           </div>
           <Badge
@@ -491,40 +511,31 @@ export default function StorePayoutDetailClient({
 
               <div className="flex justify-between items-center px-4 py-3 text-sm">
                 <span className="text-muted-foreground font-medium">
+                  Total Base Price
+                </span>
+                <span className="font-medium text-slate-900">
+                  {formatCurrency(payout.totalBasePrice)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3 text-sm">
+                <span className="text-muted-foreground font-medium">
                   Total GST Collected
                 </span>
                 <span className="font-medium text-slate-700">
-                  {formatCurrency(payout.totalGST)}
+                  {formatCurrency(payout.storebasetaxGST)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center px-4 py-3 text-sm">
                 <span className="text-muted-foreground font-medium">
-                  Total PST/HST Collected
+                  Total PST Collected
                 </span>
                 <span className="font-medium text-slate-700">
-                  {formatCurrency(payout.totalPST)}
+                  {formatCurrency(payout.storebasetaxPST)}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center px-4 py-3 text-sm">
-                <span className="text-muted-foreground font-medium">
-                  Store Profit
-                </span>
-                <span className="font-medium text-slate-700">
-                  {formatCurrency(payout.storeProfit)}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center px-4 py-3 text-sm bg-orange-50/50">
-                <span className="text-muted-foreground font-medium">
-                  Cash Collected (From Orders)
-                </span>
-                <span className="font-medium text-orange-600">
-                  -{formatCurrency(payout.totalOrderCashCollected)}
-                </span>
-              </div>
-              
               <div className="flex justify-between items-center px-4 py-3 text-sm bg-orange-50/50">
                 <span className="text-muted-foreground font-medium">
                   Cash Collected (From Topups)
@@ -543,12 +554,37 @@ export default function StorePayoutDetailClient({
                 </span>
               </div>
 
-              <div className="flex justify-between items-center px-4 py-3 text-sm bg-red-50/50">
-                <span className="text-muted-foreground font-medium">
-                  Platform Profit / Fees
+              <div className="flex flex-col px-4 py-3 bg-red-50/50 border-b border-red-100/50">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground font-medium">
+                    Platform Commision & Fees
+                  </span>
+                  <span className="font-medium text-red-600">
+                    -{formatCurrency(payout.platformCommision)}
+                  </span>
+                </div>
+                <span className="text-[11px] text-red-500 mt-1.5 leading-tight">
+                  *Platform commision contains the Subsidies given to the
+                  customer: {formatCurrency(payout.totalSubsidy)} + the platform
+                  profit
                 </span>
-                <span className="font-medium text-red-600">
-                  -{formatCurrency(payout.platformProfit)}
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3 text-sm bg-blue-50/50">
+                <span className="text-blue-800/80 font-medium">
+                  Store Fixed Value
+                </span>
+                <span className="font-medium text-blue-900">
+                  {formatCurrency(payout.storeFixedValue)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3 text-sm bg-emerald-50/50">
+                <span className="text-emerald-800/80 font-medium">
+                  Store Profit
+                </span>
+                <span className="font-medium text-emerald-900">
+                  {formatCurrency(payout.storeProfit)}
                 </span>
               </div>
 

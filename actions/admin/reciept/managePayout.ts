@@ -18,26 +18,51 @@ export async function getStorePayoutByIdAction(payoutId: string) {
       return { success: false, message: "Payout not found", data: null };
     }
     const serializedPayout = {
-   _id: payout._id.toString(),
+      _id: payout._id.toString(),
       storeId: payout.storeId.toString(),
       startDate: payout.startDate.toISOString(),
       endDate: payout.endDate.toISOString(),
-      
-      // Financial breakdown fields
-      totalCustomerPaid: payout.totalCustomerPaid,
-      totalGST: payout.totalGST,
-      totalPST: payout.totalPST,
-      totalTax: payout.totalTax,
+
+      // Order Information
+      totalNumberofOrders: payout.totalNumberofOrders || 0,
+      orderIds: payout.orderIds
+        ? payout.orderIds.map((id: any) => id.toString())
+        : [],
+
+      // Complete Financial breakdown fields
+      totalCustomerPaid: payout.totalCustomerPaid || 0,
+      totalBasePrice: payout.totalBasePrice || 0,
+
+      // Tax Breakdown
+      totalGST: payout.totalGST || 0,
+      totalPST: payout.totalPST || 0,
+      totalTax: payout.totalTax || 0,
+      baseTax: payout.baseTax || 0,
+      markupTax: payout.markupTax || 0,
+
+      // Store Taxes & Fees
+      storebasetaxGST: payout.storebasetaxGST || 0,
+      storebasetaxPST: payout.storebasetaxPST || 0,
+      storeMarkupTax: payout.storeMarkupTax || 0,
+      storeFixedValue: payout.storeFixedValue || 0,
+      totalDisposableFee: payout.totalDisposableFee || 0,
+
+      // Platform Taxes & Fees
+      platformMarkupGSTTax: payout.platformMarkupGSTTax || 0,
+      platformMarkupPSTTax: payout.platformMarkupPSTTax || 0,
       totalSubsidy: payout.totalSubsidy || 0,
-      totalDisposableFee: payout.totalDisposableFee,
-      storeMarkupTax: payout.storeMarkupTax,
-      storeFixedValue: payout.storeFixedValue,
-      storeProfit: payout.storeProfit,
-      storePayout: payout.storePayout,
+      platformCommision: payout.platformCommision || 0,
+      platformProfit: payout.platformProfit || 0,
+
+      // Cash Collection
+      totalWalletTopUpCashCollected: payout.totalWalletTopUpCashCollected || 0,
+      totalOrderCashCollected: payout.totalOrderCashCollected || 0,
       totalCashCollected: payout.totalCashCollected || 0,
-      platformProfit: payout.platformProfit,
-      platformCommision: payout.platformCommision,
-      
+
+      // Final Calculations
+      storeProfit: payout.storeProfit || 0,
+      storePayout: payout.storePayout || 0,
+
       // Status and metadata
       status: payout.status,
       additionalNote: payout.additionalNote || "",
@@ -77,7 +102,7 @@ export async function updateStorePayoutAction(
     if (session?.user?.role !== "admin") {
       return { success: false, message: "Unauthorized", data: null };
     }
-    const UpdatedadditionalCost= Math.round(Number(data.additionalCost) * 100);
+    const UpdatedadditionalCost = Math.round(Number(data.additionalCost) * 100);
 
     const updated = await StorePayoutModel.findByIdAndUpdate(
       payoutId,

@@ -17,19 +17,19 @@ const slides = [
     image:
       "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800&q=80",
     title: "Fresh Produce,\nAlways in Stock",
-    sub: "CANADIAN'S CART",
+    sub: "CANDIAN'S CART",
   },
   {
     image:
       "https://images.unsplash.com/photo-1518843875459-f738682238a6?w=800&q=80",
     title: "Handpicked\nFruits & Veggies",
-    sub: "CANADIAN'S CART",
+    sub: "CANDIAN'S CART",
   },
   {
     image:
       "https://images.unsplash.com/photo-1467453678174-768ec283a940?w=800&q=80",
     title: "Earn While\nYou Shop",
-    sub: "CANADIAN'S CART",
+    sub: "CANDIAN'S CART",
   },
 ];
 

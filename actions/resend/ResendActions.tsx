@@ -17,10 +17,10 @@ interface HelpFormEmailData {
 }
 
 interface ContactFormData {
-  name:    string;
-  email:   string;
-  phone?:  string;
-  topic:   string;
+  name: string;
+  email: string;
+  phone?: string;
+  topic: string;
   message: string;
 }
 
@@ -34,8 +34,8 @@ export const HelpFormConfirmation = async (data: HelpFormEmailData) => {
     const response = await resend.emails.send({
       from:
         process.env.NODE_ENV === "development"
-          ? "Canadian's Cart <onboarding@resend.dev>"
-          : "Canadian's Cart <no-reply@canadianscart.ca>",
+          ? "Candian's Cart <onboarding@resend.dev>"
+          : "Candian's Cart <no-reply@canadianscart.ca>",
       to:
         process.env.NODE_ENV === "development"
           ? [process.env.DEV_EMAIL!]
@@ -61,13 +61,13 @@ export const HelpFormConfirmation = async (data: HelpFormEmailData) => {
   }
 };
 
-export const SendtoAdmin = async (data:HelpFormEmailData) =>{
-   try {
+export const SendtoAdmin = async (data: HelpFormEmailData) => {
+  try {
     const response = await resend.emails.send({
       from:
         process.env.NODE_ENV === "development"
-          ? "Canadian's Cart <onboarding@resend.dev>"
-          : "Canadian's Cart <no-reply@canadianscart.ca>",
+          ? "Candian's Cart <onboarding@resend.dev>"
+          : "Candian's Cart <no-reply@canadianscart.ca>",
       to:
         process.env.NODE_ENV === "development"
           ? [process.env.DEV_EMAIL!]
@@ -90,15 +90,15 @@ export const SendtoAdmin = async (data:HelpFormEmailData) =>{
     console.log(error);
     return Response.json({ error: "Failed to send email" }, { status: 500 });
   }
-}
+};
 
-export const SendContactAdmin = async (data:ContactFormData) =>{
+export const SendContactAdmin = async (data: ContactFormData) => {
   try {
     const response = await resend.emails.send({
       from:
         process.env.NODE_ENV === "development"
-          ? "Canadian's Cart <onboarding@resend.dev>"
-          : "Canadian's Cart <no-reply@canadianscart.ca>",
+          ? "Candian's Cart <onboarding@resend.dev>"
+          : "Candian's Cart <no-reply@canadianscart.ca>",
       to:
         process.env.NODE_ENV === "development"
           ? [process.env.DEV_EMAIL!]
@@ -129,13 +129,13 @@ export const SendReferralCode = async (data: ContactUsReferral) => {
     const response = await resend.emails.send({
       from:
         process.env.NODE_ENV === "development"
-          ? "Canadian's Cart <onboarding@resend.dev>"
-          : "Canadian's Cart <no-reply@canadianscart.ca>",
+          ? "Candian's Cart <onboarding@resend.dev>"
+          : "Candian's Cart <no-reply@canadianscart.ca>",
       to:
         process.env.NODE_ENV === "development"
           ? [process.env.DEV_EMAIL!]
           : [data.email],
-      subject: "🎟️ Your Canadian's Cart referral code is here",
+      subject: "🎟️ Your Candian's Cart referral code is here",
       html: await render(
         <ReferralCodeEmail
           recipientName={data.name}

@@ -25,7 +25,7 @@ type ForgotPasswordEmailProps = {
 export function ForgotPasswordEmail({
   username,
   resetUrl,
-  appName = "Canadian's Cart",
+  appName = "Candian's Cart",
   supportEmail = "info@canadianscart.ca",
   websiteUrl = "https://www.canadianscart.ca",
 }: ForgotPasswordEmailProps) {

@@ -21,7 +21,8 @@ function ScrollToSection() {
     const tryScroll = () => {
       const el = document.getElementById(sectionId);
       if (el) {
-        const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight;
+        const top =
+          el.getBoundingClientRect().top + window.scrollY - navbarHeight;
         window.scrollTo({ top, behavior: "smooth" });
       } else if (attempts < 20) {
         attempts++;
@@ -64,14 +65,16 @@ const values = [
     emoji: "🤝",
     title: "Community-Driven",
     description:
-      "Canadian's Cart is invite-only and grows through trust. Our members refer neighbours, friends, and family.",
+      "Candian's Cart is invite-only and grows through trust. Our members refer neighbours, friends, and family.",
   },
 ];
 
 const About = () => {
   return (
-    <div className="min-h-screen w-full relative overflow-x-hidden" style={{ backgroundColor: "#f5f0e8" }}>
-
+    <div
+      className="min-h-screen w-full relative overflow-x-hidden"
+      style={{ backgroundColor: "#f5f0e8" }}
+    >
       <Suspense fallback={null}>
         <ScrollToSection />
       </Suspense>
@@ -92,7 +95,6 @@ const About = () => {
       />
 
       <div className="relative z-10">
-
         <section className="pt-20 pb-16 flex items-center justify-center gap-0">
           <div className="hidden lg:flex flex-shrink-0 items-end justify-end w-[200px] xl:w-[260px] self-end">
             <Image
@@ -117,10 +119,10 @@ const About = () => {
               <span className="text-green-600">for families like yours</span>
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed">
-              Canadian&apos;s Cart started with a simple idea: every Canadian family
-              deserves access to fresh, affordable groceries — without the hassle.
-              We&apos;re a subsidised grocery pickup service exclusive to families in
-              Abbotsford, BC.
+              Canadian&apos;s Cart started with a simple idea: every Canadian
+              family deserves access to fresh, affordable groceries — without
+              the hassle. We&apos;re a subsidised grocery pickup service
+              exclusive to families in Abbotsford, BC.
             </p>
           </div>
 
@@ -165,8 +167,8 @@ const About = () => {
               </p>
               <p className="text-gray-600 leading-relaxed">
                 Today, over 500 families in Abbotsford save an average of 30%
-                every month shopping with Canadian&apos;s Cart. We&apos;re just getting
-                started.
+                every month shopping with Canadian&apos;s Cart. We&apos;re just
+                getting started.
               </p>
             </div>
             <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
@@ -261,7 +263,6 @@ const About = () => {
             </div>
           </div>
         </section>
-
       </div>
     </div>
   );

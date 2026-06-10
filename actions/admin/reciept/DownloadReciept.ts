@@ -91,7 +91,7 @@ async function generateReceiptPDF(
   });
 
   // --- Header Text ---
-  page.drawText("Canadian's Cart", {
+  page.drawText("Candian's Cart", {
     x: margin,
     y: height - 44,
     font: boldFont,
@@ -448,7 +448,7 @@ async function generateReceiptPDF(
   });
   page.drawRectangle({ x: 0, y: footerY, width, height: 1, color: GRAY_LINE });
 
-  page.drawText("Thank you for partnering with Canadian's Cart!", {
+  page.drawText("Thank you for partnering with Candian's Cart!", {
     x: margin,
     y: footerY - 18,
     font,
@@ -560,7 +560,7 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   });
 
   // --- Header Text ---
-  page.drawText("Canadian's Cart", {
+  page.drawText("Candian's Cart", {
     x: margin,
     y: height - 44,
     font: boldFont,
@@ -963,7 +963,7 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   });
   page.drawRectangle({ x: 0, y: footerY, width, height: 1, color: GRAY_LINE });
 
-  page.drawText("Thank you for partnering with Canadian's Cart!", {
+  page.drawText("Thank you for partnering with Candian's Cart!", {
     x: margin,
     y: footerY - 18,
     font,

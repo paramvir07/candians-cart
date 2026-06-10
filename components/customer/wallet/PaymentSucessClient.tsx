@@ -1,45 +1,45 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
-const DURATION = 3000
+const DURATION = 3000;
 
 export default function PaymentSuccessClient() {
-  const router = useRouter()
-  const [progress, setProgress] = useState(0)
-  const [mounted, setMounted] = useState(false)
-  const [checkDrawn, setCheckDrawn] = useState(false)
-  const rafRef = useRef<number | null>(null)
-  const startRef = useRef<number | null>(null)
+  const router = useRouter();
+  const [progress, setProgress] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const [checkDrawn, setCheckDrawn] = useState(false);
+  const rafRef = useRef<number | null>(null);
+  const startRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setMounted(true), 50)
-    const t2 = setTimeout(() => setCheckDrawn(true), 400)
+    const t1 = setTimeout(() => setMounted(true), 50);
+    const t2 = setTimeout(() => setCheckDrawn(true), 400);
 
     const animate = (ts: number) => {
-      if (!startRef.current) startRef.current = ts
-      const elapsed = ts - startRef.current
-      const pct = Math.min((elapsed / DURATION) * 100, 100)
-      setProgress(pct)
+      if (!startRef.current) startRef.current = ts;
+      const elapsed = ts - startRef.current;
+      const pct = Math.min((elapsed / DURATION) * 100, 100);
+      setProgress(pct);
       if (pct < 100) {
-        rafRef.current = requestAnimationFrame(animate)
+        rafRef.current = requestAnimationFrame(animate);
       } else {
-        router.push("/customer/wallet")
+        router.push("/customer/wallet");
       }
-    }
+    };
 
     const t3 = setTimeout(() => {
-      rafRef.current = requestAnimationFrame(animate)
-    }, 600)
+      rafRef.current = requestAnimationFrame(animate);
+    }, 600);
 
     return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-      clearTimeout(t3)
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [router])
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [router]);
 
   return (
     <div
@@ -62,16 +62,23 @@ export default function PaymentSuccessClient() {
         style={{
           opacity: mounted ? 1 : 0,
           transform: mounted ? "translateY(0)" : "translateY(16px)",
-          transition: "opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1)",
+          transition:
+            "opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1)",
         }}
       >
-
         {/* Animated check circle */}
         <div className="relative mb-10">
           <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <circle cx="32" cy="32" r="30" fill="oklch(0.9669 0.0287 158.0617)" />
             <circle
-              cx="32" cy="32" r="30"
+              cx="32"
+              cy="32"
+              r="30"
+              fill="oklch(0.9669 0.0287 158.0617)"
+            />
+            <circle
+              cx="32"
+              cy="32"
+              r="30"
               stroke="oklch(0.6271 0.1699 149.2138)"
               strokeWidth="1.5"
               fill="none"
@@ -79,7 +86,8 @@ export default function PaymentSuccessClient() {
               strokeDashoffset={checkDrawn ? "0" : "188.5"}
               strokeLinecap="round"
               style={{
-                transition: "stroke-dashoffset 0.6s cubic-bezier(0.16,1,0.3,1) 0.2s",
+                transition:
+                  "stroke-dashoffset 0.6s cubic-bezier(0.16,1,0.3,1) 0.2s",
                 transformOrigin: "center",
                 transform: "rotate(-90deg)",
               }}
@@ -94,7 +102,8 @@ export default function PaymentSuccessClient() {
               strokeDasharray="36"
               strokeDashoffset={checkDrawn ? "0" : "36"}
               style={{
-                transition: "stroke-dashoffset 0.4s cubic-bezier(0.16,1,0.3,1) 0.7s",
+                transition:
+                  "stroke-dashoffset 0.4s cubic-bezier(0.16,1,0.3,1) 0.7s",
               }}
             />
           </svg>
@@ -120,7 +129,10 @@ export default function PaymentSuccessClient() {
           </h1>
           <p
             className="text-sm"
-            style={{ color: "oklch(0.5252 0.0315 157.3462)", letterSpacing: "-0.01em" }}
+            style={{
+              color: "oklch(0.5252 0.0315 157.3462)",
+              letterSpacing: "-0.01em",
+            }}
           >
             Your balance is ready to use
           </p>
@@ -145,20 +157,23 @@ export default function PaymentSuccessClient() {
             boxShadow: "0 1px 2px oklch(0.2661 0.0625 153.0394 / 0.2)",
           }}
           onMouseEnter={(e) => {
-            const el = e.currentTarget as HTMLElement
-            el.style.transform = "translateY(-1px)"
-            el.style.boxShadow = "0 4px 12px oklch(0.2661 0.0625 153.0394 / 0.25)"
+            const el = e.currentTarget as HTMLElement;
+            el.style.transform = "translateY(-1px)";
+            el.style.boxShadow =
+              "0 4px 12px oklch(0.2661 0.0625 153.0394 / 0.25)";
           }}
           onMouseLeave={(e) => {
-            const el = e.currentTarget as HTMLElement
-            el.style.transform = "translateY(0)"
-            el.style.boxShadow = "0 1px 2px oklch(0.2661 0.0625 153.0394 / 0.2)"
+            const el = e.currentTarget as HTMLElement;
+            el.style.transform = "translateY(0)";
+            el.style.boxShadow =
+              "0 1px 2px oklch(0.2661 0.0625 153.0394 / 0.2)";
           }}
           onMouseDown={(e) => {
-            (e.currentTarget as HTMLElement).style.transform = "scale(0.99)"
+            (e.currentTarget as HTMLElement).style.transform = "scale(0.99)";
           }}
           onMouseUp={(e) => {
-            (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"
+            (e.currentTarget as HTMLElement).style.transform =
+              "translateY(-1px)";
           }}
         >
           Go to Wallet
@@ -180,9 +195,16 @@ export default function PaymentSuccessClient() {
           </div>
           <span
             className="text-xs tabular-nums shrink-0"
-            style={{ color: "oklch(0.5252 0.0315 157.3462)", letterSpacing: "-0.01em" }}
+            style={{
+              color: "oklch(0.5252 0.0315 157.3462)",
+              letterSpacing: "-0.01em",
+            }}
           >
-            {Math.max(0, Math.ceil(((100 - progress) / 100) * (DURATION / 1000)))}s
+            {Math.max(
+              0,
+              Math.ceil(((100 - progress) / 100) * (DURATION / 1000)),
+            )}
+            s
           </span>
         </div>
       </div>
@@ -203,9 +225,9 @@ export default function PaymentSuccessClient() {
           className="text-[11px] font-medium tracking-widest"
           style={{ color: "oklch(0.5252 0.0315 157.3462)" }}
         >
-          CANADIAN'S CART
+          CANDIAN'S CART
         </span>
       </div>
     </div>
-  )
+  );
 }

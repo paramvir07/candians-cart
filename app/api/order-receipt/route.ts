@@ -152,7 +152,7 @@ export async function POST(req: Request) {
       color: rgb(0.18, 0.5, 0.27),
     });
 
-    page.drawText("Canadian's Cart", {
+    page.drawText("Candian's Cart", {
       x: margin,
       y: height - 36,
       font: boldFont,
@@ -324,7 +324,10 @@ export async function POST(req: Request) {
     y -= 4;
     drawSectionHeader("Amount Breakdown");
 
-    drawRow("Subtotal", fmtCurrency(cartTotal - totalGST - totalPST - totalFee));
+    drawRow(
+      "Subtotal",
+      fmtCurrency(cartTotal - totalGST - totalPST - totalFee),
+    );
     if (totalGST > 0) drawRow("GST", fmtCurrency(totalGST));
     if (totalPST > 0) drawRow("PST", fmtCurrency(totalPST));
     if (totalFee > 0) drawRow("Disposable fee", fmtCurrency(totalFee));
@@ -387,7 +390,7 @@ export async function POST(req: Request) {
       color: GREEN_PRIMARY,
     });
 
-    page.drawText("Canadian's Cart — Order history receipt", {
+    page.drawText("Candian's Cart — Order history receipt", {
       x: margin,
       y: footerH - 34,
       font,

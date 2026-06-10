@@ -7,7 +7,7 @@ import AdminFooter from "@/components/admin/footer/Footer";
 export const metadata: Metadata = {
   title: {
     default: "Admin Portal",
-    template: "%s | Admin - Canadian's Cart",
+    template: "%s | Admin - Candian's Cart",
   },
   robots: {
     index: false,

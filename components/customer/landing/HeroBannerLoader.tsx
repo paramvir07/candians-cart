@@ -13,7 +13,8 @@ export async function HeroBannerLoader() {
         <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 max-w-md shadow-sm">
           <h3 className="font-bold text-lg mb-2">Unable to Load Store</h3>
           <p className="text-sm text-red-500">
-            {storeResponse.error || "Please verify your account matches a registered Canadian's Cart store."}
+            {storeResponse.error ||
+              "Please verify your account matches a registered Candian's Cart store."}
           </p>
         </div>
       </div>

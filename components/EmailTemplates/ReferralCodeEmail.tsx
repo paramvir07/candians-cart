@@ -25,7 +25,7 @@ export default function ReferralCodeEmail({
     <Tailwind>
       <Html>
         <Head />
-        <Preview>🎟️ Your Canadian's Cart referral code is here — use it before it expires.</Preview>
+        <Preview>🎟️ Your Candian's Cart referral code is here — use it before it expires.</Preview>
 
         <Body style={{
           backgroundColor: "#ecf0ec",
@@ -102,7 +102,7 @@ export default function ReferralCodeEmail({
 
                 <Text style={{ fontSize: "14px", color: "#64748b", lineHeight: "1.8", margin: 0 }}>
                   Your referral code for{" "}
-                  <span style={{ fontWeight: "700", color: "#111827" }}>Canadian's Cart</span>{" "}
+                  <span style={{ fontWeight: "700", color: "#111827" }}>Candian's Cart</span>{" "}
                   is below. Pass it along to someone or use it yourself either way, it gets you in.
                 </Text>
               </div>
@@ -207,7 +207,7 @@ export default function ReferralCodeEmail({
             {/* Footer */}
             <div style={{ textAlign: "center", paddingTop: "24px" }}>
               <Text style={{ fontSize: "11px", color: "#9ca3af", margin: "0 0 3px", lineHeight: "1.6" }}>
-                © {new Date().getFullYear()} Canadian's Cart · Invite-only family grocery platform
+                © {new Date().getFullYear()} Candian's Cart · Invite-only family grocery platform
               </Text>
               <Text style={{ fontSize: "11px", color: "#9ca3af", margin: 0 }}>
                 Abbotsford, BC · canadianscart.ca

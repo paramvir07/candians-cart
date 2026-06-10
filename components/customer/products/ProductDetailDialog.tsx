@@ -1,7 +1,6 @@
 "use client";
-// components/customer/products/ProductDetailDialog.tsx
 
-import { useState, useEffect, useTransition, useCallback } from "react";
+import { useState, useEffect, useTransition, useCallback, useRef } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
@@ -31,15 +30,6 @@ import {
   UpdateItemQuantity,
 } from "@/actions/customer/ProductAndStore/Cart.Action";
 
-async function removeAllFromServer(
-  productId: string,
-  customerId: string | undefined,
-) {
-  const formData = new FormData();
-  formData.append("productId", productId);
-  await RemoveItem(customerId, formData);
-}
-
 interface ProductDetailDialogProps {
   product: IProduct;
   open: boolean;
@@ -63,10 +53,9 @@ export function ProductDetailDialog({
   const [quantity, setQuantity] = useState(cartQuantity);
   const [inputValue, setInputValue] = useState(String(cartQuantity));
   const [isQtyDirty, setIsQtyDirty] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const quantityStep = product.isMeasuredInWeight ? 0.01 : 1;
-  const vegetablesCategory = product.category === "Vegetables";
-  const fruitsCategory = product.category === "Fruits";
+  const quantityStep = 1;
 
   const formatQtyForInput = useCallback(
     (value: number) => {
@@ -112,104 +101,118 @@ export function ProductDetailDialog({
     setIsQtyDirty(false);
   }, [quantity, formatQtyForInput]);
 
-  const optimisticUpdate = useCallback(
-    (
-      newQty: number,
-      serverAction: () => Promise<void>,
-      rollbackQty: number,
-    ) => {
-      setQuantity(newQty);
-      onQuantityChange(newQty);
-      setInputValue(formatQtyForInput(newQty));
+  const syncQuantity = useCallback(
+    (newQty: number) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+
+      debounceRef.current = setTimeout(async () => {
+        const fd = new FormData();
+        fd.append("productId", product._id as string);
+        fd.append("quantity", String(newQty));
+
+        await UpdateItemQuantity(customerId, fd);
+      }, 400);
+    },
+    [product._id, customerId],
+  );
+
+  const removeFromCartFast = useCallback(
+    async (rollbackQty?: number) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+
+      setQuantity(0);
+      onQuantityChange(0);
+      setInputValue("0");
       setIsQtyDirty(false);
 
-      startTransition(async () => {
-        try {
-          await serverAction();
-        } catch {
+      try {
+        const fd = new FormData();
+        fd.append("productId", product._id as string);
+
+        await RemoveItem(customerId, fd);
+        toast.success(`${product.name} removed from cart`);
+      } catch {
+        if (rollbackQty !== undefined) {
           setQuantity(rollbackQty);
           onQuantityChange(rollbackQty);
           setInputValue(formatQtyForInput(rollbackQty));
-          setIsQtyDirty(false);
-          toast.error("Something went wrong. Please try again.");
         }
-      });
+
+        toast.error("Failed to remove item");
+      }
     },
-    [onQuantityChange, formatQtyForInput],
+    [
+      product._id,
+      product.name,
+      customerId,
+      onQuantityChange,
+      formatQtyForInput,
+    ],
   );
 
   const handleAddToCart = () => {
     const initialQty = 1;
 
-    optimisticUpdate(
-      initialQty,
-      async () => {
+    setQuantity(initialQty);
+    onQuantityChange(initialQty);
+    setInputValue(formatQtyForInput(initialQty));
+    setIsQtyDirty(false);
+
+    startTransition(async () => {
+      try {
         const res = await AddtoCart(product._id as string, customerId);
+
         if (res?.success) {
           toast.success(`${product.name} added to cart!`);
         } else {
           throw new Error("Add to cart failed");
         }
-      },
-      0,
-    );
+      } catch {
+        setQuantity(0);
+        onQuantityChange(0);
+        setInputValue("0");
+        toast.error("Failed to add to cart");
+      }
+    });
   };
 
   const handleIncrement = () => {
-    const next = Math.min(99, quantity + quantityStep);
+    if (quantity >= 99) return;
+
+    const next = quantity + 1;
     const normalizedNext = product.isMeasuredInWeight
       ? Math.round(next * 100) / 100
       : Math.trunc(next);
 
-    optimisticUpdate(
-      normalizedNext,
-      async () => {
-        const fd = new FormData();
-        fd.append("productId", product._id as string);
-        fd.append("quantity", String(normalizedNext));
+    setQuantity(normalizedNext);
+    onQuantityChange(normalizedNext);
+    setInputValue(formatQtyForInput(normalizedNext));
+    setIsQtyDirty(false);
 
-        const res = await UpdateItemQuantity(customerId, fd);
-        if (!res?.success) throw new Error(res?.message || "Failed");
-      },
-      quantity,
-    );
+    syncQuantity(normalizedNext);
   };
 
   const handleDecrement = () => {
-    const next = Math.max(0, quantity - quantityStep);
+    if (quantity <= 1) {
+      void removeFromCartFast(quantity);
+      return;
+    }
+
+    const next = quantity - 1;
     const normalizedNext = product.isMeasuredInWeight
       ? Math.round(next * 100) / 100
       : Math.trunc(next);
 
-    optimisticUpdate(
-      normalizedNext,
-      async () => {
-        const fd = new FormData();
-        fd.append("productId", product._id as string);
-        fd.append("quantity", String(normalizedNext));
+    setQuantity(normalizedNext);
+    onQuantityChange(normalizedNext);
+    setInputValue(formatQtyForInput(normalizedNext));
+    setIsQtyDirty(false);
 
-        const res = await UpdateItemQuantity(customerId, fd);
-        if (!res?.success) throw new Error(res?.message || "Failed");
-
-        if (normalizedNext === 0) {
-          toast.success(`${product.name} removed from cart`);
-        }
-      },
-      quantity,
-    );
+    syncQuantity(normalizedNext);
   };
 
   const handleRemoveAll = () => {
-    const prev = quantity;
-
-    optimisticUpdate(
-      0,
-      async () => {
-        await removeAllFromServer(product._id as string, customerId);
-        toast.success(`${product.name} removed from cart`);
-      },
-      prev,
-    );
+    void removeFromCartFast(quantity);
   };
 
   const handleQuantityInputCommit = useCallback(() => {
@@ -229,47 +232,31 @@ export function ProductDetailDialog({
       return;
     }
 
+    if (newQty === 0) {
+      void removeFromCartFast(prevQty);
+      return;
+    }
+
     setQuantity(newQty);
     onQuantityChange(newQty);
     setInputValue(formatQtyForInput(newQty));
     setIsQtyDirty(false);
 
-    startTransition(async () => {
-      try {
-        const fd = new FormData();
-        fd.append("productId", product._id as string);
-        fd.append("quantity", String(newQty));
-
-        const res = await UpdateItemQuantity(customerId, fd);
-        if (!res?.success) throw new Error(res?.message || "Failed");
-
-        if (newQty === 0) {
-          toast.success(`${product.name} removed from cart`);
-        }
-      } catch {
-        setQuantity(prevQty);
-        onQuantityChange(prevQty);
-        setInputValue(formatQtyForInput(prevQty));
-        setIsQtyDirty(false);
-        toast.error("Something went wrong. Please try again.");
-      }
-    });
+    syncQuantity(newQty);
   }, [
     inputValue,
     quantity,
     onQuantityChange,
-    product._id,
-    product.name,
-    customerId,
     normalizeQuantity,
     formatQtyForInput,
+    removeFromCartFast,
+    syncQuantity,
   ]);
 
   const normalizedInputQty = normalizeQuantity(inputValue);
 
   const showConfirm =
     isQtyDirty &&
-    !isPending &&
     normalizedInputQty !== null &&
     normalizedInputQty !== quantity;
 
@@ -357,16 +344,17 @@ export function ProductDetailDialog({
             <span
               className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}
             >
-              {catConfig.emoji} { product.category }
+              {catConfig.emoji} {product.category}
             </span>
 
             <h2 className="text-lg font-black leading-tight text-foreground">
               {product.name}
             </h2>
             {customerId && product.primaryUPC && (
-            <p className="">
-              <span className="font-semibold">UPC: </span>{product.primaryUPC}
-            </p>
+              <p className="">
+                <span className="font-semibold">UPC: </span>
+                {product.primaryUPC}
+              </p>
             )}
             {product.description && (
               <p className="line-clamp-3 text-sm leading-relaxed text-slate-500">
@@ -414,7 +402,6 @@ export function ProductDetailDialog({
                   <button
                     type="button"
                     onClick={handleRemoveAll}
-                    disabled={isPending}
                     className="group/trash h-11 w-11 shrink-0 rounded-2xl border border-slate-200 bg-slate-50 transition-colors hover:border-red-200 hover:bg-red-50 disabled:opacity-40"
                   >
                     <div className="flex h-full w-full items-center justify-center">
@@ -430,7 +417,6 @@ export function ProductDetailDialog({
                     <button
                       type="button"
                       onClick={handleDecrement}
-                      disabled={isPending}
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-white transition-colors hover:bg-primary/10 disabled:opacity-50"
                     >
                       <Minus
@@ -473,7 +459,6 @@ export function ProductDetailDialog({
                           onKeyDown={(e) => {
                             if (e.key === "Enter") e.currentTarget.blur();
                           }}
-                          disabled={isPending}
                           className="h-8 w-14 rounded-lg border border-border bg-white text-center text-base font-black text-foreground tabular-nums outline-none focus:ring-2 focus:ring-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         />
 
@@ -482,7 +467,6 @@ export function ProductDetailDialog({
                             type="button"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={handleQuantityInputCommit}
-                            disabled={isPending}
                             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary transition-opacity hover:opacity-90 disabled:opacity-50"
                           >
                             <Check
@@ -503,7 +487,7 @@ export function ProductDetailDialog({
                       <button
                         type="button"
                         onClick={handleIncrement}
-                        disabled={isPending || quantity >= 99}
+                        disabled={quantity >= 99}
                         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary transition-colors hover:opacity-90 disabled:opacity-50"
                       >
                         <Plus
