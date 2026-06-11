@@ -52,3 +52,59 @@ Fuzzy search is done in the file `searchProducts.actions.ts`, it pushes top 20 m
 ```ts
 pipeline.push({ $limit: 20 });
 ```
+
+## Customer Searching
+
+Customer search is done in the `getCustomers.action.ts`.
+
+On MongoDB make a search vector with the following json and name the vecor as `CustomerSearch` -:
+
+```json
+{
+  "mappings": {
+    "dynamic": false,
+    "fields": {
+      "_id": {
+        "type": "objectId"
+      },
+      "associatedStoreId": {
+        "type": "objectId"
+      },
+      "name": [
+        {
+          "type": "string",
+          "analyzer": "lucene.standard"
+        },
+        {
+          "type": "autocomplete",
+          "analyzer": "lucene.standard",
+          "tokenization": "edgeGram",
+          "minGrams": 2,
+          "maxGrams": 20,
+          "foldDiacritics": true
+        }
+      ],
+      "email": [
+        {
+          "type": "string",
+          "analyzer": "lucene.standard"
+        },
+        {
+          "type": "autocomplete",
+          "analyzer": "lucene.standard",
+          "tokenization": "edgeGram",
+          "minGrams": 3,
+          "maxGrams": 30,
+          "foldDiacritics": true
+        }
+      ],
+      "mobile": {
+        "type": "string",
+        "analyzer": "lucene.standard"
+      }
+    }
+  }
+}
+```
+
+For Scanning Id, we just look up with ID.
