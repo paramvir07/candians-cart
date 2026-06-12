@@ -12,7 +12,11 @@ import CustomerCard from "./CustomerCard";
 import QrScannerButton from "./QrScannerButton";
 import { useRouter } from "next/navigation";
 import { Customer } from "@/types/customer/customer";
-import { getStoreCustomers, getSearchCustomer, PaginationMeta } from "@/actions/admin/customers/getCustomers.action";
+import {
+  getStoreCustomers,
+  getSearchCustomer,
+  PaginationMeta,
+} from "@/actions/admin/customers/getCustomers.action";
 import { useDebounce } from "use-debounce";
 import {
   Pagination,
@@ -57,6 +61,7 @@ type UserListProps = {
   adminMode?: boolean;
   storeId?: string;
   myStoreCustomersData?: Customer[];
+  initialPagination?: PaginationMeta;
 };
 
 const ITEMS_PER_PAGE = 12;
@@ -73,14 +78,21 @@ const UserList = (props: UserListProps) => {
 
   // ── State ───────────────────────────────────────────────────────────────────
   const [fetchedCustomers, setFetchedCustomers] = useState<AnyCustomer[]>(
-    (props.myStoreCustomersData as unknown as AnyCustomer[]) || []
+    (props.myStoreCustomersData as unknown as AnyCustomer[])?.slice(
+      0,
+      ITEMS_PER_PAGE,
+    ) || [],
   );
-  
-  const [isLoading, setIsLoading] = useState(isAdminMode && !props.myStoreCustomersData);
+
+  const [isLoading, setIsLoading] = useState(
+    isAdminMode && !props.myStoreCustomersData,
+  );
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [page, setPage] = useState(1);
-  const [serverPagination, setServerPagination] = useState<PaginationMeta | null>(null);
+
+  const [serverPagination, setServerPagination] =
+    useState<PaginationMeta | null>(props.initialPagination || null);
 
   // ── Package Hook ────────────────────────────────────────────────────────────
   const [debouncedSearch] = useDebounce(search, 500);
@@ -88,20 +100,6 @@ const UserList = (props: UserListProps) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
   const lastKeyTimeRef = useRef(0);
-
-  // Initial setup: If we got prop data, calculate initial pagination meta
-  useEffect(() => {
-    if (!isAdminMode && props.myStoreCustomersData && !serverPagination) {
-      setServerPagination({
-        totalCount: props.myStoreCustomersData.length,
-        totalPages: Math.ceil(props.myStoreCustomersData.length / ITEMS_PER_PAGE),
-        currentPage: 1,
-        limit: ITEMS_PER_PAGE,
-        hasNextPage: props.myStoreCustomersData.length > ITEMS_PER_PAGE,
-        hasPrevPage: false
-      });
-    }
-  }, []);
 
   // Reset to page 1 when the debounced search changes
   useEffect(() => {
@@ -143,30 +141,36 @@ const UserList = (props: UserListProps) => {
     let mounted = true;
 
     const load = async () => {
-      // 🚀 THE FIX: If cashier clears the search, instantly restore the prop data!
-      if (!isAdminMode && page === 1 && !debouncedSearch && props.myStoreCustomersData && props.myStoreCustomersData.length > 0) {
-         setFetchedCustomers(props.myStoreCustomersData as unknown as AnyCustomer[]);
-         setServerPagination({
-           totalCount: props.myStoreCustomersData.length,
-           totalPages: Math.ceil(props.myStoreCustomersData.length / ITEMS_PER_PAGE),
-           currentPage: 1,
-           limit: ITEMS_PER_PAGE,
-           hasNextPage: props.myStoreCustomersData.length > ITEMS_PER_PAGE,
-           hasPrevPage: false
-         });
-         setIsLoading(false);
-         return; 
+      // 🚀 THE FIX: Use the actual initialPagination prop instead of array length math.
+      if (
+        !isAdminMode &&
+        page === 1 &&
+        !debouncedSearch &&
+        props.myStoreCustomersData &&
+        props.myStoreCustomersData.length > 0
+      ) {
+        setFetchedCustomers(
+          props.myStoreCustomersData as unknown as AnyCustomer[],
+        );
+
+        // Use the REAL pagination data from the server, which has the true totalCount
+        if (props.initialPagination) {
+          setServerPagination(props.initialPagination);
+        }
+
+        setIsLoading(false);
+        return;
       }
 
       setIsLoading(true);
 
       const query = debouncedSearch.trim();
-      const result = query 
+      const result = query
         ? await getSearchCustomer(query, storeId, page, ITEMS_PER_PAGE)
         : await getStoreCustomers(storeId, page, ITEMS_PER_PAGE);
 
       if (!mounted) return;
-      
+
       if (result.success) {
         setFetchedCustomers(result.data as AnyCustomer[]);
         if (result.pagination) setServerPagination(result.pagination);
@@ -177,15 +181,25 @@ const UserList = (props: UserListProps) => {
     };
 
     load();
-    return () => { mounted = false; };
-  }, [isAdminMode, storeId, page, debouncedSearch, props.myStoreCustomersData]);
+    return () => {
+      mounted = false;
+    };
+  }, [
+    isAdminMode,
+    storeId,
+    page,
+    debouncedSearch,
+    props.myStoreCustomersData,
+    props.initialPagination,
+  ]);
 
   // ── Sort ───────────────────────────────────────────────────────────
   const getSortableTime = (c: AnyCustomer) => {
     const t = new Date(c.createdAt).getTime();
     if (Number.isFinite(t) && t > 0) return t;
     const idStr = c._id?.toString?.() ?? "";
-    if (/^[a-fA-F0-9]{24}$/.test(idStr)) return parseInt(idStr.slice(0, 8), 16) * 1000;
+    if (/^[a-fA-F0-9]{24}$/.test(idStr))
+      return parseInt(idStr.slice(0, 8), 16) * 1000;
     return 0;
   };
 
@@ -198,7 +212,9 @@ const UserList = (props: UserListProps) => {
   }, [fetchedCustomers, sortOrder]);
 
   const totalPages = serverPagination ? serverPagination.totalPages : 1;
-  const totalCount = serverPagination ? serverPagination.totalCount : fetchedCustomers.length;
+  const totalCount = serverPagination
+    ? serverPagination.totalCount
+    : fetchedCustomers.length;
 
   const handleScanResult = (scannedId: string) => setSearch(scannedId);
 
@@ -211,7 +227,9 @@ const UserList = (props: UserListProps) => {
       : "Search";
 
   return (
-    <div className={`space-y-3 mb-20 sm:mb-0 ${cashierRole ? "px-0 md:px-5" : ""}`}>
+    <div
+      className={`space-y-3 mb-20 sm:mb-0 ${cashierRole ? "px-0 md:px-5" : ""}`}
+    >
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="border border-border rounded-xl bg-card">
         <div className="flex items-center justify-between px-3 pt-3 pb-2 sm:px-4">
@@ -231,7 +249,9 @@ const UserList = (props: UserListProps) => {
             variant={sortOrder === "oldest" ? "default" : "secondary"}
             size="sm"
             className="gap-1.5 text-xs h-8 px-2.5 shrink-0"
-            onClick={() => setSortOrder((p) => (p === "newest" ? "oldest" : "newest"))}
+            onClick={() =>
+              setSortOrder((p) => (p === "newest" ? "oldest" : "newest"))
+            }
             type="button"
           >
             <CalendarDays className="w-3.5 h-3.5" />
@@ -280,7 +300,12 @@ const UserList = (props: UserListProps) => {
             {search ? "No customers match your search" : "No customers yet"}
           </p>
           {search && (
-            <Button variant="ghost" size="sm" onClick={() => setSearch("")} type="button">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSearch("")}
+              type="button"
+            >
               Clear search
             </Button>
           )}
@@ -293,8 +318,10 @@ const UserList = (props: UserListProps) => {
                 key={customer._id.toString()}
                 className={`flex flex-col gap-0 ${cashierRole || isAdminMode ? "hover:cursor-pointer" : ""}`}
                 onClick={() => {
-                  if (cashierRole) router.push(`/cashier/customer/${customer._id}`);
-                  if (isAdminMode) router.push(`/admin/customers/${customer._id}`);
+                  if (cashierRole)
+                    router.push(`/cashier/customer/${customer._id}`);
+                  if (isAdminMode)
+                    router.push(`/admin/customers/${customer._id}`);
                 }}
               >
                 {isAllStores && customer.associatedStoreId && (
@@ -313,14 +340,14 @@ const UserList = (props: UserListProps) => {
               </div>
             ))}
           </div>
-          
+
           {/* ── Shadcn Pagination ────────────────────────────────────────────────── */}
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between pt-4 pb-6 border-t border-border mt-4 gap-4">
               <span className="text-sm text-muted-foreground hidden sm:inline-block">
                 Showing {displayData.length} of {totalCount} customers
               </span>
-              
+
               <Pagination className="w-auto mx-0 sm:mx-auto">
                 <PaginationContent>
                   <PaginationItem>
@@ -330,30 +357,40 @@ const UserList = (props: UserListProps) => {
                         e.preventDefault();
                         if (page > 1) setPage((p) => p - 1);
                       }}
-                      className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                      className={
+                        page <= 1 ? "pointer-events-none opacity-50" : ""
+                      }
                     />
                   </PaginationItem>
-                  
+
                   {/* Dynamic Ellipsis Logic */}
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                    .filter(
+                      (p) =>
+                        p === 1 || p === totalPages || Math.abs(p - page) <= 1,
+                    )
                     .map((p, index, array) => (
                       <div key={p} className="flex items-center">
                         {index > 0 && p - array[index - 1] > 1 && (
-                          <PaginationItem><PaginationEllipsis /></PaginationItem>
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
                         )}
                         <PaginationItem>
                           <PaginationLink
                             href="#"
                             isActive={page === p}
-                            onClick={(e) => { e.preventDefault(); setPage(p); }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setPage(p);
+                            }}
                           >
                             {p}
                           </PaginationLink>
                         </PaginationItem>
                       </div>
                     ))}
-                  
+
                   <PaginationItem>
                     <PaginationNext
                       href="#"
@@ -361,7 +398,11 @@ const UserList = (props: UserListProps) => {
                         e.preventDefault();
                         if (page < totalPages) setPage((p) => p + 1);
                       }}
-                      className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+                      className={
+                        page >= totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
                     />
                   </PaginationItem>
                 </PaginationContent>

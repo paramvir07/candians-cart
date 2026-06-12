@@ -12,7 +12,6 @@ import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 import { dbConnect } from "@/db/dbConnect";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { MiscellaneousItemsModel } from "@/db/models/customer/MiscItem.model";
-import ProductModel from "@/db/models/store/products.model";
 
 export interface GetRecieptParams {
   startDate: Date;
