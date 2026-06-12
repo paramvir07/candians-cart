@@ -66,41 +66,39 @@ const cartItemSchema = new Schema<ICartItem>(
   { _id: false, timestamps: true }
 );
 
-const SubsidyItemsSchema = new Schema<ISubsidyItems>(
-  {
-    productId: {
-      type: Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
-    },
-    storeId: {
-      type: Schema.Types.ObjectId,
-      ref: "store",
-      required: true,
-    },
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 99,
-    },
-    TotalPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    subsidy: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    afterSubsidy: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-  }
-);
+const SubsidyItemsSchema = new Schema<ISubsidyItems>({
+  productId: {
+    type: Schema.Types.ObjectId,
+    ref: "Product",
+    required: true,
+  },
+  storeId: {
+    type: Schema.Types.ObjectId,
+    ref: "store",
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 0.01,
+    max: 99,
+  },
+  TotalPrice: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  subsidy: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  afterSubsidy: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+});
 
 const miscCartItemSchema = new Schema<IMiscCartItem>(
   {
@@ -112,7 +110,7 @@ const miscCartItemSchema = new Schema<IMiscCartItem>(
     quantity: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0.01,
       max: 99,
     },
     priceAtAdd: {
@@ -126,7 +124,7 @@ const miscCartItemSchema = new Schema<IMiscCartItem>(
       enum: [0.0, 0.05, 0.07, 0.12],
     },
   },
-  { _id: false, timestamps: true }
+  { _id: false, timestamps: true },
 );
 
 const cartSchema = new Schema<ICart>(

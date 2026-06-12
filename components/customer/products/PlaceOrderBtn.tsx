@@ -81,7 +81,7 @@ const PlaceOrderBtn = ({
             <ArrowRight className="w-4 h-4" />
           </Button>
         )}
-        {!customerId && (
+        {/* {!customerId && (
           <Button
             onClick={handleCustomerOrder}
             variant="outline"
@@ -90,7 +90,7 @@ const PlaceOrderBtn = ({
             Pay at Store
             <Store className="w-4 h-4" />
           </Button>
-        )}
+        )} */}
       </div>
     );
   }
@@ -132,7 +132,7 @@ const PlaceOrderBtn = ({
             </Button>
           )}
 
-          {!customerId && (
+          {/* {!customerId && (
             <Button
               onClick={handleCustomerOrder}
               className="w-full py-5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 border-2"
@@ -140,7 +140,7 @@ const PlaceOrderBtn = ({
               Pay at Store
               <Store className="w-4 h-4" />
             </Button>
-          )}
+          )} */}
         </div>
       </div>
     </>

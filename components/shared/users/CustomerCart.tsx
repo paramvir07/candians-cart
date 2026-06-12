@@ -77,14 +77,21 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   ]);
 
   const giftWalletBalance = UserData?.giftWalletBalance ?? 0;
-  const items = (CartItems?.items as ICartItem[] | null)
-  ?.slice()
-  .sort((a, b) => Number(a.productId.subsidised) - Number(b.productId.subsidised)) ?? [];
+  const items =
+    (CartItems?.items as ICartItem[] | null)
+      ?.slice()
+      .sort(
+        (a, b) =>
+          Number(a.productId.subsidised) - Number(b.productId.subsidised),
+      ) ?? [];
   const subItems = (CartItems?.subItems as ISubsidyItems[]) ?? [];
   const MiscItems = (CartItems?.miscItems as IMiscCartItem[]) ?? [];
   const subItemProductIds = subItems.map((s) => s.productId._id.toString());
 
-    if (!items || (items.length === 0 && subItems.length === 0 && MiscItems.length === 0))
+  if (
+    !items ||
+    (items.length === 0 && subItems.length === 0 && MiscItems.length === 0)
+  )
     return <EmptyCart customerId={customerId} />;
 
   const itemTotals = items.reduce(
@@ -100,7 +107,15 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       acc.totalMarkup += markup;
       return acc;
     },
-    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0, totalMarkup: 0 },
+    {
+      subtotal: 0,
+      gst: 0,
+      pst: 0,
+      totalTax: 0,
+      disposable: 0,
+      total: 0,
+      totalMarkup: 0,
+    },
   );
   const nonSubsidisedMarkup = items.reduce((acc, item) => {
     if (item.productId.subsidised) return acc;
@@ -108,7 +123,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   }, 0);
 
   // console.log("Total Markup : ",nonSubsidisedMarkup)
-  let newSubisdyCalc = 0
+  let newSubisdyCalc = 0;
   // console.log("Subsidy given:", (nonSubsidisedMarkup * 0.6)/100);
 
   const progressTotal = items.reduce(
@@ -128,9 +143,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const { prev, current, mid } = getFibBracketFrom21(totalInDollars);
   const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
 
-  
-  if(prev>=21){
-    newSubisdyCalc = nonSubsidisedMarkup*0.6;
+  if (prev >= 21) {
+    newSubisdyCalc = nonSubsidisedMarkup * 0.6;
   }
   const activeMarkup = (() => {
     if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
@@ -184,7 +198,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
         const taxRate = item.taxAtAdd ?? (item.itemId as any)?.tax ?? 0;
         const linePreTax = item.priceAtAdd * item.quantity;
 
-        let gst = 0, pst = 0;
+        let gst = 0,
+          pst = 0;
         if (taxRate === 0.05) gst = Math.round(linePreTax * 0.05);
         else if (taxRate === 0.07) pst = Math.round(linePreTax * 0.07);
         else if (taxRate === 0.12) {
@@ -213,7 +228,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal,
     gst: itemTotals.gst + subsidyTotals.gst + miscTotals.gst,
     pst: itemTotals.pst + subsidyTotals.pst + miscTotals.pst,
-    totalTax: itemTotals.totalTax + subsidyTotals.totalTax +miscTotals.totalTax,
+    totalTax:
+      itemTotals.totalTax + subsidyTotals.totalTax + miscTotals.totalTax,
     disposable: itemTotals.disposable + subsidyTotals.disposable,
     total: itemTotals.total + subsidyTotals.total + miscTotals.total,
   };
@@ -317,7 +333,11 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </span>
             {fmt(UserData?.walletBalance ?? 0)}
           </p>
-          <TopUpDialog customerId={customerId} cartTotal={totals.total} WalletBalance={UserData?.walletBalance ?? 0} />
+          <TopUpDialog
+            customerId={customerId}
+            cartTotal={totals.total}
+            WalletBalance={UserData?.walletBalance ?? 0}
+          />
         </CardContent>
       </Card>
 
@@ -518,7 +538,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                         <div className="min-w-0 flex-1">
                           <div>
                             <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2 flex gap-2 items-center">
-                              {item.productId.name}{isMeasuredInWeight && `/${item.productId.UOM?.toLowerCase()}`}
+                              {item.productId.name}
+                              {isMeasuredInWeight &&
+                                `/${item.productId.UOM?.toLowerCase()}`}
                               {item.productId?.PriceDrop ? (
                                 <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm w-fit">
                                   <BadgePercent
@@ -603,33 +625,37 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
         </div>
 
         {/* Mobile/Tablet CTA — sticky above footer */}
-        <div className="sticky bottom-0 shrink-0 border-t border-border bg-background/95 backdrop-blur-md px-4 pt-3.5 pb-6 z-10">
-          <div
-            className={`flex ${customerId ? "items-center" : ""} justify-between gap-4 ${!customerId ? "mb-2" : ""}`}
-          >
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground leading-tight">
-                Total
-              </p>
-              <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground truncate">
-                CA${fmt(totals.total)}
+        {customerId && (
+          <div className="sticky bottom-0 shrink-0 border-t border-border bg-background/95 backdrop-blur-md px-4 pt-3.5 pb-6 z-10">
+            <div
+              className={`flex ${customerId ? "items-center" : ""} justify-between gap-4 ${!customerId ? "mb-2" : ""}`}
+            >
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground leading-tight">
+                  Total
+                </p>
+                <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground truncate">
+                  CA${fmt(totals.total)}
+                </p>
+              </div>
+
+              <div className="shrink-0">
+                <CheckoutActions
+                  customerId={customerId}
+                  compact
+                  TotalCart={totals}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-1.5">
+              <Shield className="h-3 w-3 text-muted-foreground/50 shrink-0" />
+              <p className="text-[11px] text-muted-foreground/60">
+                Secured checkout
               </p>
             </div>
-            <div className="shrink-0">
-              <CheckoutActions
-                customerId={customerId}
-                compact
-                TotalCart={totals}
-              />
-            </div>
           </div>
-          <div className="flex items-center justify-center gap-1.5">
-            <Shield className="h-3 w-3 text-muted-foreground/50 shrink-0" />
-            <p className="text-[11px] text-muted-foreground/60">
-              Secured checkout
-            </p>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* ════════════════════════════════════════
@@ -721,7 +747,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                   {items.map((item: ICartItem) => {
                     const { afterMarkup } = calcLine(item);
                     const hasImage = item.productId.images?.[0]?.url;
-                    const isMeasuredInWeight = item.productId.isMeasuredInWeight;
+                    const isMeasuredInWeight =
+                      item.productId.isMeasuredInWeight;
                     return (
                       <div
                         key={item.productId._id.toString()}
@@ -768,7 +795,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                             {" "}
                             {/* changed items-center to items-start */}
                             <p className="text-sm font-semibold text-foreground truncate flex-1 min-w-0">
-                              {item.productId.name}{isMeasuredInWeight && `/${item.productId.UOM?.toLowerCase()}`}
+                              {item.productId.name}
+                              {isMeasuredInWeight &&
+                                `/${item.productId.UOM?.toLowerCase()}`}
                             </p>
                             <p className="text-xs font-semibold text-muted-foreground">
                               {item.productId?.PriceDrop ? (
@@ -861,15 +890,20 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 <CardContent className="px-5 py-5">
                   <OrderSummaryContent />
                 </CardContent>
-                <div className="px-5 pb-5 space-y-3 border-t border-border/50 pt-4">
-                  <CheckoutActions customerId={customerId} TotalCart={totals} />
-                  <div className="flex items-center justify-center gap-1.5">
-                    <Shield className="h-3 w-3 text-muted-foreground/40 shrink-0" />
-                    <p className="text-[11px] text-muted-foreground/50">
-                      Secured checkout
-                    </p>
+                {customerId && (
+                  <div className="px-5 pb-5 space-y-3 border-t border-border/50 pt-4">
+                    <CheckoutActions
+                      customerId={customerId}
+                      TotalCart={totals}
+                    />
+                    <div className="flex items-center justify-center gap-1.5">
+                      <Shield className="h-3 w-3 text-muted-foreground/40 shrink-0" />
+                      <p className="text-[11px] text-muted-foreground/50">
+                        Secured checkout
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
               </Card>
             </div>
           </div>
