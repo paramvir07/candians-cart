@@ -95,7 +95,7 @@ export const BaseProductFormSchema = z.object({
 
   isMeasuredInWeight: z.boolean().optional().default(false),
 
-  UOM: z.string().trim().optional(),
+  UOM: z.string().trim().toLowerCase().optional(),
 
   vendorId: z
     .string()
