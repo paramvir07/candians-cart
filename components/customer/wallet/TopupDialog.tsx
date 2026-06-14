@@ -63,9 +63,8 @@ export function TopUpDialog({
     !isCashPayment ||
     (cashReceived !== null && amount !== null && cashReceived >= amount);
 
-  // exact amount owed in dollars (both cartTotal and WalletBalance are in cents)
   const exactOwedCents = Math.max((cartTotal ?? 0) - (WalletBalance ?? 0), 0);
-  const exactOwedDollars = exactOwedCents / 100;
+  const exactOwedDollars = Math.ceil(exactOwedCents / 100 * 100) / 100;
 
   const handlePreset = (preset: number) => {
     setAmount(preset);

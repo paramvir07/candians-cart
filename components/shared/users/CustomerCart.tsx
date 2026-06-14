@@ -218,6 +218,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     total: itemTotals.total + subsidyTotals.total + miscTotals.total,
   };
 
+
   const showGST = totals.gst > 0;
   const showPST = totals.pst > 0;
   const active = activeMarkup ?? 0;
