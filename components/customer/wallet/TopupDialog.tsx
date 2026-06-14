@@ -64,7 +64,12 @@ export function TopUpDialog({
     (cashReceived !== null && amount !== null && cashReceived >= amount);
 
   const exactOwedCents = Math.max((cartTotal ?? 0) - (WalletBalance ?? 0), 0);
-  const exactOwedDollars = Math.ceil(exactOwedCents / 100 * 100) / 100;
+  const coveredCheck = exactOwedCents + (WalletBalance ?? 0);
+  const adjustedOwedCents =
+    coveredCheck < (cartTotal ?? 0)
+      ? exactOwedCents + ((cartTotal ?? 0) - coveredCheck)
+      : exactOwedCents;
+  const exactOwedDollars = adjustedOwedCents / 100;
 
   const handlePreset = (preset: number) => {
     setAmount(preset);
@@ -73,6 +78,25 @@ export function TopUpDialog({
     if (isCashPayment) {
       setCashReceived(preset);
       setCashReceivedInput(String(preset));
+    }
+  };
+
+  const handleExactPreset = () => {
+    let finalCents = Math.max((cartTotal ?? 0) - (WalletBalance ?? 0), 0);
+
+    const coveredCents = finalCents + (WalletBalance ?? 0);
+    if (coveredCents < (cartTotal ?? 0)) {
+      finalCents += (cartTotal ?? 0) - coveredCents;
+    }
+
+    const dollars = finalCents / 100;
+
+    setAmount(dollars);
+    setInputVal(dollars.toFixed(2));
+
+    if (isCashPayment) {
+      setCashReceived(dollars);
+      setCashReceivedInput(dollars.toFixed(2));
     }
   };
 
@@ -302,60 +326,64 @@ export function TopUpDialog({
                   );
                 })}
 
-              {exactOwedCents > 0 ? (() => {
-                const isExactSelected = amount === exactOwedDollars && inputVal === String(exactOwedDollars);
-                return (
-                  <button
-                    onClick={() => handlePreset(exactOwedDollars)}
-                    className="rounded-xl py-2.5 transition-all active:scale-95 flex flex-col items-center justify-center gap-0.5 relative overflow-hidden"
-                    style={{
-                      background: isExactSelected
-                        ? "var(--color-primary)"
-                        : "color-mix(in srgb, var(--color-primary) 10%, transparent)",
-                      color: isExactSelected
-                        ? "var(--color-primary-foreground)"
-                        : "var(--color-primary)",
-                      fontWeight: 700,
-                      fontSize: "11px",
-                      lineHeight: 1.2,
-                      border: isExactSelected
-                        ? "1.5px solid var(--color-primary)"
-                        : "1.5px solid color-mix(in srgb, var(--color-primary) 35%, transparent)",
-                      transform: isExactSelected ? "scale(1.04)" : "scale(1)",
-                      boxShadow: isExactSelected ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
-                    }}
-                  >
-                    <span style={{ fontSize: "12px", fontWeight: 800, letterSpacing: "-0.3px" }}>
-                      ${exactOwedDollars.toFixed(2)}
-                    </span>
-                    <span
+                {exactOwedCents > 0 ? (() => {
+                  const isExactSelected =
+                    amount !== null &&
+                    Math.round(amount * 100) === adjustedOwedCents;
+                  return (
+                    <button
+                      onClick={handleExactPreset}
+                      className="rounded-xl py-2.5 transition-all active:scale-95 flex flex-col items-center justify-center gap-0.5 relative overflow-hidden"
                       style={{
-                        fontSize: "9px",
-                        fontWeight: 600,
-                        letterSpacing: "0.04em",
-                        textTransform: "uppercase",
-                        opacity: isExactSelected ? 0.75 : 0.55,
+                        background: isExactSelected
+                          ? "var(--color-primary)"
+                          : "color-mix(in srgb, var(--color-primary) 10%, transparent)",
+                        color: isExactSelected
+                          ? "var(--color-primary-foreground)"
+                          : "var(--color-primary)",
+                        fontWeight: 700,
+                        fontSize: "11px",
+                        lineHeight: 1.2,
+                        border: isExactSelected
+                          ? "1.5px solid var(--color-primary)"
+                          : "1.5px solid color-mix(in srgb, var(--color-primary) 35%, transparent)",
+                        transform: isExactSelected ? "scale(1.04)" : "scale(1)",
+                        boxShadow: isExactSelected
+                          ? "0 4px 12px rgba(0,0,0,0.15)"
+                          : "none",
                       }}
                     >
-                      exact
-                    </span>
+                      <span style={{ fontSize: "12px", fontWeight: 800, letterSpacing: "-0.3px" }}>
+                        ${exactOwedDollars.toFixed(2)}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "9px",
+                          fontWeight: 600,
+                          letterSpacing: "0.04em",
+                          textTransform: "uppercase",
+                          opacity: isExactSelected ? 0.75 : 0.55,
+                        }}
+                      >
+                        exact
+                      </span>
+                    </button>
+                  );
+                })() : (
+                  <button
+                    onClick={() => handlePreset(250)}
+                    className="rounded-xl py-2.5 text-sm transition-all active:scale-95"
+                    style={{
+                      background: amount === 250 && inputVal === "250" ? "var(--color-primary)" : "var(--color-secondary)",
+                      color: amount === 250 && inputVal === "250" ? "var(--color-primary-foreground)" : "var(--color-secondary-foreground)",
+                      fontWeight: amount === 250 && inputVal === "250" ? 700 : 500,
+                      transform: amount === 250 && inputVal === "250" ? "scale(1.04)" : "scale(1)",
+                      boxShadow: amount === 250 && inputVal === "250" ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+                    }}
+                  >
+                    $250
                   </button>
-                );
-              })() : (
-                <button
-                  onClick={() => handlePreset(250)}
-                  className="rounded-xl py-2.5 text-sm transition-all active:scale-95"
-                  style={{
-                    background: amount === 250 && inputVal === "250" ? "var(--color-primary)" : "var(--color-secondary)",
-                    color: amount === 250 && inputVal === "250" ? "var(--color-primary-foreground)" : "var(--color-secondary-foreground)",
-                    fontWeight: amount === 250 && inputVal === "250" ? 700 : 500,
-                    transform: amount === 250 && inputVal === "250" ? "scale(1.04)" : "scale(1)",
-                    boxShadow: amount === 250 && inputVal === "250" ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
-                  }}
-                >
-                  $250
-                </button>
-              )}
+                )}
               </div>
             </div>
 
