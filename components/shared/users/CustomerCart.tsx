@@ -224,14 +224,13 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   // console.log(miscTotals)
 
   const totals = {
-    subtotal:
-      itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal,
+    subtotal: Math.round(itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal),
     gst: itemTotals.gst + subsidyTotals.gst + miscTotals.gst,
     pst: itemTotals.pst + subsidyTotals.pst + miscTotals.pst,
     totalTax:
       itemTotals.totalTax + subsidyTotals.totalTax + miscTotals.totalTax,
     disposable: itemTotals.disposable + subsidyTotals.disposable,
-    total: itemTotals.total + subsidyTotals.total + miscTotals.total,
+    total: Math.round(itemTotals.total + subsidyTotals.total + miscTotals.total),
   };
 
 
