@@ -2,6 +2,8 @@ import { getMiscItems } from "@/actions/cashier/MiscItem"
 import CashierSidebar from "@/components/cashier/CashierSlidebar"
 import MiscItemsList from "@/components/cashier/MiscItemList";
 
+export const dynamic = "force-dynamic";
+
 const page = async() => {
     const MiscItems = await getMiscItems();
   return (

@@ -88,6 +88,7 @@ export const createMiscProduct = async (data: MiscItemFormData, customerId: stri
 
         revalidatePath(`/cashier/customer/${user.customerData._id}/cart`);
         revalidatePath("/customer/cart");
+        revalidatePath("/cashier/misc-items");
         return { success: true, message: "Misc Item added" };
     } catch (err) {
         console.log(err);
@@ -302,6 +303,7 @@ export const createProductFromMisc = async (data: MiscProductPayload, miscId: st
 
     revalidateTag(`products-${storeId}`, "max");
     revalidatePath("/cashier/misc-items");
+    
 
     return { success: true, message: "Product created successfully" };
   } catch (err) {
