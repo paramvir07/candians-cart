@@ -523,8 +523,8 @@ export const PlaceOrder = async ({
       TotalGST: TotalCart.gst,
       TotalPST: TotalCart.pst,
       TotalDisposableFee: TotalCart.disposable,
-      BaseTotal: Number(baseTotal.toFixed(2)),
-      cartTotal: Number(cartTotal.toFixed(2)),
+      BaseTotal: Math.round(baseTotal),
+      cartTotal: Math.round(cartTotal),
       subsidy: customerCart.cartSubsidy,
       subsidyLeft: Math.round(
         Number(
