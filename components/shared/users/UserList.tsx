@@ -12,7 +12,21 @@ import CustomerCard from "./CustomerCard";
 import QrScannerButton from "./QrScannerButton";
 import { useRouter } from "next/navigation";
 import { Customer } from "@/types/customer/customer";
-import { getStoreCustomers } from "@/actions/admin/customers/getCustomers.action";
+import {
+  getStoreCustomers,
+  getSearchCustomer,
+  PaginationMeta,
+} from "@/actions/admin/customers/getCustomers.action";
+import { useDebounce } from "use-debounce";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 type SortOrder = "newest" | "oldest";
 
@@ -30,8 +44,6 @@ const CustomerCardSkeleton = () => (
   </div>
 );
 
-// Unified customer type — AdminCustomer has storeName, Customer does not.
-// We cast both to this internal shape.
 type AnyCustomer = {
   _id: string | { toString(): string };
   name: string;
@@ -44,46 +56,59 @@ type AnyCustomer = {
   [key: string]: any;
 };
 
-type UserListProps =
-  | {
-      // ── Store / Cashier mode ──────────────────────────────────────────────────
-      // Data is fetched server-side and passed in as a prop.
-      // The component does NOT fetch on its own.
-      myStoreCustomersData: Customer[];
-      userRole?: "cashier" | "store";
-      // These must NOT be passed in store/cashier mode:
-      storeId?: never;
-      adminMode?: never;
-    }
-  | {
-      // ── Admin mode ────────────────────────────────────────────────────────────
-      // Data is fetched client-side. No prop array is accepted.
-      adminMode: true;
-      storeId?: string; // omit for all-stores, pass for store-specific
-      userRole?: string;
-      myStoreCustomersData?: never;
-    };
+type UserListProps = {
+  userRole?: "cashier" | "store" | "admin";
+  adminMode?: boolean;
+  storeId?: string;
+  myStoreCustomersData?: Customer[];
+  initialPagination?: PaginationMeta;
+};
+
+const ITEMS_PER_PAGE = 12;
 
 const UserList = (props: UserListProps) => {
-  const isAdminMode = "adminMode" in props && props.adminMode === true;
+  const isAdminMode = props.adminMode === true;
   const userRole = props.userRole;
   const cashierRole = userRole === "cashier";
   const storeRole = userRole === "store";
   const router = useRouter();
 
+  const storeId = props.storeId;
+  const isAllStores = isAdminMode && !storeId;
+
   // ── State ───────────────────────────────────────────────────────────────────
-  // In store/cashier mode the data is pre-loaded; skip fetch.
-  const [fetchedCustomers, setFetchedCustomers] = useState<AnyCustomer[]>([]);
-  const [isLoading, setIsLoading] = useState(isAdminMode); // only loading when admin fetches
+  const [fetchedCustomers, setFetchedCustomers] = useState<AnyCustomer[]>(
+    (props.myStoreCustomersData as unknown as AnyCustomer[])?.slice(
+      0,
+      ITEMS_PER_PAGE,
+    ) || [],
+  );
+
+  const [isLoading, setIsLoading] = useState(
+    isAdminMode && !props.myStoreCustomersData,
+  );
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  const [page, setPage] = useState(1);
+
+  const [serverPagination, setServerPagination] =
+    useState<PaginationMeta | null>(props.initialPagination || null);
+
+  // ── Package Hook ────────────────────────────────────────────────────────────
+  const [debouncedSearch] = useDebounce(search, 500);
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
   const lastKeyTimeRef = useRef(0);
 
+  // Reset to page 1 when the debounced search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  // QR Scanner Keydown Listener
   useEffect(() => {
     const THRESHOLD = 50;
-
     const handleKeyDown = (e: KeyboardEvent) => {
       const now = Date.now();
       const gap = now - lastKeyTimeRef.current;
@@ -96,15 +121,12 @@ const UserList = (props: UserListProps) => {
         if (buf.length >= 6) {
           e.preventDefault();
           e.stopPropagation();
-
-          // Focus, highlight, replace
           searchInputRef.current?.focus();
           setSearch(buf);
           setTimeout(() => searchInputRef.current?.select(), 0);
         }
         return;
       }
-
       if (e.key.length !== 1) return;
       if (gap > THRESHOLD) scanBufferRef.current = "";
       scanBufferRef.current += e.key;
@@ -113,35 +135,65 @@ const UserList = (props: UserListProps) => {
     window.addEventListener("keydown", handleKeyDown, true);
     return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, []);
-  // Resolve which data array to use
-  const allCustomers: AnyCustomer[] = isAdminMode
-    ? fetchedCustomers
-    : (((props as any).myStoreCustomersData ?? []) as AnyCustomer[]);
 
-  const storeId = isAdminMode
-    ? ((props as any).storeId as string | undefined)
-    : undefined;
-  const isAllStores = isAdminMode && !storeId;
-
-  // ── Admin fetch ─────────────────────────────────────────────────────────────
+  // ── Unified Server Fetch (For Admins AND Cashiers) ─────────────────────────
   useEffect(() => {
-    if (!isAdminMode) return;
     let mounted = true;
+
     const load = async () => {
+      // 🚀 THE FIX: Use the actual initialPagination prop instead of array length math.
+      if (
+        !isAdminMode &&
+        page === 1 &&
+        !debouncedSearch &&
+        props.myStoreCustomersData &&
+        props.myStoreCustomersData.length > 0
+      ) {
+        setFetchedCustomers(
+          props.myStoreCustomersData as unknown as AnyCustomer[],
+        );
+
+        // Use the REAL pagination data from the server, which has the true totalCount
+        if (props.initialPagination) {
+          setServerPagination(props.initialPagination);
+        }
+
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
-      const result = await getStoreCustomers(storeId);
+
+      const query = debouncedSearch.trim();
+      const result = query
+        ? await getSearchCustomer(query, storeId, page, ITEMS_PER_PAGE)
+        : await getStoreCustomers(storeId, page, ITEMS_PER_PAGE);
+
       if (!mounted) return;
-      if (result.success) setFetchedCustomers(result.data as AnyCustomer[]);
-      else toast.error(result.error || "Failed to fetch customers");
+
+      if (result.success) {
+        setFetchedCustomers(result.data as AnyCustomer[]);
+        if (result.pagination) setServerPagination(result.pagination);
+      } else {
+        toast.error(result.error || "Failed to fetch customers");
+      }
       setIsLoading(false);
     };
+
     load();
     return () => {
       mounted = false;
     };
-  }, [isAdminMode, storeId]);
+  }, [
+    isAdminMode,
+    storeId,
+    page,
+    debouncedSearch,
+    props.myStoreCustomersData,
+    props.initialPagination,
+  ]);
 
-  // ── Sort / filter ───────────────────────────────────────────────────────────
+  // ── Sort ───────────────────────────────────────────────────────────
   const getSortableTime = (c: AnyCustomer) => {
     const t = new Date(c.createdAt).getTime();
     if (Number.isFinite(t) && t > 0) return t;
@@ -151,34 +203,23 @@ const UserList = (props: UserListProps) => {
     return 0;
   };
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const list = allCustomers.filter((c) => {
-      if (!q) return true;
-      return (
-        c.name?.toLowerCase().includes(q) ||
-        c.email?.toLowerCase().includes(q) ||
-        c.mobile?.includes(q) ||
-        c._id?.toString().includes(q) ||
-        (c.storeName ?? "").toLowerCase().includes(q)
-      );
-    });
-    return list.sort((a, b) =>
+  const displayData = useMemo(() => {
+    return [...fetchedCustomers].sort((a, b) =>
       sortOrder === "newest"
         ? getSortableTime(b) - getSortableTime(a)
         : getSortableTime(a) - getSortableTime(b),
     );
-  }, [allCustomers, search, sortOrder]);
+  }, [fetchedCustomers, sortOrder]);
+
+  const totalPages = serverPagination ? serverPagination.totalPages : 1;
+  const totalCount = serverPagination
+    ? serverPagination.totalCount
+    : fetchedCustomers.length;
 
   const handleScanResult = (scannedId: string) => setSearch(scannedId);
 
   // ── Heading ─────────────────────────────────────────────────────────────────
-  const heading = isAllStores
-    ? "All Customers"
-    : cashierRole
-      ? "Customer List"
-      : "Customer List";
-
+  const heading = isAllStores ? "All Customers" : "Customer List";
   const searchPlaceholder = isAllStores
     ? "Search id, name, email, phone or store…"
     : cashierRole || storeRole
@@ -199,12 +240,7 @@ const UserList = (props: UserListProps) => {
               <Skeleton className="h-5 w-10 rounded-full" />
             ) : (
               <Badge variant="secondary" className="text-xs tabular-nums">
-                {filtered.length}
-                {filtered.length !== allCustomers.length && (
-                  <span className="text-muted-foreground ml-0.5">
-                    /{allCustomers.length}
-                  </span>
-                )}
+                {totalCount} Customers
               </Badge>
             )}
           </div>
@@ -240,14 +276,12 @@ const UserList = (props: UserListProps) => {
                   onClick={() => setSearch("")}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   type="button"
-                  aria-label="Clear search"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
           </div>
-          {/* QR scanner only for cashier / store — not useful for all-stores admin view */}
           {!isAllStores && <QrScannerButton onScan={handleScanResult} />}
         </div>
       </div>
@@ -255,11 +289,11 @@ const UserList = (props: UserListProps) => {
       {/* ── Grid ────────────────────────────────────────────────────────────── */}
       {isLoading ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
             <CustomerCardSkeleton key={i} />
           ))}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : displayData.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
           <Users className="w-10 h-10 opacity-20" />
           <p className="text-sm">
@@ -277,34 +311,104 @@ const UserList = (props: UserListProps) => {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {filtered.map((customer) => (
-            <div
-              key={customer._id.toString()}
-              className={`flex flex-col gap-0 ${cashierRole || isAdminMode ? "hover:cursor-pointer" : ""}`}
-              onClick={() => {
-                if (cashierRole)
-                  router.push(`/cashier/customer/${customer._id}`);
-                if (isAdminMode)
-                  router.push(`/admin/customers/${customer._id}`);
-              }}
-            >
-              {/* Store chip — admin all-stores view only */}
-              {isAllStores && customer.associatedStoreId && (
-                <Link
-                  href={`/admin/store/${customer.associatedStoreId}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="group inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors"
-                >
-                  <Store className="w-3 h-3 text-emerald-500 shrink-0" />
-                  <span className="text-xs font-semibold text-emerald-700 truncate max-w-[160px] group-hover:underline underline-offset-2">
-                    {customer.storeName ?? "Unknown Store"}
-                  </span>
-                </Link>
-              )}
-              <CustomerCard customer={customer as any} userRole={userRole} />
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            {displayData.map((customer) => (
+              <div
+                key={customer._id.toString()}
+                className={`flex flex-col gap-0 ${cashierRole || isAdminMode ? "hover:cursor-pointer" : ""}`}
+                onClick={() => {
+                  if (cashierRole)
+                    router.push(`/cashier/customer/${customer._id}`);
+                  if (isAdminMode)
+                    router.push(`/admin/customers/${customer._id}`);
+                }}
+              >
+                {isAllStores && customer.associatedStoreId && (
+                  <Link
+                    href={`/admin/store/${customer.associatedStoreId}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="group inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors"
+                  >
+                    <Store className="w-3 h-3 text-emerald-500 shrink-0" />
+                    <span className="text-xs font-semibold text-emerald-700 truncate max-w-[160px] group-hover:underline underline-offset-2">
+                      {customer.storeName ?? "Unknown Store"}
+                    </span>
+                  </Link>
+                )}
+                <CustomerCard customer={customer as any} userRole={userRole} />
+              </div>
+            ))}
+          </div>
+
+          {/* ── Shadcn Pagination ────────────────────────────────────────────────── */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between pt-4 pb-6 border-t border-border mt-4 gap-4">
+              <span className="text-sm text-muted-foreground hidden sm:inline-block">
+                Showing {displayData.length} of {totalCount} customers
+              </span>
+
+              <Pagination className="w-auto mx-0 sm:mx-auto">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (page > 1) setPage((p) => p - 1);
+                      }}
+                      className={
+                        page <= 1 ? "pointer-events-none opacity-50" : ""
+                      }
+                    />
+                  </PaginationItem>
+
+                  {/* Dynamic Ellipsis Logic */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(
+                      (p) =>
+                        p === 1 || p === totalPages || Math.abs(p - page) <= 1,
+                    )
+                    .map((p, index, array) => (
+                      <div key={p} className="flex items-center">
+                        {index > 0 && p - array[index - 1] > 1 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+                        <PaginationItem>
+                          <PaginationLink
+                            href="#"
+                            isActive={page === p}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setPage(p);
+                            }}
+                          >
+                            {p}
+                          </PaginationLink>
+                        </PaginationItem>
+                      </div>
+                    ))}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (page < totalPages) setPage((p) => p + 1);
+                      }}
+                      className={
+                        page >= totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>

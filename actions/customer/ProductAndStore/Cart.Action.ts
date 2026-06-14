@@ -1,6 +1,9 @@
 "use server";
 
-import CartModel, { IMiscCartItem, ISubsidyItems } from "@/db/models/customer/cart.model";
+import CartModel, {
+  IMiscCartItem,
+  ISubsidyItems,
+} from "@/db/models/customer/cart.model";
 import "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
 import mongoose, { Types } from "mongoose";
@@ -14,7 +17,6 @@ import Customer from "@/db/models/customer/customer.model";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import "@/db/models/customer/MiscItem.model";
-
 
 export const AddtoCart = async (ItemId: string, customerId?: string) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
@@ -100,9 +102,9 @@ export const UpdateItemQuantity = async (
 
   await dbConnect();
 
-  const product = await productsModel.findById(itemId).select(
-    "_id isMeasuredInWeight",
-  );
+  const product = await productsModel
+    .findById(itemId)
+    .select("_id isMeasuredInWeight");
 
   if (!product) {
     return { success: false, message: "Product not found" };
@@ -287,7 +289,11 @@ export const RemoveItem = async (
   cart.items.splice(index, 1);
 
   await cart.save();
-  if (cart.items.length === 0 && cart.subsidyItems.length === 0 && cart.miscItems.length === 0) {
+  if (
+    cart.items.length === 0 &&
+    cart.subsidyItems.length === 0 &&
+    cart.miscItems.length === 0
+  ) {
     await CartModel.findOneAndDelete({ customerId: user._id });
   }
   revalidatePath("/customer/cart");
@@ -305,7 +311,13 @@ export const getCart = async (
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
   if (!user)
-    return { success: false, isSavedtoWallet: false, items: [], subItems: [], miscItems:[] };
+    return {
+      success: false,
+      isSavedtoWallet: false,
+      items: [],
+      subItems: [],
+      miscItems: [],
+    };
 
   await dbConnect();
   try {
@@ -341,7 +353,7 @@ export const PlaceOrder = async ({
   paymentMode?: "wallet" | "pending";
   TotalCart: CartTotals;
 }) => {
-  console.log(TotalCart)
+  console.log(TotalCart);
   await dbConnect();
   const session = await mongoose.startSession();
 
@@ -376,20 +388,20 @@ export const PlaceOrder = async ({
     const cashierId = receivedCustomerId ? authSession.user.id : undefined;
     const walletPayment = paymentMode === "wallet";
 
-    const pendingOrder = await OrderModel.findOne({
-      userId: customerId,
-      status: "pending",
-    }).session(session);
+    // const pendingOrder = await OrderModel.findOne({
+    //   userId: customerId,
+    //   status: "pending",
+    // }).session(session);
 
-    if (pendingOrder) {
-      await session.abortTransaction();
-      return {
-        success: false,
-        message: receivedCustomerId
-          ? "This customer already has a pending order. Complete or cancel it first to continue."
-          : "You already have a pending order. Complete or cancel it first to continue.",
-      };
-    }
+    // if (pendingOrder) {
+    //   await session.abortTransaction();
+    //   return {
+    //     success: false,
+    //     message: receivedCustomerId
+    //       ? "This customer already has a pending order. Complete or cancel it first to continue."
+    //       : "You already have a pending order. Complete or cancel it first to continue.",
+    //   };
+    // }
 
     const User = await Customer.findById(customerId).session(session);
     if (!User) {
@@ -441,7 +453,7 @@ export const PlaceOrder = async ({
         tax,
         disposableFee,
         subsidy: 0,
-        total: subtotalWithMarkup + gst + pst + disposableFee,
+        total: Math.round(subtotalWithMarkup + gst + pst + disposableFee),
       };
     });
 
@@ -470,7 +482,7 @@ export const PlaceOrder = async ({
         tax,
         disposableFee,
         subsidy: item.subsidy,
-        total: afterSubsidy + gst + pst + disposableFee,
+        total: Math.round(afterSubsidy + gst + pst + disposableFee),
       };
     });
 
@@ -481,7 +493,7 @@ export const PlaceOrder = async ({
         price: number;
       };
 
-      const total = populated.price * item.quantity;
+      const total = Math.round(populated.price * item.quantity);
 
       return {
         miscItemId: new Types.ObjectId(populated._id),
@@ -511,11 +523,19 @@ export const PlaceOrder = async ({
       TotalGST: TotalCart.gst,
       TotalPST: TotalCart.pst,
       TotalDisposableFee: TotalCart.disposable,
-      BaseTotal: Number((baseTotal).toFixed(2)),
-      cartTotal: Number((cartTotal).toFixed(2)),
+      BaseTotal: Number(baseTotal.toFixed(2)),
+      cartTotal: Number(cartTotal.toFixed(2)),
       subsidy: customerCart.cartSubsidy,
-      subsidyLeft: Math.round(Number(((User.giftWalletBalance + customerCart.cartSubsidy - TotalUsedSubsidy)).toFixed(2))),
-      subsidyUsed: Math.round(Number((TotalUsedSubsidy).toFixed(2))),
+      subsidyLeft: Math.round(
+        Number(
+          (
+            User.giftWalletBalance +
+            customerCart.cartSubsidy -
+            TotalUsedSubsidy
+          ).toFixed(2),
+        ),
+      ),
+      subsidyUsed: Math.round(Number(TotalUsedSubsidy.toFixed(2))),
       userId: User._id,
       storeId: User.associatedStoreId,
       paymentMode,

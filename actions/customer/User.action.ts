@@ -5,7 +5,10 @@ import { NextResponse } from "next/server";
 import { getUserSession } from "../auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { Cashier } from "@/db/models/cashier/cashier.model";
-import { getCachedCustomerAndStore, getCachedCustomerProfile } from "../cache/user.cache";
+import {
+  getCachedCustomerAndStore,
+  getCachedCustomerProfile,
+} from "../cache/user.cache";
 
 export const getUser = async (customerId?: string) => {
   try {
@@ -39,20 +42,26 @@ export const GetUserfromSession = async (sessionId: string | null) => {
   }
 };
 
-
 export const getCustomerAndStoreDataAction = async () => {
   try {
     const session = await getUserSession();
     return getCachedCustomerAndStore(session.user.id);
   } catch (error) {
     console.log(`Unable to find customer and store data: ${error}`);
-    return { success: false, message: "Unable to find customer and store data" };
+    return {
+      success: false,
+      message: "Unable to find customer and store data",
+    };
   }
 };
 
-export const getCustomerDataAction = async (customerId?: string, getCashierId? :boolean) => {
+export const getCustomerDataAction = async (
+  customerId?: string,
+  getCashierId?: boolean,
+) => {
   const session = await getUserSession();
-    const cashierRole = session.user.role === "cashier" || session.user.role === "admin";
+  const cashierRole =
+    session.user.role === "cashier" || session.user.role === "admin";
   try {
     await dbConnect();
     let customerData;
@@ -76,7 +85,7 @@ export const getCustomerDataAction = async (customerId?: string, getCashierId? :
       return {
         success: true,
         customerData: serializedCustomerData,
-        cashierUserId: session.user.id
+        cashierUserId: session.user.id,
       };
     }
     return {
@@ -92,7 +101,7 @@ export const getCustomerDataAction = async (customerId?: string, getCashierId? :
   }
 };
 
-export const getMyStoreCustomers = async () => {
+export const getMyStoreCustomers = async (page = 1, limit = 12) => {
   const session = await getUserSession();
   const cashierRole = session.user.role === "cashier";
   const storeRole = session.user.role === "store";
@@ -116,15 +125,26 @@ export const getMyStoreCustomers = async () => {
         message: "Unable to find my store",
       };
 
+    // Calculate how many documents to skip
+    const skip = (page - 1) * limit;
+
     const myStoreCustomersData = await Customer.find({
       associatedStoreId: myStoreId,
-    }).lean();
+    })
+      .sort({ createdAt: -1 }) // Ensure you get the newest customers first
+      .skip(skip) // Skip previous pages
+      .limit(limit) // Only fetch the requested amount
+      .lean();
 
     if (!myStoreCustomersData)
       return {
         success: false,
         message: "Unable to find my store customers",
       };
+
+    const totalCount = await Customer.countDocuments({
+      associatedStoreId: myStoreId,
+    });
 
     const serializedMyStoreCustomersData = JSON.parse(
       JSON.stringify(myStoreCustomersData),
@@ -133,6 +153,14 @@ export const getMyStoreCustomers = async () => {
     return {
       success: true,
       myStoreCustomersData: serializedMyStoreCustomersData,
+      pagination: {
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+        limit: limit,
+        hasNextPage: page < Math.ceil(totalCount / limit),
+        hasPrevPage: page > 1,
+      },
     };
   } catch (error) {
     console.log(`Unable to find my store customers: ${error}`);
@@ -142,7 +170,6 @@ export const getMyStoreCustomers = async () => {
     };
   }
 };
-
 
 export const getCustomerProfileAction = async () => {
   const session = await getUserSession();
