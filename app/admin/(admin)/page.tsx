@@ -1,6 +1,5 @@
 import { allStoreDataAction } from "@/actions/admin/analytics/store/allStoresData.action";
 import { getRecentCustomers } from "@/actions/admin/analytics/getRecentCustomers.action";
-import StoreInfo from "@/components/admin/analytics/store/GetStore";
 import RecentPayoutReceipts from "@/components/admin/analytics/store/RecentPayoutReciepts";
 import RecentOrders from "@/components/admin/analytics/store/RecentOrders";
 import StatCards from "@/components/admin/analytics/store/StatsCards";

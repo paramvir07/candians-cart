@@ -37,7 +37,14 @@ export function FinancialsSection({
   const total = withTax + fee;
 
   // Local state to track the user's manual input for the helper field
-  const [targetPriceStr, setTargetPriceStr] = useState<string>("");
+  const [targetPriceStr, setTargetPriceStr] = useState<string>(() => {
+    const initialBase = parseFloat(price) || 0;
+    const initialMarkup = parseFloat(markup) || 0;
+    if (initialBase > 0 && !isNaN(initialMarkup)) {
+      return (initialBase * (1 + initialMarkup / 100)).toFixed(2);
+    }
+    return "";
+  });
 
   // Track focus to prevent overwriting the user's keystrokes while they type
   const [isTargetFocused, setIsTargetFocused] = useState(false);
