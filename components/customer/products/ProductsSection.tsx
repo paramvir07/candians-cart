@@ -94,6 +94,7 @@ export function ProductsSection({
           categories: expandCategories(filters.categories),
           inStockOnly: filters.inStockOnly,
           subsidisedOnly: filters.subsidisedOnly || subsidized,
+          subsidyLevel: filters.subsidyLevel,
           sortBy: filters.sortBy as any,
         },
       );
@@ -115,6 +116,7 @@ export function ProductsSection({
         categories: filters.categories,
         inStockOnly: filters.inStockOnly,
         subsidisedOnly: filters.subsidisedOnly || subsidized,
+        subsidyLevel: filters.subsidyLevel,
         sortBy: filters.sortBy as any,
       });
     }
@@ -235,7 +237,10 @@ export function ProductsSection({
               <div className="flex items-end justify-between mb-5">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2.5">
-                    <h2 className="font-black text-slate-900 text-2xl tracking-tight leading-none scroll-mt-40" id="allproducts">
+                    <h2
+                      className="font-black text-slate-900 text-2xl tracking-tight leading-none scroll-mt-40"
+                      id="allproducts"
+                    >
                       {headingLabel}
                     </h2>
                     {isLoading && (

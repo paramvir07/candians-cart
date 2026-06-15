@@ -1,5 +1,3 @@
-// components/customer/products/ProductsSectionLoader.tsx
-import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import getStoreAndProduct from "@/actions/customer/ProductAndStore/getAssociatedStore";
 import { getCachedStoreProducts } from "@/actions/cache/product.cache";
 import { ProductsSection } from "./ProductsSection";

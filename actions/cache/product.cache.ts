@@ -11,7 +11,14 @@ export interface ProductCacheFilters {
   categories?: string[];
   inStockOnly?: boolean;
   subsidisedOnly?: boolean;
-  sortBy?: "price_asc" | "price_desc" | "name_asc" | "default";
+  subsidyLevel?: "high" | "medium" | "low";
+  sortBy?:
+    | "price_asc"
+    | "price_desc"
+    | "name_asc"
+    | "markup_desc"
+    | "markup_asc"
+    | "default";
 }
 
 export interface PaginatedProductsResponse {
@@ -55,12 +62,29 @@ export const getCachedStoreProducts = async (
       if (filters.subsidisedOnly) {
         query.subsidised = true;
       }
+      if (filters.subsidyLevel) {
+        query.markup = query.markup || {};
+        if (filters.subsidyLevel === "low") {
+          query.markup.$gte = 0;
+          query.markup.$lt = 50;
+        } else if (filters.subsidyLevel === "medium") {
+          query.markup.$gte = 50;
+          query.markup.$lt = 100;
+        } else if (filters.subsidyLevel === "high") {
+          query.markup.$gte = 100;
+        }
+      }
 
       // sorting logic
       let sortConfig: { [key: string]: SortOrder } = {};
-      if (filters.sortBy === "price_asc") sortConfig = { price: 1 };
-      else if (filters.sortBy === "price_desc") sortConfig = { price: -1 };
-      else if (filters.sortBy === "name_asc") sortConfig = { name: 1 };
+      if (filters.sortBy === "price_asc") sortConfig = { price: 1, _id: 1 };
+      else if (filters.sortBy === "price_desc")
+        sortConfig = { price: -1, _id: -1 };
+      else if (filters.sortBy === "name_asc") sortConfig = { name: 1, _id: 1 };
+      else if (filters.sortBy === "markup_desc")
+        sortConfig = { markup: -1, _id: -1 };
+      else if (filters.sortBy === "markup_asc")
+        sortConfig = { markup: 1, _id: 1 };
       // Default: Featured products float to top, followed by newest
       else sortConfig = { isFeatured: -1, createdAt: -1, _id: 1 };
 

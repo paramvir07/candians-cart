@@ -15,7 +15,13 @@ export interface ProductFilters {
   taxRates?: TaxRate[];
   markupMin?: number;
   markupMax?: number;
-  sortBy?: "recommended" | "price_asc" | "price_desc" | "name_asc";
+  sortBy?:
+    | "recommended"
+    | "price_asc"
+    | "price_desc"
+    | "name_asc"
+    | "markup_desc"
+    | "markup_asc";
 }
 
 export const getStoreProductsFiltered = async (
@@ -78,7 +84,10 @@ export const getStoreProductsFiltered = async (
       sortOption = { price: -1, _id: -1 };
     else if (filters.sortBy === "name_asc") {
       sortOption = { name: 1, _id: 1 };
-    }
+    } else if (filters.sortBy === "markup_desc")
+      sortOption = { markup: -1, _id: -1 };
+    else if (filters.sortBy === "markup_asc")
+      sortOption = { markup: 1, _id: 1 };
 
     const skip = (page - 1) * limit;
 
@@ -221,6 +230,10 @@ export const searchProductsWithFilters = async (
       pipeline.push({ $sort: { price: -1, _id: -1 } });
     else if (filters.sortBy === "name_asc")
       pipeline.push({ $sort: { name: 1, _id: 1 } });
+    else if (filters.sortBy === "markup_desc")
+      pipeline.push({ $sort: { markup: -1, _id: -1 } });
+    else if (filters.sortBy === "markup_asc")
+      pipeline.push({ $sort: { markup: 1, _id: 1 } });
     // default: Atlas search score order (most relevant first)
 
     // ADD these three stages right before the $project push

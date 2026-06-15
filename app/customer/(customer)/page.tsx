@@ -12,20 +12,19 @@ export const metadata: Metadata = {
   description: "Browse our fresh selection of groceries, exclusive subsidized items, and everyday essentials.",
 };
 
-// ✅ No awaits here — page shell renders instantly
 export default function CustomerPage() {
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <Navbar />
 
       <Suspense fallback={<HeroBannerSkeleton />}>
-        <HeroBannerLoader />  {/* auth + store fetch happens inside here */}
+        <HeroBannerLoader /> 
       </Suspense>
 
       <CustomerAdvertisements maxHeight={250} />
 
       <Suspense fallback={<ProductsSkeleton />}>
-        <ProductsSectionLoader />  {/* products fetch happens inside here */}
+        <ProductsSectionLoader /> 
       </Suspense>
     </div>
   );
