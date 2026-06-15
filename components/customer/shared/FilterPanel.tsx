@@ -204,13 +204,13 @@ export function FilterPanel({
             <SectionLabel>Subsidy Level</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {[
-                { value: "high", label: "High Subsidy (100%+)", emoji: "🔥" },
+                { value: "high", label: "High Subsidy", emoji: "🔥" },
                 {
                   value: "medium",
-                  label: "Medium Subsidy (50%-100%)",
+                  label: "Medium Subsidy",
                   emoji: "⭐",
                 },
-                { value: "low", label: "Low Subsidy (0%-50%)", emoji: "🟢" },
+                { value: "low", label: "Low Subsidy", emoji: "🟢" },
               ].map((opt) => {
                 const isActive = filters.subsidyLevel === opt.value;
                 return (

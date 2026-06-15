@@ -51,7 +51,7 @@ const getSubsidyConfig = (markup: number = 0) => {
       text: "text-black",
     };
   }
-  if (markup >= 50) {
+  if (markup >= 45) {
     return {
       label: "Med Subsidy",
       bg: "bg-amber-100 shadow-[0_0_15px_rgba(254,243,199,1)]",
