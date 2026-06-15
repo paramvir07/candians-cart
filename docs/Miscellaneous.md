@@ -65,3 +65,89 @@ External services are abstracted into the `lib/` directory or dedicated Route Ha
 - **`lib/stripe.ts`**: Initializes the Stripe backend SDK. Should only be called from Server Actions or API routes.
 - **`lib/auth/email.ts`** (using Resend): Centralized templates for sending transactional emails (e.g., Help Forms, OTPs).
 - **`/app/imagekit/route.ts`**: The sole gateway for asset uploads. Client components send `FormData` here rather than talking to ImageKit directly, keeping API keys securely on the server.
+
+## 5. Mongo DB Level Validation (Testing Phase)
+
+Whenever updating the document, or basically when you are using upsert or document._findOneAndUpdate_, _updateOne_, or _findByIdAndUpdate_ or any variation of that, be sure to also ` { runValidators: true }` when you do `{ returnDocument: 'after' }`. This makes sure that the update will follow the schema provided and throw any errors when it encounters any errors.
+
+For DB Level validation we are using the following json schema
+
+```json
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": [
+      "_id",
+      "__v",
+      "address",
+      "associatedStoreId",
+      "city",
+      "createdAt",
+      "email",
+      "giftWalletBalance",
+      "mobile",
+      "monthlyBudget",
+      "name",
+      "province",
+      "referralCode",
+      "updatedAt",
+      "userId",
+      "walletBalance"
+    ],
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "__v": {
+        "bsonType": "int"
+      },
+      "address": {
+        "bsonType": "string"
+      },
+      "associatedStoreId": {
+        "bsonType": "objectId"
+      },
+      "city": {
+        "bsonType": "string"
+      },
+      "createdAt": {
+        "bsonType": "date"
+      },
+      "email": {
+        "bsonType": "string"
+      },
+      "mobile": {
+        "bsonType": "string"
+      },
+      "monthlyBudget": {
+        "bsonType": "int"
+      },
+      "name": {
+        "bsonType": "string"
+      },
+      "province": {
+        "bsonType": "string"
+      },
+      "referralCode": {
+        "bsonType": "string"
+      },
+      "updatedAt": {
+        "bsonType": "date"
+      },
+      "userId": {
+        "bsonType": "objectId"
+      },
+      "walletBalance": {
+        "bsonType": ["int", "double"],
+        "minimum": 0,
+        "description": "Wallet balance stored in cents. Must be an integer or double and cannot be negative."
+      },
+      "giftWalletBalance": {
+        "bsonType": ["int", "double"],
+        "minimum": 0,
+        "description": "Gift wallet balance stored in cents. Cannot be negative."
+      }
+    }
+  }
+}
+```
