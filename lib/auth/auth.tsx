@@ -17,6 +17,9 @@ export const auth = betterAuth({
   database: mongodbAdapter(db, {
     client,
   }),
+  session: {
+    expiresIn: 60 * 60 * 24 * 365, // 1 year
+  },
   user: {
     changeEmail: {
       enabled: true,
