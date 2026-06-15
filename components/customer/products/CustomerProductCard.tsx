@@ -1,6 +1,14 @@
 "use client";
 
-import { useState, useTransition, useEffect, useCallback, useRef } from "react";
+import {
+  useState,
+  useTransition,
+  useEffect,
+  useCallback,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import Image from "next/image";
 import {
   BadgeDollarSign,
@@ -40,18 +48,24 @@ function useCashierMobile() {
   }, []);
   return isMobile;
 }
-export function CustomerProductCard({
-  isCashier,
-  customerId,
-  product,
-  cartQuantity = 0,
-}: {
-  isCashier?: boolean;
-  customerId?: string;
-  product: IProduct;
-  cartQuantity?: number;
-  subsidyPage: boolean;
-}) {
+
+export interface ProductCardHandle {
+  focusQty: () => void;
+}
+
+export const CustomerProductCard = forwardRef<
+  ProductCardHandle,
+  {
+    isCashier?: boolean;
+    customerId?: string;
+    product: IProduct;
+    cartQuantity?: number;
+    subsidyPage: boolean;
+  }
+>(function CustomerProductCard(
+  { isCashier, customerId, product, cartQuantity = 0 },
+  ref,
+) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -59,10 +73,22 @@ export function CustomerProductCard({
   const [inputValue, setInputValue] = useState(String(cartQuantity));
   const [isQtyDirty, setIsQtyDirty] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const qtyInputRef = useRef<HTMLInputElement>(null);
   const cashierMobile = useCashierMobile();
-  const cashier = isCashier && !cashierMobile; // replaces all `isCashier` checks for sizing
+  const cashier = isCashier && !cashierMobile;
 
   const quantityStep = 1;
+
+  useImperativeHandle(ref, () => ({
+    focusQty: () => {
+      setInputValue("");
+      setIsQtyDirty(true);
+      setTimeout(() => {
+        qtyInputRef.current?.focus();
+        qtyInputRef.current?.select();
+      }, 0);
+    },
+  }));
 
   const formatQtyForInput = useCallback(
     (value: number) => {
@@ -94,6 +120,7 @@ export function CustomerProductCard({
     },
     [product.isMeasuredInWeight],
   );
+
   useEffect(() => {
     setQuantity(cartQuantity);
     setInputValue(formatQtyForInput(cartQuantity));
@@ -379,9 +406,6 @@ export function CustomerProductCard({
               className={`self-start inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold opacity-90 ${catConfig.bg} ${catConfig.text} ${catConfig.border}`}
             >
               {catConfig.emoji} {product.category}
-              {/* {vegetablesCategory || fruitsCategory
-                ? "Produce"
-                : product.category} */}
             </span>
 
             <h3 className="line-clamp-2 text-sm font-bold leading-tight text-white drop-shadow flex items-center justify-between">
@@ -441,6 +465,7 @@ export function CustomerProductCard({
 
                     <div className="flex flex-1 items-center justify-center gap-1">
                       <input
+                        ref={qtyInputRef}
                         type="number"
                         min={0}
                         max={99}
@@ -541,4 +566,4 @@ export function CustomerProductCard({
       </div>
     </>
   );
-}
+});

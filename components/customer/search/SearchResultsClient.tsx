@@ -13,7 +13,10 @@ import { getStoreProductsFiltered } from "@/actions/admin/products/getProductsFi
 import { useState, useEffect, useMemo, useRef } from "react";
 import { IProduct } from "@/types/store/products.types";
 import { searchProductsWithFilters } from "@/actions/admin/products/getProductsFiltered.action";
-import { CustomerProductCard } from "@/components/customer/products/CustomerProductCard";
+import {
+  CustomerProductCard,
+  ProductCardHandle,
+} from "@/components/customer/products/CustomerProductCard";
 import {
   FilterPanel,
   FilterTriggerButton,
@@ -119,11 +122,13 @@ export function SearchResultsClient({
   const [upcMode, setUpcMode] = useState(!!customerId);
   const prevQueryRef = useRef(debouncedQuery);
   const prevFiltersRef = useRef(filters);
+  const cardRefs = useRef<Record<string, ProductCardHandle | null>>({});
 
   const [pendingFilters, setPendingFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
   useEffect(() => {
     const categoryParam = searchParams.get("category");
     const subsidisedOnly = searchParams.get("subsidisedOnly") === "true";
@@ -145,7 +150,6 @@ export function SearchResultsClient({
     });
   }, []);
 
-  // ── Fetch cart insight whenever cartMap changes ──────────────────────────
   useEffect(() => {
     const fetchInsight = async () => {
       const res = await getCartInsights(customerId);
@@ -185,6 +189,9 @@ export function SearchResultsClient({
         }));
         toast.success(`${product.name} added to cart`);
         emitCartUpdated();
+        setTimeout(() => {
+          cardRefs.current[productId]?.focusQty();
+        }, 100);
       } catch {
         toast.error("Failed to add to cart");
       }
@@ -211,7 +218,6 @@ export function SearchResultsClient({
       isFirstFilterRender.current = false;
       return;
     }
-    // if (filterSheetOpen) return;
     if (!resultsRef.current) return;
     const rect = resultsRef.current.getBoundingClientRect();
     window.scrollTo({
@@ -243,9 +249,8 @@ export function SearchResultsClient({
     };
 
     refetch();
-  }, [upcMode]); // intentionally only upcMode — we want this to fire on toggle only
+  }, [upcMode]);
 
-  // ONE effect to rule them all — handles query+filters, filters-only, and empty state
   useEffect(() => {
     const hasQuery = debouncedQuery.trim().length > 0;
     const hasFilters =
@@ -263,7 +268,6 @@ export function SearchResultsClient({
     prevQueryRef.current = debouncedQuery;
     prevFiltersRef.current = filters;
 
-    // If the search params changed, reset to page 1 immediately
     const pageToUse = queryChanged || filtersChanged ? 1 : currentPage;
     if (queryChanged || filtersChanged) {
       setCurrentPage(1);
@@ -304,8 +308,28 @@ export function SearchResultsClient({
                 inStock: filters.inStockOnly ? true : undefined,
               },
             );
-        setAllResults(res.success && res.data ? res.data : []);
+        const results = res.success && res.data ? res.data : [];
+        setAllResults(results);
         setTotalPages((res as any).totalPages ?? 1);
+
+        if (upcMode && results.length === 1) {
+          const product = results[0];
+          const productId = product._id as string;
+          try {
+            await AddtoCart(productId, customerId);
+            setCartMap((prev) => ({
+              ...prev,
+              [productId]: (prev[productId] || 0) + 1,
+            }));
+            toast.success(`${product.name} added to cart`);
+            emitCartUpdated();
+            setTimeout(() => {
+              cardRefs.current[productId]?.focusQty();
+            }, 100);
+          } catch {
+            toast.error("Failed to add to cart");
+          }
+        }
       } else {
         const res = await getStoreProductsFiltered(storeId, pageToUse, 16, {
           categories:
@@ -388,7 +412,6 @@ export function SearchResultsClient({
         upcMode={upcMode}
       />
 
-      {/* Cart insight + UPC toggle — cashier only, always visible */}
       {customerId && (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 flex flex-col gap-3">
           <CartInsightBar
@@ -418,7 +441,6 @@ export function SearchResultsClient({
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-6">
-          {/* ── Desktop sidebar ── */}
           {hasSearched && allResults.length > 0 && !customerId && (
             <aside className="hidden lg:flex flex-col w-64 shrink-0">
               <div
@@ -458,9 +480,7 @@ export function SearchResultsClient({
             </aside>
           )}
 
-          {/* ── Results column ── */}
           <div className="flex-1 min-w-0">
-            {/* ── Idle state ── */}
             {!query.trim() && !hasSearched && (
               <div className="flex flex-col items-center justify-center py-20 gap-6">
                 <div className="relative">
@@ -484,7 +504,6 @@ export function SearchResultsClient({
                     <button
                       key={s.label}
                       onClick={async () => {
-                        // ── Special case: Subsidised Only toggle ──
                         if (s.label === "Subsidised Only") {
                           const newValue = !filters.subsidisedOnly;
                           setFilters((prev) => ({
@@ -549,7 +568,6 @@ export function SearchResultsClient({
               </div>
             )}
 
-            {/* ── Loading ── */}
             {isLoading && (
               <div className="flex flex-col items-center justify-center py-24 gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-card border border-border/60 flex items-center justify-center">
@@ -561,7 +579,6 @@ export function SearchResultsClient({
               </div>
             )}
 
-            {/* ── Results ── */}
             {!isLoading && hasSearched && (
               <>
                 <div
@@ -607,6 +624,9 @@ export function SearchResultsClient({
                     >
                       {filtered.map((product) => (
                         <CustomerProductCard
+                          ref={(el) => {
+                            cardRefs.current[product._id as string] = el;
+                          }}
                           isCashier={isCashier}
                           subsidyPage={false}
                           customerId={customerId}
@@ -734,7 +754,6 @@ export function SearchResultsClient({
         </div>
       </div>
 
-      {/* ── Mobile filter sheet ── */}
       <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
         <SheetContent
           side="right"
@@ -767,7 +786,7 @@ export function SearchResultsClient({
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-card border-t border-border/40">
               <button
                 onClick={() => {
-                  setFilters(pendingFilters); // ← commit on apply
+                  setFilters(pendingFilters);
                   setFilterSheetOpen(false);
                 }}
                 className="w-full h-12 rounded-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"

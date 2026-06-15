@@ -55,9 +55,9 @@ export function SearchNav({
   const commitScan = (value: string) => {
     if (!value || value.length < 4) return;
     setQuery(value);
-    startTransition(() => onQueryChange(value));
+    startTransition(() => onQueryChange(value.toUpperCase()));
     if (upcMode) {
-      onBarcodeScan?.(value);
+      onBarcodeScan?.(value.toUpperCase());
     }
     setTimeout(() => searchInputRef.current?.select(), 0);
   };
@@ -182,7 +182,7 @@ export function SearchNav({
   };
   const handleChange = (val: string) => {
     setQuery(val);
-    startTransition(() => onQueryChange(val));
+    startTransition(() => onQueryChange(val.toUpperCase()));
   };
 const handleBarcodeScan = (value: string) => {
     handleChange(value);
