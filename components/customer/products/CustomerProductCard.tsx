@@ -48,6 +48,30 @@ function useCashierMobile() {
   }, []);
   return isMobile;
 }
+const getSubsidyConfig = (markup: number = 0) => {
+  if (markup >= 100) {
+    return {
+      label: "High Subsidy",
+      bg: "bg-rose-100 shadow-[0_0_15px_rgba(255,228,230,1)]",
+      border: "border-rose-300",
+      text: "text-black",
+    };
+  }
+  if (markup >= 45) {
+    return {
+      label: "Med Subsidy",
+      bg: "bg-amber-100 shadow-[0_0_15px_rgba(254,243,199,1)]",
+      border: "border-amber-300",
+      text: "text-black",
+    };
+  }
+  return {
+    label: "Low Subsidy",
+    bg: "bg-teal-100 shadow-[0_0_15px_rgba(204,251,241,1)]",
+    border: "border-teal-300",
+    text: "text-black",
+  };
+};
 
 export interface ProductCardHandle {
   focusQty: () => void;
