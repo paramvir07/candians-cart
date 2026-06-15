@@ -9,6 +9,13 @@ import {
   SheetTrigger,
   SheetFooter,
 } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
@@ -235,6 +242,16 @@ function ActiveSummary({ draft }: { draft: ProductFilters }) {
   if (draft.inStock === true) parts.push("In stock");
   if (draft.inStock === false) parts.push("Out of stock");
   if (draft.subsidised) parts.push("Subsidised");
+
+  if (draft.subsidyLevel) {
+    const subsidyLabels = {
+      high: "High Subsidy",
+      medium: "Medium Subsidy",
+      low: "Low Subsidy",
+    };
+    parts.push(subsidyLabels[draft.subsidyLevel]);
+  }
+
   if (draft.minPrice !== undefined || draft.maxPrice !== undefined) {
     const lo = ((draft.minPrice ?? 0) / 100).toFixed(0);
     const hi =
@@ -480,7 +497,6 @@ function FilterBody({
           )}
         >
           {CATEGORIES.map(({ label, emoji }) => {
-            // Remove the '?? 0' so we can check if data has loaded
             const count = categoryCounts[label];
 
             return (
@@ -492,7 +508,6 @@ function FilterBody({
                 <span className="text-base leading-none shrink-0">{emoji}</span>
                 <span className="text-sm flex items-center gap-1">
                   {label}
-                  {/* Changed from count > 0 to count !== undefined */}
                   {count !== undefined && (
                     <span className="text-[10px] text-muted-foreground bg-secondary/50 px-1.5 py-0.5 rounded-full ml-1">
                       {count}
@@ -507,7 +522,7 @@ function FilterBody({
 
       <Separator />
 
-      {/* AVAILABILITY — pill per option in a row, wraps cleanly */}
+      {/* AVAILABILITY */}
       <FilterSection label="Availability">
         <div className="flex flex-wrap gap-2">
           {[
@@ -558,6 +573,36 @@ function FilterBody({
             </button>
           ))}
         </div>
+      </FilterSection>
+
+      <Separator />
+
+      {/* SUBSIDY LEVEL */}
+      <FilterSection label="Subsidy Level">
+        <Select
+          value={draft.subsidyLevel || "none"}
+          onValueChange={(val) => {
+            if (val === "none") {
+              const { subsidyLevel, ...rest } = draft;
+              setDraft(rest);
+            } else {
+              setDraft({
+                ...draft,
+                subsidyLevel: val as "high" | "medium" | "low",
+              });
+            }
+          }}
+        >
+          <SelectTrigger className="w-full rounded-xl h-11 text-sm bg-background border-border hover:border-primary/50 transition-colors">
+            <SelectValue placeholder="Select subsidy level" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Any Level</SelectItem>
+            <SelectItem value="high">High Subsidy (100%+)</SelectItem>
+            <SelectItem value="medium">Medium Subsidy (50% - 100%)</SelectItem>
+            <SelectItem value="low">Low Subsidy (0% - 100%)</SelectItem>
+          </SelectContent>
+        </Select>
       </FilterSection>
 
       <Separator />
@@ -662,8 +707,6 @@ export function ProductFiltersSheet({
       }
     };
 
-    // Only fetch counts when the drawer is mounted/opened to save background requests
-    // Remove `open` dependency here if you want prefetching
     if (open) {
       fetchCounts();
     }
@@ -675,6 +718,7 @@ export function ProductFiltersSheet({
     (draft.categories?.length ?? 0) > 0,
     draft.minPrice !== undefined || draft.maxPrice !== undefined,
     draft.subsidised !== undefined,
+    draft.subsidyLevel !== undefined, // <-- Added to active count tracking
     draft.inStock !== undefined,
     (draft.taxRates?.length ?? 0) > 0,
     draft.markupMin !== undefined || draft.markupMax !== undefined,
@@ -688,6 +732,7 @@ export function ProductFiltersSheet({
     if (cleaned.markupMin === 0) delete cleaned.markupMin;
     if (cleaned.markupMax === 100) delete cleaned.markupMax;
     if (cleaned.sortBy === "recommended") delete cleaned.sortBy;
+    if (!cleaned.subsidyLevel) delete cleaned.subsidyLevel;
     onApply(cleaned);
     setOpen(false);
   };
@@ -731,9 +776,7 @@ export function ProductFiltersSheet({
       >
         {/* ── Header ── */}
         <SheetHeader className="px-5 pt-5 pb-4 border-b border-border shrink-0">
-          {/* Top row: title + close button (shadcn puts the X here automatically) */}
           <div className="flex items-center justify-between gap-3 pr-6">
-            {/* pr-6 leaves room for shadcn's built-in X button */}
             <SheetTitle className="flex items-center gap-2 text-base font-bold">
               <SlidersHorizontal className="h-4 w-4 text-primary shrink-0" />
               Filters

@@ -10,6 +10,7 @@ export interface ProductFilters {
   minPrice?: number; // in cents
   maxPrice?: number; // in cents
   subsidised?: boolean;
+  subsidyLevel?: "low" | "medium" | "high";
   inStock?: boolean;
   taxRates?: TaxRate[];
   markupMin?: number;
@@ -56,6 +57,19 @@ export const getStoreProductsFiltered = async (
         query.markup.$gte = filters.markupMin;
       if (filters.markupMax !== undefined)
         query.markup.$lte = filters.markupMax;
+    }
+
+    if (filters.subsidyLevel) {
+      query.markup = query.markup || {};
+      if (filters.subsidyLevel === "low") {
+        query.markup.$gte = 0;
+        query.markup.$lt = 50;
+      } else if (filters.subsidyLevel === "medium") {
+        query.markup.$gte = 50;
+        query.markup.$lt = 100;
+      } else if (filters.subsidyLevel === "high") {
+        query.markup.$gte = 100;
+      }
     }
 
     let sortOption: Record<string, 1 | -1> = { createdAt: -1, _id: -1 };
@@ -181,6 +195,19 @@ export const searchProductsWithFilters = async (
         matchStage.markup.$gte = filters.markupMin;
       if (filters.markupMax !== undefined)
         matchStage.markup.$lte = filters.markupMax;
+    }
+
+    if (filters.subsidyLevel) {
+      matchStage.markup = matchStage.markup || {};
+      if (filters.subsidyLevel === "high") {
+        matchStage.markup.$gte = 100;
+      } else if (filters.subsidyLevel === "medium") {
+        matchStage.markup.$gte = 50;
+        matchStage.markup.$lte = 100;
+      } else if (filters.subsidyLevel === "low") {
+        matchStage.markup.$gte = 0;
+        matchStage.markup.$lte = 100;
+      }
     }
 
     if (Object.keys(matchStage).length > 0) {

@@ -89,6 +89,7 @@ const hasFilters = (f: ProductFilters) =>
   f.minPrice !== undefined ||
   f.maxPrice !== undefined ||
   f.subsidised !== undefined ||
+  f.subsidyLevel !== undefined ||
   f.inStock !== undefined ||
   (f.taxRates?.length ?? 0) > 0 ||
   f.markupMin !== undefined ||
@@ -409,6 +410,19 @@ export const StoreProductsList = ({
       clear: () => handleApplyFilters({ ...filters, subsidised: undefined }),
     });
   }
+
+  if (filters.subsidyLevel) {
+    const subsidyLabels = {
+      high: "High Subsidy",
+      medium: "Medium Subsidy",
+      low: "Low Subsidy",
+    };
+    filterChips.push({
+      label: subsidyLabels[filters.subsidyLevel],
+      clear: () => handleApplyFilters({ ...filters, subsidyLevel: undefined }),
+    });
+  }
+
   if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
     filterChips.push({
       label: `CA$${((filters.minPrice ?? 0) / 100).toFixed(0)}–CA$${((filters.maxPrice ?? 500000) / 100).toFixed(0)}`,
