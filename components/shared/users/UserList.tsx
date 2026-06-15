@@ -82,43 +82,125 @@ const UserList = (props: UserListProps) => {
   // ── Package Hook ────────────────────────────────────────────────────────────
   const [debouncedSearch] = useDebounce(search, 500);
 
+  // ── Scanner refs ────────────────────────────────────────────────────────────
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
   const lastKeyTimeRef = useRef(0);
+  const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const androidBufferRef = useRef("");
+  const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const androidLastInputRef = useRef(0);
 
   // Reset to page 1 when the debounced search changes
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
 
-  // QR Scanner Keydown Listener
+  const commitScan = (value: string) => {
+    if (!value || value.length < 4) return;
+    setSearch(value);
+    searchInputRef.current?.focus();
+    setTimeout(() => searchInputRef.current?.select(), 0);
+  };
+
+  // ── Scanner gun keydown (desktop / iOS) ─────────────────────────────────────
   useEffect(() => {
-    const THRESHOLD = 50;
+    const HUMAN_THRESHOLD_MS = 100;
+    const COMMIT_TIMEOUT_MS = 100;
+
+    const flush = () => {
+      const buf = scanBufferRef.current;
+      scanBufferRef.current = "";
+      if (buf.length >= 4) commitScan(buf);
+    };
+
+    const resetTimer = () => {
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+      scanTimerRef.current = setTimeout(flush, COMMIT_TIMEOUT_MS);
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.length !== 1 && e.key !== "Enter") return;
+
       const now = Date.now();
       const gap = now - lastKeyTimeRef.current;
       lastKeyTimeRef.current = now;
 
       if (e.key === "Enter") {
+        if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
         const buf = scanBufferRef.current;
         scanBufferRef.current = "";
-
-        if (buf.length >= 6) {
+        if (buf.length >= 4) {
           e.preventDefault();
           e.stopPropagation();
-          searchInputRef.current?.focus();
-          setSearch(buf);
-          setTimeout(() => searchInputRef.current?.select(), 0);
+          commitScan(buf);
         }
         return;
       }
-      if (e.key.length !== 1) return;
-      if (gap > THRESHOLD) scanBufferRef.current = "";
+
+      if (gap > HUMAN_THRESHOLD_MS && scanBufferRef.current.length > 0) {
+        scanBufferRef.current = "";
+      }
+
       scanBufferRef.current += e.key;
+      resetTimer();
+    };
+
+    // iPad Safari: IME composition gives us the full barcode string cleanly
+    const handleCompositionEnd = (e: CompositionEvent) => {
+      if (!e.data || e.data.length < 4) return;
+      scanBufferRef.current = "";
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+      commitScan(e.data);
     };
 
     window.addEventListener("keydown", handleKeyDown, true);
-    return () => window.removeEventListener("keydown", handleKeyDown, true);
+    window.addEventListener("compositionend", handleCompositionEnd, true);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+      window.removeEventListener("compositionend", handleCompositionEnd, true);
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+    };
+  }, []);
+
+  // ── Android input event fallback ─────────────────────────────────────────────
+  useEffect(() => {
+    const input = searchInputRef.current;
+    if (!input) return;
+
+    const ANDROID_DEBOUNCE_MS = 150;
+
+    const handleInput = (e: Event) => {
+      const inputEvent = e as InputEvent;
+      // During IME composition, compositionend handles it
+      if (inputEvent.isComposing) return;
+
+      const val = (e.target as HTMLInputElement).value;
+      const now = Date.now();
+      const gap = now - androidLastInputRef.current;
+      androidLastInputRef.current = now;
+
+      if (gap > ANDROID_DEBOUNCE_MS * 2) {
+        androidBufferRef.current = "";
+      }
+
+      androidBufferRef.current = val;
+
+      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+
+      androidTimerRef.current = setTimeout(() => {
+        const buf = androidBufferRef.current;
+        androidBufferRef.current = "";
+        if (buf.length >= 4) commitScan(buf);
+      }, ANDROID_DEBOUNCE_MS);
+    };
+
+    input.addEventListener("input", handleInput);
+    return () => {
+      input.removeEventListener("input", handleInput);
+      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+    };
   }, []);
 
   // ── Unified Server Fetch (For Admins AND Cashiers) ─────────────────────────
@@ -153,7 +235,7 @@ const UserList = (props: UserListProps) => {
       if (!mounted) return;
 
       if (result.success) {
-        setFetchedCustomers(result.data as unknown as SerializedCustomer[]); 
+        setFetchedCustomers(result.data as unknown as SerializedCustomer[]);
         if (result.pagination) setServerPagination(result.pagination);
       } else {
         toast.error(result.error || "Failed to fetch customers");
@@ -175,7 +257,7 @@ const UserList = (props: UserListProps) => {
   ]);
 
   // ── Sort ───────────────────────────────────────────────────────────
-  const getSortableTime = (c: SerializedCustomer) => { 
+  const getSortableTime = (c: SerializedCustomer) => {
     const t = new Date(c.createdAt).getTime();
     if (Number.isFinite(t) && t > 0) return t;
     const idStr = c._id.toString();
@@ -197,7 +279,7 @@ const UserList = (props: UserListProps) => {
     ? serverPagination.totalCount
     : fetchedCustomers.length;
 
-  const handleScanResult = (scannedId: string) => setSearch(scannedId);
+  const handleScanResult = (scannedId: string) => commitScan(scannedId);
 
   // ── Heading ─────────────────────────────────────────────────────────────────
   const heading = isAllStores ? "All Customers" : "Customer List";
@@ -250,6 +332,10 @@ const UserList = (props: UserListProps) => {
                 placeholder={searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 className="rounded-xl border-0 bg-transparent focus-visible:ring-1 text-sm h-9 pr-9"
               />
               {search && (
@@ -317,7 +403,6 @@ const UserList = (props: UserListProps) => {
                     </span>
                   </Link>
                 )}
-                {/* We can cast here as any to satisfy CustomerCard if it still hasn't been updated to SerializedCustomer */}
                 <CustomerCard customer={customer as any} userRole={userRole} />
               </div>
             ))}
@@ -345,7 +430,6 @@ const UserList = (props: UserListProps) => {
                     />
                   </PaginationItem>
 
-                  {/* Dynamic Ellipsis Logic */}
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
                     .filter(
                       (p) =>
