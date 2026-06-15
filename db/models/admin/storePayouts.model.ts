@@ -22,7 +22,6 @@ export interface IStorePayout {
   storeProfit: number;
   storePayout: number;
   totalWalletTopUpCashCollected: number;
-  totalOrderCashCollected: number;
   totalCashCollected: number;
   platformMarkupGSTTax: number;
   platformMarkupPSTTax: number;
@@ -131,10 +130,6 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       required: true,
     },
     totalWalletTopUpCashCollected: {
-      type: Number,
-      default: 0,
-    },
-    totalOrderCashCollected: {
       type: Number,
       default: 0,
     },
