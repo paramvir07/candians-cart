@@ -151,7 +151,7 @@ export function TopUpDialog({
         const response = await walletTopUpAction(
           customerId,
           "gift",
-          amount * 100,
+          Math.round(amount * 100),
           "admin",
         );
         if (response.success) {
@@ -165,7 +165,7 @@ export function TopUpDialog({
         const response = await walletTopUpAction(
           customerId,
           paymentMode,
-          amount * 100,
+          Math.round(amount * 100),
           "cashier",
         );
         if (response.success) {
