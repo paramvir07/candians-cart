@@ -169,23 +169,30 @@ const UserList = (props: UserListProps) => {
     const input = searchInputRef.current;
     if (!input) return;
 
-    const ANDROID_DEBOUNCE_MS = 150;
+    const COMMIT_DEBOUNCE_MS = 300;
+    const CHUNK_GAP_MS = 500;
 
     const handleInput = (e: Event) => {
       const inputEvent = e as InputEvent;
-      // During IME composition, compositionend handles it
       if (inputEvent.isComposing) return;
 
       const val = (e.target as HTMLInputElement).value;
+      if (!val) return;
+
       const now = Date.now();
       const gap = now - androidLastInputRef.current;
       androidLastInputRef.current = now;
 
-      if (gap > ANDROID_DEBOUNCE_MS * 2) {
+      // New scan session if there's been a long pause
+      if (gap > CHUNK_GAP_MS) {
         androidBufferRef.current = "";
       }
 
-      androidBufferRef.current = val;
+      // Accumulate chunks — append, don't replace
+      androidBufferRef.current += val;
+
+      // Clear the visible input so the next chunk doesn't get appended by the DOM
+      (e.target as HTMLInputElement).value = "";
 
       if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
 
@@ -193,7 +200,7 @@ const UserList = (props: UserListProps) => {
         const buf = androidBufferRef.current;
         androidBufferRef.current = "";
         if (buf.length >= 4) commitScan(buf);
-      }, ANDROID_DEBOUNCE_MS);
+      }, COMMIT_DEBOUNCE_MS);
     };
 
     input.addEventListener("input", handleInput);
