@@ -7,3 +7,16 @@ export type Customer = ICustomer & {
   updatedAt: Date;
   __v: number;
 };
+
+export type SerializedCustomer = Omit<
+  Customer,
+  "_id" | "userId" | "associatedStoreId" | "createdAt" | "updatedAt"
+> & {
+  _id: string;
+  userId: string;
+  associatedStoreId: string;
+  createdAt: string;
+  updatedAt: string;
+  lastOrderDate?: string;
+  storeName?: string;
+};

@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import CustomerCard from "./CustomerCard";
 import QrScannerButton from "./QrScannerButton";
 import { useRouter } from "next/navigation";
-import { Customer } from "@/types/customer/customer";
+import { SerializedCustomer } from "@/types/customer/customer";
 import {
   getStoreCustomers,
   getSearchCustomer,
@@ -44,23 +44,11 @@ const CustomerCardSkeleton = () => (
   </div>
 );
 
-type AnyCustomer = {
-  _id: string | { toString(): string };
-  name: string;
-  email: string;
-  mobile: string;
-  walletBalance?: number;
-  associatedStoreId?: string;
-  storeName?: string;
-  createdAt?: any;
-  [key: string]: any;
-};
-
 type UserListProps = {
   userRole?: "cashier" | "store" | "admin";
   adminMode?: boolean;
   storeId?: string;
-  myStoreCustomersData?: Customer[];
+  myStoreCustomersData?: SerializedCustomer[];
   initialPagination?: PaginationMeta;
 };
 
@@ -77,11 +65,8 @@ const UserList = (props: UserListProps) => {
   const isAllStores = isAdminMode && !storeId;
 
   // ── State ───────────────────────────────────────────────────────────────────
-  const [fetchedCustomers, setFetchedCustomers] = useState<AnyCustomer[]>(
-    (props.myStoreCustomersData as unknown as AnyCustomer[])?.slice(
-      0,
-      ITEMS_PER_PAGE,
-    ) || [],
+  const [fetchedCustomers, setFetchedCustomers] = useState<SerializedCustomer[]>(
+    (props.myStoreCustomersData || []).slice(0, ITEMS_PER_PAGE)
   );
 
   const [isLoading, setIsLoading] = useState(
@@ -141,7 +126,6 @@ const UserList = (props: UserListProps) => {
     let mounted = true;
 
     const load = async () => {
-      // 🚀 THE FIX: Use the actual initialPagination prop instead of array length math.
       if (
         !isAdminMode &&
         page === 1 &&
@@ -149,11 +133,8 @@ const UserList = (props: UserListProps) => {
         props.myStoreCustomersData &&
         props.myStoreCustomersData.length > 0
       ) {
-        setFetchedCustomers(
-          props.myStoreCustomersData as unknown as AnyCustomer[],
-        );
+        setFetchedCustomers(props.myStoreCustomersData);
 
-        // Use the REAL pagination data from the server, which has the true totalCount
         if (props.initialPagination) {
           setServerPagination(props.initialPagination);
         }
@@ -172,7 +153,7 @@ const UserList = (props: UserListProps) => {
       if (!mounted) return;
 
       if (result.success) {
-        setFetchedCustomers(result.data as AnyCustomer[]);
+        setFetchedCustomers(result.data as unknown as SerializedCustomer[]); 
         if (result.pagination) setServerPagination(result.pagination);
       } else {
         toast.error(result.error || "Failed to fetch customers");
@@ -194,10 +175,10 @@ const UserList = (props: UserListProps) => {
   ]);
 
   // ── Sort ───────────────────────────────────────────────────────────
-  const getSortableTime = (c: AnyCustomer) => {
+  const getSortableTime = (c: SerializedCustomer) => { 
     const t = new Date(c.createdAt).getTime();
     if (Number.isFinite(t) && t > 0) return t;
-    const idStr = c._id?.toString?.() ?? "";
+    const idStr = c._id.toString();
     if (/^[a-fA-F0-9]{24}$/.test(idStr))
       return parseInt(idStr.slice(0, 8), 16) * 1000;
     return 0;
@@ -331,11 +312,12 @@ const UserList = (props: UserListProps) => {
                     className="group inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors"
                   >
                     <Store className="w-3 h-3 text-emerald-500 shrink-0" />
-                    <span className="text-xs font-semibold text-emerald-700 truncate max-w-[160px] group-hover:underline underline-offset-2">
+                    <span className="text-xs font-semibold text-emerald-700 truncate max-w-40 group-hover:underline underline-offset-2">
                       {customer.storeName ?? "Unknown Store"}
                     </span>
                   </Link>
                 )}
+                {/* We can cast here as any to satisfy CustomerCard if it still hasn't been updated to SerializedCustomer */}
                 <CustomerCard customer={customer as any} userRole={userRole} />
               </div>
             ))}

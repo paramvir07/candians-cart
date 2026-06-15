@@ -1,6 +1,6 @@
 "use server";
 import { dbConnect } from "@/db/dbConnect";
-import Customer from "@/db/models/customer/customer.model";
+import Customer, { ICustomer } from "@/db/models/customer/customer.model";
 import { NextResponse } from "next/server";
 import { getUserSession } from "../auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
@@ -9,6 +9,12 @@ import {
   getCachedCustomerAndStore,
   getCachedCustomerProfile,
 } from "../cache/user.cache";
+import { Types } from "mongoose";
+
+export interface CustomerWithRecentOrder extends ICustomer {
+  _id: Types.ObjectId;
+  lastOrderDate: Date; // Injected by aggregation
+}
 
 export const getUser = async (customerId?: string) => {
   try {
@@ -128,13 +134,51 @@ export const getMyStoreCustomers = async (page = 1, limit = 12) => {
     // Calculate how many documents to skip
     const skip = (page - 1) * limit;
 
-    const myStoreCustomersData = await Customer.find({
-      associatedStoreId: myStoreId,
-    })
-      .sort({ createdAt: -1 }) // Ensure you get the newest customers first
-      .skip(skip) // Skip previous pages
-      .limit(limit) // Only fetch the requested amount
-      .lean();
+    const myStoreCustomersData =
+      await Customer.aggregate<CustomerWithRecentOrder>([
+        {
+          $match: { associatedStoreId: new Types.ObjectId(myStoreId) },
+        },
+        {
+          $lookup: {
+            from: "orders",
+            let: { customerUserId: "$userId", storeId: "$associatedStoreId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$userId", "$$customerUserId"] },
+                      { $eq: ["$storeId", "$$storeId"] },
+                    ],
+                  },
+                },
+              },
+              {
+                $sort: { createdAt: -1 },
+              },
+              { $limit: 1 },
+              { $project: { createdAt: 1 } },
+            ],
+            as: "recentOrder",
+          },
+        },
+        {
+          $addFields: {
+            lastOrderDate: {
+              $cond: {
+                if: { $gt: [{ $size: "$recentOrder" }, 0] },
+                then: { $arrayElemAt: ["$recentOrder.createdAt", 0] },
+                else: "$createdAt",
+              },
+            },
+          },
+        },
+        { $project: { recentOrder: 0 } }, // Remove the array payload
+        { $sort: { lastOrderDate: -1, createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+      ]);
 
     if (!myStoreCustomersData)
       return {
@@ -146,9 +190,15 @@ export const getMyStoreCustomers = async (page = 1, limit = 12) => {
       associatedStoreId: myStoreId,
     });
 
-    const serializedMyStoreCustomersData = JSON.parse(
-      JSON.stringify(myStoreCustomersData),
-    );
+    const serializedMyStoreCustomersData = myStoreCustomersData.map((doc) => ({
+      ...doc,
+      _id: doc._id.toString(),
+      userId: doc.userId.toString(),
+      associatedStoreId: doc.associatedStoreId.toString(),
+      createdAt: doc.createdAt?.toISOString(),
+      updatedAt: doc.updatedAt?.toISOString(),
+      lastOrderDate: doc.lastOrderDate?.toISOString(),
+    }));
 
     return {
       success: true,
