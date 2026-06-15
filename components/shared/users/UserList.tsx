@@ -85,11 +85,6 @@ const UserList = (props: UserListProps) => {
   // ── Scanner refs ────────────────────────────────────────────────────────────
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
-  const lastKeyTimeRef = useRef(0);
-  const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const androidBufferRef = useRef("");
-  const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const androidLastInputRef = useRef(0);
 
   // Focus input on mount
   useEffect(() => {
@@ -101,126 +96,78 @@ const UserList = (props: UserListProps) => {
     setPage(1);
   }, [debouncedSearch]);
 
+  const OBJECT_ID_RE = /^[a-f0-9]{24}$/i;
+
   const commitScan = (value: string) => {
-    if (!value || value.length < 4) return;
-    setSearch(value);
+    const trimmed = value.trim();
+    if (!OBJECT_ID_RE.test(trimmed)) return;
+    setSearch(trimmed);
     searchInputRef.current?.focus();
     setTimeout(() => searchInputRef.current?.select(), 0);
   };
 
-  // ── Scanner gun keydown (desktop / iOS) ─────────────────────────────────────
+  // ── Universal scanner handler — works on desktop, iOS, and Android ──────────
+  // Strategy: accumulate every character into a ref buffer. The moment the
+  // buffer is exactly 24 hex chars (a MongoDB ObjectId), commit and clear.
+  // This avoids all timing heuristics and works regardless of how the OS
+  // delivers scanner input (keydown bursts, input events, IME composition).
   useEffect(() => {
-    const HUMAN_THRESHOLD_MS = 100;
-    const COMMIT_TIMEOUT_MS = 100;
-
-    const flush = () => {
-      const buf = scanBufferRef.current;
-      scanBufferRef.current = "";
-      if (buf.length >= 4) commitScan(buf);
-    };
-
-    const resetTimer = () => {
-      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
-      scanTimerRef.current = setTimeout(flush, COMMIT_TIMEOUT_MS);
+    const accumulate = (chars: string) => {
+      scanBufferRef.current += chars;
+      // Trim to last 24 chars in case of any prefix garbage
+      if (scanBufferRef.current.length > 24) {
+        scanBufferRef.current = scanBufferRef.current.slice(-24);
+      }
+      if (OBJECT_ID_RE.test(scanBufferRef.current)) {
+        const id = scanBufferRef.current;
+        scanBufferRef.current = "";
+        commitScan(id);
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key.length !== 1 && e.key !== "Enter") return;
-
-      const now = Date.now();
-      const gap = now - lastKeyTimeRef.current;
-      lastKeyTimeRef.current = now;
-
       if (e.key === "Enter") {
-        if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+        // Fallback: if Enter arrives before we hit 24 chars, try what we have
         const buf = scanBufferRef.current;
         scanBufferRef.current = "";
-        if (buf.length >= 4) {
-          e.preventDefault();
-          e.stopPropagation();
-          commitScan(buf);
-        }
+        if (OBJECT_ID_RE.test(buf)) commitScan(buf);
         return;
       }
-
-      if (gap > HUMAN_THRESHOLD_MS && scanBufferRef.current.length > 0) {
-        scanBufferRef.current = "";
-      }
-
-      scanBufferRef.current += e.key;
-      resetTimer();
+      if (e.key.length !== 1) return;
+      accumulate(e.key);
     };
 
-    // iPad Safari: IME composition gives us the full barcode string cleanly
     const handleCompositionEnd = (e: CompositionEvent) => {
-      if (!e.data || e.data.length < 4) return;
+      if (!e.data) return;
       scanBufferRef.current = "";
-      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
-      commitScan(e.data);
+      accumulate(e.data);
     };
-
-    window.addEventListener("keydown", handleKeyDown, true);
-    window.addEventListener("compositionend", handleCompositionEnd, true);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown, true);
-      window.removeEventListener("compositionend", handleCompositionEnd, true);
-      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
-    };
-  }, []);
-
-  // ── Android input event fallback ─────────────────────────────────────────────
-  // Android scanners fire rapid input events. We track the previous DOM value
-  // and extract only the newly added characters each event, accumulating them
-  // into a buffer. We never touch the DOM value directly (avoids React conflicts).
-  useEffect(() => {
-    const input = searchInputRef.current;
-    if (!input) return;
-
-    const COMMIT_DEBOUNCE_MS = 300;
-    const CHUNK_GAP_MS = 500;
-    let prevValue = "";
 
     const handleInput = (e: Event) => {
       const inputEvent = e as InputEvent;
       if (inputEvent.isComposing) return;
-
-      const currentVal = (e.target as HTMLInputElement).value;
-      const now = Date.now();
-      const gap = now - androidLastInputRef.current;
-      androidLastInputRef.current = now;
-
-      // New scan session — reset buffer
-      if (gap > CHUNK_GAP_MS) {
-        androidBufferRef.current = "";
-        prevValue = "";
+      const val = (e.target as HTMLInputElement).value;
+      if (!val) return;
+      // Sync buffer to current full input value so we always have the latest state
+      scanBufferRef.current = val.slice(-24);
+      if (OBJECT_ID_RE.test(scanBufferRef.current)) {
+        const id = scanBufferRef.current;
+        scanBufferRef.current = "";
+        // Clear the input so next scan starts fresh
+        setSearch("");
+        setTimeout(() => commitScan(id), 0);
       }
-
-      // Extract only the characters added since the last event
-      const added = currentVal.startsWith(prevValue)
-        ? currentVal.slice(prevValue.length)
-        : currentVal;
-
-      prevValue = currentVal;
-
-      if (!added) return;
-
-      androidBufferRef.current += added;
-
-      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
-
-      androidTimerRef.current = setTimeout(() => {
-        const buf = androidBufferRef.current;
-        androidBufferRef.current = "";
-        prevValue = "";
-        if (buf.length >= 4) commitScan(buf);
-      }, COMMIT_DEBOUNCE_MS);
     };
 
-    input.addEventListener("input", handleInput);
+    const input = searchInputRef.current;
+    window.addEventListener("keydown", handleKeyDown, true);
+    window.addEventListener("compositionend", handleCompositionEnd, true);
+    input?.addEventListener("input", handleInput);
+
     return () => {
-      input.removeEventListener("input", handleInput);
-      if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
+      window.removeEventListener("keydown", handleKeyDown, true);
+      window.removeEventListener("compositionend", handleCompositionEnd, true);
+      input?.removeEventListener("input", handleInput);
     };
   }, []);
 
