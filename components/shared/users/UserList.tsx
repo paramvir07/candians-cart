@@ -91,6 +91,11 @@ const UserList = (props: UserListProps) => {
   const androidTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const androidLastInputRef = useRef(0);
 
+  // Focus input on mount
+  useEffect(() => {
+    setTimeout(() => searchInputRef.current?.focus(), 0);
+  }, []);
+
   // Reset to page 1 when the debounced search changes
   useEffect(() => {
     setPage(1);
@@ -165,40 +170,49 @@ const UserList = (props: UserListProps) => {
   }, []);
 
   // ── Android input event fallback ─────────────────────────────────────────────
+  // Android scanners fire rapid input events. We track the previous DOM value
+  // and extract only the newly added characters each event, accumulating them
+  // into a buffer. We never touch the DOM value directly (avoids React conflicts).
   useEffect(() => {
     const input = searchInputRef.current;
     if (!input) return;
 
     const COMMIT_DEBOUNCE_MS = 300;
     const CHUNK_GAP_MS = 500;
+    let prevValue = "";
 
     const handleInput = (e: Event) => {
       const inputEvent = e as InputEvent;
       if (inputEvent.isComposing) return;
 
-      const val = (e.target as HTMLInputElement).value;
-      if (!val) return;
-
+      const currentVal = (e.target as HTMLInputElement).value;
       const now = Date.now();
       const gap = now - androidLastInputRef.current;
       androidLastInputRef.current = now;
 
-      // New scan session if there's been a long pause
+      // New scan session — reset buffer
       if (gap > CHUNK_GAP_MS) {
         androidBufferRef.current = "";
+        prevValue = "";
       }
 
-      // Accumulate chunks — append, don't replace
-      androidBufferRef.current += val;
+      // Extract only the characters added since the last event
+      const added = currentVal.startsWith(prevValue)
+        ? currentVal.slice(prevValue.length)
+        : currentVal;
 
-      // Clear the visible input so the next chunk doesn't get appended by the DOM
-      (e.target as HTMLInputElement).value = "";
+      prevValue = currentVal;
+
+      if (!added) return;
+
+      androidBufferRef.current += added;
 
       if (androidTimerRef.current) clearTimeout(androidTimerRef.current);
 
       androidTimerRef.current = setTimeout(() => {
         const buf = androidBufferRef.current;
         androidBufferRef.current = "";
+        prevValue = "";
         if (buf.length >= 4) commitScan(buf);
       }, COMMIT_DEBOUNCE_MS);
     };
@@ -339,6 +353,7 @@ const UserList = (props: UserListProps) => {
                 placeholder={searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                autoFocus
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="off"
