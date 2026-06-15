@@ -454,9 +454,13 @@ export const StoreProductsList = ({
   if (filters.sortBy && filters.sortBy !== "recommended") {
     filterChips.push({
       label:
-        { price_asc: "Price ↑", price_desc: "Price ↓", name_asc: "A → Z" }[
-          filters.sortBy
-        ] ?? "",
+        {
+          price_asc: "Price ↑",
+          price_desc: "Price ↓",
+          name_asc: "A → Z",
+          markup_desc: "Subsidy: High → Low",
+          markup_asc: "Subsidy: Low → High",
+        }[filters.sortBy] ?? "",
       clear: () => handleApplyFilters({ ...filters, sortBy: undefined }),
     });
   }

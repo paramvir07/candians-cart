@@ -2,7 +2,6 @@
 // components/customer/shared/FilterPanel.tsx
 
 import { useEffect, useState } from "react";
-// import { useSearchParams } from "next/navigation";
 import { X, SlidersHorizontal } from "lucide-react";
 import {
   ALL_CATEGORIES,
@@ -14,24 +13,23 @@ export interface FilterState {
   categories: string[];
   inStockOnly: boolean;
   subsidisedOnly: boolean;
-  sortBy: "default" | "price_asc" | "price_desc" | "name_asc";
+  subsidyLevel?: "high" | "medium" | "low";
+  sortBy:
+    | "default"
+    | "price_asc"
+    | "price_desc"
+    | "name_asc"
+    | "markup_desc"
+    | "markup_asc";
 }
 
 export const DEFAULT_FILTERS: FilterState = {
   categories: [],
   inStockOnly: false,
   subsidisedOnly: false,
+  subsidyLevel: undefined,
   sortBy: "default",
 };
-
-// export function getActiveFilterCount(filters: FilterState) {
-//   return (
-//     filters.categories.length +
-//     (filters.inStockOnly ? 1 : 0) +
-//     (filters.subsidisedOnly ? 1 : 0) +
-//     (filters.sortBy !== "default" ? 1 : 0)
-//   );
-// }
 
 const CATEGORY_GROUPS: string[][] = [
   // ["Fruits", "Vegetables", "Produce"],
@@ -53,6 +51,7 @@ export function getActiveFilterCount(filters: FilterState) {
     categoryCount +
     (filters.inStockOnly ? 1 : 0) +
     (filters.subsidisedOnly ? 1 : 0) +
+    (filters.subsidyLevel ? 1 : 0) +
     (filters.sortBy !== "default" ? 1 : 0)
   );
 }
@@ -81,53 +80,26 @@ export function FilterPanel({
   onApply,
 }: FilterPanelProps) {
   const searchParams = useSearchParams();
-  const activeCount  = getActiveFilterCount(filters);
+  const activeCount = getActiveFilterCount(filters);
 
-  // On mount: reset to defaults then apply only what the URL specifies,
-  // so selecting one filter from the footer never stacks on prior filters.
-  //   ?subsidisedOnly=true     - from the subsidy popup "View all" button
-  //   ?category=Fresh+Produce  - from footer category links
-  // useEffect(() => {
-  //   const subsidisedParam = searchParams.get("subsidisedOnly") === "true";
-  //   const cat             = searchParams.get("category");
-  //   const validCat        = cat && ALL_CATEGORIES.includes(cat) ? cat : null;
+  const toggleCategory = (cat: string) => {
+    const group = CATEGORY_GROUPS.find((g) => g.includes(cat));
+    const toToggle = group ?? [cat];
+    const isActive = toToggle.some((c) => filters.categories.includes(c));
+    const next = isActive
+      ? filters.categories.filter((c) => !toToggle.includes(c))
+      : [...new Set([...filters.categories, ...toToggle])];
+    onChange({ categories: next });
+  };
 
-  //   if (!subsidisedParam && !validCat) return;
-
-  //   onChange({
-  //     ...DEFAULT_FILTERS,
-  //     subsidisedOnly: subsidisedParam,
-  //     categories:     validCat ? [validCat] : [],
-  //   });
-  // }, [searchParams]);
-
-  // const toggleCategory = (cat: string) => {
-  //   const next = filters.categories.includes(cat)
-  //     ? filters.categories.filter((c) => c !== cat)
-  //     : [...filters.categories, cat];
-  //   onChange({ categories: next });
-  // };
-
-  const CATEGORY_GROUPS: string[][] = [
-  // ["Fruits", "Vegetables", "Produce"],
-];
-
-const toggleCategory = (cat: string) => {
-  const group = CATEGORY_GROUPS.find((g) => g.includes(cat));
-  const toToggle = group ?? [cat];
-  const isActive = toToggle.some((c) => filters.categories.includes(c));
-  const next = isActive
-    ? filters.categories.filter((c) => !toToggle.includes(c))
-    : [...new Set([...filters.categories, ...toToggle])];
-  onChange({ categories: next });
-};
-const [pendingFilters, setPendingFilters] = useState<FilterState>(DEFAULT_FILTERS);
-
+  const [pendingFilters, setPendingFilters] =
+    useState<FilterState>(DEFAULT_FILTERS);
 
   return (
     <div className="flex flex-col h-full">
-      <div className={`flex-1 overflow-y-auto pr-2 ${showApplyButton ? "pb-20" : ""}`}>
-
+      <div
+        className={`flex-1 overflow-y-auto pr-2 ${showApplyButton ? "pb-20" : ""}`}
+      >
         {/* Clear all */}
         <button
           onClick={onReset}
@@ -140,13 +112,12 @@ const [pendingFilters, setPendingFilters] = useState<FilterState>(DEFAULT_FILTER
         </button>
 
         <div className="space-y-6">
-
           {/* ── Categories ── */}
           <div>
             <SectionLabel>Category</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {ALL_CATEGORIES.map((cat) => {
-                const cfg    = getCategoryConfig(cat);
+                const cfg = getCategoryConfig(cat);
                 const active = filters.categories.includes(cat);
                 return (
                   <button
@@ -158,17 +129,23 @@ const [pendingFilters, setPendingFilters] = useState<FilterState>(DEFAULT_FILTER
                         : "bg-card border-border/60 hover:border-border hover:bg-secondary/60"
                     }`}
                   >
-                    <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm m-0.5 shrink-0 transition-colors ${
-                      active ? "bg-white/30" : "bg-secondary"
-                    }`}>
+                    <span
+                      className={`flex items-center justify-center w-8 h-8 rounded-full text-sm m-0.5 shrink-0 transition-colors ${
+                        active ? "bg-white/30" : "bg-secondary"
+                      }`}
+                    >
                       {cfg.emoji}
                     </span>
-                    <span className={`text-sm font-semibold pl-2 flex-1 ${
-                      active ? cfg.text : "text-muted-foreground"
-                    }`}>
+                    <span
+                      className={`text-sm font-semibold pl-2 flex-1 ${
+                        active ? cfg.text : "text-muted-foreground"
+                      }`}
+                    >
                       {cat}
                     </span>
-                    {active && <X className="h-3 w-3 opacity-50 shrink-0 ml-1" />}
+                    {active && (
+                      <X className="h-3 w-3 opacity-50 shrink-0 ml-1" />
+                    )}
                   </button>
                 );
               })}
@@ -180,8 +157,16 @@ const [pendingFilters, setPendingFilters] = useState<FilterState>(DEFAULT_FILTER
             <SectionLabel>Availability</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {[
-                { key: "inStockOnly"    as const, label: "In stock only",   emoji: "✅" },
-                { key: "subsidisedOnly" as const, label: "Subsidised only", emoji: "✨" },
+                {
+                  key: "inStockOnly" as const,
+                  label: "In stock only",
+                  emoji: "✅",
+                },
+                {
+                  key: "subsidisedOnly" as const,
+                  label: "Subsidised only",
+                  emoji: "✨",
+                },
               ].map(({ key, label, emoji }) => (
                 <button
                   key={key}
@@ -192,19 +177,78 @@ const [pendingFilters, setPendingFilters] = useState<FilterState>(DEFAULT_FILTER
                       : "bg-card border-border/60 hover:border-border hover:bg-secondary/60"
                   }`}
                 >
-                  <span className={`flex items-center justify-center w-8 h-8 rounded-full text-sm m-0.5 shrink-0 transition-colors ${
-                    filters[key] ? "bg-white/40" : "bg-secondary"
-                  }`}>
+                  <span
+                    className={`flex items-center justify-center w-8 h-8 rounded-full text-sm m-0.5 shrink-0 transition-colors ${
+                      filters[key] ? "bg-white/40" : "bg-secondary"
+                    }`}
+                  >
                     {emoji}
                   </span>
-                  <span className={`text-sm font-semibold pl-2 flex-1 ${
-                    filters[key] ? "text-green-700" : "text-muted-foreground"
-                  }`}>
+                  <span
+                    className={`text-sm font-semibold pl-2 flex-1 ${
+                      filters[key] ? "text-green-700" : "text-muted-foreground"
+                    }`}
+                  >
                     {label}
                   </span>
-                  {filters[key] && <X className="h-3 w-3 opacity-50 shrink-0 ml-1" />}
+                  {filters[key] && (
+                    <X className="h-3 w-3 opacity-50 shrink-0 ml-1" />
+                  )}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* ── Subsidy Level ── */}
+          <div>
+            <SectionLabel>Subsidy Level</SectionLabel>
+            <div className="flex flex-col gap-1.5">
+              {[
+                { value: "high", label: "High Subsidy", emoji: "🔥" },
+                {
+                  value: "medium",
+                  label: "Medium Subsidy",
+                  emoji: "⭐",
+                },
+                { value: "low", label: "Low Subsidy", emoji: "🟢" },
+              ].map((opt) => {
+                const isActive = filters.subsidyLevel === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() =>
+                      onChange({
+                        subsidyLevel: isActive
+                          ? undefined
+                          : (opt.value as "high" | "medium" | "low"),
+                      })
+                    }
+                    className={`flex items-center gap-0 rounded-full border transition-all duration-150 text-left pr-3 ${
+                      isActive
+                        ? "bg-amber-500/10 border-amber-300 shadow-sm"
+                        : "bg-card border-border/60 hover:border-border hover:bg-secondary/60"
+                    }`}
+                  >
+                    <span
+                      className={`flex items-center justify-center w-8 h-8 rounded-full text-sm m-0.5 shrink-0 transition-colors ${
+                        isActive ? "bg-white/40" : "bg-secondary"
+                      }`}
+                    >
+                      {opt.emoji}
+                    </span>
+                    <span
+                      className={`text-sm font-semibold pl-2 flex-1 ${
+                        isActive ? "text-amber-700" : "text-muted-foreground"
+                      }`}
+                    >
+                      {opt.label}
+                    </span>
+                    {isActive && (
+                      <X className="h-3 w-3 opacity-50 shrink-0 ml-1" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -213,14 +257,18 @@ const [pendingFilters, setPendingFilters] = useState<FilterState>(DEFAULT_FILTER
             <SectionLabel>Sort By</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {[
-                { value: "default",    label: "Recommended"       },
-                { value: "price_asc",  label: "Price: Low → High" },
+                { value: "default", label: "Recommended" },
+                { value: "price_asc", label: "Price: Low → High" },
                 { value: "price_desc", label: "Price: High → Low" },
-                { value: "name_asc",   label: "Name A → Z"        },
+                { value: "markup_desc", label: "Subsidy: High → Low" },
+                { value: "markup_asc", label: "Subsidy: Low → High" },
+                { value: "name_asc", label: "Name A → Z" },
               ].map((opt) => (
                 <button
                   key={opt.value}
-                  onClick={() => onChange({ sortBy: opt.value as FilterState["sortBy"] })}
+                  onClick={() =>
+                    onChange({ sortBy: opt.value as FilterState["sortBy"] })
+                  }
                   className={`px-4 py-2.5 rounded-full text-sm font-semibold border text-left transition-all duration-150 ${
                     filters.sortBy === opt.value
                       ? "bg-foreground text-background border-foreground shadow-sm"
@@ -232,7 +280,6 @@ const [pendingFilters, setPendingFilters] = useState<FilterState>(DEFAULT_FILTER
               ))}
             </div>
           </div>
-
         </div>
       </div>
 

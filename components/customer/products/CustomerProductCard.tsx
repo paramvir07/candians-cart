@@ -39,7 +39,7 @@ import { emitCartUpdated } from "@/lib/cartEvent";
 import PriceDropBtn from "./PriceDropBtn";
 
 function useCashierMobile() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 996);
     check();
@@ -69,9 +69,9 @@ export const CustomerProductCard = forwardRef<
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [quantity, setQuantity] = useState(cartQuantity);
-  const [inputValue, setInputValue] = useState(String(cartQuantity));
-  const [isQtyDirty, setIsQtyDirty] = useState(false);
+  const [quantity, setQuantity] = useState<number>(cartQuantity);
+  const [inputValue, setInputValue] = useState<string>(String(cartQuantity));
+  const [isQtyDirty, setIsQtyDirty] = useState<boolean>(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const qtyInputRef = useRef<HTMLInputElement>(null);
   const cashierMobile = useCashierMobile();
@@ -93,7 +93,7 @@ export const CustomerProductCard = forwardRef<
   const formatQtyForInput = useCallback(
     (value: number) => {
       if (product.isMeasuredInWeight) {
-        return Number.isInteger(value) ? String(value) : String(value);
+        return String(value);
       }
       return String(Math.trunc(value));
     },
@@ -121,6 +121,7 @@ export const CustomerProductCard = forwardRef<
     [product.isMeasuredInWeight],
   );
 
+
   useEffect(() => {
     setQuantity(cartQuantity);
     setInputValue(formatQtyForInput(cartQuantity));
@@ -132,7 +133,7 @@ export const CustomerProductCard = forwardRef<
     setIsQtyDirty(false);
   }, [quantity, formatQtyForInput]);
 
-  const hasImage = product.images?.length > 0 && !imgError;
+  const hasImage = product.images && product.images.length > 0 && !imgError;
   const catConfig = getCategoryConfig(product.category);
 
   const syncQuantity = useCallback(
@@ -184,7 +185,7 @@ export const CustomerProductCard = forwardRef<
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    const initialQty = product.isMeasuredInWeight ? 1 : 1;
+    const initialQty = 1;
     setQuantity(initialQty);
     setInputValue(formatQtyForInput(initialQty));
     setIsQtyDirty(false);
@@ -291,6 +292,9 @@ export const CustomerProductCard = forwardRef<
     normalizedInputQty !== null &&
     normalizedInputQty !== quantity;
 
+  // Calculate subsidy strictly based on markup for ALL products (no boolean check needed)
+  const subsidyConfig = getSubsidyConfig(product.markup ?? 0);
+
   return (
     <>
       <ProductDetailDialog
@@ -336,6 +340,7 @@ export const CustomerProductCard = forwardRef<
         )}
 
         <div className="absolute left-2 right-2 top-2 z-10 flex items-start justify-between gap-1">
+          {/* LEFT BADGES */}
           <div className="flex flex-col gap-1">
             {product.subsidised && (
               <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-teal-500/90 px-2 py-0.5 text-[9px] font-bold leading-none text-white shadow-md shadow-teal-900/30 backdrop-blur-sm">
@@ -355,10 +360,10 @@ export const CustomerProductCard = forwardRef<
                 FEATURED
               </div>
             )}
-            {product?.PriceDrop && (
+            {product.PriceDrop && (
               <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm">
                 <BadgePercent
-                  className="h-2.5 w-2.5 shrink-0 "
+                  className="h-2.5 w-2.5 shrink-0"
                   strokeWidth={2}
                 />
                 PRICE DROP
@@ -366,19 +371,12 @@ export const CustomerProductCard = forwardRef<
             )}
           </div>
 
+          {/* RIGHT BADGE: Dynamic Subsidy Level based on markup */}
           <div
-            className={`flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-bold shadow backdrop-blur-sm ${
-              product.stock
-                ? "border-emerald-400/30 bg-emerald-500/80 text-white"
-                : "border-red-400/30 bg-red-500/80 text-white"
-            }`}
+            className={`flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[10.5px] font-black backdrop-blur-md transition-colors ${subsidyConfig.bg} ${subsidyConfig.border} ${subsidyConfig.text}`}
           >
-            <span
-              className={`h-1 w-1 shrink-0 rounded-full bg-white ${
-                product.stock ? "animate-pulse" : ""
-              }`}
-            />
-            {product.stock ? "In Stock" : "Sold Out"}
+            <BadgeDollarSign className="h-3 w-3 shrink-0" strokeWidth={2.5} />
+            {subsidyConfig.label}
           </div>
         </div>
 
@@ -412,7 +410,7 @@ export const CustomerProductCard = forwardRef<
               {product.name}
               <div>
                 {isCashier && !product.PriceDrop && (
-                  <PriceDropBtn productId={product._id} />
+                  <PriceDropBtn productId={product._id as string} />
                 )}
               </div>
             </h3>
@@ -420,8 +418,11 @@ export const CustomerProductCard = forwardRef<
             <div className="flex items-center text-xs font-medium text-white/90 justify-between">
               <span className="flex items-center gap-1">
                 <span className="font-black text-white">
-                  {fmt(product.price + product.price * (product.markup / 100))}
-                  {product.UOM && `/${product.UOM?.toUpperCase()}`}
+                  {fmt(
+                    product.price +
+                      product.price * ((product.markup ?? 0) / 100),
+                  )}
+                  {product.UOM && `/${product.UOM.toUpperCase()}`}
                 </span>
               </span>
             </div>
