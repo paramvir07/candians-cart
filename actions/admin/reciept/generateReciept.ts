@@ -46,7 +46,6 @@ export interface AggregatedReciept {
   platformProfit: number;
   platformCommision: number;
   totalWalletTopUpCashCollected: number;
-  totalOrderCashCollected: number;
   totalCashCollected: number;
 }
 
@@ -61,7 +60,6 @@ type OrderAggregateResult = {
   totalGST: number;
   totalPST: number;
   totalSubsidy: number;
-  totalOrderCashCollected: number;
   allMiscItems: PlaceOrderMiscItem[][];
 };
 
@@ -156,11 +154,6 @@ export async function getRecieptDataByDateRange(
           totalGST: { $sum: "$TotalGST" },
           totalPST: { $sum: "$TotalPST" },
           totalSubsidy: { $sum: "$subsidy" },
-          totalOrderCashCollected: {
-            $sum: {
-              $cond: [{ $eq: ["$paymentMode", "cash"] }, "$cartTotal", 0],
-            },
-          },
           allMiscItems: { $push: "$miscItems" },
         },
       },
@@ -285,9 +278,7 @@ export async function getRecieptDataByDateRange(
       const totalGST = Math.round(receipt.totalGST + miscTaxGSTAdjustment);
       const totalPST = Math.round(receipt.totalPST + miscTaxPSTAdjustment);
       const totalSubsidy = Math.round(receipt.totalSubsidy);
-      const totalOrderCashCollected = Math.round(
-        receipt.totalOrderCashCollected,
-      );
+
       const totalWalletTopUpCashCollected = Math.round(
         topUpMap.get(storeKey) || 0,
       );
@@ -327,8 +318,7 @@ export async function getRecieptDataByDateRange(
       const storeProfit = Math.round(grossMargin * STORE_PROFIT_MARGIN);
 
       // 4. Payout Calculations
-      const totalCashCollected =
-        totalOrderCashCollected + totalWalletTopUpCashCollected;
+      const totalCashCollected = totalWalletTopUpCashCollected;
       const storePayout = storeProfit + storeFixedValue - totalCashCollected;
 
       // 5. Platform Metrics
@@ -362,7 +352,6 @@ export async function getRecieptDataByDateRange(
         platformProfit,
         platformCommision,
         totalWalletTopUpCashCollected,
-        totalOrderCashCollected,
         totalCashCollected,
       };
     });

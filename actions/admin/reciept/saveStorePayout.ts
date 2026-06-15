@@ -61,7 +61,6 @@ export async function saveStorePayoutAction(
       storeProfit: receipt.storeProfit,
       storePayout: receipt.storePayout,
       totalWalletTopUpCashCollected: receipt.totalWalletTopUpCashCollected || 0,
-      totalOrderCashCollected: receipt.totalOrderCashCollected || 0,
       totalCashCollected: receipt.totalCashCollected || 0,
       platformProfit: receipt.platformProfit,
       platformCommision: receipt.platformCommision,

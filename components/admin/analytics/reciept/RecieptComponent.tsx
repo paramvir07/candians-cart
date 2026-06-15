@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { type DateRange } from "react-day-picker";
+import { startOfDay, endOfDay } from "date-fns";
+import { useDebounce } from "use-debounce";
+
 import {
   getRecieptDataByDateRange,
   AggregatedReciept,
@@ -54,6 +57,11 @@ export default function RecieptComponent({
   initialStoreId?: string;
 }) {
   const [date, setDate] = useState<DateRange | undefined>(undefined);
+  const [storeId, setStoreId] = useState<string>(initialStoreId || "all");
+
+  const [debouncedDate] = useDebounce(date, 500);
+  const [debouncedStoreId] = useDebounce(storeId, 500);
+
   const [receipts, setReceipts] = useState<AggregatedReciept[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -61,7 +69,6 @@ export default function RecieptComponent({
   const [isSaving, setIsSaving] = useState<Record<string, boolean>>({});
 
   const [stores, setStores] = useState<StoreDocument[]>([]);
-  const [storeId, setStoreId] = useState<string>(initialStoreId || "all");
   const [isStoresLoading, setIsStoresLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -83,19 +90,20 @@ export default function RecieptComponent({
     fetchStores();
   }, []);
 
+  // 2. Fetch Aggregated Data when Debounced Values Change
   useEffect(() => {
     async function fetchData() {
-      if (date?.from && date?.to) {
+      // Use the debounced date rather than the immediate state
+      if (debouncedDate?.from && debouncedDate?.to) {
         setIsLoading(true);
         setFetchError(null);
 
-        const startDate = new Date(date.from);
-        startDate.setUTCHours(0, 0, 0, 0);
+        // Calculate boundaries relative to the user's local timezone
+        const startDate = startOfDay(debouncedDate.from);
+        const endDate = endOfDay(debouncedDate.to);
 
-        const endDate = new Date(date.to);
-        endDate.setUTCHours(23, 59, 59, 999);
-
-        const selectedStore = storeId === "all" ? undefined : storeId;
+        const selectedStore =
+          debouncedStoreId === "all" ? undefined : debouncedStoreId;
 
         try {
           const data = await getRecieptDataByDateRange({
@@ -125,20 +133,19 @@ export default function RecieptComponent({
     }
 
     fetchData();
-  }, [date, storeId]);
+  }, [debouncedDate, debouncedStoreId]);
 
   const handleSavePayout = async (receipt: AggregatedReciept) => {
-    if (!receipt._id || !date?.from || !date?.to) return;
+    // Safety check using debouncedDate ensures we are saving the exact dates the receipt represents
+    if (!receipt._id || !debouncedDate?.from || !debouncedDate?.to) return;
 
     // Set loading state for this specific store's button
     setIsSaving((prev) => ({ ...prev, [receipt._id as string]: true }));
 
     try {
       // Re-create the exact UTC boundaries used to query
-      const startDate = new Date(date.from);
-      startDate.setUTCHours(0, 0, 0, 0);
-      const endDate = new Date(date.to);
-      endDate.setUTCHours(23, 59, 59, 999);
+      const startDate = startOfDay(debouncedDate.from);
+      const endDate = endOfDay(debouncedDate.to);
 
       const res = await saveStorePayoutAction(receipt, startDate, endDate);
 
@@ -156,8 +163,9 @@ export default function RecieptComponent({
   };
 
   const hasData = receipts && receipts.length > 0;
-  const fromIso = date?.from ? date.from.toISOString() : "";
-  const toIso = date?.to ? date.to.toISOString() : "";
+
+  const fromIso = debouncedDate?.from ? debouncedDate.from.toISOString() : "";
+  const toIso = debouncedDate?.to ? debouncedDate.to.toISOString() : "";
 
   const selectedStoreName =
     storeId === "all"
@@ -233,17 +241,17 @@ export default function RecieptComponent({
         )}
 
         {/* Results Section */}
-        {!isLoading && hasData && date?.from && date?.to && (
+        {!isLoading && hasData && debouncedDate?.from && debouncedDate?.to && (
           <div className="space-y-6 pt-2 animate-in fade-in duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <Receipt className="h-5 w-5 text-primary" />
-                {storeId === "all"
+                {debouncedStoreId === "all"
                   ? "Platform-wide Aggregation"
                   : "Store-specific Data"}
               </h2>
               <DownloadButton
-                storeId={storeId === "all" ? "" : storeId}
+                storeId={debouncedStoreId === "all" ? "" : debouncedStoreId}
                 startDateIso={fromIso}
                 endDateIso={toIso}
               />
@@ -377,10 +385,6 @@ export default function RecieptComponent({
                             )}
 
                             <div className="flex justify-between items-center font-medium text-foreground">
-                              <span>Total Cash Collected (From Orders)</span>
-                              <span>{fmt(r.totalOrderCashCollected)}</span>
-                            </div>
-                            <div className="flex justify-between items-center font-medium text-foreground">
                               <span>
                                 Total Cash Collected (From Wallet Topups)
                               </span>
@@ -496,28 +500,34 @@ export default function RecieptComponent({
           </Alert>
         )}
 
-        {!isLoading && date?.from && date?.to && !hasData && !fetchError && (
-          <Alert className="bg-muted/50 border-dashed">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>No data found</AlertTitle>
-            <AlertDescription className="text-muted-foreground">
-              No completed orders found for the selected store and date range.
-              Try adjusting your filters.
-            </AlertDescription>
-          </Alert>
-        )}
+        {!isLoading &&
+          debouncedDate?.from &&
+          debouncedDate?.to &&
+          !hasData &&
+          !fetchError && (
+            <Alert className="bg-muted/50 border-dashed">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>No data found</AlertTitle>
+              <AlertDescription className="text-muted-foreground">
+                No completed orders found for the selected store and date range.
+                Try adjusting your filters.
+              </AlertDescription>
+            </Alert>
+          )}
 
-        {!isLoading && (!date?.from || !date?.to) && !fetchError && (
-          <Alert className="bg-muted/30 border-dashed">
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-            <AlertTitle className="text-muted-foreground">
-              Waiting for selection
-            </AlertTitle>
-            <AlertDescription className="text-muted-foreground">
-              Please select a date range above to generate settlement data.
-            </AlertDescription>
-          </Alert>
-        )}
+        {!isLoading &&
+          (!debouncedDate?.from || !debouncedDate?.to) &&
+          !fetchError && (
+            <Alert className="bg-muted/30 border-dashed">
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+              <AlertTitle className="text-muted-foreground">
+                Waiting for selection
+              </AlertTitle>
+              <AlertDescription className="text-muted-foreground">
+                Please select a date range above to generate settlement data.
+              </AlertDescription>
+            </Alert>
+          )}
       </CardContent>
     </Card>
   );

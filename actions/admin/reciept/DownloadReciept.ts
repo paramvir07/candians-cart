@@ -318,11 +318,6 @@ async function generateReceiptPDF(
       value: formatMoney(data.storeProfit || 0),
     },
     {
-      label: "Cash Collected (From Orders)",
-      value: `-${formatMoney(data.totalOrderCashCollected || 0)}`,
-      color: RED_ALERT,
-    },
-    {
       label: "Cash Collected (From Topups)",
       value: `-${formatMoney(data.totalWalletTopUpCashCollected || 0)}`,
       color: RED_ALERT,
@@ -530,7 +525,6 @@ export interface SavedPayoutData {
   platformProfit: number;
   platformCommision: number;
   totalWalletTopUpCashCollected: number;
-  totalOrderCashCollected: number;
   status: "pending" | "paid";
   additionalNote?: string;
   additionalPrice?: number;
@@ -773,11 +767,6 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
     {
       label: "Store Profit (Margin)",
       value: formatMoney(data.storeProfit || 0),
-    },
-    {
-      label: "Cash Collected (From Orders)",
-      value: `-${formatMoney(data.totalOrderCashCollected || 0)}`,
-      color: RED_ALERT,
     },
     {
       label: "Cash Collected (From Topups)",
