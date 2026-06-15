@@ -4,6 +4,7 @@ import { SearchResultsClient } from "@/components/customer/search/SearchResultsC
 import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { Suspense } from "react";
+import Navbar from "../landing/Navbar";
 
 export default async function SearchPageLoader() {
   const [response, customerDataResponse, cartCount] = await Promise.all([
@@ -21,12 +22,13 @@ export default async function SearchPageLoader() {
 
   return (
     <Suspense>
-    <SearchResultsClient
-      storeId={storeId}
-      searchAction={searchProducts}
-      customerData={customerDataResponse.customerData}
-      cartCount={cartCount ?? 0}
-    />
+      <Navbar />
+      <SearchResultsClient
+        storeId={storeId}
+        searchAction={searchProducts}
+        customerData={customerDataResponse.customerData}
+        cartCount={cartCount ?? 0}
+      />
     </Suspense>
   );
 }
