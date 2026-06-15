@@ -10,7 +10,7 @@ export type Customer = ICustomer & {
 
 export type SerializedCustomer = Omit<
   Customer,
-  "_id" | "userId" | "associatedStoreId" | "createdAt" | "updatedAt"
+  "_id" | "userId" | "associatedStoreId" | "createdAt" | "updatedAt" | "__v"
 > & {
   _id: string;
   userId: string;

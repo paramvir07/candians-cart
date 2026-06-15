@@ -195,9 +195,9 @@ export const getMyStoreCustomers = async (page = 1, limit = 12) => {
       _id: doc._id.toString(),
       userId: doc.userId.toString(),
       associatedStoreId: doc.associatedStoreId.toString(),
-      createdAt: doc.createdAt?.toISOString(),
-      updatedAt: doc.updatedAt?.toISOString(),
-      lastOrderDate: doc.lastOrderDate?.toISOString(),
+      createdAt: doc.createdAt?.toISOString() ?? new Date().toISOString(),
+      updatedAt: doc.updatedAt?.toISOString() ?? new Date().toISOString(),
+      lastOrderDate: doc.lastOrderDate?.toISOString() ?? "",
     }));
 
     return {
