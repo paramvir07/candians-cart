@@ -67,14 +67,14 @@ const customerSchema = new Schema<ICustomer>(
       type: Number,
       required: true,
       default: 0,
-      min: 0,
+      min: [0, "Wallet balance cannot be negative"],
     },
     giftWalletBalance: {
       // Stored in cents
       type: Number,
       required: true,
       default: 0,
-      min: 0,
+      min: [0, "Gift Wallet balance cannot be negative"],
     },
   },
   { timestamps: true },

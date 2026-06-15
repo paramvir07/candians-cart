@@ -526,16 +526,8 @@ export const PlaceOrder = async ({
       BaseTotal: Math.round(baseTotal),
       cartTotal: Math.round(cartTotal),
       subsidy: customerCart.cartSubsidy,
-      subsidyLeft: Math.round(
-        Number(
-          (
-            User.giftWalletBalance +
-            customerCart.cartSubsidy -
-            TotalUsedSubsidy
-          ).toFixed(2),
-        ),
-      ),
-      subsidyUsed: Math.round(Number(TotalUsedSubsidy.toFixed(2))),
+      subsidyLeft: Math.round(User.giftWalletBalance + customerCart.cartSubsidy - TotalUsedSubsidy),
+      subsidyUsed: Math.round(TotalUsedSubsidy),
       userId: User._id,
       storeId: User.associatedStoreId,
       paymentMode,
@@ -548,28 +540,32 @@ export const PlaceOrder = async ({
     await OrderModel.create([OrderData], { session });
 
     if (walletPayment) {
-      await Customer.findByIdAndUpdate(
-        customerId,
+      const updated = await Customer.findOneAndUpdate(
+        { _id: customerId, walletBalance: { $gte: OrderData.cartTotal } },
         {
-          $inc: {
-            walletBalance: -OrderData.cartTotal,
-          },
-          $set: {
-            giftWalletBalance: OrderData.subsidyLeft,
-          },
+          $inc: { walletBalance: -OrderData.cartTotal },
+          $set: { giftWalletBalance: OrderData.subsidyLeft },
         },
-        { session },
+        { session, new: true, runValidators: true },
       );
+
+      if (!updated) {
+        await session.abortTransaction();
+        return { success: false, message: "Insufficient wallet balance." };
+      }
     } else if (receivedCustomerId) {
-      await Customer.findByIdAndUpdate(
-        customerId,
+      const updated = await Customer.findOneAndUpdate(
+        { _id: customerId },
         {
-          $set: {
-            giftWalletBalance: OrderData.subsidyLeft,
-          },
+          $set: { giftWalletBalance: OrderData.subsidyLeft },
         },
-        { session },
+        { session, new: true, runValidators: true },
       );
+
+      if (!updated) {
+        await session.abortTransaction();
+        return { success: false, message: "Error while setting Gift Wallet Amount " };
+      }
     }
 
     await CartModel.deleteOne({ customerId: User._id }, { session });
