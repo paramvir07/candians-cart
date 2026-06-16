@@ -9,6 +9,7 @@ const fmt = (cents: number) => (cents / 100).toFixed(2);
 export const getCartInsights = async (customerId?: string) => {
   if (!customerId) return { success: false, message: "CustomerId is required", data: null };
 
+  const DEFAULT_INSIGHTS = {numItems: 0, subsidyOnOrder: 0, total: 0}
   try {
     await dbConnect();
 
@@ -71,6 +72,6 @@ export const getCartInsights = async (customerId?: string) => {
 
   } catch (err) {
     console.log(err);
-    return { success: false, message: "Can't get cart insights", data: null };
+    return { success: false, message: "Can't get cart insights", data: DEFAULT_INSIGHTS };
   }
 };
