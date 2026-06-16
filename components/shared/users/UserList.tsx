@@ -106,11 +106,10 @@ const UserList = (props: UserListProps) => {
     setTimeout(() => searchInputRef.current?.select(), 0);
   };
 
-  // ── Universal scanner handler — works on desktop, iOS, and Android ──────────
-  // Strategy: accumulate every character into a ref buffer. The moment the
-  // buffer is exactly 24 hex chars (a MongoDB ObjectId), commit and clear.
-  // This avoids all timing heuristics and works regardless of how the OS
-  // delivers scanner input (keydown bursts, input events, IME composition).
+  // ── Universal scanner handler ───────────────────────────────────────────────
+  // Relies solely on keydown + compositionend — no handleInput — to avoid the
+  // race where handleInput overwrites scanBufferRef mid-scan and drops the
+  // first character of the ObjectId.
   useEffect(() => {
     const accumulate = (chars: string) => {
       scanBufferRef.current += chars;
@@ -143,31 +142,12 @@ const UserList = (props: UserListProps) => {
       accumulate(e.data);
     };
 
-    const handleInput = (e: Event) => {
-      const inputEvent = e as InputEvent;
-      if (inputEvent.isComposing) return;
-      const val = (e.target as HTMLInputElement).value;
-      if (!val) return;
-      // Sync buffer to current full input value so we always have the latest state
-      scanBufferRef.current = val.slice(-24);
-      if (OBJECT_ID_RE.test(scanBufferRef.current)) {
-        const id = scanBufferRef.current;
-        scanBufferRef.current = "";
-        // Clear the input so next scan starts fresh
-        setSearch("");
-        setTimeout(() => commitScan(id), 0);
-      }
-    };
-
-    const input = searchInputRef.current;
     window.addEventListener("keydown", handleKeyDown, true);
     window.addEventListener("compositionend", handleCompositionEnd, true);
-    input?.addEventListener("input", handleInput);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown, true);
       window.removeEventListener("compositionend", handleCompositionEnd, true);
-      input?.removeEventListener("input", handleInput);
     };
   }, []);
 
