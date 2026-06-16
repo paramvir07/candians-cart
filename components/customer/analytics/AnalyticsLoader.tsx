@@ -13,9 +13,12 @@ export default async function AnalyticsLoader() {
     getWalletTopUpHistory(),
   ]);
 
-  const orders = (Orders ?? []) as SerializedOrder[];
-  const stripeTopUps = (WalletHistory?.walletTopUpHistory?.stripeTopUps ?? []) as SerializedWalletPayment[];
-  const walletTopUps = (WalletHistory?.walletTopUpHistory?.walletTopUps ?? []) as WalletTopUpEntry[];
+  const parsedOrders = Orders as { data?: SerializedOrder[] } | null;
+  const orders = parsedOrders?.data ?? [];
+  const stripeTopUps = (WalletHistory?.walletTopUpHistory?.stripeTopUps ??
+    []) as SerializedWalletPayment[];
+  const walletTopUps = (WalletHistory?.walletTopUpHistory?.walletTopUps ??
+    []) as WalletTopUpEntry[];
 
   return (
     <AnalyticsDashboard

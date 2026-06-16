@@ -11,40 +11,87 @@ import mongoose from "mongoose";
 import Customer from "@/db/models/customer/customer.model";
 import { revalidateTag } from "next/cache";
 import { getOrderCountCached } from "@/actions/cache/user.cache";
+import { OrderWithProductsClient } from "@/types/customer/OrdersClient";
 
-export const getOrders = async (customerId?: string) => {
-  await dbConnect();
-  const user = await getUser(customerId);
-  if (!user) return null;
+export interface PaginatedStoreOrdersResult {
+  success: boolean;
+  data?: OrderWithProductsClient[];
+  totalPages?: number;
+  currentPage?: number;
+  totalCount?: number;
+  error?: string;
+}
 
+export const getOrders = async (
+  customerId?: string,
+  page: number = 1,
+  limit: number = 5,
+): Promise<PaginatedStoreOrdersResult> => {
   try {
-    const prevOrders = await OrderModel.find({ userId: user._id })
-      .populate([
-        {
-          path: "products.productId",
-          model: "Product",
-        },
-        {
-          path: "subsidyItems.productId",
-          model: "Product",
-        },
-      ])
-      .sort({ createdAt: -1 })
-      .lean();
+    await dbConnect();
+    const user = await getUser(customerId);
 
-    const serializedOrders = JSON.parse(JSON.stringify(prevOrders));
+    if (!user) {
+      return {
+        success: false,
+        error: "User not found",
+      };
+    }
 
-    return serializedOrders;
+    // Calculate how many documents to skip based on the current page
+    const skip = (page - 1) * limit;
+
+    // Run the query and the total count concurrently for better performance
+    const [prevOrders, totalCount] = await Promise.all([
+      OrderModel.find({ userId: user._id })
+        .populate([
+          {
+            path: "products.productId",
+            model: "Product",
+          },
+          {
+            path: "subsidyItems.productId",
+            model: "Product",
+          },
+        ])
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      OrderModel.countDocuments({ userId: user._id }),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    const serializedOrders = JSON.parse(
+      JSON.stringify(prevOrders),
+    ) as OrderWithProductsClient[];
+
+    return {
+      success: true,
+      data: serializedOrders,
+      totalPages,
+      currentPage: page,
+      totalCount,
+    };
   } catch (err) {
-    console.log("Error while getting customer orders: ", err);
-    return null;
+    console.error("Error while getting customer orders: ", err);
+    return { success: false, error: "Failed to fetch customer orders" };
   }
 };
 
-export const getAllOrders = async () => {
+export const getAllOrders = async (
+  page: number = 1,
+  limit: number = 5,
+): Promise<PaginatedStoreOrdersResult> => {
   try {
     const session = await getUserSession();
-    if (!session?.user?.id) return null;
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Unauthorized",
+      };
+    }
 
     await dbConnect();
 
@@ -54,27 +101,48 @@ export const getAllOrders = async () => {
 
     if (!cashier?.storeId) {
       console.log("No cashier or storeId found");
-      return [];
+      return {
+        success: false,
+        error: "No cashier or storeId found",
+      };
     }
 
-    const prevOrders = await OrderModel.find({ storeId: cashier.storeId })
-      .populate([
-        {
-          path: "products.productId",
-          model: "Product",
-        },
-        {
-          path: "subsidyItems.productId",
-          model: "Product",
-        },
-      ])
-      .sort({ createdAt: -1 })
-      .lean();
+    const skip = (page - 1) * limit;
 
-    return JSON.parse(JSON.stringify(prevOrders));
+    const [prevOrders, totalCount] = await Promise.all([
+      OrderModel.find({ storeId: cashier.storeId })
+        .populate([
+          {
+            path: "products.productId",
+            model: "Product",
+          },
+          {
+            path: "subsidyItems.productId",
+            model: "Product",
+          },
+        ])
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      OrderModel.countDocuments({ storeId: cashier.storeId }),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / limit);
+    const serializedOrders = JSON.parse(
+      JSON.stringify(prevOrders),
+    ) as OrderWithProductsClient[];
+
+    return {
+      success: true,
+      data: serializedOrders,
+      totalPages,
+      currentPage: page,
+      totalCount,
+    };
   } catch (err) {
-    console.log("Error while getting all store orders: ", err);
-    return null;
+    console.error("Error while getting all store orders: ", err);
+    return { success: false, error: "Failed to fetch store orders" };
   }
 };
 
@@ -145,7 +213,7 @@ export const ReOrder = async (orderId: string) => {
       {
         $set: {
           customerId: userOrder.userId,
-          items: cartItems
+          items: cartItems,
         },
       },
       {

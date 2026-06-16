@@ -174,7 +174,7 @@ export async function getSearchCustomer(
         searchStage,
         { $count: "total" },
       ]);
-      totalCount = metaAgg[0].total || 0;
+      totalCount = metaAgg[0]?.total || 0;
     }
     const totalPages = Math.ceil(totalCount / limitNum);
 
