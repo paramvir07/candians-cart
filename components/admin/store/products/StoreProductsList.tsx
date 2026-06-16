@@ -398,9 +398,9 @@ export const StoreProductsList = ({
       }),
     );
   }
-  if (filters.inStock) {
+  if (filters.inStock !== undefined) {
     filterChips.push({
-      label: "In stock",
+      label: filters.inStock ? "In stock" : "Out of stock",
       clear: () => handleApplyFilters({ ...filters, inStock: undefined }),
     });
   }
