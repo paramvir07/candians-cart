@@ -13,11 +13,16 @@ async function OrdersLoader({
   customerId?: string;
   allOrders?: boolean;
 }) {
-  const PrevOrders = allOrders
-    ? await getAllOrders()
-    : await getOrders(customerId);
+  // Fetch initial Page 1
+  const response = allOrders
+    ? await getAllOrders(1, 5)
+    : await getOrders(customerId, 1, 5);
 
-  if (!PrevOrders || PrevOrders.length === 0) {
+  const parsedResponse = response as { data?: OrderWithProductsClient[], totalPages?: number } | null;
+  const ordersData = parsedResponse?.data ?? [];
+  const totalPages = parsedResponse?.totalPages ?? 1;
+
+  if (ordersData.length === 0) {
     return <NoOrdersScreen customerId={customerId} allOrders={allOrders} />;
   }
 
@@ -25,7 +30,8 @@ async function OrdersLoader({
     <OrdersHistoryClient
       customerId={customerId}
       allOrders={allOrders}
-      orders={PrevOrders as OrderWithProductsClient[]}
+      initialOrders={ordersData}
+      initialTotalPages={totalPages}
     />
   );
 }
@@ -42,9 +48,7 @@ const CustomerOrders = ({
   return (
     <>
       {showNavbar && <Navbar />}
-      <Suspense
-        fallback={<OrdersHistorySkeleton withNavbar={false} />}
-      >
+      <Suspense fallback={<OrdersHistorySkeleton withNavbar={false} />}>
         <OrdersLoader customerId={customerId} allOrders={allOrders} />
       </Suspense>
     </>
