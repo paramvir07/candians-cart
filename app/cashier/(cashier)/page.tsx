@@ -1,14 +1,8 @@
-import { getMyStoreCustomers } from "@/actions/customer/User.action";
 import CashierSidebar from "@/components/cashier/CashierSlidebar";
 import UserList from "@/components/shared/users/UserList";
 
-const ITEMS_PER_PAGE = 12;
 
 const page = async () => {
-  const { myStoreCustomersData, pagination } = await getMyStoreCustomers(
-    1,
-    ITEMS_PER_PAGE,
-  );
 
   return (
     <>

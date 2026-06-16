@@ -14,6 +14,8 @@ import {
   UserCircle2,
   List,
   ShoppingBasket,
+  ChevronDown,
+  Gift,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import LogoutButton from "../shared/LogoutButton";
@@ -30,16 +32,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 type CustomerData = {
   customerData?: {
     id?: string;
     name?: string;
-    cartCount?: number;
     walletBalance?: number;
+    giftWalletBalance?:number;
+    CartCount?:number;
   };
 };
+
 
 // ─── Active check ───────────────────────────────────────────────────────────────
 
@@ -120,6 +129,8 @@ function SidebarContent({
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [customerOpen, setCustomerOpen] = useState(false)
+
 
   const isInsideCustomer =
     Boolean(customerId) &&
@@ -233,38 +244,76 @@ function SidebarContent({
                 Current Customer
               </p>
 
-              {/* Customer identity chip */}
-              <Link
-                href={`/cashier/customer/${customerId}`}
-                onClick={(event) =>
-                  handleNav(event, `/cashier/customer/${customerId}`)
-                }
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50/60 transition-colors mb-1"
-              >
-                <Avatar className="h-8 w-8 shrink-0 ring-2 ring-emerald-200">
-                  <AvatarImage
-                    src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
-                  />
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-xs">
-                    {(customerData?.name ?? "U").slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">
-                    {customerData?.name ?? "Customer"}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    #{customerId.slice(-6).toUpperCase() ?? "Couldn't find ID"}
-                  </p>
-                </div>
-              </Link>
+{/* Customer identity chip — collapsible */}
+              <Collapsible open={customerOpen} onOpenChange={setCustomerOpen}>
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-left transition-colors hover:bg-primary/5 group"
+                  >
+                    <Avatar className="h-8 w-8 shrink-0 ring-2 ring-primary/20">
+                      <AvatarImage
+                        src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                        {(customerData?.name ?? "U").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {customerData?.name ?? "Customer"}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        #{customerId.slice(-6).toUpperCase()}
+                      </p>
+                    </div>
+                    <ChevronDown
+                      className={cn(
+                        "w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-300",
+                        customerOpen && "rotate-180"
+                      )}
+                    />
+                  </button>
+                </CollapsibleTrigger>
+
+                <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up overflow-hidden">
+                  <div className="mx-1 mb-2 mt-0.5 rounded-xl border border-border bg-muted/40 divide-y divide-border overflow-hidden">
+                    <div className="flex items-center gap-2.5 px-3 py-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <Wallet className="w-3.5 h-3.5 text-primary" />
+                      </div>
+                      <span className="text-xs text-muted-foreground flex-1">Wallet</span>
+                      <span className="text-xs font-semibold text-foreground tabular-nums">
+                        CA${((customerData?.walletBalance ?? 0) / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 px-3 py-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0">
+                        <Gift className="w-3.5 h-3.5 text-violet-500" />
+                      </div>
+                      <span className="text-xs text-muted-foreground flex-1">Gift Wallet</span>
+                      <span className="text-xs font-semibold text-foreground tabular-nums">
+                        CA${((customerData?.giftWalletBalance ?? 0) / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 px-3 py-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                        <ShoppingCartIcon className="w-3.5 h-3.5 text-blue-500" />
+                      </div>
+                      <span className="text-xs text-muted-foreground flex-1">Cart</span>
+                      <span className="text-xs font-semibold text-foreground tabular-nums">
+                        {customerData?.CartCount ?? 0} items
+                      </span>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
 
               <div className="space-y-0.5">
                 <NavItem
                   href={`/cashier/customer/${customerId}/cart`}
                   label="Cart"
                   icon={ShoppingCartIcon}
-                  badge={customerData?.cartCount}
                   onClick={(event) =>
                     handleNav(event, `/cashier/customer/${customerId}/cart`)
                   }

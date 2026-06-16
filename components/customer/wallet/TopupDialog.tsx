@@ -93,11 +93,8 @@ export function TopUpDialog({
 
     setAmount(dollars);
     setInputVal(dollars.toFixed(2));
-
-    if (isCashPayment) {
-      setCashReceived(dollars);
-      setCashReceivedInput(dollars.toFixed(2));
-    }
+    setCashReceived(dollars);
+    setCashReceivedInput(dollars.toFixed(2));
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {

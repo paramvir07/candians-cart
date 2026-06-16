@@ -88,6 +88,8 @@ const UserList = (props: UserListProps) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
 
+
+  
   // Focus input on mount
   useEffect(() => {
     setTimeout(() => searchInputRef.current?.focus(), 0);
@@ -191,10 +193,16 @@ const UserList = (props: UserListProps) => {
 
       if (!mounted) return;
 
-      if (result.success) {
-        setFetchedCustomers(result.data as unknown as SerializedCustomer[]);
-        if (result.pagination) setServerPagination(result.pagination);
-      } else {
+    if (result.success) {
+      setFetchedCustomers(result.data as unknown as SerializedCustomer[]);
+      if (result.pagination) setServerPagination(result.pagination);
+
+      const isBarcodeScan = cashierRole && OBJECT_ID_RE.test(query);
+      if (isBarcodeScan && result.data.length === 1) {
+        router.push(`/cashier/customer/${result.data[0]._id}/cart`);
+        return;
+      }
+    } else {
         toast.error(result.error || "Failed to fetch customers");
       }
       setIsLoading(false);
@@ -351,7 +359,7 @@ const UserList = (props: UserListProps) => {
                 className={`flex flex-col gap-0 ${cashierRole || isAdminMode ? "hover:cursor-pointer" : ""}`}
                 onClick={() => {
                   if (cashierRole)
-                    router.push(`/cashier/customer/${customer._id}`);
+                    router.push(`/cashier/customer/${customer._id}/cart`);
                   if (isAdminMode)
                     router.push(`/admin/customers/${customer._id}`);
                 }}

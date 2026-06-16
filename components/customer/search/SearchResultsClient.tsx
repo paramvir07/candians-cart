@@ -45,12 +45,10 @@ import {
 } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { useDebounce } from "use-debounce";
 import { toast } from "sonner";
-import { getCartInsights } from "@/actions/cashier/GetCartInsights";
-import CartInsightBar from "@/components/cashier/CartInsightsBar";
-import { emitCartUpdated, onCartUpdated } from "@/lib/cartEvent";
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { useSearchParams } from "next/navigation";
 import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
+import { Button } from "@react-email/components";
 
 interface SearchResultsClientProps {
   isCashier?: boolean;
@@ -63,42 +61,6 @@ interface SearchResultsClientProps {
   customerData: Customer;
   cartCount: number;
 }
-
-interface CartInsight {
-  numItems: number;
-  subsidyOnOrder: number;
-  total: number;
-}
-
-const QUICK_SUGGESTIONS = [
-  { emoji: "🥭", label: "Fruits" },
-  { emoji: "🥦", label: "Vegetables" },
-  { emoji: "🥛", label: "Dairy" },
-  { emoji: "🍗", label: "Meat" },
-  { emoji: "🫓", label: "Bakery" },
-  { emoji: "🧃", label: "Beverages" },
-  { emoji: "🍿", label: "Snacks" },
-  { emoji: "🧹", label: "Household" },
-  { emoji: "🫙", label: "Oil & Ghee" },
-  { emoji: "🫘", label: "Pulses & Lentils" },
-  { emoji: "🌾", label: "Flour & Atta" },
-  { emoji: "🍚", label: "Rice" },
-  { emoji: "🌶️", label: "Spices" },
-  { emoji: "🫙", label: "Pickles & Chutneys" },
-  { emoji: "🍜", label: "Instant Foods" },
-  { emoji: "🧊", label: "Frozen Foods" },
-  { emoji: "🍮", label: "Sweets & Mithai" },
-  { emoji: "🥜", label: "Dry Fruits & Nuts" },
-  { emoji: "☕", label: "Tea & Coffee" },
-  { emoji: "🥫", label: "Sauces & Condiments" },
-  { emoji: "🥨", label: "Papad & Fryums" },
-  { emoji: "🪔", label: "Pooja / Religious Items" },
-  { emoji: "🍳", label: "Utensils" },
-  { emoji: "🥡", label: "Disposables" },
-  { emoji: "🪥", label: "Personal Care" },
-  { emoji: "🛒", label: "Other" },
-  { emoji: "✨", label: "Subsidised Only" },
-];
 
 export function SearchResultsClient({
   isCashier,
@@ -118,7 +80,6 @@ export function SearchResultsClient({
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [cartMap, setCartMap] = useState<Record<string, number>>({});
-  const [cartInsight, setCartInsight] = useState<CartInsight | null>(null);
   const [upcMode, setUpcMode] = useState(!!customerId);
   const prevQueryRef = useRef(debouncedQuery);
   const prevFiltersRef = useRef(filters);
@@ -153,21 +114,7 @@ export function SearchResultsClient({
     });
   }, []);
 
-  useEffect(() => {
-    const fetchInsight = async () => {
-      const res = await getCartInsights(customerId);
-      if (res?.success && res.data) {
-        setCartInsight(res.data);
-      } else {
-        setCartInsight(null);
-      }
-    };
 
-    fetchInsight();
-
-    const unsubscribe = onCartUpdated(fetchInsight);
-    return unsubscribe;
-  }, [customerId]);
 
   const handleBarcodeScan = async (value: string) => {
     setIsLoading(true);
@@ -194,7 +141,6 @@ export function SearchResultsClient({
           [productId]: (prev[productId] || 0) + 1,
         }));
         toast.success(`${product.name} added to cart`);
-        emitCartUpdated();
         setTimeout(() => {
           cardRefs.current[productId]?.focusQty();
         }, 100);
@@ -321,8 +267,6 @@ export function SearchResultsClient({
 
         if (upcMode && results.length === 1) {
           if (scanAddedRef.current) {
-            // handleBarcodeScan already added this to cart — just reset the
-            // flag and skip so we don't add a second time
             scanAddedRef.current = false;
           } else {
             const product = results[0];
@@ -334,7 +278,6 @@ export function SearchResultsClient({
                 [productId]: (prev[productId] || 0) + 1,
               }));
               toast.success(`${product.name} added to cart`);
-              emitCartUpdated();
               setTimeout(() => {
                 cardRefs.current[productId]?.focusQty();
               }, 100);
@@ -372,7 +315,6 @@ export function SearchResultsClient({
     currentPage,
   ]);
 
-  const displayPrice = (p: IProduct) => p.price + p.price * (p.markup / 100);
 
   const filtered = useMemo(() => [...allResults], [allResults]);
 
@@ -412,7 +354,7 @@ export function SearchResultsClient({
   return (
     <div
       className={`min-h-screen bg-muted/30 ${
-        customerId ? "rounded-3xl shadow-md md:mr-4 overflow-hidden" : ""
+        customerId ? "rounded-3xl mt-5 shadow-md md:mr-4 overflow-hidden" : ""
       }`}
     >
       <SearchNav
@@ -426,17 +368,11 @@ export function SearchResultsClient({
       />
 
       {customerId && (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 flex flex-col gap-3">
-          <CartInsightBar
-            numItems={cartInsight?.numItems ?? 0}
-            subsidyOnOrder={cartInsight?.subsidyOnOrder ?? 0}
-            total={cartInsight?.total ?? 0}
-            customerId={customerId}
-          />
-          <div className="flex justify-between items-center">
-            <button
+        <div className="mx-2 pt-4 flex flex-col">
+          <div className="flex items-center justify-end gap-2">
+            <Button
               onClick={() => setUpcMode((v) => !v)}
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all w-fit ${
+              className={`cursor-pointer h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5 items-center py-1.5 text-sm font-semibold border transition-all w-fit ${
                 upcMode
                   ? "bg-green-600 text-white border-green-600 shadow-sm"
                   : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
@@ -445,9 +381,13 @@ export function SearchResultsClient({
               <span
                 className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`}
               />
-              {upcMode ? "UPC Search: ON" : "UPC Search: OFF"}
-            </button>
+              {upcMode ? "UPC" : "UPC"}
+            </Button>
             <AddMiscItemModalTrigger customerId={customerId || ""} />
+                                  <FilterTriggerButton
+                        activeCount={activeFilterCount}
+                        onClick={() => setFilterSheetOpen(true)}
+                      />
           </div>
         </div>
       )}
@@ -511,73 +451,6 @@ export function SearchResultsClient({
                     Type above to search products, or scan a barcode
                   </p>
                 </div>
-
-                <div className="flex flex-wrap gap-2 justify-center max-w-lg">
-                  {QUICK_SUGGESTIONS.map((s) => (
-                    <button
-                      key={s.label}
-                      onClick={async () => {
-                        if (s.label === "Subsidised Only") {
-                          const newValue = !filters.subsidisedOnly;
-                          setFilters((prev) => ({
-                            ...prev,
-                            subsidisedOnly: newValue,
-                          }));
-                          if (!query.trim()) setHasSearched(true);
-                          return;
-                        }
-                        const CATEGORY_MAP: Record<string, string[]> = {};
-                        const labelsToAdd = CATEGORY_MAP[s.label] ?? [s.label];
-                        const newCategories = filters.categories.includes(
-                          s.label,
-                        )
-                          ? filters.categories.filter(
-                              (c) => !labelsToAdd.includes(c),
-                            )
-                          : [
-                              ...new Set([
-                                ...filters.categories,
-                                ...labelsToAdd,
-                              ]),
-                            ];
-
-                        setFilters((prev) => ({
-                          ...prev,
-                          categories: newCategories,
-                        }));
-
-                        if (!query.trim()) {
-                          setIsLoading(true);
-                          setHasSearched(true);
-                          const res = await getStoreProductsFiltered(
-                            storeId,
-                            1,
-                            16,
-                            {
-                              categories: newCategories as any,
-                              sortBy:
-                                filters.sortBy === "default"
-                                  ? "recommended"
-                                  : filters.sortBy,
-                            },
-                          );
-                          setAllResults(
-                            res.success && res.data ? res.data : [],
-                          );
-                          setIsLoading(false);
-                        }
-                      }}
-                      className="group flex items-center gap-0 rounded-full border border-border/60 bg-card hover:border-green-200 hover:bg-green-50/40 transition-all duration-200 pr-4 shrink-0"
-                    >
-                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-muted group-hover:bg-green-100/70 m-0.5 text-sm transition-colors">
-                        {s.emoji}
-                      </span>
-                      <span className="text-sm font-semibold pl-2 text-muted-foreground group-hover:text-green-700 whitespace-nowrap">
-                        {s.label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
               </div>
             )}
 
@@ -615,15 +488,6 @@ export function SearchResultsClient({
                       </button>
                     )}
                   </div>
-
-                  {allResults.length > 0 && (
-                    <div className={customerId ? "block" : "lg:hidden"}>
-                      <FilterTriggerButton
-                        activeCount={activeFilterCount}
-                        onClick={() => setFilterSheetOpen(true)}
-                      />
-                    </div>
-                  )}
                 </div>
 
                 {filtered.length > 0 ? (
@@ -804,7 +668,7 @@ export function SearchResultsClient({
                 }}
                 className="w-full h-12 rounded-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
               >
-                Show {filtered.length} Result{filtered.length !== 1 ? "s" : ""}
+                Show  Results
                 {getActiveFilterCount(pendingFilters) > 0 && (
                   <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                     {getActiveFilterCount(pendingFilters)} filter

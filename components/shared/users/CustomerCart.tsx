@@ -251,7 +251,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const TotalSubsidy = Number(
     ((newSubisdyCalc + giftWalletBalance) / 100).toFixed(2),
   );
-  const totalItemCount = items.length + subItems.length;
 
   // ── Sub-components ──────────────────────────────────────────────
 
@@ -465,12 +464,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 {isCashier ? "Customer's Cart" : "My Cart"}
               </h1>
             </div>
-            <Badge
-              variant="secondary"
-              className="rounded-full font-semibold shrink-0"
-            >
-              {totalItemCount}
-            </Badge>
             {isCashier && (
               <AddMiscItemModalTrigger customerId={customerId || ""} />
             )}
@@ -688,19 +681,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                   <h1 className="text-xl font-bold tracking-tight text-foreground leading-tight truncate">
                     {isCashier ? "Customer's Cart" : "My Cart"}
                   </h1>
-                  {isCashier && (
-                    <p className="text-xs text-muted-foreground leading-tight">
-                      Managing order on behalf of customer
-                    </p>
-                  )}
                 </div>
               </div>
-              <Badge
-                variant="secondary"
-                className="rounded-full font-semibold ml-1 shrink-0"
-              >
-                {totalItemCount} {totalItemCount === 1 ? "item" : "items"}
-              </Badge>
             </div>
             {isCashier && (
               <AddMiscItemModalTrigger customerId={customerId || ""} />
@@ -708,8 +690,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           </div>
 
           {/* Progress bar */}
-          <Card className="mb-6 border-border/60 shadow-none">
-            <CardContent className="px-5 py-4">
+          <div className="mb-6 border-border/60 shadow-none">
+            
               <ProgressBarCart
                 total={progressTotal.total}
                 customerId={customerId}
@@ -719,8 +701,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 SubsidyonOrder={Math.round(newSubisdyCalc)}
                 subItemIds={subItemProductIds}
               />
-            </CardContent>
-          </Card>
+          </div>
 
           {/* 2-col layout */}
           <div className="flex gap-6 items-start">

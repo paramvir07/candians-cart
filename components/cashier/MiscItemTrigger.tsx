@@ -13,7 +13,7 @@ export default function AddMiscItemModalTrigger({ customerId }: { customerId: st
     <>
       <Button onClick={() => setOpen(true)} size="sm" className="gap-1.5">
         <Plus className="h-4 w-4" />
-        Add Miscellaneous Item
+        Add Misc
       </Button>
 
       <AddMiscItemModal

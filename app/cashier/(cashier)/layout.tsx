@@ -1,6 +1,4 @@
-import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { redirect } from "next/navigation";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
