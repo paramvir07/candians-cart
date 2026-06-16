@@ -96,7 +96,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   )
     return (
       <>
-      <div className=" mt-5 ">
+      <div className=" mt-5 mx-5">
       {customerId && <UPCScannerCart
         customerId={customerId}
         storeId={UserStoreId}
