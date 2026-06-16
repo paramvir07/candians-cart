@@ -3,8 +3,6 @@ import StorePayoutHistory from "@/components/admin/analytics/reciept/StorePayout
 import PayoutStatsCards, {
   PayoutStatsCardsSkeleton,
 } from "@/components/store/payouts/PayoutStatsCards";
-import PayoutScheduleConfig from "@/components/admin/payoutSchedule/Payoutscheduleconfig";
-import ManualPayoutTrigger from "@/components/admin/payoutSchedule/Manualpayouttrigger";
 import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
