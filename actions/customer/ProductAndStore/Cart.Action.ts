@@ -65,6 +65,9 @@ export const AddtoCart = async (ItemId: string, customerId?: string) => {
     }
 
     await existingCart.save();
+    revalidatePath("/customer/cart")
+    revalidatePath(`/cashier/customer/${user._id}/cart`)
+
     return { success: true };
   } catch (error) {
     console.log(error);

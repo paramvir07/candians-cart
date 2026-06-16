@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, useTransition, useCallback } from "react";
+import { useRef, useState, useTransition, useCallback, useEffect } from "react";
 import { Minus, Plus } from "lucide-react";
 import {
   UpdateItemQuantity,
@@ -32,6 +32,12 @@ export const QuantityControl = ({
   const [isPending, startTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+
+  useEffect(() => {
+  setQty(initialQuantity);
+  setInputValue(formatQtyForInput(initialQuantity));
+}, [initialQuantity]);
 
   const formatQtyForInput = useCallback(
     (value: number) => {

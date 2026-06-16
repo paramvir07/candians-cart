@@ -35,6 +35,7 @@ import { QuantityControl } from "@/components/customer/products/QuantityControls
 import { cn } from "@/lib/utils";
 import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
 import { MiscItemsSection } from "@/components/cashier/MiscItemSection";
+import { UPCScannerCart } from "@/components/cashier/UPCScannerCart";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -77,6 +78,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   ]);
 
   const giftWalletBalance = UserData?.giftWalletBalance ?? 0;
+  const UserStoreId = UserData?.associatedStoreId?.toString() ?? "";
   const items =
     (CartItems?.items as ICartItem[] | null)
       ?.slice()
@@ -691,7 +693,14 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
           {/* Progress bar */}
           <div className="mb-6 border-border/60 shadow-none">
-            
+
+          <div className="hidden">
+              {customerId && <UPCScannerCart
+                customerId={customerId}
+                storeId={UserStoreId}
+                />}
+          </div>
+
               <ProgressBarCart
                 total={progressTotal.total}
                 customerId={customerId}
