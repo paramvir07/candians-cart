@@ -70,6 +70,7 @@ export const getStoreProductsFiltered = async (
     }
 
     if (filters.subsidyLevel) {
+      query.subsidised = { $ne: true };
       query.markup = query.markup || {};
       if (filters.subsidyLevel === "low") {
         query.markup.$gte = 0;
@@ -220,6 +221,7 @@ export const searchProductsWithFilters = async (
     }
 
     if (filters.subsidyLevel) {
+      matchStage.subsidised = { $ne: true };
       matchStage.markup = matchStage.markup || {};
       if (filters.subsidyLevel === "high") {
         matchStage.markup.$gte = 100;
