@@ -29,7 +29,6 @@ export interface SerializedStorePayout {
   totalWalletTopUpCashCollected: number;
   platformCommision: number;
   totalSubsidy: number;
-  totalOrderCashCollected?: number;
   totalCashCollected?: number;
 }
 
@@ -102,7 +101,6 @@ export async function getVendorPayoutsAction(
       totalWalletTopUpCashCollected: p.totalWalletTopUpCashCollected || 0,
       platformCommision: p.platformCommision || 0, // Added
       totalSubsidy: p.totalSubsidy || 0, // Added
-      totalOrderCashCollected: p.totalOrderCashCollected || 0,
       totalCashCollected: p.totalCashCollected || 0,
     }));
 
@@ -154,12 +152,11 @@ export async function getSingleVendorPayoutAction(
             fileId: payout.paymentReciept.fileId,
           }
         : null,
-      storebasetaxGST: payout.storebasetaxGST || 0, // Added
-      storebasetaxPST: payout.storebasetaxPST || 0, // Added
-      totalDisposableFee: payout.totalDisposableFee || 0, // Added
+      storebasetaxGST: payout.storebasetaxGST || 0,
+      storebasetaxPST: payout.storebasetaxPST || 0,
+      totalDisposableFee: payout.totalDisposableFee || 0,
       totalWalletTopUpCashCollected: payout.totalWalletTopUpCashCollected || 0,
-      platformCommision: payout.platformCommision || 0, // Added
-      totalOrderCashCollected: payout.totalOrderCashCollected || 0,
+      platformCommision: payout.platformCommision || 0,
       totalCashCollected: payout.totalCashCollected || 0,
       totalSubsidy: payout.totalSubsidy || 0,
     };
