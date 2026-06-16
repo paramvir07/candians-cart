@@ -11,7 +11,11 @@ export const getStoreData = async () => {
     const session = await getUserSession();
 
     if (!session) {
-      return {success: false,message: "Unauthorized",data: null,
+      return {
+        success: false,
+        message: "Unauthorized",
+        data: null,
+        error: "No active user session found.",
       };
     }
 
@@ -22,19 +26,28 @@ export const getStoreData = async () => {
     }).lean();
 
     if (!store) {
-      return {success: false,message: "Store not found",data: null,
+      return {
+        success: false,
+        message: "Store not found",
+        data: null,
+        error: "Store document is missing in the database.",
       };
     }
 
     return {
-    success: true,
-    message: "Store found",
-    data: JSON.parse(JSON.stringify(store)),
+      success: true,
+      message: "Store found",
+      data: JSON.parse(JSON.stringify(store)),
+      error: null,
     };
   } catch (error) {
     console.error("Error fetching store data:", error);
 
-    return {success: false,message: "Error fetching store data",data: null,
+    return {
+      success: false,
+      message: "Error fetching store data",
+      data: null,
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 };
@@ -54,13 +67,12 @@ export const editStoreProfile = async (payload: StoreFormPayload) => {
           mobile: payload.mobile?.trim(),
         },
       },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
-    if (!updatedStore)
-      return { success: false, message: "Store not found" };
+    if (!updatedStore) return { success: false, message: "Store not found" };
 
-    revalidatePath("/store/profile")
+    revalidatePath("/store/profile");
     return { success: true, message: "Store updated successfully" };
   } catch (error) {
     console.error("Edit Store Profile Error:", error);
