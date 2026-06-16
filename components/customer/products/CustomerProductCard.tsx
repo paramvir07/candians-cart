@@ -103,16 +103,22 @@ export const CustomerProductCard = forwardRef<
 
   const quantityStep = 1;
 
-  useImperativeHandle(ref, () => ({
-    focusQty: () => {
+useImperativeHandle(ref, () => ({
+  focusQty: () => {
+    if (product.UOM && product.UOM.trim() !== "") {
       setInputValue("");
       setIsQtyDirty(true);
       setTimeout(() => {
         qtyInputRef.current?.focus();
         qtyInputRef.current?.select();
       }, 0);
-    },
-  }));
+    } else {
+      setQuantity((prev) => (prev === 0 ? 1 : prev));
+      setInputValue((prev) => (prev === "0" || prev === "" ? "1" : prev));
+      setIsQtyDirty(false);
+    }
+  },
+}));
 
   const formatQtyForInput = useCallback(
     (value: number) => {

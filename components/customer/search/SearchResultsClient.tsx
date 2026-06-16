@@ -123,6 +123,9 @@ export function SearchResultsClient({
   const prevQueryRef = useRef(debouncedQuery);
   const prevFiltersRef = useRef(filters);
   const cardRefs = useRef<Record<string, ProductCardHandle | null>>({});
+  // ── Prevents double-add when handleBarcodeScan and the debouncedQuery
+  //    useEffect both fire for the same UPC scan ────────────────────────────
+  const scanAddedRef = useRef(false);
 
   const [pendingFilters, setPendingFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
@@ -182,6 +185,9 @@ export function SearchResultsClient({
       const product = results[0];
       const productId = product._id as string;
       try {
+        // Mark that we're handling the cart add here so the debouncedQuery
+        // useEffect skips its own AddtoCart call for this scan
+        scanAddedRef.current = true;
         await AddtoCart(productId, customerId);
         setCartMap((prev) => ({
           ...prev,
@@ -193,6 +199,7 @@ export function SearchResultsClient({
           cardRefs.current[productId]?.focusQty();
         }, 100);
       } catch {
+        scanAddedRef.current = false;
         toast.error("Failed to add to cart");
       }
     }
@@ -313,21 +320,27 @@ export function SearchResultsClient({
         setTotalPages((res as any).totalPages ?? 1);
 
         if (upcMode && results.length === 1) {
-          const product = results[0];
-          const productId = product._id as string;
-          try {
-            await AddtoCart(productId, customerId);
-            setCartMap((prev) => ({
-              ...prev,
-              [productId]: (prev[productId] || 0) + 1,
-            }));
-            toast.success(`${product.name} added to cart`);
-            emitCartUpdated();
-            setTimeout(() => {
-              cardRefs.current[productId]?.focusQty();
-            }, 100);
-          } catch {
-            toast.error("Failed to add to cart");
+          if (scanAddedRef.current) {
+            // handleBarcodeScan already added this to cart — just reset the
+            // flag and skip so we don't add a second time
+            scanAddedRef.current = false;
+          } else {
+            const product = results[0];
+            const productId = product._id as string;
+            try {
+              await AddtoCart(productId, customerId);
+              setCartMap((prev) => ({
+                ...prev,
+                [productId]: (prev[productId] || 0) + 1,
+              }));
+              toast.success(`${product.name} added to cart`);
+              emitCartUpdated();
+              setTimeout(() => {
+                cardRefs.current[productId]?.focusQty();
+              }, 100);
+            } catch {
+              toast.error("Failed to add to cart");
+            }
           }
         }
       } else {
