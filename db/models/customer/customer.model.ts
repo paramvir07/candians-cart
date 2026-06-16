@@ -26,20 +26,24 @@ const customerSchema = new Schema<ICustomer>(
     name: {
       type: String,
       required: true,
+      trim: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
-    },
-    address: {
-      type: String,
-      required: true,
+      lowercase: true,
+      trim: true,
     },
     mobile: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
+      trim: true,
+    },
+    address: {
+      type: String,
+      required: true,
     },
     city: {
       type: String,
@@ -63,14 +67,12 @@ const customerSchema = new Schema<ICustomer>(
       required: true,
     },
     walletBalance: {
-      // Stored in cents
       type: Number,
       required: true,
       default: 0,
       min: [0, "Wallet balance cannot be negative"],
     },
     giftWalletBalance: {
-      // Stored in cents
       type: Number,
       required: true,
       default: 0,
@@ -79,6 +81,9 @@ const customerSchema = new Schema<ICustomer>(
   },
   { timestamps: true },
 );
+
+customerSchema.index({ email: 1 }, { unique: true });
+customerSchema.index({ mobile: 1 }, { unique: true });
 
 const Customer: Model<ICustomer> =
   models.Customer || model<ICustomer>("Customer", customerSchema);
