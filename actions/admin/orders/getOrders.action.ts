@@ -9,7 +9,7 @@ export interface AdminOrder {
   orderRef: string;
   storeId: string;
   storeName: string;
-  customerId: string;   // Customer._id — used for the /admin/customers/[customerId] link
+  customerId: string; // Customer._id — used for the /admin/customers/[customerId] link
   customerName: string; // Customer.name
   amount: number;
   status: "pending" | "completed";
@@ -86,7 +86,7 @@ function mapDoc(o: any): AdminOrder {
 export async function getOrdersPaginated(
   storeId: string | null | undefined,
   page: number = 1,
-  limit: number = 12,
+  limit: number = 5,
   statusFilter?: "pending" | "completed" | "all",
   dateFilter?: "today" | "week" | "month" | "all",
 ): Promise<GetOrdersResult> {
@@ -100,11 +100,17 @@ export async function getOrdersPaginated(
     if (dateFilter && dateFilter !== "all") {
       const now = new Date();
       if (dateFilter === "today") {
-        match.createdAt = { $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) };
+        match.createdAt = {
+          $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+        };
       } else if (dateFilter === "week") {
-        match.createdAt = { $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) };
+        match.createdAt = {
+          $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
+        };
       } else if (dateFilter === "month") {
-        match.createdAt = { $gte: new Date(now.getFullYear(), now.getMonth(), 1) };
+        match.createdAt = {
+          $gte: new Date(now.getFullYear(), now.getMonth(), 1),
+        };
       }
     }
 
@@ -128,7 +134,13 @@ export async function getOrdersPaginated(
       totalCount,
     };
   } catch (error: any) {
-    return { success: false, data: [], totalPages: 0, totalCount: 0, error: error.message };
+    return {
+      success: false,
+      data: [],
+      totalPages: 0,
+      totalCount: 0,
+      error: error.message,
+    };
   }
 }
 
@@ -162,8 +174,37 @@ export async function searchOrders(
           o.status.includes(q),
       );
 
-    return { success: true, data: filtered, totalPages: 1, totalCount: filtered.length };
+    return {
+      success: true,
+      data: filtered,
+      totalPages: 1,
+      totalCount: filtered.length,
+    };
   } catch (error: any) {
-    return { success: false, data: [], totalPages: 0, totalCount: 0, error: error.message };
+    return {
+      success: false,
+      data: [],
+      totalPages: 0,
+      totalCount: 0,
+      error: error.message,
+    };
+  }
+}
+
+export async function getFullOrderDetails(orderId: string) {
+  try {
+    await dbConnect();
+    const order = await OrderModel.findById(orderId)
+      .populate([
+        { path: "products.productId", model: "Product" },
+        { path: "subsidyItems.productId", model: "Product" },
+      ])
+      .lean();
+
+    if (!order) return { success: false, error: "Order not found" };
+
+    return { success: true, data: JSON.parse(JSON.stringify(order)) };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 }

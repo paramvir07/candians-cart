@@ -1,3 +1,4 @@
+// components/admin/store/OrdersList.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,20 +6,36 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
-  Search, ShoppingCart, Store, User, Eye,
-  Calendar, Filter, CalendarDays, CheckCircle2, Clock,
-  TrendingUp, DollarSign, Package, ArrowUpRight,
-  ChevronLeft, ChevronRight, MoreHorizontal, X,
+  Search,
+  ShoppingCart,
+  Store,
+  User,
+  Eye,
+  Calendar,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  Package,
+  ArrowUpRight,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  X,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import {
   AdminOrder,
   getOrdersPaginated,
   searchOrders,
+  getFullOrderDetails,
 } from "@/actions/admin/orders/getOrders.action";
 import { OrderStats } from "@/actions/admin/orders/getOrderStats.action";
+import OrderDetail from "@/components/shared/users/orders/OrderDetail";
 
 // ─── Skeletons ─────────────────────────────────────────────────────────────────
 
@@ -47,16 +64,22 @@ const StatSkeleton = () => (
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    pending:   "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
-    completed: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
+    pending:
+      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
+    completed:
+      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
   };
   const dots: Record<string, string> = {
     pending: "bg-amber-500",
     completed: "bg-emerald-500",
   };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border capitalize ${styles[status] ?? "bg-muted text-muted-foreground border-border"}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${dots[status] ?? "bg-muted-foreground"}`} />
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border capitalize ${styles[status] ?? "bg-muted text-muted-foreground border-border"}`}
+    >
+      <span
+        className={`w-1.5 h-1.5 rounded-full ${dots[status] ?? "bg-muted-foreground"}`}
+      />
       {status}
     </span>
   );
@@ -64,30 +87,48 @@ function StatusBadge({ status }: { status: string }) {
 
 function PaymentBadge({ mode }: { mode: string }) {
   const styles: Record<string, string> = {
-    wallet:  "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-800",
-    cash:    "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/30 dark:text-teal-400 dark:border-teal-800",
-    card:    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
-    pending: "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800",
+    wallet:
+      "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-800",
+    cash: "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/30 dark:text-teal-400 dark:border-teal-800",
+    card: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
+    pending:
+      "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800",
   };
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border capitalize ${styles[mode] ?? "bg-muted text-muted-foreground border-border"}`}>
+    <span
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border capitalize ${styles[mode] ?? "bg-muted text-muted-foreground border-border"}`}
+    >
       {mode}
     </span>
   );
 }
 
 function formatCents(cents: number) {
-  return "$" + (cents / 100).toLocaleString("en-CA", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  return (
+    "$" +
+    (cents / 100).toLocaleString("en-CA", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+  );
 }
 
 function formatDate(date: Date) {
-  return new Date(date).toLocaleDateString("en-CA", { year: "numeric", month: "short", day: "numeric" });
+  return new Date(date).toLocaleDateString("en-CA", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 // ─── Stat Card ─────────────────────────────────────────────────────────────────
 
 function StatCard({
-  label, value, sub, icon: Icon, accent,
+  label,
+  value,
+  sub,
+  icon: Icon,
+  accent,
 }: {
   label: string;
   value: string | number;
@@ -97,16 +138,21 @@ function StatCard({
 }) {
   return (
     <div className="group relative overflow-hidden rounded-xl border border-border bg-card p-4 hover:border-border/80 hover:shadow-md transition-all duration-200">
-      {/* Subtle accent glow */}
-      <div className={`absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-[0.07] blur-xl ${accent}`} />
+      <div
+        className={`absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-[0.07] blur-xl ${accent}`}
+      />
       <div className="relative">
         <div className="flex items-start justify-between mb-3">
-          <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase">{label}</p>
+          <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
+            {label}
+          </p>
           <div className={`p-1.5 rounded-lg ${accent} bg-opacity-10`}>
             <Icon className="w-3.5 h-3.5 text-foreground/60" />
           </div>
         </div>
-        <p className="text-2xl font-bold tracking-tight text-foreground tabular-nums">{value}</p>
+        <p className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
+          {value}
+        </p>
         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
           <ArrowUpRight className="w-3 h-3" />
           {sub}
@@ -118,7 +164,13 @@ function StatCard({
 
 // ─── Customer Cell ──────────────────────────────────────────────────────────────
 
-function CustomerCell({ order, role }: { order: AdminOrder; role: "admin" | "store" }) {
+function CustomerCell({
+  order,
+  role,
+}: {
+  order: AdminOrder;
+  role: "admin" | "store";
+}) {
   const inner = (
     <div className="flex items-center gap-2">
       <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -157,7 +209,10 @@ interface OrdersListProps {
 // ─── Filter Pill ───────────────────────────────────────────────────────────────
 
 function FilterPill<T extends string>({
-  value, current, onClick, label,
+  value,
+  current,
+  onClick,
+  label,
 }: {
   value: T;
   current: T;
@@ -181,7 +236,11 @@ function FilterPill<T extends string>({
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
-export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) {
+export function OrdersList({
+  storeId,
+  stats,
+  role = "admin",
+}: OrdersListProps) {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -192,11 +251,22 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
 
+  // Modal State
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedOrderData, setSelectedOrderData] = useState<any>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+
   const isAllStores = !storeId;
 
   const load = async (page = currentPage) => {
     setIsLoading(true);
-    const result = await getOrdersPaginated(storeId, page, 15, statusFilter, dateFilter);
+    const result = await getOrdersPaginated(
+      storeId,
+      page,
+      5,
+      statusFilter,
+      dateFilter,
+    );
     if (result.success) {
       setOrders(result.data);
       setTotalPages(result.totalPages);
@@ -212,27 +282,67 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
     load(currentPage);
   }, [storeId, currentPage, isSearchMode, statusFilter, dateFilter]);
 
-  useEffect(() => { setCurrentPage(1); }, [statusFilter, dateFilter]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, dateFilter]);
 
   useEffect(() => {
-    if (!searchQuery.trim()) { setIsSearchMode(false); return; }
+    if (!searchQuery.trim()) {
+      setIsSearchMode(false);
+      return;
+    }
     const timer = setTimeout(async () => {
       setIsSearchMode(true);
       setIsLoading(true);
       const res = await searchOrders(searchQuery, storeId, statusFilter);
-      if (res.success) { setOrders(res.data); setTotalCount(res.totalCount); }
-      else toast.error(res.error || "Search failed");
+      if (res.success) {
+        setOrders(res.data);
+        setTotalCount(res.totalCount);
+      } else toast.error(res.error || "Search failed");
       setIsLoading(false);
     }, 350);
     return () => clearTimeout(timer);
   }, [searchQuery, storeId, statusFilter]);
 
+  const handleViewOrder = async (orderId: string) => {
+    setIsDetailOpen(true);
+    setIsLoadingDetail(true);
+    setSelectedOrderData(null);
+
+    const res = await getFullOrderDetails(orderId);
+    if (res.success) {
+      setSelectedOrderData(res.data);
+    } else {
+      toast.error(res.error || "Failed to load order details");
+      setIsDetailOpen(false);
+    }
+    setIsLoadingDetail(false);
+  };
+
   const getPageNumbers = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
-    if (totalPages <= 5) { for (let i = 1; i <= totalPages; i++) pages.push(i); }
-    else if (currentPage <= 3) pages.push(1, 2, 3, 4, "ellipsis", totalPages);
-    else if (currentPage >= totalPages - 2) pages.push(1, "ellipsis", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-    else pages.push(1, "ellipsis", currentPage - 1, currentPage, currentPage + 1, "ellipsis", totalPages);
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 3) pages.push(1, 2, 3, 4, "ellipsis", totalPages);
+    else if (currentPage >= totalPages - 2)
+      pages.push(
+        1,
+        "ellipsis",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      );
+    else
+      pages.push(
+        1,
+        "ellipsis",
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        "ellipsis",
+        totalPages,
+      );
     return pages;
   };
 
@@ -249,21 +359,81 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
     { label: "This month", value: "month" },
   ];
 
-  const colCount = (isAllStores ? 1 : 0) + 7;
+  const colCount = (isAllStores ? 1 : 0) + 8; // +1 for the actions column
 
   return (
     <div className="space-y-5">
+      {/* ── Order Detail Modal ── */}
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <DialogContent className="max-w-md md:max-w-2xl p-0 bg-transparent border-none shadow-none [&>button]:hidden">
+          <DialogTitle className="sr-only">Order Details</DialogTitle>
+          {isLoadingDetail ? (
+            <div className="bg-background rounded-2xl p-12 flex flex-col items-center justify-center gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground font-medium">
+                Loading order details...
+              </p>
+            </div>
+          ) : selectedOrderData ? (
+            <div className="relative bg-background rounded-2xl overflow-hidden shadow-2xl">
+              <button
+                onClick={() => setIsDetailOpen(false)}
+                className="absolute top-3.5 right-4 z-50 p-2 bg-background/80 backdrop-blur-sm rounded-full hover:bg-muted transition-colors border border-border/50"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+              <OrderDetail order={selectedOrderData} allOrders={true} />
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       {/* ── Stat Cards ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
         {stats ? (
           <>
-            <StatCard label="Daily Orders"   value={stats.dailyOrders}                       sub="Today"            icon={CalendarDays}  accent="bg-blue-500"   />
-            <StatCard label="Monthly"         value={stats.monthlyOrders}                      sub="This month"       icon={Calendar}       accent="bg-emerald-500"/>
-            <StatCard label="Total Orders"    value={stats.totalOrders.toLocaleString()}        sub="All time"         icon={Package}        accent="bg-amber-500"  />
-            <StatCard label="Pending"         value={stats.pendingOrders}                      sub="Awaiting action"  icon={Clock}          accent="bg-rose-500"   />
-            <StatCard label="Completed"       value={stats.completedOrders.toLocaleString()}   sub="Successfully done" icon={CheckCircle2}  accent="bg-teal-500"   />
-            <StatCard label="Revenue"         value={formatCents(stats.totalRevenue)}           sub="Total earnings"   icon={DollarSign}     accent="bg-violet-500" />
+            <StatCard
+              label="Daily Orders"
+              value={stats.dailyOrders}
+              sub="Today"
+              icon={CalendarDays}
+              accent="bg-blue-500"
+            />
+            <StatCard
+              label="Monthly"
+              value={stats.monthlyOrders}
+              sub="This month"
+              icon={Calendar}
+              accent="bg-emerald-500"
+            />
+            <StatCard
+              label="Total Orders"
+              value={stats.totalOrders.toLocaleString()}
+              sub="All time"
+              icon={Package}
+              accent="bg-amber-500"
+            />
+            <StatCard
+              label="Pending"
+              value={stats.pendingOrders}
+              sub="Awaiting action"
+              icon={Clock}
+              accent="bg-rose-500"
+            />
+            <StatCard
+              label="Completed"
+              value={stats.completedOrders.toLocaleString()}
+              sub="Successfully done"
+              icon={CheckCircle2}
+              accent="bg-teal-500"
+            />
+            <StatCard
+              label="Revenue"
+              value={formatCents(stats.totalRevenue)}
+              sub="Total earnings"
+              icon={DollarSign}
+              accent="bg-violet-500"
+            />
           </>
         ) : (
           Array.from({ length: 6 }).map((_, i) => <StatSkeleton key={i} />)
@@ -272,7 +442,6 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
 
       {/* ── Table Card ─────────────────────────────────────────────────────── */}
       <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-
         {/* Top bar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center justify-between px-5 py-4 border-b border-border/60">
           <div className="flex items-center gap-3">
@@ -284,17 +453,21 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
                 {isAllStores ? "All Orders" : "Store Orders"}
               </h2>
               <p className="text-xs text-muted-foreground">
-                {isAllStores ? "Manage and track all incoming orders" : "Orders for this store"}
+                {isAllStores
+                  ? "Manage and track all incoming orders"
+                  : "Orders for this store"}
               </p>
             </div>
             {!isLoading && (
-              <Badge variant="secondary" className="ml-1 tabular-nums text-xs font-semibold">
+              <Badge
+                variant="secondary"
+                className="ml-1 tabular-nums text-xs font-semibold"
+              >
                 {totalCount.toLocaleString()}
               </Badge>
             )}
           </div>
 
-          {/* Search */}
           <div className="relative w-full sm:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
             <Input
@@ -318,10 +491,18 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
         {/* Filter bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 px-5 py-2.5 border-b border-border/60 bg-muted/30">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-muted-foreground font-medium shrink-0">Status:</span>
+            <span className="text-xs text-muted-foreground font-medium shrink-0">
+              Status:
+            </span>
             <div className="flex items-center gap-1 p-0.5 rounded-lg bg-background border border-border">
               {STATUS_FILTERS.map((f) => (
-                <FilterPill key={f.value} value={f.value} current={statusFilter} onClick={setStatusFilter} label={f.label} />
+                <FilterPill
+                  key={f.value}
+                  value={f.value}
+                  current={statusFilter}
+                  onClick={setStatusFilter}
+                  label={f.label}
+                />
               ))}
             </div>
           </div>
@@ -329,10 +510,18 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
           <div className="w-px h-4 bg-border hidden sm:block shrink-0" />
 
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-muted-foreground font-medium shrink-0">Period:</span>
+            <span className="text-xs text-muted-foreground font-medium shrink-0">
+              Period:
+            </span>
             <div className="flex items-center gap-1 p-0.5 rounded-lg bg-background border border-border">
               {DATE_FILTERS.map((f) => (
-                <FilterPill key={f.value} value={f.value} current={dateFilter} onClick={setDateFilter} label={f.label} />
+                <FilterPill
+                  key={f.value}
+                  value={f.value}
+                  current={dateFilter}
+                  onClick={setDateFilter}
+                  label={f.label}
+                />
               ))}
             </div>
           </div>
@@ -340,7 +529,7 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[680px]">
+          <table className="w-full text-sm min-w-[780px]">
             <thead>
               <tr className="border-b border-border/60">
                 <th className="px-5 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -366,12 +555,17 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
                 <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Payment
                 </th>
+                <th className="px-4 py-3 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
 
             <tbody>
               {isLoading ? (
-                Array.from({ length: 8 }).map((_, i) => <OrderRowSkeleton key={i} />)
+                Array.from({ length: 8 }).map((_, i) => (
+                  <OrderRowSkeleton key={i} />
+                ))
               ) : orders.length === 0 ? (
                 <tr>
                   <td colSpan={colCount} className="py-20 text-center">
@@ -384,7 +578,9 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
                           {isSearchMode ? "No results found" : "No orders yet"}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {isSearchMode ? `Nothing matched "${searchQuery}"` : "Orders will appear here once created"}
+                          {isSearchMode
+                            ? `Nothing matched "${searchQuery}"`
+                            : "Orders will appear here once created"}
                         </p>
                       </div>
                       {isSearchMode && (
@@ -404,21 +600,20 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
                 orders.map((order) => (
                   <tr
                     key={order.orderId}
-                    className="border-b border-border/40 hover:bg-muted/40 transition-colors duration-100 group"
+                    onClick={() => handleViewOrder(order.orderId)}
+                    className="border-b border-border/40 hover:bg-muted/40 transition-colors duration-100 group cursor-pointer"
                   >
-                    {/* Order ID */}
                     <td className="px-5 py-3.5">
                       <code className="text-xs font-semibold text-foreground/70 bg-muted px-2 py-1 rounded-md font-mono tracking-tight">
                         {order.orderRef}
                       </code>
                     </td>
-
-                    {/* Store */}
                     {isAllStores && (
                       <td className="px-4 py-3.5">
                         {order.storeId ? (
                           <Link
                             href={`/admin/store/${order.storeId}`}
+                            onClick={(e) => e.stopPropagation()}
                             className="group/s inline-flex items-center gap-2 hover:opacity-75 transition-opacity"
                           >
                             <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center shrink-0">
@@ -429,38 +624,46 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
                             </span>
                           </Link>
                         ) : (
-                          <span className="text-muted-foreground/40 text-sm">—</span>
+                          <span className="text-muted-foreground/40 text-sm">
+                            —
+                          </span>
                         )}
                       </td>
                     )}
-
-                    {/* Customer */}
                     <td className="px-4 py-3.5">
-                      <CustomerCell order={order} role={role} />
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <CustomerCell order={order} role={role} />
+                      </div>
                     </td>
-
-                    {/* Date */}
                     <td className="px-4 py-3.5">
                       <span className="text-xs text-muted-foreground tabular-nums">
                         {formatDate(order.createdAt)}
                       </span>
                     </td>
-
-                    {/* Amount */}
                     <td className="px-4 py-3.5">
                       <span className="text-sm font-semibold text-foreground tabular-nums">
                         {formatCents(order.amount)}
                       </span>
                     </td>
-
-                    {/* Status */}
                     <td className="px-4 py-3.5">
                       <StatusBadge status={order.status} />
                     </td>
-
-                    {/* Payment */}
                     <td className="px-4 py-3.5">
                       <PaymentBadge mode={order.paymentMode} />
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-xs font-medium text-muted-foreground hover:text-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewOrder(order.orderId);
+                        }}
+                      >
+                        <Eye className="w-3.5 h-3.5 mr-1.5" />
+                        View
+                      </Button>
                     </td>
                   </tr>
                 ))
@@ -473,11 +676,12 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
         {!isSearchMode && totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-border/60">
             <p className="text-xs text-muted-foreground hidden sm:block">
-              Page <span className="font-medium text-foreground">{currentPage}</span> of{" "}
+              Page{" "}
+              <span className="font-medium text-foreground">{currentPage}</span>{" "}
+              of{" "}
               <span className="font-medium text-foreground">{totalPages}</span>
             </p>
             <div className="flex items-center gap-1 mx-auto sm:mx-0">
-              {/* Prev */}
               <Button
                 variant="outline"
                 size="icon"
@@ -487,8 +691,6 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
-
-              {/* Pages */}
               {getPageNumbers().map((page, i) =>
                 page === "ellipsis" ? (
                   <span key={i} className="px-1.5 text-muted-foreground">
@@ -499,18 +701,14 @@ export function OrdersList({ storeId, stats, role = "admin" }: OrdersListProps) 
                     key={i}
                     variant={currentPage === page ? "default" : "ghost"}
                     size="icon"
-                    className={`h-8 w-8 rounded-lg text-xs font-medium ${
-                      currentPage === page ? "" : "text-muted-foreground"
-                    }`}
+                    className={`h-8 w-8 rounded-lg text-xs font-medium ${currentPage === page ? "" : "text-muted-foreground"}`}
                     disabled={isLoading}
                     onClick={() => setCurrentPage(page as number)}
                   >
                     {page}
                   </Button>
-                )
+                ),
               )}
-
-              {/* Next */}
               <Button
                 variant="outline"
                 size="icon"

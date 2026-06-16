@@ -1,4 +1,4 @@
-import { Customer } from "@/types/customer/customer";
+import { Customer, SerializedCustomer } from "@/types/customer/customer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 type CustomerCardProps = {
-  customer: Customer;
+  customer: Customer | SerializedCustomer; 
   userRole?: string;
 };
 
