@@ -94,7 +94,18 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     !items ||
     (items.length === 0 && subItems.length === 0 && MiscItems.length === 0)
   )
-    return <EmptyCart customerId={customerId} />;
+    return (
+      <>
+      <div className=" mt-5 ">
+      {customerId && <UPCScannerCart
+        customerId={customerId}
+        storeId={UserStoreId}
+        />}
+      </div>
+    <EmptyCart customerId={customerId} />
+      
+      </>
+  );
 
   const itemTotals = items.reduce(
     (acc, item) => {
