@@ -473,6 +473,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
           {/* Progress */}
           <Card className="border-border/60 shadow-none">
+              {customerId && <UPCScannerCart
+                customerId={customerId}
+                storeId={UserStoreId}
+                />}
             <CardContent className="p-4">
               <ProgressBarCart
                 total={progressTotal.total}
