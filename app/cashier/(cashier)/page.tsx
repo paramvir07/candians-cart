@@ -14,12 +14,7 @@ const page = async () => {
     <>
       <CashierSidebar />
       <div className="flex-1 p-6 md:ml-18">
-        <UserList
-          myStoreCustomersData={myStoreCustomersData}
-          initialPagination={pagination}
-          userRole="cashier"
-        />{" "}
-        {/* http://localhost:3000/cashier */}
+        <UserList userRole="cashier" />{" "}
       </div>
     </>
   );

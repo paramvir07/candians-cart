@@ -99,15 +99,10 @@ const UserList = (props: UserListProps) => {
   }, [debouncedSearch]);
 
   // ── Universal scanner handler ───────────────────────────────────────────────
-  // commitScan lives INSIDE the effect so it always closes over fresh setSearch.
-  // We blur the input after a scan so React's controlled onChange can't
-  // corrupt the buffer on the next scan.
   useEffect(() => {
     const commitScan = (value: string) => {
       const trimmed = value.trim();
       if (!OBJECT_ID_RE.test(trimmed)) return;
-      // Blur first — prevents the focused input's onChange from interfering
-      // with the next scan's buffer accumulation
       searchInputRef.current?.blur();
       setSearch(trimmed);
     };
@@ -148,7 +143,7 @@ const UserList = (props: UserListProps) => {
       window.removeEventListener("keydown", handleKeyDown, true);
       window.removeEventListener("compositionend", handleCompositionEnd, true);
     };
-  }, []); // no deps — commitScan uses setSearch which is stable from useState
+  }, []); 
 
   // ── QR button scan (camera-based) ──────────────────────────────────────────
   const handleScanResult = (scannedId: string) => {
@@ -163,10 +158,22 @@ const UserList = (props: UserListProps) => {
     let mounted = true;
 
     const load = async () => {
+      const query = debouncedSearch.trim();
+
+      // IF CASHIER AND NO SEARCH: Don't load anything, show empty state immediately
+      if (cashierRole && !query) {
+        if (mounted) {
+          setFetchedCustomers([]);
+          setServerPagination(null);
+          setIsLoading(false);
+        }
+        return;
+      }
+
       if (
         !isAdminMode &&
         page === 1 &&
-        !debouncedSearch &&
+        !query &&
         props.myStoreCustomersData &&
         props.myStoreCustomersData.length > 0
       ) {
@@ -178,7 +185,6 @@ const UserList = (props: UserListProps) => {
 
       setIsLoading(true);
 
-      const query = debouncedSearch.trim();
       const result = query
         ? await getSearchCustomer(query, storeId, page, ITEMS_PER_PAGE)
         : await getStoreCustomers(storeId, page, ITEMS_PER_PAGE);
@@ -205,6 +211,7 @@ const UserList = (props: UserListProps) => {
     debouncedSearch,
     props.myStoreCustomersData,
     props.initialPagination,
+    cashierRole
   ]);
 
   // ── Sort ───────────────────────────────────────────────────────────
@@ -250,7 +257,8 @@ const UserList = (props: UserListProps) => {
             <h1 className="text-base sm:text-lg font-semibold">{heading}</h1>
             {isLoading ? (
               <Skeleton className="h-5 w-10 rounded-full" />
-            ) : (
+            ) : cashierRole && !debouncedSearch ? null : (
+              // Hides the customer count badge for cashiers if no search
               <Badge variant="secondary" className="text-xs tabular-nums">
                 {totalCount} Customers
               </Badge>
@@ -308,6 +316,14 @@ const UserList = (props: UserListProps) => {
           {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
             <CustomerCardSkeleton key={i} />
           ))}
+        </div>
+      ) : cashierRole && !debouncedSearch ? (
+        // New State specifically for Cashiers before they execute a search
+        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
+          <Search className="w-10 h-10 opacity-20" />
+          <p className="text-sm">
+            Search for a customer by name, ID, or scan a QR code to begin.
+          </p>
         </div>
       ) : displayData.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">

@@ -3,11 +3,17 @@ import MainOverviewUser from "@/components/shared/users/MainOverviewUser";
 import UserList from "@/components/shared/users/UserList";
 import { SerializedCustomer } from "@/types/customer/customer";
 
+const ITEMS_PER_PAGE = 12;
+
 const page = async () => {
-  const { myStoreCustomersData } = await getMyStoreCustomers();
+  const { myStoreCustomersData, pagination } = await getMyStoreCustomers(
+    1,
+    ITEMS_PER_PAGE,
+  );
 
   // 👉 Cast the array as SerializedCustomer
-  const customers: SerializedCustomer[] = (myStoreCustomersData as SerializedCustomer[]) ?? [];
+  const customers: SerializedCustomer[] =
+    (myStoreCustomersData as SerializedCustomer[]) ?? [];
 
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -122,7 +128,11 @@ const page = async () => {
         avgBudgetChange={avgBudgetChange}
         avgBudgetUp={avgBudgetUp}
       />
-      <UserList myStoreCustomersData={customers} userRole="store"/>
+      <UserList
+        myStoreCustomersData={customers}
+        initialPagination={pagination}
+        userRole="store"
+      />
     </div>
   );
 };
