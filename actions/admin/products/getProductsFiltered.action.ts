@@ -51,7 +51,11 @@ export const getStoreProductsFiltered = async (
 
     if (filters.subsidised === true) query.subsidised = true;
 
-    if (filters.inStock === true) query.stock = true;
+    if (filters.inStock !== undefined) {
+      const isFilterInStock =
+        filters.inStock === true || String(filters.inStock) === "true";
+      query.stock = isFilterInStock;
+    }
 
     if (filters.taxRates && filters.taxRates.length > 0) {
       query.tax = { $in: filters.taxRates };
@@ -195,13 +199,22 @@ export const searchProductsWithFilters = async (
         matchStage.price.$lte = filters.maxPrice;
     }
     if (filters.subsidised === true) matchStage.subsidised = true;
-    if (filters.inStock === true) matchStage.stock = true;
+
+    if (filters.inStock !== undefined) {
+      const isFilterInStock =
+        filters.inStock === true || String(filters.inStock) === "true";
+      matchStage.stock = isFilterInStock;
+    }
+
     if (filters.taxRates && filters.taxRates.length > 0)
       matchStage.tax = { $in: filters.taxRates };
+
     if (filters.markupMin !== undefined || filters.markupMax !== undefined) {
       matchStage.markup = {};
+
       if (filters.markupMin !== undefined)
         matchStage.markup.$gte = filters.markupMin;
+
       if (filters.markupMax !== undefined)
         matchStage.markup.$lte = filters.markupMax;
     }

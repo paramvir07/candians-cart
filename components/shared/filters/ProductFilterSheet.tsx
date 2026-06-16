@@ -284,7 +284,7 @@ function ActiveSummary({ draft }: { draft: ProductFilters }) {
         <p className="text-[9px] font-bold uppercase tracking-widest text-primary mb-0.5">
           Will apply
         </p>
-        <p className="text-xs text-foreground font-medium leading-relaxed break-words">
+        <p className="text-xs text-foreground font-medium leading-relaxed wrap-break-word">
           {parts.join(" · ")}
         </p>
       </div>
