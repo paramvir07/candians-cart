@@ -103,22 +103,22 @@ export const CustomerProductCard = forwardRef<
 
   const quantityStep = 1;
 
-useImperativeHandle(ref, () => ({
-  focusQty: () => {
-    if (product.UOM && product.UOM.trim() !== "") {
-      setInputValue("");
-      setIsQtyDirty(true);
-      setTimeout(() => {
-        qtyInputRef.current?.focus();
-        qtyInputRef.current?.select();
-      }, 0);
-    } else {
-      setQuantity((prev) => (prev === 0 ? 1 : prev));
-      setInputValue((prev) => (prev === "0" || prev === "" ? "1" : prev));
-      setIsQtyDirty(false);
-    }
-  },
-}));
+  useImperativeHandle(ref, () => ({
+    focusQty: () => {
+      if (product.UOM && product.UOM.trim() !== "") {
+        setInputValue("");
+        setIsQtyDirty(true);
+        setTimeout(() => {
+          qtyInputRef.current?.focus();
+          qtyInputRef.current?.select();
+        }, 0);
+      } else {
+        setQuantity((prev) => (prev === 0 ? 1 : prev));
+        setInputValue((prev) => (prev === "0" || prev === "" ? "1" : prev));
+        setIsQtyDirty(false);
+      }
+    },
+  }));
 
   const formatQtyForInput = useCallback(
     (value: number) => {
@@ -150,7 +150,6 @@ useImperativeHandle(ref, () => ({
     },
     [product.isMeasuredInWeight],
   );
-
 
   useEffect(() => {
     setQuantity(cartQuantity);
@@ -402,12 +401,14 @@ useImperativeHandle(ref, () => ({
           </div>
 
           {/* RIGHT BADGE: Dynamic Subsidy Level based on markup */}
-          <div
-            className={`flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[10.5px] font-black backdrop-blur-md transition-colors ${subsidyConfig.bg} ${subsidyConfig.border} ${subsidyConfig.text}`}
-          >
-            <BadgeDollarSign className="h-3 w-3 shrink-0" strokeWidth={2.5} />
-            {subsidyConfig.label}
-          </div>
+          {!product.subsidised && (
+            <div
+              className={`flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[10.5px] font-black backdrop-blur-md transition-colors ${subsidyConfig.bg} ${subsidyConfig.border} ${subsidyConfig.text}`}
+            >
+              <BadgeDollarSign className="h-3 w-3 shrink-0" strokeWidth={2.5} />
+              {subsidyConfig.label}
+            </div>
+          )}
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 z-10">
