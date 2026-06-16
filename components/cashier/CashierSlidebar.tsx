@@ -16,6 +16,7 @@ import {
   ShoppingBasket,
   ChevronDown,
   Gift,
+  HeartHandshake,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import LogoutButton from "../shared/LogoutButton";
@@ -37,6 +38,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { useAtom } from "jotai";
+import { OrderSubsidyValue } from "@/atoms/customer/CartAtom";
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 type CustomerData = {
@@ -130,6 +133,7 @@ function SidebarContent({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const [customerOpen, setCustomerOpen] = useState(false)
+  const [SubsidyVal,] = useAtom(OrderSubsidyValue)
 
 
   const isInsideCustomer =
@@ -279,6 +283,15 @@ function SidebarContent({
                 <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up overflow-hidden">
                   <div className="mx-1 mb-2 mt-0.5 rounded-xl border border-border bg-muted/40 divide-y divide-border overflow-hidden">
                     <div className="flex items-center gap-2.5 px-3 py-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+                        <HeartHandshake className="w-3.5 h-3.5 text-amber-600" />
+                      </div>
+                      <span className="text-xs text-muted-foreground flex-1">Subsidy</span>
+                      <span className="text-xs font-semibold text-foreground tabular-nums">
+                        CA${((SubsidyVal ?? 0)).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 px-3 py-2.5">
                       <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Wallet className="w-3.5 h-3.5 text-primary" />
                       </div>
@@ -305,6 +318,7 @@ function SidebarContent({
                         {customerData?.CartCount ?? 0} items
                       </span>
                     </div>
+                    
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -393,6 +407,7 @@ function SidebarContent({
 
 const CashierSidebar = ({ customerData }: CustomerData) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+
   const pathname = usePathname();
 
   // Close on route change

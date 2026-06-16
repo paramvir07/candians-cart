@@ -472,14 +472,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           </div>
 
           {/* Progress */}
-          <Card className="border-border/60 shadow-none">
-          <div className="hidden">
-              {customerId && <UPCScannerCart
-                customerId={customerId}
-                storeId={UserStoreId}
-                />}
-          </div>
-            <CardContent className="p-4">
+          <Card className={`${isCashier && 'hidden'} border-border/60 shadow-none`}>
+          
+            <CardContent className={`${isCashier && 'hidden'} p-4`}>
               <ProgressBarCart
                 total={progressTotal.total}
                 customerId={customerId}
@@ -700,13 +695,13 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           {/* Progress bar */}
           <div className="mb-6 border-border/60 shadow-none">
 
-          <div className="hidden">
+          <div className="">
               {customerId && <UPCScannerCart
                 customerId={customerId}
                 storeId={UserStoreId}
                 />}
           </div>
-
+              <div className={`${isCashier && 'hidden'}`}>              
               <ProgressBarCart
                 total={progressTotal.total}
                 customerId={customerId}
@@ -715,7 +710,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 Totalsubsidy={TotalSubsidy}
                 SubsidyonOrder={Math.round(newSubisdyCalc)}
                 subItemIds={subItemProductIds}
-              />
+                />
+              </div> 
           </div>
 
           {/* 2-col layout */}

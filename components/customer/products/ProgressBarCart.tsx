@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react"
 import { SubsidizedPopup } from "./SubsidizedPopup"
 import { useAtom } from "jotai"
-import { SubsidyValue, UsedSubsidy } from "@/atoms/customer/CartAtom"
+import { OrderSubsidyValue, SubsidyValue, UsedSubsidy } from "@/atoms/customer/CartAtom"
 import { Tag, ChevronRight, Gift, Wallet, MinusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ClearAllSubsidyItems, updateCartSubsidy } from "@/actions/customer/SubsidyItems.Action"
@@ -22,6 +22,7 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
   const [dialogOpen, setDialogOpen] = useState(false)
   const [showBtn, setShowBtn] = useState(false)
   const [SubsidyVal, setSubsidyVal] = useAtom(SubsidyValue)
+  const [,setorderSubsidy] = useAtom(OrderSubsidyValue)
   const [, setUsedSubsidy] = useAtom(UsedSubsidy)
 
   const amount = total / 100
@@ -40,6 +41,7 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
 }, [subItemIds])
 
   useEffect(() => {
+    setorderSubsidy(SubsidyonOrder/100)
     setSubsidyVal((SubsidyonOrder / 100) + giftBalance)
 
     const prevAmount = prevAmountRef.current
