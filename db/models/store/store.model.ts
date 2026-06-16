@@ -99,22 +99,23 @@ const storeSchema = new Schema<IStore>(
       type: String,
       required: true,
     },
-    email: {
-      // Contact email for the store
-      type: String,
-      required: true,
-      unique: true
-    },
     address: {
       // Physical address of the store
       type: String,
       required: true,
     },
-    mobile: {
-      // Contact mobile number for the store
+    email: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    mobile: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
     },
     description: {
       type: String,
@@ -160,6 +161,10 @@ const storeSchema = new Schema<IStore>(
   },
   { timestamps: true },
 );
+
+
+storeSchema.index({ email: 1 }, { unique: true });
+storeSchema.index({ mobile: 1 }, { unique: true });
 
 const Store: Model<IStore> =
   models.Store || model<IStore>("Store", storeSchema);

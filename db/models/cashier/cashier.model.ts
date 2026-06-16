@@ -22,12 +22,15 @@ const cashierSchema = new Schema<ICashier>(
     email: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
+      lowercase: true,
+      trim: true,
     },
     mobile: {
       type: String,
       required: true,
       unique: true,
+      trim: true,
     },
     address: {
       type: String,
@@ -41,6 +44,9 @@ const cashierSchema = new Schema<ICashier>(
   },
   { timestamps: true },
 );
+
+cashierSchema.index({ email: 1 }, { unique: true });
+cashierSchema.index({ mobile: 1 }, { unique: true });
 
 export const Cashier: Model<ICashier> =
   models.Cashier || model<ICashier>("Cashier", cashierSchema);
