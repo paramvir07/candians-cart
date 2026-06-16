@@ -54,6 +54,8 @@ type UserListProps = {
 
 const ITEMS_PER_PAGE = 12;
 
+const OBJECT_ID_RE = /^[a-f0-9]{24}$/i;
+
 const UserList = (props: UserListProps) => {
   const isAdminMode = props.adminMode === true;
   const userRole = props.userRole;
@@ -96,24 +98,22 @@ const UserList = (props: UserListProps) => {
     setPage(1);
   }, [debouncedSearch]);
 
-  const OBJECT_ID_RE = /^[a-f0-9]{24}$/i;
-
-  const commitScan = (value: string) => {
-    const trimmed = value.trim();
-    if (!OBJECT_ID_RE.test(trimmed)) return;
-    setSearch(trimmed);
-    searchInputRef.current?.focus();
-    setTimeout(() => searchInputRef.current?.select(), 0);
-  };
-
   // ── Universal scanner handler ───────────────────────────────────────────────
-  // Relies solely on keydown + compositionend — no handleInput — to avoid the
-  // race where handleInput overwrites scanBufferRef mid-scan and drops the
-  // first character of the ObjectId.
+  // commitScan lives INSIDE the effect so it always closes over fresh setSearch.
+  // We blur the input after a scan so React's controlled onChange can't
+  // corrupt the buffer on the next scan.
   useEffect(() => {
+    const commitScan = (value: string) => {
+      const trimmed = value.trim();
+      if (!OBJECT_ID_RE.test(trimmed)) return;
+      // Blur first — prevents the focused input's onChange from interfering
+      // with the next scan's buffer accumulation
+      searchInputRef.current?.blur();
+      setSearch(trimmed);
+    };
+
     const accumulate = (chars: string) => {
       scanBufferRef.current += chars;
-      // Trim to last 24 chars in case of any prefix garbage
       if (scanBufferRef.current.length > 24) {
         scanBufferRef.current = scanBufferRef.current.slice(-24);
       }
@@ -126,7 +126,6 @@ const UserList = (props: UserListProps) => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
-        // Fallback: if Enter arrives before we hit 24 chars, try what we have
         const buf = scanBufferRef.current;
         scanBufferRef.current = "";
         if (OBJECT_ID_RE.test(buf)) commitScan(buf);
@@ -149,7 +148,15 @@ const UserList = (props: UserListProps) => {
       window.removeEventListener("keydown", handleKeyDown, true);
       window.removeEventListener("compositionend", handleCompositionEnd, true);
     };
-  }, []);
+  }, []); // no deps — commitScan uses setSearch which is stable from useState
+
+  // ── QR button scan (camera-based) ──────────────────────────────────────────
+  const handleScanResult = (scannedId: string) => {
+    const trimmed = scannedId.trim();
+    if (!OBJECT_ID_RE.test(trimmed)) return;
+    searchInputRef.current?.blur();
+    setSearch(trimmed);
+  };
 
   // ── Unified Server Fetch (For Admins AND Cashiers) ─────────────────────────
   useEffect(() => {
@@ -164,11 +171,7 @@ const UserList = (props: UserListProps) => {
         props.myStoreCustomersData.length > 0
       ) {
         setFetchedCustomers(props.myStoreCustomersData);
-
-        if (props.initialPagination) {
-          setServerPagination(props.initialPagination);
-        }
-
+        if (props.initialPagination) setServerPagination(props.initialPagination);
         setIsLoading(false);
         return;
       }
@@ -227,8 +230,6 @@ const UserList = (props: UserListProps) => {
     ? serverPagination.totalCount
     : fetchedCustomers.length;
 
-  const handleScanResult = (scannedId: string) => commitScan(scannedId);
-
   // ── Heading ─────────────────────────────────────────────────────────────────
   const heading = isAllStores ? "All Customers" : "Customer List";
   const searchPlaceholder = isAllStores
@@ -280,7 +281,6 @@ const UserList = (props: UserListProps) => {
                 placeholder={searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                autoFocus
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="off"
