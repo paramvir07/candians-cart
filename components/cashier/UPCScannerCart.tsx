@@ -37,6 +37,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
   const isHandlingRef = useRef(false);
+  const isInputFocusedRef = useRef(false);
 
   const [pendingProduct, setPendingProduct] =
     useState<PendingWeightProduct | null>(null);
@@ -45,26 +46,40 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
 
   const router = useRouter();
 
+  const focusInput = () => {
+    let attempts = 0;
+    const tryFocus = () => {
+      attempts += 1;
+      const el = inputRef.current;
+      if (el && document.activeElement !== el) {
+        el.focus();
+      }
+      if (attempts < 4 && document.activeElement !== inputRef.current) {
+        requestAnimationFrame(tryFocus);
+      }
+    };
+    requestAnimationFrame(tryFocus);
+  };
+
   useEffect(() => {
-    setTimeout(() => inputRef.current?.focus(), 0);
+    focusInput();
   }, []);
 
   useEffect(() => {
-    const isTypingElsewhere = () => {
-      const active = document.activeElement;
-      if (!active || active === document.body) return false;
-      if (active === inputRef.current) return false;
-
-      const tag = active.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
-      if ((active as HTMLElement).isContentEditable) return true;
-
-      return false;
-    };
-
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target === inputRef.current) return;
-      if (isTypingElsewhere()) return;
+      if (isInputFocusedRef.current) return;
+
+      const active = document.activeElement;
+      const isTypingElsewhere =
+        !!active &&
+        active !== document.body &&
+        active !== inputRef.current &&
+        (active.tagName === "INPUT" ||
+          active.tagName === "TEXTAREA" ||
+          active.tagName === "SELECT" ||
+          (active as HTMLElement).isContentEditable);
+
+      if (isTypingElsewhere) return;
 
       if (e.key === "Enter") {
         const buf = scanBufferRef.current.trim().toUpperCase();
@@ -87,7 +102,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
     setIsLoading(false);
     setUpc("");
     isHandlingRef.current = false;
-    inputRef.current?.focus();
+    focusInput();
   };
 
   const handleScan = async (value: string) => {
@@ -113,7 +128,6 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
         const product = results[0];
 
         if (product.isMeasuredInWeight) {
-
           setQtyInput("");
           setPendingProduct({ _id: product._id as string, name: product.name });
           setIsLoading(false);
@@ -182,6 +196,12 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
         <Input
           ref={inputRef}
           value={upc}
+          onFocus={() => {
+            isInputFocusedRef.current = true;
+          }}
+          onBlur={() => {
+            isInputFocusedRef.current = false;
+          }}
           onChange={(e) => setUpc(e.target.value.toUpperCase())}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
