@@ -226,11 +226,11 @@ export const searchProductsWithFilters = async (
       if (filters.subsidyLevel === "high") {
         matchStage.markup.$gte = 100;
       } else if (filters.subsidyLevel === "medium") {
-        matchStage.markup.$gte = 45;
-        matchStage.markup.$lte = 100;
+        matchStage.markup.$gte = 50;
+        matchStage.markup.$lt = 100;
       } else if (filters.subsidyLevel === "low") {
         matchStage.markup.$gte = 0;
-        matchStage.markup.$lte = 45;
+        matchStage.markup.$lt = 50;
       }
     }
 
