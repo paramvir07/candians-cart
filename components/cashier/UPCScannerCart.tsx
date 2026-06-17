@@ -38,6 +38,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
   const scanBufferRef = useRef("");
   const isHandlingRef = useRef(false);
   const isInputFocusedRef = useRef(false);
+  const liveValueRef = useRef("");
 
   const [pendingProduct, setPendingProduct] =
     useState<PendingWeightProduct | null>(null);
@@ -59,6 +60,14 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
       }
     };
     requestAnimationFrame(tryFocus);
+  };
+
+  const setInputValue = (next: string) => {
+    liveValueRef.current = next;
+    setUpc(next);
+    if (inputRef.current && inputRef.current.value !== next) {
+      inputRef.current.value = next;
+    }
   };
 
   useEffect(() => {
@@ -100,7 +109,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
 
   const finishScan = () => {
     setIsLoading(false);
-    setUpc("");
+    setInputValue("");
     isHandlingRef.current = false;
     focusInput();
   };
@@ -116,7 +125,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
     isHandlingRef.current = true;
 
     setIsLoading(true);
-    setUpc(trimmed);
+    setInputValue(trimmed);
     try {
       const res = await searchProductsByUPC(trimmed, storeId);
       const results = res.success && res.data ? res.data : [];
@@ -195,18 +204,29 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
         </div>
         <Input
           ref={inputRef}
-          value={upc}
+          defaultValue=""
           onFocus={() => {
             isInputFocusedRef.current = true;
           }}
           onBlur={() => {
             isInputFocusedRef.current = false;
           }}
-          onChange={(e) => setUpc(e.target.value.toUpperCase())}
+          onChange={(e) => {
+            const upper = e.target.value.toUpperCase();
+            if (e.target.value !== upper) {
+              const { selectionStart, selectionEnd } = e.target;
+              e.target.value = upper;
+              if (selectionStart !== null && selectionEnd !== null) {
+                e.target.setSelectionRange(selectionStart, selectionEnd);
+              }
+            }
+            liveValueRef.current = e.target.value;
+            setUpc(e.target.value);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              handleScan(upc);
+              handleScan(liveValueRef.current);
             }
           }}
           placeholder="Scan or type UPC…"
