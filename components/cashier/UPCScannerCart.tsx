@@ -38,7 +38,6 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
   const scanBufferRef = useRef("");
   const isHandlingRef = useRef(false);
   const isInputFocusedRef = useRef(false);
-  const liveValueRef = useRef("");
 
   const [pendingProduct, setPendingProduct] =
     useState<PendingWeightProduct | null>(null);
@@ -62,14 +61,6 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
     requestAnimationFrame(tryFocus);
   };
 
-  const setInputValue = (next: string) => {
-    liveValueRef.current = next;
-    setUpc(next);
-    if (inputRef.current && inputRef.current.value !== next) {
-      inputRef.current.value = next;
-    }
-  };
-
   useEffect(() => {
     focusInput();
   }, []);
@@ -91,7 +82,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
       if (isTypingElsewhere) return;
 
       if (e.key === "Enter") {
-        const buf = scanBufferRef.current.trim().toUpperCase();
+        const buf = scanBufferRef.current.trim();
         scanBufferRef.current = "";
         if (buf) {
           handleScan(buf);
@@ -109,13 +100,15 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
 
   const finishScan = () => {
     setIsLoading(false);
-    setInputValue("");
+    setUpc("");
     isHandlingRef.current = false;
     focusInput();
   };
 
-  const handleScan = async (value: string) => {
-    const trimmed = value.trim().toUpperCase();
+  // All normalization happens here, once, right before it leaves the
+  // component — never inside the input's own change handler.
+  const handleScan = async (rawValue: string) => {
+    const trimmed = rawValue.trim().toUpperCase();
     if (!trimmed) return;
     if (!OBJECT_ID_OR_UPC_RE.test(trimmed)) {
       toast.error(`Invalid UPC "${trimmed}"`);
@@ -125,7 +118,6 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
     isHandlingRef.current = true;
 
     setIsLoading(true);
-    setInputValue(trimmed);
     try {
       const res = await searchProductsByUPC(trimmed, storeId);
       const results = res.success && res.data ? res.data : [];
@@ -140,6 +132,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
           setQtyInput("");
           setPendingProduct({ _id: product._id as string, name: product.name });
           setIsLoading(false);
+          setUpc("");
         } else {
           await AddtoCart(product._id as string, customerId);
           toast.success(`${product.name} added to cart`);
@@ -204,29 +197,18 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
         </div>
         <Input
           ref={inputRef}
-          defaultValue=""
+          value={upc}
           onFocus={() => {
             isInputFocusedRef.current = true;
           }}
           onBlur={() => {
             isInputFocusedRef.current = false;
           }}
-          onChange={(e) => {
-            const upper = e.target.value.toUpperCase();
-            if (e.target.value !== upper) {
-              const { selectionStart, selectionEnd } = e.target;
-              e.target.value = upper;
-              if (selectionStart !== null && selectionEnd !== null) {
-                e.target.setSelectionRange(selectionStart, selectionEnd);
-              }
-            }
-            liveValueRef.current = e.target.value;
-            setUpc(e.target.value);
-          }}
+          onChange={(e) => setUpc(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              handleScan(liveValueRef.current);
+              handleScan(upc);
             }
           }}
           placeholder="Scan or type UPC…"
