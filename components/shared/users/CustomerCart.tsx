@@ -453,6 +453,12 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     <div className={cn("min-h-screen", !isCashier && "bg-background")}>
       {!isCashier && <Navbar />}
 
+       {customerId && (
+        <div className="px-4 xl:px-8 pt-5 xl:pt-8 xl:max-w-5xl xl:mx-auto">
+          <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
+        </div>
+      )}
+      
       <div
         className="xl:hidden flex flex-col"
         style={{ minHeight: "calc(100dvh - 0px)" }}
@@ -707,13 +713,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
           {/* Progress bar */}
           <div className="mb-6 border-border/60 shadow-none">
-
-          <div className="">
-              {customerId && <UPCScannerCart
-                customerId={customerId}
-                storeId={UserStoreId}
-                />}
-          </div>
               <div className={`${isCashier && 'hidden'}`}>              
               <ProgressBarCart
                 total={progressTotal.total}
