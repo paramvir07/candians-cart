@@ -7,6 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { toast } from "sonner";
 import {
   Search,
@@ -21,9 +30,6 @@ import {
   DollarSign,
   Package,
   ArrowUpRight,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
   X,
   Loader2,
 } from "lucide-react";
@@ -64,10 +70,8 @@ const StatSkeleton = () => (
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    pending:
-      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
-    completed:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
+    pending: "bg-amber-50 text-amber-700 border-amber-200",
+    completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
   };
   const dots: Record<string, string> = {
     pending: "bg-amber-500",
@@ -87,12 +91,10 @@ function StatusBadge({ status }: { status: string }) {
 
 function PaymentBadge({ mode }: { mode: string }) {
   const styles: Record<string, string> = {
-    wallet:
-      "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-800",
-    cash: "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/30 dark:text-teal-400 dark:border-teal-800",
-    card: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
-    pending:
-      "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800",
+    wallet: "bg-violet-50 text-violet-700 border-violet-200",
+    cash: "bg-teal-50 text-teal-700 border-teal-200",
+    card: "bg-blue-50 text-blue-700 border-blue-200",
+    pending: "bg-red-50 text-red-600 border-red-200",
   };
   return (
     <span
@@ -253,7 +255,9 @@ export function OrdersList({
 
   // Modal State
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selectedOrderData, setSelectedOrderData] = useState<any>(null);
+  const [selectedOrderData, setSelectedOrderData] = useState<AdminOrder | null>(
+    null,
+  );
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
   const isAllStores = !storeId;
@@ -382,7 +386,7 @@ export function OrdersList({
               >
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
-              <OrderDetail order={selectedOrderData} allOrders={true} />
+              <OrderDetail order={selectedOrderData as any} allOrders={true} />
             </div>
           ) : null}
         </DialogContent>
@@ -681,44 +685,66 @@ export function OrdersList({
               of{" "}
               <span className="font-medium text-foreground">{totalPages}</span>
             </p>
-            <div className="flex items-center gap-1 mx-auto sm:mx-0">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 rounded-lg"
-                disabled={currentPage === 1 || isLoading}
-                onClick={() => setCurrentPage((p) => p - 1)}
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </Button>
-              {getPageNumbers().map((page, i) =>
-                page === "ellipsis" ? (
-                  <span key={i} className="px-1.5 text-muted-foreground">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </span>
-                ) : (
-                  <Button
-                    key={i}
-                    variant={currentPage === page ? "default" : "ghost"}
-                    size="icon"
-                    className={`h-8 w-8 rounded-lg text-xs font-medium ${currentPage === page ? "" : "text-muted-foreground"}`}
-                    disabled={isLoading}
-                    onClick={() => setCurrentPage(page as number)}
-                  >
-                    {page}
-                  </Button>
-                ),
-              )}
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 rounded-lg"
-                disabled={currentPage === totalPages || isLoading}
-                onClick={() => setCurrentPage((p) => p + 1)}
-              >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Button>
-            </div>
+
+            <Pagination className="mx-0 w-auto justify-end">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1 && !isLoading)
+                        setCurrentPage((p) => p - 1);
+                    }}
+                    className={
+                      currentPage === 1 || isLoading
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer"
+                    }
+                  />
+                </PaginationItem>
+
+                {getPageNumbers().map((page, i) => (
+                  <PaginationItem key={i}>
+                    {page === "ellipsis" ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        href="#"
+                        isActive={currentPage === page}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (!isLoading) setCurrentPage(page as number);
+                        }}
+                        className={
+                          isLoading
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
+                        }
+                      >
+                        {page}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages && !isLoading)
+                        setCurrentPage((p) => p + 1);
+                    }}
+                    className={
+                      currentPage === totalPages || isLoading
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer"
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         )}
       </div>
