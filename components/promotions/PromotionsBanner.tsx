@@ -104,71 +104,71 @@ export default function PromotionBanner({
     );
   }
 
-  // ── Banner variant (default) ───────────────────────────────────────────────
-  return (
-    <Link
-      href={href}
-      className="group block w-full rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      <div className="relative w-full overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary to-primary/80 shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl">
-        <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-300/25 blur-xl" />
-        <div className="absolute -bottom-10 left-8 h-28 w-28 rounded-full bg-white/10 blur-xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_35%)]" />
+// ── Banner variant (default) ───────────────────────────────────────────────
+return (
+  <Link
+    href={href}
+    className="group block w-full rounded-[1.75rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  >
+    <div className="relative w-full overflow-hidden rounded-[1.75rem] border border-primary/20 bg-gradient-to-br from-primary to-primary/80 shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl">
+      <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-300/25 blur-xl" />
+      <div className="absolute -bottom-10 left-8 h-28 w-28 rounded-full bg-white/10 blur-xl" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_35%)]" />
 
-        <div className="relative z-10 flex w-full flex-col gap-4 px-4 py-4 sm:px-5 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
-          {/* Top content */}
-          <div className="flex min-w-0 items-start gap-3 sm:items-center">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-300 shadow-lg shadow-amber-950/20 sm:h-12 sm:w-12">
-              <Gift className="h-5 w-5 text-amber-950 sm:h-6 sm:w-6" />
-            </div>
-
-            <div className="min-w-0 flex-1 text-left">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[15px] font-black leading-tight tracking-tight text-white sm:text-lg">
-                  Win a $500 Grocery Gift Card!
-                </span>
-
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-300 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.16em] text-amber-950 sm:px-2.5 sm:py-1 sm:text-[10px]">
-                  <Sparkles className="h-2.5 w-2.5" />
-                  Live
-                </span>
-              </div>
-
-              <p className="mt-1 max-w-[260px] text-xs font-medium leading-snug text-white/75 sm:max-w-none sm:text-sm">
-                Complete 1 order to enter · 1 lucky member wins
-              </p>
-            </div>
+      <div className="relative z-10 p-4 sm:p-5">
+        {/* Header */}
+        <div className="flex items-start gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-300 shadow-lg shadow-amber-950/20">
+            <Gift className="h-5 w-5 text-amber-950" />
           </div>
 
-          {/* Mobile-safe bottom content */}
-          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3 lg:shrink-0">
-            <div className="flex min-w-0 items-center justify-center gap-1.5 rounded-2xl bg-white/12 px-2.5 py-2.5 text-[11px] text-white/85 backdrop-blur-sm sm:min-w-[112px] sm:px-3 sm:text-xs">
-              <Users className="h-3.5 w-3.5 shrink-0 text-amber-200" />
-              <span className="truncate">
-                <span className="font-black text-white">
-                  {initialStats.eligibleCount}
-                </span>
-                <span className="text-white/65">
-                  /{initialStats.targetCount} members
-                </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-base font-black leading-tight tracking-tight text-white sm:text-lg">
+                Win a $500 Grocery Gift Card!
+              </h3>
+
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-300 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-amber-950">
+                <Sparkles className="h-2.5 w-2.5" />
+                Live
               </span>
             </div>
 
-            <div className="flex min-w-0 items-center justify-center gap-1.5 rounded-2xl bg-white/12 px-2.5 py-2.5 text-[11px] text-white/85 backdrop-blur-sm sm:min-w-[120px] sm:px-3 sm:text-xs">
-              <Clock className="h-3.5 w-3.5 shrink-0 text-amber-200" />
-              <span className="truncate font-black tabular-nums text-white">
-                {timeStr}
-              </span>
-            </div>
-
-            <div className="col-span-2 inline-flex w-full items-center justify-center gap-1.5 rounded-2xl bg-amber-300 px-4 py-2.5 text-xs font-black text-amber-950 shadow-md shadow-amber-950/10 transition-all group-hover:gap-2 hover:bg-amber-200 sm:col-span-1 sm:w-auto sm:min-w-[130px]">
-              <span className="sm:hidden">See promo</span>
-              <span className="hidden sm:inline">See promotion</span>
-              <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" />
-            </div>
+            <p className="mt-1 max-w-[280px] text-xs font-semibold leading-snug text-white/80 sm:max-w-none sm:text-sm">
+              Complete 1 order to enter · 1 lucky member wins
+            </p>
           </div>
         </div>
+
+        {/* Stats */}
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <div className="flex min-w-0 items-center justify-center gap-1.5 rounded-2xl bg-white/12 px-3 py-3 text-xs text-white/85 backdrop-blur-sm">
+            <Users className="h-3.5 w-3.5 shrink-0 text-amber-200" />
+            <span className="truncate">
+              <span className="font-black text-white">
+                {initialStats.eligibleCount}
+              </span>
+              <span className="text-white/65">
+                /{initialStats.targetCount} members
+              </span>
+            </span>
+          </div>
+
+          <div className="flex min-w-0 items-center justify-center gap-1.5 rounded-2xl bg-white/12 px-3 py-3 text-xs text-white/85 backdrop-blur-sm">
+            <Clock className="h-3.5 w-3.5 shrink-0 text-amber-200" />
+            <span className="truncate font-black tabular-nums text-white">
+              {timeStr}
+            </span>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-2xl bg-amber-300 px-4 py-3 text-xs font-black text-amber-950 shadow-md shadow-amber-950/10 transition-all group-hover:gap-2 hover:bg-amber-200">
+          <span>See promo</span>
+          <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" />
+        </div>
       </div>
-    </Link>
-  );
+    </div>
+  </Link>
+);
 }

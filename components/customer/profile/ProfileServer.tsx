@@ -19,6 +19,8 @@ import Link from "next/link";
 import { getOrderCount } from "@/actions/customer/ProductAndStore/Order.Action";
 import { Metadata } from "next";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
+import PromotionBanner from "@/components/promotions/PromotionsBanner";
+import { getPromoStats } from "@/actions/promotions/getPromoStats.action";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -29,7 +31,7 @@ export default async function ProfileServer() {
     getCustomerAndStoreDataAction(),
     getOrderCount(),
   ]);
-
+  const promoStats = await getPromoStats();
   const { customerData } = customerRes;
   const { orderCount } = orderRes;
 
@@ -145,8 +147,18 @@ export default async function ProfileServer() {
           {/* ── Mobile ── */}
           <div className="flex flex-col gap-4 lg:hidden">
             <ProfileHero customer={customerData} />
+
+            <div className="mx-auto w-full max-w-[360px] sm:max-w-[420px]">
+              <PromotionBanner initialStats={promoStats} variant="card" />
+            </div>
+
             <CustomerAdvertisements />
-            <ProfileStats customer={customerData} OrderCount={orderCount ?? 0} />
+
+            <ProfileStats
+              customer={customerData}
+              OrderCount={orderCount ?? 0}
+            />
+
             <ProfileContact customer={customerData} />
             <ProfileStore store={customerData.associatedStoreId} />
             <QuickActions />
@@ -158,13 +170,21 @@ export default async function ProfileServer() {
             {/* Left col */}
             <div className="flex flex-col gap-4">
               <ProfileHero customer={customerData} />
+
+              <div className="mx-auto w-full max-w-[420px]">
+                <PromotionBanner initialStats={promoStats} variant="banner" />
+              </div>
+
               <CustomerAdvertisements />
               <ProfileStore store={customerData.associatedStoreId} />
             </div>
 
             {/* Right col */}
             <div className="flex flex-col gap-4">
-              <ProfileStats customer={customerData} OrderCount={orderCount ?? 0} />
+              <ProfileStats
+                customer={customerData}
+                OrderCount={orderCount ?? 0}
+              />
               <ProfileContact customer={customerData} />
               <QuickActions />
               <LogoutButton variant="card" />
