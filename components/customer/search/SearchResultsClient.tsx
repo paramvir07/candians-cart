@@ -114,8 +114,6 @@ export function SearchResultsClient({
     });
   }, []);
 
-
-
   const handleBarcodeScan = async (value: string) => {
     setIsLoading(true);
     setHasSearched(true);
@@ -209,14 +207,16 @@ export function SearchResultsClient({
     const hasFilters =
       filters.categories.length > 0 ||
       filters.subsidisedOnly ||
-      filters.inStockOnly;
+      filters.inStockOnly ||
+      !!filters.subsidyLevel; // <-- Added subsidyLevel check here
 
     const queryChanged = prevQueryRef.current !== debouncedQuery;
     const filtersChanged =
       prevFiltersRef.current.sortBy !== filters.sortBy ||
       prevFiltersRef.current.categories !== filters.categories ||
       prevFiltersRef.current.subsidisedOnly !== filters.subsidisedOnly ||
-      prevFiltersRef.current.inStockOnly !== filters.inStockOnly;
+      prevFiltersRef.current.inStockOnly !== filters.inStockOnly ||
+      prevFiltersRef.current.subsidyLevel !== filters.subsidyLevel;
 
     prevQueryRef.current = debouncedQuery;
     prevFiltersRef.current = filters;
@@ -242,6 +242,25 @@ export function SearchResultsClient({
       setIsLoading(true);
       setHasSearched(true);
 
+      const filterPayload = {
+        sortBy: (filters.sortBy === "default"
+          ? "recommended"
+          : filters.sortBy) as
+          | "recommended"
+          | "price_asc"
+          | "price_desc"
+          | "name_asc"
+          | "markup_desc"
+          | "markup_asc",
+        categories:
+          filters.categories.length > 0
+            ? (filters.categories as any)
+            : undefined,
+        subsidised: filters.subsidisedOnly ? true : undefined,
+        subsidyLevel: filters.subsidyLevel,
+        inStock: filters.inStockOnly ? true : undefined,
+      };
+
       if (hasQuery) {
         const res = upcMode
           ? await searchProductsByUPC(debouncedQuery.trim(), storeId)
@@ -250,16 +269,7 @@ export function SearchResultsClient({
               storeId,
               pageToUse,
               16,
-              {
-                sortBy:
-                  filters.sortBy === "default" ? "recommended" : filters.sortBy,
-                categories:
-                  filters.categories.length > 0
-                    ? (filters.categories as any)
-                    : undefined,
-                subsidised: filters.subsidisedOnly ? true : undefined,
-                inStock: filters.inStockOnly ? true : undefined,
-              },
+              filterPayload,
             );
         const results = res.success && res.data ? res.data : [];
         setAllResults(results);
@@ -287,15 +297,12 @@ export function SearchResultsClient({
           }
         }
       } else {
-        const res = await getStoreProductsFiltered(storeId, pageToUse, 16, {
-          categories:
-            filters.categories.length > 0
-              ? (filters.categories as any)
-              : undefined,
-          subsidised: filters.subsidisedOnly ? true : undefined,
-          inStock: filters.inStockOnly ? true : undefined,
-          sortBy: filters.sortBy === "default" ? "recommended" : filters.sortBy,
-        });
+        const res = await getStoreProductsFiltered(
+          storeId,
+          pageToUse,
+          16,
+          filterPayload,
+        );
         setAllResults(res.success && res.data ? res.data : []);
         setTotalPages((res as any).totalPages ?? 1);
       }
@@ -311,10 +318,10 @@ export function SearchResultsClient({
     filters.sortBy,
     filters.categories,
     filters.subsidisedOnly,
+    filters.subsidyLevel,
     filters.inStockOnly,
     currentPage,
   ]);
-
 
   const filtered = useMemo(() => [...allResults], [allResults]);
 
@@ -384,10 +391,10 @@ export function SearchResultsClient({
               {upcMode ? "UPC" : "UPC"}
             </Button>
             <AddMiscItemModalTrigger customerId={customerId || ""} />
-                                  <FilterTriggerButton
-                        activeCount={activeFilterCount}
-                        onClick={() => setFilterSheetOpen(true)}
-                      />
+            <FilterTriggerButton
+              activeCount={activeFilterCount}
+              onClick={() => setFilterSheetOpen(true)}
+            />
           </div>
         </div>
       )}
@@ -668,7 +675,7 @@ export function SearchResultsClient({
                 }}
                 className="w-full h-12 rounded-full bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all text-white font-bold text-sm shadow-lg shadow-green-600/20 flex items-center justify-center gap-2"
               >
-                Show  Results
+                Show Results
                 {getActiveFilterCount(pendingFilters) > 0 && (
                   <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                     {getActiveFilterCount(pendingFilters)} filter
