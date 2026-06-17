@@ -80,7 +80,7 @@ export function ProductsSection({
   }, []);
 
   // 2. SWR Data Fetching Strategy (Vercel client-swr-dedup Best Practice)
-  const cacheKey = ["products", storeId, currentPage, filters];
+  const cacheKey = ["products", storeId, currentPage, filters, subsidized];
 
   const { data, isLoading } = useSWR<PaginatedProductsResponse>(
     cacheKey,
@@ -90,12 +90,11 @@ export function ProductsSection({
         currentPage,
         ITEMS_PER_PAGE,
         {
-          // categories: filters.categories,  old
           categories: expandCategories(filters.categories),
           inStockOnly: filters.inStockOnly,
           subsidisedOnly: filters.subsidisedOnly || subsidized,
           subsidyLevel: filters.subsidyLevel,
-          sortBy: filters.sortBy as any,
+          sortBy: filters.sortBy,
         },
       );
     },
@@ -109,15 +108,15 @@ export function ProductsSection({
     },
   );
 
-  // 3. Background Preloading (Load Page 2 invisibly)
   useEffect(() => {
     if (data && currentPage < data.totalPages) {
       getCachedStoreProducts(storeId, currentPage + 1, ITEMS_PER_PAGE, {
-        categories: filters.categories,
+        categories: expandCategories(filters.categories),
+        // Use the exact keys defined in ProductCacheFilters
         inStockOnly: filters.inStockOnly,
         subsidisedOnly: filters.subsidisedOnly || subsidized,
         subsidyLevel: filters.subsidyLevel,
-        sortBy: filters.sortBy as any,
+        sortBy: filters.sortBy,
       });
     }
   }, [currentPage, data, filters, storeId, subsidized]);
