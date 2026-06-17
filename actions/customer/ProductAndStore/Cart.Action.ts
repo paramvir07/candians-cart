@@ -18,7 +18,11 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import "@/db/models/customer/MiscItem.model";
 
-export const AddtoCart = async (ItemId: string, customerId?: string) => {
+export const AddtoCart = async (
+  ItemId: string,
+  customerId?: string,
+  qty: number = 1,
+) => {
   const customerDataresponse = await getCustomerDataAction(customerId);
   const user = customerDataresponse.customerData;
   if (!user) return null;
@@ -41,7 +45,7 @@ export const AddtoCart = async (ItemId: string, customerId?: string) => {
           {
             productId: productObjectId,
             storeId: storeObjectId,
-            quantity: 1,
+            quantity: qty,
           },
         ],
       });
@@ -53,14 +57,13 @@ export const AddtoCart = async (ItemId: string, customerId?: string) => {
     );
 
     if (itemIndex > -1) {
-      if (existingCart.items[itemIndex].quantity < 99) {
-        existingCart.items[itemIndex].quantity += 1;
-      }
+      const nextQty = existingCart.items[itemIndex].quantity + qty;
+      existingCart.items[itemIndex].quantity = Math.min(nextQty, 99);
     } else {
       existingCart.items.push({
         productId: productObjectId,
         storeId: storeObjectId,
-        quantity: 1,
+        quantity: qty,
       });
     }
     await existingCart.save();

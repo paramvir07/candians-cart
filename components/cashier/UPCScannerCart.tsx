@@ -4,15 +4,31 @@ import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { Loader2, ScanBarcode } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { AddtoCart } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { useRouter } from "next/navigation";
 
 const OBJECT_ID_OR_UPC_RE = /^[a-zA-Z0-9\-]{2,}$/;
+const MIN_WEIGHT_QTY = 0.1;
+const MAX_WEIGHT_QTY = 99;
 
 interface UPCScannerProps {
   customerId: string;
   storeId: string;
+}
+
+interface PendingWeightProduct {
+  _id: string;
+  name: string;
 }
 
 export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
@@ -21,6 +37,11 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
   const isHandlingRef = useRef(false);
+
+  const [pendingProduct, setPendingProduct] =
+    useState<PendingWeightProduct | null>(null);
+  const [qtyInput, setQtyInput] = useState("");
+  const [isSubmittingQty, setIsSubmittingQty] = useState(false);
 
   const router = useRouter();
 
@@ -62,6 +83,13 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
     return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, [storeId, customerId]);
 
+  const finishScan = () => {
+    setIsLoading(false);
+    setUpc("");
+    isHandlingRef.current = false;
+    inputRef.current?.focus();
+  };
+
   const handleScan = async (value: string) => {
     const trimmed = value.trim().toUpperCase();
     if (!trimmed) return;
@@ -80,50 +108,143 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
 
       if (results.length === 0) {
         toast.error("No product found for this barcode");
+        finishScan();
       } else if (results.length === 1) {
-        await AddtoCart(results[0]._id as string, customerId);
-        toast.success(`${results[0].name} added to cart`);
-        router.refresh();
+        const product = results[0];
+
+        if (product.isMeasuredInWeight) {
+
+          setQtyInput("");
+          setPendingProduct({ _id: product._id as string, name: product.name });
+          setIsLoading(false);
+        } else {
+          await AddtoCart(product._id as string, customerId);
+          toast.success(`${product.name} added to cart`);
+          router.refresh();
+          finishScan();
+        }
       } else {
         toast.error("Multiple products found — try a more specific barcode");
+        finishScan();
       }
     } catch {
       toast.error("Failed to add product");
+      finishScan();
+    }
+  };
+
+  const handleQtyDialogChange = (open: boolean) => {
+    if (!open) {
+      setPendingProduct(null);
+      setQtyInput("");
+      finishScan();
+    }
+  };
+
+  const handleConfirmWeightQty = async () => {
+    if (!pendingProduct) return;
+
+    const qty = parseFloat(qtyInput);
+    if (
+      Number.isNaN(qty) ||
+      qty < MIN_WEIGHT_QTY ||
+      qty > MAX_WEIGHT_QTY
+    ) {
+      toast.error(`Enter a quantity between ${MIN_WEIGHT_QTY} and ${MAX_WEIGHT_QTY}`);
+      return;
+    }
+
+    setIsSubmittingQty(true);
+    try {
+      await AddtoCart(pendingProduct._id, customerId, qty);
+      toast.success(`${pendingProduct.name} added to cart`);
+      router.refresh();
+    } catch {
+      toast.error("Failed to add product");
     } finally {
-      setIsLoading(false);
-      setUpc("");
-      isHandlingRef.current = false;
-      inputRef.current?.focus();
+      setIsSubmittingQty(false);
+      setPendingProduct(null);
+      setQtyInput("");
+      finishScan();
     }
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-      <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-        {isLoading ? (
-          <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
-        ) : (
-          <ScanBarcode className="w-3.5 h-3.5 text-primary" />
-        )}
+    <>
+      <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
+        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          {isLoading ? (
+            <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
+          ) : (
+            <ScanBarcode className="w-3.5 h-3.5 text-primary" />
+          )}
+        </div>
+        <Input
+          ref={inputRef}
+          value={upc}
+          onChange={(e) => setUpc(e.target.value.toUpperCase())}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleScan(upc);
+            }
+          }}
+          placeholder="Scan or type UPC…"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          disabled={isLoading || !!pendingProduct}
+          className="border-0 bg-transparent focus-visible:ring-0 text-sm h-7 px-0 placeholder:text-muted-foreground/50"
+        />
       </div>
-      <Input
-        ref={inputRef}
-        value={upc}
-        onChange={(e) => setUpc(e.target.value.toUpperCase())}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            handleScan(upc);
-          }
-        }}
-        placeholder="Scan or type UPC…"
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck={false}
-        disabled={isLoading}
-        className="border-0 bg-transparent focus-visible:ring-0 text-sm h-7 px-0 placeholder:text-muted-foreground/50"
-      />
-    </div>
+
+      <Dialog open={!!pendingProduct} onOpenChange={handleQtyDialogChange}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Enter quantity</DialogTitle>
+            <DialogDescription>
+              {pendingProduct?.name} is sold by weight. Enter the quantity.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Input
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min={MIN_WEIGHT_QTY}
+            max={MAX_WEIGHT_QTY}
+            autoFocus
+            value={qtyInput}
+            onChange={(e) => setQtyInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleConfirmWeightQty();
+              }
+            }}
+            placeholder={`${MIN_WEIGHT_QTY} – ${MAX_WEIGHT_QTY}`}
+            disabled={isSubmittingQty}
+          />
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => handleQtyDialogChange(false)}
+              disabled={isSubmittingQty}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmWeightQty} disabled={isSubmittingQty}>
+              {isSubmittingQty ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Add to cart"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
