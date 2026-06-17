@@ -6,6 +6,7 @@ import { Loader2, ScanBarcode } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { AddtoCart } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { useRouter } from "next/navigation";
 
 const OBJECT_ID_OR_UPC_RE = /^[a-zA-Z0-9\-]{2,}$/;
 
@@ -20,6 +21,8 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
   const isHandlingRef = useRef(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 0);
@@ -67,6 +70,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
       } else if (results.length === 1) {
         await AddtoCart(results[0]._id as string, customerId);
         toast.success(`${results[0].name} added to cart`);
+        router.refresh();
       } else {
         toast.error("Multiple products found — try a more specific barcode");
       }
