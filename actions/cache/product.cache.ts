@@ -63,6 +63,7 @@ export const getCachedStoreProducts = async (
         query.subsidised = true;
       }
       if (filters.subsidyLevel) {
+        query.subsidised = { $ne: true };
         query.markup = query.markup || {};
         if (filters.subsidyLevel === "low") {
           query.markup.$gte = 0;
