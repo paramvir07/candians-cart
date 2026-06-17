@@ -29,8 +29,21 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
   }, []);
 
   useEffect(() => {
+    const isTypingElsewhere = () => {
+      const active = document.activeElement;
+      if (!active || active === document.body) return false;
+      if (active === inputRef.current) return false;
+
+      const tag = active.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+      if ((active as HTMLElement).isContentEditable) return true;
+
+      return false;
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target === inputRef.current) return;
+      if (isTypingElsewhere()) return;
 
       if (e.key === "Enter") {
         const buf = scanBufferRef.current.trim().toUpperCase();

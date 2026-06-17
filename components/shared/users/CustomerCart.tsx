@@ -20,6 +20,7 @@ import Link from "next/link";
 import { getUser } from "@/actions/customer/User.action";
 import { TopUpDialog } from "@/components/customer/wallet/TopupDialog";
 import ProgressBarCart, {
+  CartAmountBadge,
   SubsidyCart,
 } from "@/components/customer/products/ProgressBarCart";
 import { ICartItem } from "@/types/customer/CustomerCart";
@@ -483,9 +484,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           </div>
 
           {/* Progress */}
-          <Card className={`${isCashier && 'hidden'} border-border/60 shadow-none`}>
+          <div className={`${isCashier && 'hidden'} border-border/60 shadow-none`}>
           
-            <CardContent className={`${isCashier && 'hidden'} p-4`}>
+            <div className={`${isCashier && 'hidden'}`}>
               <ProgressBarCart
                 total={progressTotal.total}
                 customerId={customerId}
@@ -495,8 +496,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 SubsidyonOrder={Math.round(newSubisdyCalc)}
                 subItemIds={subItemProductIds}
               />
-            </CardContent>
-          </Card>
+            </div>
+            <CartAmountBadge total={progressTotal.total} />
+          </div>
 
           {/* Cart items */}
           <section>
@@ -723,6 +725,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 subItemIds={subItemProductIds}
                 />
               </div> 
+              <div className="mt-3">
+                <CartAmountBadge total={progressTotal.total} />
+              </div>
           </div>
 
           {/* 2-col layout */}

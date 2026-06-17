@@ -1,10 +1,8 @@
 "use client"
-import { useState, useEffect, useRef } from "react"
-import { SubsidizedPopup } from "./SubsidizedPopup"
+import { useEffect, useRef, useState } from "react"
 import { useAtom } from "jotai"
 import { OrderSubsidyValue, SubsidyValue, UsedSubsidy } from "@/atoms/customer/CartAtom"
-import { Tag, ChevronRight, Gift, Wallet, MinusCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Tag, Gift, Wallet, MinusCircle, Sparkles, Check } from "lucide-react"
 import { ClearAllSubsidyItems, updateCartSubsidy } from "@/actions/customer/SubsidyItems.Action"
 import { getFibBracketFrom21 } from "@/lib/FibBracket"
 
@@ -19,16 +17,14 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
   subItemIds?: string[]
 }) => {
 
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [showBtn, setShowBtn] = useState(false)
-  const [SubsidyVal, setSubsidyVal] = useAtom(SubsidyValue)
+  const [, setSubsidyVal] = useAtom(SubsidyValue)
   const [,setorderSubsidy] = useAtom(OrderSubsidyValue)
   const [, setUsedSubsidy] = useAtom(UsedSubsidy)
 
   const amount = total / 100
   const giftBalance = (giftWalletBalance ?? 0) / 100
   const { prev, current, mid } = getFibBracketFrom21(amount)
-  const progressValue = current === prev ? 100 : Math.min(((amount - prev) / (current - prev)) * 100, 100)
+
 
   const lastMilestoneRef = useRef<number | null>(null)
   const lastSubsidyRef = useRef<number | null>(null)
@@ -47,8 +43,6 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
     const prevAmount = prevAmountRef.current
 
     if (amount < 21) {
-      setShowBtn(false)
-      setDialogOpen(false)
       if (prevAmount !== null && prevAmount >= 21) {
         lastMilestoneRef.current = null
         lastSubsidyRef.current = null
@@ -68,14 +62,13 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
 
     if (lastMilestoneRef.current !== prev) {
       lastMilestoneRef.current = prev
-      setShowBtn(true)
     }
   }, [SubsidyonOrder, amount, prev, giftBalance])
 
 
   return (
     <>
-      <div className="relative w-full">
+      {/* <div className="relative w-full">
         <span className="inline-flex mb-3 items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-bold tabular-nums text-primary">
           CA${amount.toFixed(2)}
         </span>
@@ -211,7 +204,7 @@ const ProgressBarCart = ({ total, customerId, giftWalletBalance, SubsidyonOrder,
         isOpen={dialogOpen}
         onOpenChange={setDialogOpen}
         alreadyAddedIds={subItemIds}
-      />
+      /> */}
     </>
   )
 }
@@ -324,3 +317,71 @@ const Row = ({
     </div>
   );
 };
+
+
+export const CartAmountBadge = ({ total }: { total: number }) => {
+  const amount = total / 100
+  const threshold = 21
+  const reached = amount >= threshold
+  const remaining = Math.max(threshold - amount, 0)
+  const progress = Math.min((amount / threshold) * 100, 100)
+
+  const prevReachedRef = useRef(false)
+  const [justReached, setJustReached] = useState(false)
+
+  useEffect(() => {
+    if (reached && !prevReachedRef.current) {
+      setJustReached(true)
+      const timeout = setTimeout(() => setJustReached(false), 1600)
+      prevReachedRef.current = reached
+      return () => clearTimeout(timeout)
+    }
+    prevReachedRef.current = reached
+  }, [reached])
+
+  return (
+    <div
+      className={`rounded-xl border px-3.5 py-2.5 mb-3 transition-colors duration-500 ${
+        reached ? "border-emerald-200 bg-emerald-50/50" : "border-border"
+      }`}
+      style={justReached ? { animation: "cardPop 0.5s ease-out" } : undefined}
+    >
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-[11px] text-muted-foreground">Cart total</span>
+          <span className={`text-[17px] font-semibold tabular-nums ${reached ? "text-emerald-700" : "text-foreground"}`}>
+            CA${amount.toFixed(2)}
+          </span>
+        </div>
+
+        {reached ? (
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700">
+            <Check className="w-3 h-3" />
+            Subsidy unlocked
+          </span>
+        ) : (
+          <span className="text-[11px] text-muted-foreground">
+            CA${remaining.toFixed(2)} to go
+          </span>
+        )}
+      </div>
+
+      <div className="h-1 rounded-full bg-muted overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-700 ease-out ${
+            reached ? "bg-emerald-500" : "bg-primary"
+          }`}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <style>{`
+        @keyframes cardPop {
+          0%   { transform: scale(1); }
+          35%  { transform: scale(1.01); }
+          100% { transform: scale(1); }
+        }
+      `}</style>
+    </div>
+  )
+}
