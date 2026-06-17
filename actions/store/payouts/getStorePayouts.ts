@@ -27,6 +27,7 @@ export interface SerializedStorePayout {
   storebasetaxPST: number;
   totalDisposableFee: number;
   totalWalletTopUpCashCollected: number;
+  platformProfit: number;
   platformCommision: number;
   totalSubsidy: number;
   totalCashCollected?: number;
@@ -157,6 +158,7 @@ export async function getSingleVendorPayoutAction(
       totalDisposableFee: payout.totalDisposableFee || 0,
       totalWalletTopUpCashCollected: payout.totalWalletTopUpCashCollected || 0,
       platformCommision: payout.platformCommision || 0,
+      platformProfit: payout.platformProfit || 0,
       totalCashCollected: payout.totalCashCollected || 0,
       totalSubsidy: payout.totalSubsidy || 0,
     };

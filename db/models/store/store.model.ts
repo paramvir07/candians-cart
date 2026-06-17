@@ -162,10 +162,6 @@ const storeSchema = new Schema<IStore>(
   { timestamps: true },
 );
 
-
-storeSchema.index({ email: 1 }, { unique: true });
-storeSchema.index({ mobile: 1 }, { unique: true });
-
 const Store: Model<IStore> =
   models.Store || model<IStore>("Store", storeSchema);
 

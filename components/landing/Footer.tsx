@@ -8,13 +8,14 @@ const FOOTER_LINKS: Record<
   { label: string; href: string; scrollTo?: string; scrollPage?: string }[]
 > = {
   Company: [
-    { label: "About Us", href: "/about" },
     {
       label: "How It Works",
       href: "/#how-it-works",
       scrollTo: "how-it-works",
       scrollPage: "/",
     },
+    { label: "About Us", href: "/about" },
+    { label: "Promotions", href: "/promotions" },
     {
       label: "Values",
       href: "/about#values",

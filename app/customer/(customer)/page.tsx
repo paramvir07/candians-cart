@@ -26,7 +26,7 @@ export default async function CustomerPage() {
         <HeroBannerLoader /> {/* auth + store fetch happens inside here */}
       </Suspense>
       <div className="mx-auto mb-6 w-full max-w-[min(92vw,760px)] sm:mt-7 lg:mt-8">
-      <PromotionBanner initialStats={promoStats} variant="card" />
+        <PromotionBanner initialStats={promoStats} variant="card" />
       </div>
       <CustomerAdvertisements maxHeight={250} />
 

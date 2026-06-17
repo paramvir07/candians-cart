@@ -6,20 +6,19 @@ import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { Customer } from "@/types/customer/customer";
 import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { NavAvatarMenu } from "./NavMenu";
-import { getCustomerNotifications, getUnreadNotificationCount } from "@/actions/common/notification.action";
+import {
+  getCustomerNotifications,
+  getUnreadNotificationCount,
+} from "@/actions/common/notification.action";
 import { NotificationDropdown } from "../notification/NotificationDropdown";
 
-// NEW IMPORTS
-// import { getCustomerNotifications, getUnreadNotificationCount } from "@/actions/notification"; // Adjust path
-// import { NotificationDropdown } from "./NotificationDropdown"; 
 
 const Navbar = async () => {
-  // Add the notification fetches to your Promise.all
   const [
-    customerDataResponse, 
+    customerDataResponse,
     cartCount,
     unreadCountResponse,
-    notificationsResponse
+    notificationsResponse,
   ] = await Promise.all([
     getCustomerDataAction(),
     getCartItemsCount(),
@@ -41,7 +40,6 @@ const Navbar = async () => {
   return (
     <nav className="sticky top-0 z-50 w-full bg-background border-b border-border">
       <div className="flex items-center justify-between px-5 h-14 gap-4">
-        
         {/* Logo */}
         <div className="shrink-0 flex items-center h-full">
           <Logo variant="icon" />
@@ -60,13 +58,12 @@ const Navbar = async () => {
 
         {/* Right actions */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Notifications Dropdown (Replaced Link block) */}
+          <NotificationDropdown
+            unreadCount={unreadCount}
+            notifications={notifications}
+          />
 
-    {/* Notifications Dropdown (Replaced Link block) */}
-          <NotificationDropdown 
-            unreadCount={unreadCount} 
-            notifications={notifications} 
-          />          
-          
           {/* Cart */}
           <Link href="/customer/cart">
             <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary/80 active:scale-[0.97] transition-all">
@@ -99,13 +96,8 @@ const Navbar = async () => {
           {/* Divider */}
           <div className="w-px h-5 bg-border mx-1" />
 
-          
-
-
           {/* Avatar dropdown */}
           <NavAvatarMenu name={customerData.name} initials={initials} />
-
-          
         </div>
       </div>
     </nav>

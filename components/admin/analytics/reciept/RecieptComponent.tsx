@@ -49,6 +49,7 @@ import {
   TrendingUp,
   Receipt,
   Save,
+  PanelsTopLeft,
 } from "lucide-react";
 
 export default function RecieptComponent({
@@ -370,12 +371,18 @@ export default function RecieptComponent({
                               </span>
                             </div>
 
-                            {/* --- FIXED: Base Tax UI Breakdown --- */}
-                            <Separator className="my-2" />
-                            <h4 className="font-semibold flex items-center gap-2 text-foreground/80">
-                              <ShoppingCart className="w-4 h-4 text-primary" />{" "}
-                              Store Breakdown
-                            </h4>
+                            <h2 className="font-semibold flex items-center gap-2 text-foreground/80 pt-2 text-lg">
+                              <Store className="w-4 h-4 text-primary" /> Store
+                              Breakdown
+                            </h2>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">
+                                Total Cost
+                              </span>
+                              <span className="font-medium">
+                                {fmt(r.totalBasePrice)}
+                              </span>
+                            </div>
                             <div className="flex justify-between items-center">
                               <span className="text-muted-foreground">
                                 Store GST
@@ -392,19 +399,31 @@ export default function RecieptComponent({
                                 {fmt(r.storebasetaxPST)}
                               </span>
                             </div>
-                            {/* <div className="flex justify-between items-center font-semibold text-foreground mt-2">
-                              <span>Store Fixed Value (SFV)</span>
-                              <span>{fmt(r.storeFixedValue)}</span>
-                            </div> */}
-                            <div className="flex justify-between items-center font-medium text-blue-600 mt-2">
-                              <span>Total Store Payout</span>
-                              <span>{fmt(r.storePayout)}</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">
+                                Total Disposable Fees
+                              </span>
+                              <span className="font-medium">
+                                {fmt(r.totalDisposableFee)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">
+                                Profit
+                              </span>
+                              <span className="font-medium">
+                                {fmt(r.storeProfit)}
+                              </span>
                             </div>
                             <div className="flex justify-between items-center font-medium text-foreground">
                               <span>Total Cash Collected</span>
                               <span>
                                 -{fmt(r.totalWalletTopUpCashCollected)}
                               </span>
+                            </div>
+                            <div className="flex justify-between items-center font-medium text-blue-600 mt-2">
+                              <span>Total Store Payout</span>
+                              <span>{fmt(r.storePayout)}</span>
                             </div>
                           </div>
                         </div>
@@ -417,7 +436,7 @@ export default function RecieptComponent({
                           </h4>
                           <div className="space-y-2.5 text-sm">
                             <div className="flex justify-between items-center">
-                              <span className="text-muted-foreground">
+                              <span className="font-bold">
                                 Total Profit Margin
                               </span>
                               <span className="font-medium">
@@ -438,32 +457,23 @@ export default function RecieptComponent({
                               <span>{fmt(r.platformProfit)}</span>
                             </div>
 
-                            {/* --- FIXED: Platform Breakdown UI --- */}
-                            <Separator className="my-2 bg-primary/10" />
+                            <h4 className="font-semibold flex items-center gap-2 text-foreground/80 pt-2 text-lg">
+                              <PanelsTopLeft className="w-4 h-4 text-primary" />{" "}
+                              Platform Breakdown
+                            </h4>
                             <div className="space-y-1 pt-1">
                               <div className="flex justify-between items-center text-sm font-medium text-slate-700">
-                                <span>Platform Markup Tax</span>
-                                <span>{fmt(r.platformMarkuptax)}</span>
+                                <span>Platform GST</span>
+                                <span>{fmt(r.platformMarkupGSTTax)}</span>
                               </div>
-                              {/* Left border creates a clean nested tree look */}
-                              <div className="pl-3 border-l-2 border-muted-foreground/20 ml-1 space-y-1.5 mt-1">
-                                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                                  <span>GST Portion</span>
-                                  <span>{fmt(r.platformMarkupGSTTax)}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                                  <span>PST Portion</span>
-                                  <span>{fmt(r.platformMarkupPSTTax)}</span>
-                                </div>
+                              <div className="flex justify-between items-center text-sm font-medium text-slate-700">
+                                <span>Platform PST</span>
+                                <span>{fmt(r.platformMarkupPSTTax)}</span>
                               </div>
                             </div>
                             <div className="flex justify-between items-center text-sm font-medium text-blue-700 mt-2">
                               <span>Platform Profit</span>
                               <span>{fmt(r.platformProfit)}</span>
-                            </div>
-                            <div className="flex justify-between items-center font-bold text-base text-green-700 mt-2">
-                              <span>Platform Commission</span>
-                              <span>{fmt(r.platformCommision)}</span>
                             </div>
                           </div>
                         </div>

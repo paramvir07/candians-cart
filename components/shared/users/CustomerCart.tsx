@@ -80,13 +80,12 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const giftWalletBalance = UserData?.giftWalletBalance ?? 0;
   const UserStoreId = UserData?.associatedStoreId?.toString() ?? "";
-  const items =
-    (CartItems?.items as ICartItem[] | null)
-      ?.slice()
-      .sort(
-        (a, b) =>
-          Number(a.productId.subsidised) - Number(b.productId.subsidised),
-      ) ?? [];
+  const rawItems = (CartItems?.items as ICartItem[] | null) ?? [];
+  const nonSubsidised = rawItems
+    .filter((i) => !i.productId.subsidised)
+    .reverse();
+  const subsidised = rawItems.filter((i) => i.productId.subsidised).reverse();
+  const items = [...nonSubsidised, ...subsidised];
   const subItems = (CartItems?.subItems as ISubsidyItems[]) ?? [];
   const MiscItems = (CartItems?.miscItems as IMiscCartItem[]) ?? [];
   const subItemProductIds = subItems.map((s) => s.productId._id.toString());

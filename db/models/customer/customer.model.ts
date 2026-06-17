@@ -82,9 +82,6 @@ const customerSchema = new Schema<ICustomer>(
   { timestamps: true },
 );
 
-customerSchema.index({ email: 1 }, { unique: true });
-customerSchema.index({ mobile: 1 }, { unique: true });
-
 const Customer: Model<ICustomer> =
   models.Customer || model<ICustomer>("Customer", customerSchema);
 

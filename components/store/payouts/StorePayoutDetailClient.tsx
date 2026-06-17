@@ -501,17 +501,30 @@ export default function StorePayoutDetailClient({
             </div>
             <div className="divide-y bg-white">
               <div className="flex justify-between items-center px-4 py-3 text-sm">
-                <span className="text-muted-foreground font-medium">
-                  Total Customer Payments
+                <span className="text-muted-foreground font-bold">
+                  Total Revenue (includes subsidy given)
                 </span>
                 <span className="font-medium text-slate-900">
-                  {formatCurrency(payout.totalCustomerPaid)}
+                  {formatCurrency(
+                    payout.totalCustomerPaid + payout.totalSubsidy,
+                  )}
                 </span>
               </div>
 
+              {/* <div className="flex justify-between items-center px-4 py-3 text-sm">
+                <span className="text-muted-foreground font-bold">
+                  Total Profit (includes subsidy given)
+                </span>
+                <span className="font-medium text-slate-900">
+                  {formatCurrency(
+                    payout. + payout.totalSubsidy,
+                  )}
+                </span>
+              </div> */}
+
               <div className="flex justify-between items-center px-4 py-3 text-sm">
                 <span className="text-muted-foreground font-medium">
-                  Total Base Price
+                  Total Cost
                 </span>
                 <span className="font-medium text-slate-900">
                   {formatCurrency(payout.totalBasePrice)}
@@ -519,63 +532,25 @@ export default function StorePayoutDetailClient({
               </div>
 
               <div className="flex justify-between items-center px-4 py-3 text-sm">
-                <span className="text-muted-foreground font-medium">
-                  Total GST Collected
-                </span>
+                <span className="text-muted-foreground font-medium">GST</span>
                 <span className="font-medium text-slate-700">
                   {formatCurrency(payout.storebasetaxGST)}
                 </span>
               </div>
 
               <div className="flex justify-between items-center px-4 py-3 text-sm">
-                <span className="text-muted-foreground font-medium">
-                  Total PST Collected
-                </span>
+                <span className="text-muted-foreground font-medium">PST</span>
                 <span className="font-medium text-slate-700">
                   {formatCurrency(payout.storebasetaxPST)}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center px-4 py-3 text-sm bg-orange-50/50">
-                <span className="text-muted-foreground font-medium">
-                  Cash Collected (From Topups)
-                </span>
-                <span className="font-medium text-orange-600">
-                  -{formatCurrency(payout.totalWalletTopUpCashCollected)}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center px-4 py-3 text-sm bg-orange-100/50">
+              <div className="flex justify-between items-center px-4 py-3 text-sm">
                 <span className="font-semibold text-slate-800">
-                  Total Cash Collected
+                  Total Platform Cash Collected
                 </span>
                 <span className="font-bold text-orange-700">
                   -{formatCurrency(payout.totalCashCollected)}
-                </span>
-              </div>
-
-              <div className="flex flex-col px-4 py-3 bg-red-50/50 border-b border-red-100/50">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground font-medium">
-                    Platform Commision & Fees
-                  </span>
-                  <span className="font-medium text-red-600">
-                    -{formatCurrency(payout.platformCommision)}
-                  </span>
-                </div>
-                <span className="text-[11px] text-red-500 mt-1.5 leading-tight">
-                  *Platform commision contains the Subsidies given to the
-                  customer: {formatCurrency(payout.totalSubsidy)} + the platform
-                  profit
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center px-4 py-3 text-sm bg-blue-50/50">
-                <span className="text-blue-800/80 font-medium">
-                  Store Fixed Value
-                </span>
-                <span className="font-medium text-blue-900">
-                  {formatCurrency(payout.storeFixedValue)}
                 </span>
               </div>
 
@@ -589,11 +564,26 @@ export default function StorePayoutDetailClient({
               </div>
 
               <div className="flex justify-between items-center px-4 py-4 bg-green-50/50">
-                <span className="font-bold text-slate-900">
-                  Net Store Payout
-                </span>
+                <span className="font-bold text-slate-900">Store Payout</span>
                 <span className="font-bold text-lg text-primary">
                   {formatCurrency(payout.storePayout)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center px-4 py-3 text-sm">
+                <span className="font-semibold text-slate-800">
+                  Platform Subsidy Given
+                </span>
+                <span className="font-bold text-orange-700">
+                  {formatCurrency(payout.totalSubsidy)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3 text-sm">
+                <span className="font-semibold text-slate-800">
+                  Platform Profit
+                </span>
+                <span className="font-bold text-orange-700">
+                  {formatCurrency(payout.platformProfit)}
                 </span>
               </div>
             </div>

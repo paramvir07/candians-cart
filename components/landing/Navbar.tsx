@@ -25,12 +25,16 @@ const NAV_LINKS: TNavLink[] = [
     scrollTo: "how-it-works",
   },
   {
+    label: "Promotions",
+    href: "/promotions",
+  },
+  {
     label: "Calculator",
     href: "/#calculator",
     scrollTo: "calculator",
   },
-    {
-    label: "Budget Packs", 
+  {
+    label: "Budget Packs",
     href: "/#grocery-packs",
     scrollTo: "grocery-packs",
   },
@@ -44,8 +48,8 @@ const NAV_LINKS: TNavLink[] = [
   },
   {
     label: "Careers",
-    href: "/careers"
-  }
+    href: "/careers",
+  },
 ];
 
 interface NavbarProps {
