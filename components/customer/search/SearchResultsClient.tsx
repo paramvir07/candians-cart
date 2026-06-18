@@ -374,9 +374,11 @@ export function SearchResultsClient({
         upcMode={upcMode}
       />
 
-      {customerId && (
+      
         <div className="mx-2 pt-4 flex flex-col">
           <div className="flex items-center justify-end gap-2">
+          {customerId && (
+            <>            
             <Button
               onClick={() => setUpcMode((v) => !v)}
               className={`cursor-pointer h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5 items-center py-1.5 text-sm font-semibold border transition-all w-fit ${
@@ -391,13 +393,15 @@ export function SearchResultsClient({
               {upcMode ? "UPC" : "UPC"}
             </Button>
             <AddMiscItemModalTrigger customerId={customerId || ""} />
+            </>
+          )}
             <FilterTriggerButton
               activeCount={activeFilterCount}
               onClick={() => setFilterSheetOpen(true)}
             />
           </div>
         </div>
-      )}
+
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-6">

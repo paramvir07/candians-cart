@@ -501,7 +501,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </div>
 
             {/* Scrollable items list */}
-            <div className="max-h-[460px] overflow-y-auto rounded-xl space-y-2 pr-0.5">
+            <div data-cart-scroll className="max-h-[460px] overflow-y-auto rounded-xl space-y-2 pr-0.5">
               {items.map((item: ICartItem) => {
                 const { afterMarkup } = calcLine(item);
                 const hasImage = item.productId.images?.[0]?.url;
@@ -701,7 +701,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 </CardHeader>
 
                 {/* Scrollable items */}
-                <div className="max-h-[420px] overflow-y-auto divide-y divide-border/50">
+                <div data-cart-scroll className="max-h-[420px] overflow-y-auto divide-y divide-border/50">
                   {items.map((item: ICartItem) => {
                     const { afterMarkup } = calcLine(item);
                     const hasImage = item.productId.images?.[0]?.url;
