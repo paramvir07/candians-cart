@@ -33,8 +33,8 @@ const CartActionBtns = ({
   const [qty, setQty] = useState(quantity);
   const [inputValue, setInputValue] = useState(String(quantity));
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const afterSubsidy = Math.max(beforeSubsidy * qty - subsidy, 0);
+  const fullLineTotal = Math.round(beforeSubsidy * qty);
+  const afterSubsidy = Math.max(fullLineTotal - Math.round(subsidy), 0);
 
   const formatQty = useCallback(
     (value: number) =>
@@ -228,7 +228,7 @@ const CartActionBtns = ({
           CA${fmt(afterSubsidy)}
         </p>
         <p className="text-xs text-gray-400 line-through tabular-nums mt-0.5">
-          CA${fmt(beforeSubsidy * qty)}
+          CA${fmt(fullLineTotal)}
         </p>
       </div>
 

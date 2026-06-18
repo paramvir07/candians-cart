@@ -27,10 +27,10 @@ const distributeSubsidy = (
     (a, b) => a.TotalPrice * a.quantity - b.TotalPrice * b.quantity,
   );
 
-  let remaining = totalSubsidy;
+  let remaining = Math.round(totalSubsidy);
 
   const distributed = sorted.map((item) => {
-    const itemTotal = item.TotalPrice * item.quantity;
+    const itemTotal = Math.round(item.TotalPrice * item.quantity);
     const give = Math.min(remaining, itemTotal);
     remaining -= give;
     return {
@@ -53,7 +53,7 @@ const getTotalSubsidy = async (customerId: Types.ObjectId): Promise<number> => {
     CustomerModel.findById(customerId).select("giftWalletBalance"),
   ]);
 
-  const cartSubsidy = cart?.cartSubsidy ?? 0;
+  const cartSubsidy = Math.round(cart?.cartSubsidy ?? 0);
   const giftWallet = Math.round(customer?.giftWalletBalance ?? 0);
 
   return cartSubsidy + giftWallet;
@@ -348,7 +348,7 @@ export const updateCartSubsidy = async (
 
     await CartModel.findOneAndUpdate(
       { customerId: user._id },
-      { $set: { cartSubsidy: subsidy } },
+      { $set: { cartSubsidy: Math.round(subsidy) } },
     );
 
     revalidatePath("/customer/cart");
@@ -425,7 +425,7 @@ export const movetoSubsidy = async (
             quantity: item.quantity,
             TotalPrice,
             subsidy: 0,
-            afterSubsidy: TotalPrice * item.quantity,
+            afterSubsidy: Math.round(TotalPrice * item.quantity),
           },
         ];
 

@@ -133,9 +133,11 @@ export default function OrderDetail({
                 const p = item.productId;
                 const imgUrl = p?.images?.[0]?.url;
                 const itemSub = item.subsidy ?? 0;
-                const unitBase =
+                const unitBase = Math.round(
                   (p?.price ?? 0) +
-                  (p?.price ?? 0) * ((item.markup ?? 0) / 100);
+                    (p?.price ?? 0) * ((item.markup ?? 0) / 100),
+                );
+                const lineTotal = Math.round(unitBase * item.quantity);
 
                 return (
                   <div
@@ -166,7 +168,7 @@ export default function OrderDetail({
                           {p?.name ?? "Unknown product"}
                         </p>
                         <p className="text-xs font-bold text-foreground tabular-nums shrink-0 ml-1">
-                          {fmt(unitBase * item.quantity)}
+                          {fmt(lineTotal)}
                         </p>
                       </div>
 

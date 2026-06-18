@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useAtom } from "jotai"
 import { OrderSubsidyValue, SubsidyValue, UsedSubsidy } from "@/atoms/customer/CartAtom"
-import { Tag, Gift, Wallet, MinusCircle, Sparkles, Check } from "lucide-react"
+import { Tag, Gift, Wallet, MinusCircle, Check } from "lucide-react"
 import { ClearAllSubsidyItems, updateCartSubsidy } from "@/actions/customer/SubsidyItems.Action"
 import { getFibBracketFrom21 } from "@/lib/FibBracket"
 

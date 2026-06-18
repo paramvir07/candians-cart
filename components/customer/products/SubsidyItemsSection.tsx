@@ -60,12 +60,9 @@ export const SubsidyItemsSection = ({
             const hasImage = item.productId.images?.[0]?.url;
             const productId = item.productId._id?.toString() ?? String(i);
             const isMeasuredInWeight = item.productId.isMeasuredInWeight;
-            let AfterSubsidy = item.TotalPrice * item.quantity - item.subsidy;
-            leftOffSubsidy = item.TotalPrice * item.quantity - AfterSubsidy;
-            if (AfterSubsidy < 0) {
-              leftOffSubsidy = AfterSubsidy + item.subsidy;
-              AfterSubsidy = 0;
-            }
+            const fullLineTotal = Math.round(item.TotalPrice * item.quantity);
+            const AfterSubsidy = Math.max(Math.round(item.afterSubsidy), 0);
+            leftOffSubsidy = fullLineTotal - AfterSubsidy;
             return (
               <div
                 key={productId}
@@ -149,7 +146,7 @@ export const SubsidyItemsSection = ({
                         className="text-xs tabular-nums line-through"
                         style={{ color: "var(--muted-foreground)" }}
                       >
-                        CA${fmt(item.TotalPrice * item.quantity)}
+                        CA${fmt(fullLineTotal)}
                       </p>
                       <span
                         className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
@@ -158,7 +155,7 @@ export const SubsidyItemsSection = ({
                           color: "var(--primary)",
                         }}
                       >
-                        −CA${fmt(item.subsidy)}
+                        −CA${fmt(Math.round(item.subsidy))}
                       </span>
                     </div>
 
