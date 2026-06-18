@@ -85,44 +85,44 @@ export async function updateProduct(
       isMeasuredInWeight,
       UOM,
       primaryUPC,
+      subsidised,
       ...otherData
     } = validationResult.data;
 
     const normalizedInvoiceId =
-  InvoiceId && InvoiceId.trim() !== "" ? InvoiceId.trim() : undefined;
+      InvoiceId && InvoiceId.trim() !== "" ? InvoiceId.trim() : undefined;
 
     const newPriceInCents = Math.round(price * 100);
     const priceHasChanged = existingProduct.price !== newPriceInCents;
 
-    const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
-    const isSubsidized = subsidyCategories.includes(otherData.category);
+    // const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
+    // const isSubsidized = subsidyCategories.includes(otherData.category);
 
     const normalizedPrimaryUPC =
-  typeof primaryUPC === "string" && primaryUPC.trim() !== ""
-    ? primaryUPC.trim()
-    : undefined;
+      typeof primaryUPC === "string" && primaryUPC.trim() !== ""
+        ? primaryUPC.trim()
+        : undefined;
 
-const existingPrimaryUPC = existingProduct.primaryUPC || undefined;
+    const existingPrimaryUPC = existingProduct.primaryUPC || undefined;
 
-const primaryUPCHasChanged =
-  normalizedPrimaryUPC !== existingPrimaryUPC;
+    const primaryUPCHasChanged = normalizedPrimaryUPC !== existingPrimaryUPC;
 
     if (primaryUPCHasChanged && normalizedPrimaryUPC) {
-  const productWithSameUPC = await Product.findOne({
-    primaryUPC: normalizedPrimaryUPC,
-    storeId: existingProduct.storeId,
-    _id: { $ne: productId },
-  }).lean();
+      const productWithSameUPC = await Product.findOne({
+        primaryUPC: normalizedPrimaryUPC,
+        storeId: existingProduct.storeId,
+        _id: { $ne: productId },
+      }).lean();
 
-  if (productWithSameUPC) {
-    return {
-      success: false,
-      message: `Primary UPC is already in use by another product: ${
-        productWithSameUPC.name || "Unknown Product"
-      }`,
-    };
-  }
-}
+      if (productWithSameUPC) {
+        return {
+          success: false,
+          message: `Primary UPC is already in use by another product: ${
+            productWithSameUPC.name || "Unknown Product"
+          }`,
+        };
+      }
+    }
 
     /**
      * Store users must provide invoice only when changing price.
@@ -163,14 +163,14 @@ const primaryUPCHasChanged =
       tax: tax > 0 ? tax / 100 : 0,
       price: newPriceInCents,
       disposableFee: Math.round((disposableFee || 0) * 100),
-      subsidised: isSubsidized,
+      subsidised,
       isMeasuredInWeight,
       UOM,
     };
 
     if (normalizedPrimaryUPC) {
-  dbPayload.primaryUPC = normalizedPrimaryUPC;
-}
+      dbPayload.primaryUPC = normalizedPrimaryUPC;
+    }
     if (normalizedInvoiceId) {
       dbPayload.InvoiceId = normalizedInvoiceId;
     }
@@ -243,48 +243,48 @@ const primaryUPCHasChanged =
           }
         }
 
-       const unsetPayload: Record<string, ""> = {};
+        const unsetPayload: Record<string, ""> = {};
 
-    if (InvoiceId === "") {
-      unsetPayload.InvoiceId = "";
-    }
+        if (InvoiceId === "") {
+          unsetPayload.InvoiceId = "";
+        }
 
-    if (!normalizedPrimaryUPC) {
-      unsetPayload.primaryUPC = "";
-    }
+        if (!normalizedPrimaryUPC) {
+          unsetPayload.primaryUPC = "";
+        }
 
-    const updateQuery =
-      Object.keys(unsetPayload).length > 0
-        ? {
-            $set: dbPayload,
-            $unset: unsetPayload,
-          }
-        : {
-            $set: dbPayload,
-          };
+        const updateQuery =
+          Object.keys(unsetPayload).length > 0
+            ? {
+                $set: dbPayload,
+                $unset: unsetPayload,
+              }
+            : {
+                $set: dbPayload,
+              };
 
-    if (adminRole) {
-      updatedProduct = await Product.findByIdAndUpdate(
-        productId,
-        updateQuery,
-        {
-          returnDocument: "after",
-          session: mongoSession,
-        },
-      );
-    } else if (storeRole) {
-      updatedProduct = await Product.findOneAndUpdate(
-        {
-          _id: productId,
-          storeId: store._id,
-        },
-        updateQuery,
-        {
-          returnDocument: "after",
-          session: mongoSession,
-        },
-      );
-    }
+        if (adminRole) {
+          updatedProduct = await Product.findByIdAndUpdate(
+            productId,
+            updateQuery,
+            {
+              returnDocument: "after",
+              session: mongoSession,
+            },
+          );
+        } else if (storeRole) {
+          updatedProduct = await Product.findOneAndUpdate(
+            {
+              _id: productId,
+              storeId: store._id,
+            },
+            updateQuery,
+            {
+              returnDocument: "after",
+              session: mongoSession,
+            },
+          );
+        }
 
         if (!updatedProduct) {
           throw new Error(

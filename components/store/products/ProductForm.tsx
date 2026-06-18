@@ -84,6 +84,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
       : "",
     stock: initialData ? String(initialData.stock) : "true",
     isFeatured: initialData ? String(initialData.isFeatured) : "false",
+    subsidised: initialData ? String(initialData.subsidised) : "false",
     InvoiceId: initialData?.InvoiceId || "",
     isMeasuredInWeight: initialData?.isMeasuredInWeight ? "true" : "false",
     UOM: initialData?.UOM || "",
@@ -134,6 +135,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
       stock: formData.stock === "true",
       images: initialData?.images || [],
       isFeatured: formData.isFeatured === "true",
+      subsidised: formData.subsidised === "true",
       InvoiceId: formData.InvoiceId,
       isMeasuredInWeight: formData.isMeasuredInWeight === "true",
       UOM: formData.UOM || undefined,
@@ -208,6 +210,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
         stock: formData.stock === "true",
         images: finalImages,
         isFeatured: formData.isFeatured === "true",
+        subsidised: formData.subsidised === "true",
         InvoiceId: formData.InvoiceId,
         isMeasuredInWeight: formData.isMeasuredInWeight === "true",
         UOM: formData.UOM || undefined,
@@ -300,6 +303,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
               UOM={formData.UOM}
               stock={formData.stock}
               isFeatured={formData.isFeatured}
+              subsidised={formData.subsidised}
               price={formData.price}
               onChange={handleChange}
             />

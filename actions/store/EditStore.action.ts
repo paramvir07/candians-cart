@@ -22,7 +22,7 @@ export const getStoreData = async () => {
     await dbConnect();
 
     const store = await Store.findOne({
-      email: session.user.email,
+      userId: session.user.id,
     }).lean();
 
     if (!store) {

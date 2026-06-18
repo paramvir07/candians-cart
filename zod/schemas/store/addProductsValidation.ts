@@ -82,6 +82,8 @@ export const BaseProductFormSchema = z.object({
     .default([]),
 
   isFeatured: z.boolean(),
+  
+  subsidised: z.boolean(),
 
   markup: z.coerce.number().min(0, "Markup must be greater than or equal to 0"),
 

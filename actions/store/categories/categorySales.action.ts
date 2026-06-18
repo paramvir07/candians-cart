@@ -124,8 +124,6 @@ export const getCategorySales = cache(
         }),
       );
 
-      console.log(serializedData);
-
       return serializedData;
     } catch (error) {
       console.error("[CATEGORY_SALES_AGGREGATION_ERROR]:", error);

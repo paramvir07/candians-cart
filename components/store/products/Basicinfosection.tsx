@@ -1,4 +1,4 @@
-import { Package, Sparkles } from "lucide-react";
+import { Package, Sparkles, HeartHandshake } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +20,7 @@ interface BasicInfoSectionProps {
   UOM: string;
   stock: string;
   isFeatured: string;
+  subsidised: string;
   price: string;
   onChange: (field: string, value: string) => void;
 }
@@ -32,6 +33,7 @@ export function BasicInfoSection({
   UOM,
   stock,
   isFeatured,
+  subsidised,
   price,
   onChange,
 }: BasicInfoSectionProps) {
@@ -188,6 +190,29 @@ export function BasicInfoSection({
                   </span>
                 </SelectItem>
                 <SelectItem value="false">Not Featured</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium text-foreground/80">
+              Subsidy Status <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={subsidised}
+              onValueChange={(v) => onChange("subsidised", v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="true">
+                  <span className="flex items-center gap-2">
+                    <HeartHandshake className="w-3 h-3 text-rose-500" />
+                    Subsidised
+                  </span>
+                </SelectItem>
+                <SelectItem value="false">Not Subsidised</SelectItem>
               </SelectContent>
             </Select>
           </div>

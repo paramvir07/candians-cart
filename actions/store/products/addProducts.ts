@@ -71,6 +71,7 @@ export async function createProduct(
       isMeasuredInWeight,
       UOM,
       primaryUPC,
+      subsidised,
       ...otherData
     } = validationResult.data;
 
@@ -129,8 +130,8 @@ export async function createProduct(
     const newDisposableFeeInCents = Math.round((disposableFee ?? 0) * 100);
     const newTaxRate = tax > 0 ? tax / 100 : 0;
 
-    const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
-    const isSubsidized = subsidyCategories.includes(otherData.category);
+    // const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
+    // const isSubsidized = subsidyCategories.includes(otherData.category);
 
     const dbPayload: any = {
       ...otherData,
@@ -139,7 +140,7 @@ export async function createProduct(
       tax: newTaxRate,
       price: newPriceInCents,
       disposableFee: newDisposableFeeInCents,
-      subsidised: isSubsidized,
+      subsidised,
       isMeasuredInWeight,
       UOM,
       primaryUPC: primaryUPC,
