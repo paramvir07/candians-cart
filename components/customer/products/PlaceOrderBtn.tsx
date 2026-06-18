@@ -52,7 +52,7 @@ const PlaceOrderBtn = ({
 
     if (placeOrder.success) {
       toast.success(placeOrder.message);
-      router.push(`/cashier/customer/${customerId}`);
+      router.push(`/cashier/customer/${customerId}/orders`);
     } else {
       toast.error(placeOrder.message);
     }

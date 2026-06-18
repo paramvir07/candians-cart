@@ -1,14 +1,11 @@
 import { getCart } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { EmptyCart } from "@/components/customer/products/EmptyCart";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-  ShoppingCart,
   Shield,
   Wallet,
-  ChevronLeft,
   Gift,
   Package,
   Receipt,
@@ -16,7 +13,6 @@ import {
   BadgePercent,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { getUser } from "@/actions/customer/User.action";
 import { TopUpDialog } from "@/components/customer/wallet/TopupDialog";
 import ProgressBarCart, {
