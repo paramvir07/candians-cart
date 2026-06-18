@@ -350,7 +350,7 @@ export const CartAmountBadge = ({ total }: { total: number }) => {
     >
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-[11px] text-muted-foreground">Cart total</span>
+          <span className="text-[11px] text-muted-foreground">Progress total</span>
           <span className={`text-[17px] font-semibold tabular-nums ${reached ? "text-emerald-700" : "text-foreground"}`}>
             CA${amount.toFixed(2)}
           </span>

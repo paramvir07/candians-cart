@@ -17,17 +17,7 @@ export const EmptyCart = ({ customerId }: { customerId?: string }) => {
 
       <div className="px-5 pt-6 max-w-md mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href={customerId ? `/cashier/customer/${customerId}` : "/customer"}>
-            <Button className="w-9 h-9 flex items-center justify-center rounded-full shadow-sm">
-              <ChevronLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-          <h1 className="text-2xl font-bold">
-            {customerId ? "Customer's cart" : "My Cart"}
-            <span className="text-gray-400 font-normal">(0)</span>
-          </h1>
-        </div>
+        
 
         {/* Empty state */}
         <div className="flex flex-col items-center justify-center mt-24 text-center">

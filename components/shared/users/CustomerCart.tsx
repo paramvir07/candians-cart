@@ -96,16 +96,14 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   )
     return (
       <>
-      <div className=" mt-5 mx-5">
-      {customerId && <UPCScannerCart
-        customerId={customerId}
-        storeId={UserStoreId}
-        />}
-      </div>
-    <EmptyCart customerId={customerId} />
-      
+        <div className=" mt-5 mx-5">
+          {customerId && (
+            <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
+          )}
+        </div>
+        <EmptyCart customerId={customerId} />
       </>
-  );
+    );
 
   const itemTotals = items.reduce(
     (acc, item) => {
@@ -237,15 +235,18 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   // console.log(miscTotals)
 
   const totals = {
-    subtotal: Math.round(itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal),
+    subtotal: Math.round(
+      itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal,
+    ),
     gst: itemTotals.gst + subsidyTotals.gst + miscTotals.gst,
     pst: itemTotals.pst + subsidyTotals.pst + miscTotals.pst,
     totalTax:
       itemTotals.totalTax + subsidyTotals.totalTax + miscTotals.totalTax,
     disposable: itemTotals.disposable + subsidyTotals.disposable,
-    total: Math.round(itemTotals.total + subsidyTotals.total + miscTotals.total),
+    total: Math.round(
+      itemTotals.total + subsidyTotals.total + miscTotals.total,
+    ),
   };
-
 
   const showGST = totals.gst > 0;
   const showPST = totals.pst > 0;
@@ -452,46 +453,26 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     <div className={cn("min-h-screen", !isCashier && "bg-background")}>
       {!isCashier && <Navbar />}
 
-       {customerId && (
-        <div className="px-4 xl:px-8 pt-5 xl:pt-8 xl:max-w-5xl xl:mx-auto">
-          <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
+      {customerId && (
+        <div className="w-full flex items-center gap-2 px-4 xl:px-8 pt-5 xl:pt-8">
+          <div className="flex-1">
+            <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
+          </div>
+          <AddMiscItemModalTrigger customerId={customerId || ""} />
         </div>
       )}
-      
+
       <div
         className="xl:hidden flex flex-col"
         style={{ minHeight: "calc(100dvh - 0px)" }}
       >
         {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto px-4 pt-5 pb-4 space-y-4">
-          {/* Header */}
-          <div className="flex items-center gap-3">
-            <Link
-              href={isCashier ? `/cashier/customer/${customerId}` : "/customer"}
-            >
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full h-9 w-9 shrink-0"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <ShoppingCart className="h-5 w-5 text-primary shrink-0" />
-              <h1 className="text-lg font-bold tracking-tight text-foreground truncate">
-                {isCashier ? "Customer's Cart" : "My Cart"}
-              </h1>
-            </div>
-            {isCashier && (
-              <AddMiscItemModalTrigger customerId={customerId || ""} />
-            )}
-          </div>
-
           {/* Progress */}
-          <div className={`${isCashier && 'hidden'} border-border/60 shadow-none`}>
-          
-            <div className={`${isCashier && 'hidden'}`}>
+          <div
+            className={`border-border/60 shadow-none`}
+          >
+            <div className={`${isCashier && "hidden"}`}>
               <ProgressBarCart
                 total={progressTotal.total}
                 customerId={customerId}
@@ -678,41 +659,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       ════════════════════════════════════════ */}
       <div className="hidden xl:block">
         <div className="max-w-5xl mx-auto px-6 lg:px-8 py-8">
-          {/* Page header */}
-          <div className="flex items-center gap-3 mb-6 flex-wrap justify-between">
-            <div className="flex items-center justify-center gap-2">
-              <Link
-                href={
-                  isCashier ? `/cashier/customer/${customerId}` : "/customer"
-                }
-              >
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full h-9 w-9 shrink-0"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-              </Link>
-              <div className="flex items-center gap-2.5 min-w-0 ">
-                <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <ShoppingCart className="h-4 w-4 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <h1 className="text-xl font-bold tracking-tight text-foreground leading-tight truncate">
-                    {isCashier ? "Customer's Cart" : "My Cart"}
-                  </h1>
-                </div>
-              </div>
-            </div>
-            {isCashier && (
-              <AddMiscItemModalTrigger customerId={customerId || ""} />
-            )}
-          </div>
-
           {/* Progress bar */}
           <div className="mb-6 border-border/60 shadow-none">
-              <div className={`${isCashier && 'hidden'}`}>              
+            <div className={`${isCashier && "hidden"}`}>
               <ProgressBarCart
                 total={progressTotal.total}
                 customerId={customerId}
@@ -721,11 +670,11 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 Totalsubsidy={TotalSubsidy}
                 SubsidyonOrder={Math.round(newSubisdyCalc)}
                 subItemIds={subItemProductIds}
-                />
-              </div> 
-              <div className="mt-3">
-                <CartAmountBadge total={progressTotal.total} />
-              </div>
+              />
+            </div>
+            <div className="mt-3">
+              <CartAmountBadge total={progressTotal.total} />
+            </div>
           </div>
 
           {/* 2-col layout */}
