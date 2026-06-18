@@ -221,8 +221,8 @@ export const SubsidyCart = ({ subsidy,total }: { subsidy: number,total:number })
   const orderSubsidy = safeSubsidy / 100;
   const walletBalance = safeTotal;
   const totalUsed = safeTotal - (safeUsed / 100);
-
-  if (safeSubsidy <= 0) return null;
+  
+  if (safeSubsidy <= 0 && safeTotal <= 0 && safeUsed <= 0) return null;
 
   return (
     <>
@@ -235,12 +235,14 @@ export const SubsidyCart = ({ subsidy,total }: { subsidy: number,total:number })
       </div>
 
       <div className="divide-y divide-emerald-100">
+        {safeSubsidy > 0 && (
         <Row
           label="Order Subsidy"
           description="On this order"
           value={orderSubsidy}
           icon={<Tag className="w-4 h-4 text-emerald-600" />}
         />
+        )}
 
         {safeTotal > 0 && (
           <Row
