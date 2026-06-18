@@ -22,7 +22,7 @@ export default async function SearchPageLoader() {
 
   return (
     <Suspense>
-      <Navbar />
+      {/* <Navbar /> */}
       <SearchResultsClient
         storeId={storeId}
         searchAction={searchProducts}
