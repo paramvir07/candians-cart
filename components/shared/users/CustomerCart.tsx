@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
 import { MiscItemsSection } from "@/components/cashier/MiscItemSection";
 import { UPCScannerCart } from "@/components/cashier/UPCScannerCart";
+import ClearCartDialog from "./ClearCartDialog";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -480,6 +481,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               />
             </div>
             <CartAmountBadge total={progressTotal.total} />
+            <div className="flex justify-end mt-2 p-2">
+              <ClearCartDialog customerId={customerId} />
+            </div>
           </div>
 
           {/* Cart items */}
@@ -670,6 +674,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </div>
             <div className="mt-3">
               <CartAmountBadge total={progressTotal.total} />
+              <div className="flex justify-end mt-2">
+                <ClearCartDialog customerId={customerId} />
+              </div>
             </div>
           </div>
 

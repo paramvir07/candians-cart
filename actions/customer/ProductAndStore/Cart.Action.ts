@@ -8,7 +8,7 @@ import "@/db/models/store/products.model";
 import { dbConnect } from "@/db/dbConnect";
 import mongoose, { Types } from "mongoose";
 import { revalidatePath } from "next/cache";
-import { getCustomerDataAction } from "../User.action";
+import { getCustomerDataAction, getUser } from "../User.action";
 import productsModel from "@/db/models/store/products.model";
 import { ICartItem } from "@/types/customer/CustomerCart";
 import { CartTotals } from "@/components/shared/users/CheckOutActions";
@@ -688,3 +688,23 @@ export const getCartQuantities = async (customerId?: string) => {
     return {};
   }
 };
+
+export const ClearCart = async (customerId?: string) => {
+  try {
+    await dbConnect();
+ 
+    const user = await getUser(customerId);
+    if (!user) return { success: false, message: "User not found" };
+ 
+    await CartModel.findOneAndDelete({ customerId: user._id });
+ 
+    revalidatePath("/customer/cart");
+    if (customerId) revalidatePath(`/cashier/customer/${customerId}/cart`);
+ 
+    return { success: true, message: "Cart cleared successfully" };
+  } catch (err) {
+    console.log(err);
+    return { success: false, message: "Error while clearing cart" };
+  }
+};
+ 
