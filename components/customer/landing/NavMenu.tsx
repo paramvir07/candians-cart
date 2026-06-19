@@ -67,15 +67,6 @@ export function NavAvatarMenu({ name, initials }: NavAvatarMenuProps) {
           Profile
         </DropdownMenuItem>
 
-        {/* Wallet */}
-        <DropdownMenuItem
-          onClick={() => router.push("/customer/wallet")}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-sm font-medium text-foreground hover:bg-secondary focus:bg-secondary"
-        >
-          <CreditCard size={15} className="text-muted-foreground shrink-0" />
-          Wallet
-        </DropdownMenuItem>
-
         {/* Orders */}
         <DropdownMenuItem
           onClick={() => router.push("/customer/orders")}
@@ -92,14 +83,6 @@ export function NavAvatarMenu({ name, initials }: NavAvatarMenuProps) {
           <PackageOpen size={15} className="text-muted-foreground shrink-0" />
           Budget packs
         </DropdownMenuItem>
-        {/* Settings
-        <DropdownMenuItem
-          onClick={() => router.push("/customer/settings")}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-sm font-medium text-foreground hover:bg-secondary focus:bg-secondary"
-        >
-          <Settings size={15} className="text-muted-foreground shrink-0" />
-          Settings
-        </DropdownMenuItem> */}
 
         <DropdownMenuItem
           onClick={() => router.push("/customer/analytics")}

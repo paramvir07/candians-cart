@@ -10,11 +10,156 @@ import {
   getCachedCustomerProfile,
 } from "../cache/user.cache";
 import { Types } from "mongoose";
+import OrderModel from "@/db/models/customer/Orders.Model";
 
 export interface CustomerWithRecentOrder extends ICustomer {
   _id: Types.ObjectId;
   lastOrderDate: Date; // Injected by aggregation
 }
+
+export interface CustomerStats {
+  totalUsers: number;
+  totalUsersChange: string;
+  totalUsersUp: boolean;
+  newUsersThisMonth: number;
+  newUsersChange: string;
+  newUsersUp: boolean;
+  activeUsers: number;
+  activeUsersChange: string;
+  activeUsersUp: boolean;
+  avgMonthlyBudget: number;
+  avgBudgetChange: string;
+  avgBudgetUp: boolean;
+}
+
+export const getMyStoreCustomerStats = async (): Promise<CustomerStats> => {
+  const session = await getUserSession();
+  const cashierRole = session.user.role === "cashier";
+  const storeRole = session.user.role === "store";
+
+  await dbConnect();
+
+  let myStoreId;
+
+  if (cashierRole) {
+    const cashier = await Cashier.findOne({ userId: session.user.id }).lean();
+    myStoreId = cashier?.storeId;
+  } else if (storeRole) {
+    const myStore = await Store.findOne({ userId: session.user.id })
+      .select("_id")
+      .lean();
+
+    myStoreId = myStore?._id;
+  }
+
+  if (!myStoreId) {
+    return {
+      totalUsers: 0,
+      totalUsersChange: "0",
+      totalUsersUp: false,
+      newUsersThisMonth: 0,
+      newUsersChange: "0",
+      newUsersUp: false,
+      activeUsers: 0,
+      activeUsersChange: "0",
+      activeUsersUp: false,
+      avgMonthlyBudget: 0,
+      avgBudgetChange: "0",
+      avgBudgetUp: false,
+    };
+  }
+
+  const storeObjectId = new Types.ObjectId(myStoreId);
+
+  const now = new Date();
+
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  const pct = (current: number, previous: number): string => {
+    if (previous === 0) return current > 0 ? "100" : "0";
+    return (((current - previous) / previous) * 100).toFixed(1);
+  };
+
+  const customers = await Customer.find({
+    associatedStoreId: storeObjectId,
+  }).lean();
+
+  // Total users
+  const totalUsers = customers.length;
+
+  const totalUsersLastMonth = customers.filter(
+    (c) => new Date(c.createdAt as any) < startOfMonth,
+  ).length;
+
+  // New users this month
+  const newUsersThisMonth = customers.filter(
+    (c) => new Date(c.createdAt as any) >= startOfMonth,
+  ).length;
+
+  const newUsersLastMonth = customers.filter((c) => {
+    const d = new Date(c.createdAt as any);
+    return d >= startOfLastMonth && d < startOfMonth;
+  }).length;
+
+  // Active users = unique customers/users who placed completed orders
+  const activeUserIdsThisMonth = await OrderModel.distinct("userId", {
+    storeId: storeObjectId,
+    status: "completed",
+    createdAt: {
+      $gte: startOfMonth,
+      $lt: startOfNextMonth,
+    },
+  });
+
+  const activeUserIdsLastMonth = await OrderModel.distinct("userId", {
+    storeId: storeObjectId,
+    status: "completed",
+    createdAt: {
+      $gte: startOfLastMonth,
+      $lt: startOfMonth,
+    },
+  });
+
+  const activeUsersThisMonth = activeUserIdsThisMonth.length;
+  const activeUsersLastMonth = activeUserIdsLastMonth.length;
+
+  // Avg monthly budget
+  const avgBudgetCents =
+    customers.length > 0
+      ? customers.reduce((sum, c) => sum + (c.monthlyBudget ?? 0), 0) /
+        customers.length
+      : 0;
+
+  const lastMonthCustomers = customers.filter(
+    (c) => new Date(c.createdAt as any) < startOfMonth,
+  );
+
+  const avgBudgetLastMonthCents =
+    lastMonthCustomers.length > 0
+      ? lastMonthCustomers.reduce((sum, c) => sum + (c.monthlyBudget ?? 0), 0) /
+        lastMonthCustomers.length
+      : 0;
+
+  return {
+    totalUsers,
+    totalUsersChange: pct(totalUsers, totalUsersLastMonth),
+    totalUsersUp: totalUsers >= totalUsersLastMonth,
+
+    newUsersThisMonth,
+    newUsersChange: pct(newUsersThisMonth, newUsersLastMonth),
+    newUsersUp: newUsersThisMonth >= newUsersLastMonth,
+
+    activeUsers: activeUsersThisMonth,
+    activeUsersChange: pct(activeUsersThisMonth, activeUsersLastMonth),
+    activeUsersUp: activeUsersThisMonth >= activeUsersLastMonth,
+
+    avgMonthlyBudget: avgBudgetCents / 100,
+    avgBudgetChange: pct(avgBudgetCents, avgBudgetLastMonthCents),
+    avgBudgetUp: avgBudgetCents >= avgBudgetLastMonthCents,
+  };
+};
 
 export const getUser = async (customerId?: string) => {
   try {

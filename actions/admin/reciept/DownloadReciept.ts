@@ -65,56 +65,103 @@ function drawWrappedText(
   return currentY;
 }
 
+// ============================================================================
+// 1. GENERATE GENERIC RECEIPT PDF (Unsaved / Preview)
+// ============================================================================
+
 async function generateReceiptPDF(
   data: AggregatedReciept,
   startDateIso: string,
   endDateIso: string,
 ) {
   const pdfDoc = await PDFDocument.create();
-  // Standard A4 dimensions
   const page = pdfDoc.addPage([595, 842]);
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const { width, height } = page.getSize();
-
   const margin = 48;
   const contentWidth = width - margin * 2;
 
-  // --- Header Background ---
-  page.drawRectangle({
-    x: 0,
-    y: height - 100,
-    width,
-    height: 100,
-    color: GREEN_PRIMARY,
-  });
+  // --- Header / Footer Helpers ---
+  const drawHeader = (targetPage: any, title: string) => {
+    targetPage.drawRectangle({
+      x: 0,
+      y: height - 100,
+      width,
+      height: 100,
+      color: GREEN_PRIMARY,
+    });
+    targetPage.drawText("Candian's Cart", {
+      x: margin,
+      y: height - 44,
+      font: boldFont,
+      size: 22,
+      color: WHITE,
+    });
+    targetPage.drawText("Your trusted Canadian marketplace", {
+      x: margin,
+      y: height - 62,
+      font,
+      size: 9,
+      color: rgb(0.8, 0.95, 0.8),
+    });
+    const titleW = boldFont.widthOfTextAtSize(title, 26);
+    targetPage.drawText(title, {
+      x: width - margin - titleW,
+      y: height - 48,
+      font: boldFont,
+      size: 26,
+      color: WHITE,
+    });
+  };
 
-  // --- Header Text ---
-  page.drawText("Candian's Cart", {
-    x: margin,
-    y: height - 44,
-    font: boldFont,
-    size: 22,
-    color: WHITE,
-  });
-  page.drawText("Your trusted Canadian marketplace", {
-    x: margin,
-    y: height - 62,
-    font,
-    size: 9,
-    color: rgb(0.8, 0.95, 0.8),
-  });
+  const drawFooter = (targetPage: any) => {
+    const footerY = 52;
+    targetPage.drawRectangle({
+      x: 0,
+      y: 0,
+      width,
+      height: footerY,
+      color: GREEN_LIGHT,
+    });
+    targetPage.drawRectangle({
+      x: 0,
+      y: footerY,
+      width,
+      height: 1,
+      color: GRAY_LINE,
+    });
+    targetPage.drawText("Thank you for partnering with Candian's Cart!", {
+      x: margin,
+      y: footerY - 18,
+      font,
+      size: 9,
+      color: MUTED,
+    });
+    const supportText = "info@canadianscart.ca";
+    const supportW = font.widthOfTextAtSize(supportText, 9);
+    targetPage.drawText(supportText, {
+      x: width - margin - supportW,
+      y: footerY - 18,
+      font,
+      size: 9,
+      color: GREEN_PRIMARY,
+    });
+    targetPage.drawText(
+      `Receipt generated on ${new Date().toLocaleDateString("en-CA")}`,
+      {
+        x: margin,
+        y: footerY - 32,
+        font,
+        size: 8,
+        color: rgb(0.72, 0.78, 0.72),
+      },
+    );
+  };
 
-  const invoiceLabel = "SETTLEMENT";
-  const invoiceLabelW = boldFont.widthOfTextAtSize(invoiceLabel, 26);
-  page.drawText(invoiceLabel, {
-    x: width - margin - invoiceLabelW,
-    y: height - 48,
-    font: boldFont,
-    size: 26,
-    color: WHITE,
-  });
+  // Build Page 1 (Financials)
+  drawHeader(page, "SETTLEMENT");
 
   let y = height - 130;
 
@@ -158,7 +205,6 @@ async function generateReceiptPDF(
   ) => {
     const activeFont = isBold ? boldFont : font;
     const color = highlightColor || GREEN_DARK;
-
     page.drawText(label, {
       x: margin + 8,
       y: yPos,
@@ -174,6 +220,40 @@ async function generateReceiptPDF(
       size: 10,
       color,
     });
+  };
+
+  const drawSection = (title: string, items: ReceiptRowData[]) => {
+    page.drawRectangle({
+      x: margin,
+      y: y - 4,
+      width: contentWidth,
+      height: 20,
+      color: GREEN_LIGHT,
+    });
+    page.drawText(title, {
+      x: margin + 8,
+      y: y + 3,
+      font: boldFont,
+      size: 8,
+      color: GREEN_PRIMARY,
+    });
+    y -= 18;
+    let rowIndex = 0;
+    for (const item of items) {
+      if (rowIndex % 2 === 0) {
+        page.drawRectangle({
+          x: margin,
+          y: y - 6,
+          width: contentWidth,
+          height: 18,
+          color: rgb(0.98, 1, 0.98),
+        });
+      }
+      drawRow(item.label, item.value, y, item.bold, item.color);
+      y -= 18;
+      rowIndex++;
+    }
+    y -= 6;
   };
 
   // --- Meta Information ---
@@ -192,7 +272,13 @@ async function generateReceiptPDF(
   drawLabelRight("PERIOD", `${formattedStart} - ${formattedEnd}`, y);
 
   y -= 44;
-  drawLabel("TOTAL ORDERS", String(data.orderCount), y);
+
+  drawLabel(
+    "TOTAL REVENUE",
+    formatMoney((data.totalCustomerPaid || 0) + (data.totalSubsidy || 0)),
+    y,
+  );
+  drawLabelRight("TOTAL ORDERS", String(data.orderCount), y);
 
   y -= 32;
   page.drawRectangle({
@@ -202,158 +288,97 @@ async function generateReceiptPDF(
     height: 1,
     color: GRAY_LINE,
   });
-  y -= 20;
+  y -= 16;
 
-  // --- Section 1: Financial Breakdown ---
-  page.drawRectangle({
-    x: margin,
-    y: y - 4,
-    width: contentWidth,
-    height: 22,
-    color: GREEN_LIGHT,
-  });
-  page.drawText("ORDER BREAKDOWN", {
-    x: margin + 8,
-    y: y + 4,
-    font: boldFont,
-    size: 8,
-    color: GREEN_PRIMARY,
-  });
-  y -= 20;
-
-  let rowIndex = 0;
-
-  const breakdownItems: ReceiptRowData[] = [
-    {
-      label: "Total Customer Paid",
-      value: formatMoney(data.totalCustomerPaid || 0),
-      bold: true,
-    },
+  // --- Data Definitions for Sections ---
+  const orderBreakdownItems: ReceiptRowData[] = [
     { label: "Total Base Price", value: formatMoney(data.totalBasePrice || 0) },
     { label: "Total GST", value: formatMoney(data.totalGST || 0) },
     { label: "Total PST", value: formatMoney(data.totalPST || 0) },
     {
-      label: "Disposable Fees",
+      label: "Total Disposable Fees",
+      value: formatMoney(data.totalDisposableFee || 0),
+    },
+  ];
+
+  const storeBreakdownItems: ReceiptRowData[] = [
+    { label: "Total Base Price", value: formatMoney(data.totalBasePrice || 0) },
+    { label: "Store GST", value: formatMoney(data.storebasetaxGST || 0) },
+    { label: "Store PST", value: formatMoney(data.storebasetaxPST || 0) },
+    {
+      label: "Total Disposable Fees",
       value: formatMoney(data.totalDisposableFee || 0),
     },
     {
-      label: "Store Tax Portion (GST)",
-      value: formatMoney(data.storebasetaxGST || 0),
-      color: RED_ALERT,
+      label: "Store Profit (50%)",
+      value: formatMoney(data.storeProfit || 0),
+      color: GREEN_PRIMARY,
     },
     {
-      label: "Store Tax Portion (PST)",
-      value: formatMoney(data.storebasetaxPST || 0),
-      color: RED_ALERT,
+      label: "Total Cash Collected",
+      value: `-${formatMoney(data.totalWalletTopUpCashCollected || 0)}`,
+      color: MUTED,
+    },
+    {
+      label: "Total Store Payout",
+      value: formatMoney(data.storePayout || 0),
+      bold: true,
+      color: GREEN_PRIMARY,
     },
   ];
 
-  if (data.totalSubsidy && data.totalSubsidy > 0) {
-    breakdownItems.push({
-      label: "Subsidies Applied",
-      value: `-${formatMoney(data.totalSubsidy)}`,
-      bold: false,
-      color: RED_ALERT,
-    });
-  }
-
-  breakdownItems.push({
-    label: "Store Fixed Value (Cost)",
-    value: formatMoney(data.storeFixedValue || 0),
-    bold: true,
-  });
-
-  for (const item of breakdownItems) {
-    if (rowIndex % 2 === 0) {
-      page.drawRectangle({
-        x: margin,
-        y: y - 6,
-        width: contentWidth,
-        height: 22,
-        color: rgb(0.98, 1, 0.98),
-      });
-    }
-    drawRow(item.label, item.value, y, item.bold, item.color);
-    y -= 20;
-    rowIndex++;
-  }
-
-  y -= 8;
-  page.drawRectangle({
-    x: margin,
-    y,
-    width: contentWidth,
-    height: 1,
-    color: GRAY_LINE,
-  });
-  y -= 20;
-
-  // --- Section 2: Margin & Profit ---
-  page.drawRectangle({
-    x: margin,
-    y: y - 4,
-    width: contentWidth,
-    height: 22,
-    color: GREEN_LIGHT,
-  });
-  page.drawText("PROFIT & MARGINS", {
-    x: margin + 8,
-    y: y + 4,
-    font: boldFont,
-    size: 8,
-    color: GREEN_PRIMARY,
-  });
-  y -= 20;
-
-  rowIndex = 0;
-
-  const marginItems: ReceiptRowData[] = [
+  const profitMarginItems: ReceiptRowData[] = [
     {
-      label: "Gross Margin",
-      value: formatMoney(data.grossMargin || 0),
+      label: "Total Profit Margin",
+      value: formatMoney((data.grossMargin || 0) + (data.totalSubsidy || 0)),
       bold: true,
     },
     {
-      label: "Store Profit (From Markup)",
+      label: "Subsidy",
+      value: formatMoney(data.totalSubsidy || 0),
+      color: RED_ALERT,
+    },
+    {
+      label: "Store Profit (50%)",
       value: formatMoney(data.storeProfit || 0),
+      color: GREEN_PRIMARY,
     },
     {
-      label: "Cash Collected (From Topups)",
-      value: `-${formatMoney(data.totalWalletTopUpCashCollected || 0)}`,
-      color: RED_ALERT,
-    },
-    {
-      label: "Platform Markup Tax",
-      value: formatMoney(data.platformMarkuptax || 0),
-      color: RED_ALERT,
-    },
-    {
-      label: "Platform Commision",
-      value: formatMoney(data.platformCommision || 0),
+      label: "Platform Profit",
+      value: formatMoney(data.platformProfit || 0),
+      color: GREEN_PRIMARY,
     },
   ];
 
-  for (const item of marginItems) {
-    if (rowIndex % 2 === 0) {
-      page.drawRectangle({
-        x: margin,
-        y: y - 6,
-        width: contentWidth,
-        height: 22,
-        color: rgb(0.98, 1, 0.98),
-      });
-    }
-    drawRow(item.label, item.value, y, item.bold, item.color);
-    y -= 20;
-    rowIndex++;
-  }
+  const platformBreakdownItems: ReceiptRowData[] = [
+    {
+      label: "Platform GST",
+      value: formatMoney(
+        (data as any).platformMarkupGSTTax || data.platformMarkuptax || 0,
+      ),
+    },
+    {
+      label: "Platform PST",
+      value: formatMoney((data as any).platformMarkupPSTTax || 0),
+    },
+    {
+      label: "Platform Profit",
+      value: formatMoney(data.platformProfit || 0),
+      bold: true,
+      color: GREEN_PRIMARY,
+    },
+  ];
 
-  y -= 12;
+  // --- Draw Sections ---
+  drawSection("ORDER BREAKDOWN", orderBreakdownItems);
+  drawSection("STORE BREAKDOWN", storeBreakdownItems);
+  drawSection("PROFIT & MARGINS", profitMarginItems);
+  drawSection("PLATFORM BREAKDOWN", platformBreakdownItems);
 
   // --- Final Payouts Block ---
+  y -= 8;
   const totalLabelX = width - margin - 220;
 
-  // Store Payout (Green Block)
   page.drawRectangle({
     x: totalLabelX - 12,
     y: y - 8,
@@ -379,8 +404,6 @@ async function generateReceiptPDF(
   });
 
   y -= 36;
-
-  // Platform Profit (Dark Green Block)
   page.drawRectangle({
     x: totalLabelX - 12,
     y: y - 8,
@@ -405,72 +428,45 @@ async function generateReceiptPDF(
     color: WHITE,
   });
 
-  y -= 36;
+  drawFooter(page);
 
-  // --- Order IDs Block ---
+  // --- Build Page 2 (Appendix: Orders) ---
   if (data.orderIds && data.orderIds.length > 0) {
-    page.drawText(`INCLUDED ORDERS (${data.orderIds.length}):`, {
+    const extraPage = pdfDoc.addPage([595, 842]);
+    drawHeader(extraPage, "APPENDIX");
+    let extraY = height - 130;
+
+    extraPage.drawRectangle({
       x: margin,
-      y: y,
+      y: extraY - 4,
+      width: contentWidth,
+      height: 20,
+      color: GREEN_LIGHT,
+    });
+    extraPage.drawText(`INCLUDED ORDERS (${data.orderIds.length})`, {
+      x: margin + 8,
+      y: extraY + 3,
       font: boldFont,
-      size: 9,
+      size: 8,
       color: GREEN_PRIMARY,
     });
-    y -= 14;
+    extraY -= 18;
 
     const orderString = data.orderIds.join(", ");
-    y = drawWrappedText(
-      page,
+    drawWrappedText(
+      extraPage,
       orderString,
       margin,
-      y,
+      extraY,
       contentWidth,
       font,
-      7,
+      8,
       MUTED,
       60,
     );
+
+    drawFooter(extraPage);
   }
-
-  // --- Footer ---
-  const footerY = 52;
-  page.drawRectangle({
-    x: 0,
-    y: 0,
-    width,
-    height: footerY,
-    color: GREEN_LIGHT,
-  });
-  page.drawRectangle({ x: 0, y: footerY, width, height: 1, color: GRAY_LINE });
-
-  page.drawText("Thank you for partnering with Candian's Cart!", {
-    x: margin,
-    y: footerY - 18,
-    font,
-    size: 9,
-    color: MUTED,
-  });
-
-  const supportText = "info@canadianscart.ca";
-  const supportW = font.widthOfTextAtSize(supportText, 9);
-  page.drawText(supportText, {
-    x: width - margin - supportW,
-    y: footerY - 18,
-    font,
-    size: 9,
-    color: GREEN_PRIMARY,
-  });
-
-  page.drawText(
-    `Receipt generated on ${new Date().toLocaleDateString("en-CA")}`,
-    {
-      x: margin,
-      y: footerY - 32,
-      font,
-      size: 8,
-      color: rgb(0.72, 0.78, 0.72),
-    },
-  );
 
   const pdfBytes = await pdfDoc.save();
   return pdfBytes;
@@ -493,29 +489,33 @@ export async function downloadReceiptPdfAction(
     throw new Error("No receipt data found");
   }
 
-  // Pass dates down to display nicely in the PDF
   const pdfBytes = await generateReceiptPDF(data, startDateIso, endDateIso);
-
   return Buffer.from(pdfBytes).toString("base64");
 }
 
-// --- Download saved payouts ---
+// ============================================================================
+// 2. GENERATE SAVED PAYOUT PDF (Contains Notes / Status)
+// ============================================================================
 
 export interface SavedPayoutData {
   _id: string;
   storeId: string | { _id: string }; // Depending on how it's populated
   startDate: string | Date;
   endDate: string | Date;
-  totalNumberofOrders: number; // Added field
-  orderIds: string[]; // Added field
+  totalNumberofOrders: number;
+  orderCount?: number;
+  orderIds: string[];
   totalCustomerPaid: number;
   totalGST: number;
   totalPST: number;
-  baseTax: number; // Added field
-  markupTax: number; // Added field
-  storebasetaxGST: number; // Added field
-  storebasetaxPST: number; // Added field
-  platformMarkuptax: number; // Added field
+  baseTax: number;
+  markupTax: number;
+  storebasetaxGST: number;
+  storebasetaxPST: number;
+  platformMarkuptax?: number; // legacy
+  platformMarkupGSTTax?: number;
+  platformMarkupPSTTax?: number;
+  grossMargin?: number;
   totalSubsidy: number;
   totalDisposableFee: number;
   storeFixedValue: number;
@@ -544,40 +544,77 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   const margin = 48;
   const contentWidth = width - margin * 2;
 
-  // --- Header Background ---
-  page.drawRectangle({
-    x: 0,
-    y: height - 100,
-    width,
-    height: 100,
-    color: GREEN_PRIMARY,
-  });
+  // --- Header / Footer Helpers ---
+  const drawHeader = (targetPage: any, title: string) => {
+    targetPage.drawRectangle({
+      x: 0,
+      y: height - 100,
+      width,
+      height: 100,
+      color: GREEN_PRIMARY,
+    });
+    targetPage.drawText("Candian's Cart", {
+      x: margin,
+      y: height - 44,
+      font: boldFont,
+      size: 22,
+      color: WHITE,
+    });
+    targetPage.drawText("Store Payout Details", {
+      x: margin,
+      y: height - 62,
+      font,
+      size: 9,
+      color: rgb(0.8, 0.95, 0.8),
+    });
+    const titleW = boldFont.widthOfTextAtSize(title, 22);
+    targetPage.drawText(title, {
+      x: width - margin - titleW,
+      y: height - 48,
+      font: boldFont,
+      size: 22,
+      color: WHITE,
+    });
+  };
 
-  // --- Header Text ---
-  page.drawText("Candian's Cart", {
-    x: margin,
-    y: height - 44,
-    font: boldFont,
-    size: 22,
-    color: WHITE,
-  });
-  page.drawText("Store Payout Details", {
-    x: margin,
-    y: height - 62,
-    font,
-    size: 9,
-    color: rgb(0.8, 0.95, 0.8),
-  });
+  const drawFooter = (targetPage: any) => {
+    const footerY = 52;
+    targetPage.drawRectangle({
+      x: 0,
+      y: 0,
+      width,
+      height: footerY,
+      color: GREEN_LIGHT,
+    });
+    targetPage.drawRectangle({
+      x: 0,
+      y: footerY,
+      width,
+      height: 1,
+      color: GRAY_LINE,
+    });
+    targetPage.drawText("Thank you for partnering with Candian's Cart!", {
+      x: margin,
+      y: footerY - 18,
+      font,
+      size: 9,
+      color: MUTED,
+    });
+    targetPage.drawText(
+      `Receipt generated on ${new Date().toLocaleDateString("en-CA")}`,
+      {
+        x: margin,
+        y: footerY - 32,
+        font,
+        size: 8,
+        color: rgb(0.72, 0.78, 0.72),
+      },
+    );
+  };
 
-  const invoiceLabel = data.status === "paid" ? "PAID RECEIPT" : "SETTLEMENT";
-  const invoiceLabelW = boldFont.widthOfTextAtSize(invoiceLabel, 22);
-  page.drawText(invoiceLabel, {
-    x: width - margin - invoiceLabelW,
-    y: height - 48,
-    font: boldFont,
-    size: 22,
-    color: WHITE,
-  });
+  // Build Page 1 (Financials)
+  const mainTitle = data.status === "paid" ? "PAID RECEIPT" : "SETTLEMENT";
+  drawHeader(page, mainTitle);
 
   let y = height - 130;
 
@@ -638,6 +675,40 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
     });
   };
 
+  const drawSection = (title: string, items: ReceiptRowData[]) => {
+    page.drawRectangle({
+      x: margin,
+      y: y - 4,
+      width: contentWidth,
+      height: 20,
+      color: GREEN_LIGHT,
+    });
+    page.drawText(title, {
+      x: margin + 8,
+      y: y + 3,
+      font: boldFont,
+      size: 8,
+      color: GREEN_PRIMARY,
+    });
+    y -= 18;
+    let rowIndex = 0;
+    for (const item of items) {
+      if (rowIndex % 2 === 0) {
+        page.drawRectangle({
+          x: margin,
+          y: y - 6,
+          width: contentWidth,
+          height: 18,
+          color: rgb(0.98, 1, 0.98),
+        });
+      }
+      drawRow(item.label, item.value, y, item.bold, item.color);
+      y -= 18;
+      rowIndex++;
+    }
+    y -= 6;
+  };
+
   // --- Meta Information ---
   const storeIdStr =
     typeof data.storeId === "object" && data.storeId !== null
@@ -662,7 +733,16 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   drawLabelRight("PAYMENT STATUS", data.status.toUpperCase(), y);
 
   y -= 44;
-  drawLabel("TOTAL ORDERS", String(data.totalNumberofOrders || 0), y);
+  drawLabel(
+    "TOTAL REVENUE",
+    formatMoney((data.totalCustomerPaid || 0) + (data.totalSubsidy || 0)),
+    y,
+  );
+  drawLabelRight(
+    "TOTAL ORDERS",
+    String(data.totalNumberofOrders || data.orderCount || 0),
+    y,
+  );
 
   y -= 32;
   page.drawRectangle({
@@ -672,194 +752,101 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
     height: 1,
     color: GRAY_LINE,
   });
-  y -= 20;
+  y -= 16;
 
-  // --- Section 1: Financial Breakdown ---
-  page.drawRectangle({
-    x: margin,
-    y: y - 4,
-    width: contentWidth,
-    height: 22,
-    color: GREEN_LIGHT,
-  });
-  page.drawText("ORDER BREAKDOWN", {
-    x: margin + 8,
-    y: y + 4,
-    font: boldFont,
-    size: 8,
-    color: GREEN_PRIMARY,
-  });
-  y -= 20;
-
-  const breakdownItems: ReceiptRowData[] = [
+  // --- Data Definitions for Sections ---
+  const orderBreakdownItems: ReceiptRowData[] = [
     {
-      label: "Total Customer Paid",
-      value: formatMoney(data.totalCustomerPaid || 0),
-      bold: true,
+      label: "Total Base Price",
+      value: formatMoney((data as any).totalBasePrice || 0),
     },
     { label: "Total GST", value: formatMoney(data.totalGST || 0) },
     { label: "Total PST", value: formatMoney(data.totalPST || 0) },
     {
-      label: "Disposable Fees",
+      label: "Total Disposable Fees",
+      value: formatMoney(data.totalDisposableFee || 0),
+    },
+  ];
+
+  const storeBreakdownItems: ReceiptRowData[] = [
+    {
+      label: "Total Base Price",
+      value: formatMoney((data as any).totalBasePrice || 0),
+    },
+    { label: "Store GST", value: formatMoney(data.storebasetaxGST || 0) },
+    { label: "Store PST", value: formatMoney(data.storebasetaxPST || 0) },
+    {
+      label: "Total Disposable Fees",
       value: formatMoney(data.totalDisposableFee || 0),
     },
     {
-      label: "Store Tax Portion (GST)",
-      value: formatMoney(data.storebasetaxGST || 0),
-      color: RED_ALERT,
-    },
-    {
-      label: "Store Tax Portion (PST)",
-      value: formatMoney(data.storebasetaxPST || 0),
-      color: RED_ALERT,
-    },
-  ];
-
-  if (data.totalSubsidy && data.totalSubsidy > 0) {
-    breakdownItems.push({
-      label: "Subsidies Applied",
-      value: `-${formatMoney(data.totalSubsidy)}`,
-      color: RED_ALERT,
-    });
-  }
-
-  breakdownItems.push({
-    label: "Store Fixed Value (Cost)",
-    value: formatMoney(data.storeFixedValue || 0),
-    bold: true,
-  });
-
-  let rowIndex = 0;
-  for (const item of breakdownItems) {
-    if (rowIndex % 2 === 0) {
-      page.drawRectangle({
-        x: margin,
-        y: y - 6,
-        width: contentWidth,
-        height: 22,
-        color: rgb(0.98, 1, 0.98),
-      });
-    }
-    drawRow(item.label, item.value, y, item.bold, item.color);
-    y -= 20;
-    rowIndex++;
-  }
-
-  // --- Section 2: Margin & Adjustments ---
-  y -= 8;
-  page.drawRectangle({
-    x: margin,
-    y: y - 4,
-    width: contentWidth,
-    height: 22,
-    color: GREEN_LIGHT,
-  });
-  page.drawText("MARGINS & ADJUSTMENTS", {
-    x: margin + 8,
-    y: y + 4,
-    font: boldFont,
-    size: 8,
-    color: GREEN_PRIMARY,
-  });
-  y -= 20;
-
-  const marginItems: ReceiptRowData[] = [
-    {
-      label: "Store Profit (Margin)",
+      label: "Store Profit (50%)",
       value: formatMoney(data.storeProfit || 0),
-    },
-    {
-      label: "Cash Collected (From Topups)",
-      value: `-${formatMoney(data.totalWalletTopUpCashCollected || 0)}`,
-      color: RED_ALERT,
+      color: GREEN_PRIMARY,
     },
     {
       label: "Total Cash Collected",
-      value: `-${formatMoney(data.totalCashCollected || 0)}`,
+      value: `-${formatMoney(data.totalWalletTopUpCashCollected || 0)}`,
+      color: MUTED,
+    },
+    {
+      label: "Total Store Payout",
+      value: formatMoney(data.storePayout || 0),
       bold: true,
-      color: RED_ALERT,
-    },
-    {
-      label: "Platform Markup Tax",
-      value: formatMoney(data.platformMarkuptax || 0),
-      color: RED_ALERT,
-    },
-    {
-      label: "Platform Commission",
-      value: formatMoney(data.platformCommision || 0),
+      color: GREEN_PRIMARY,
     },
   ];
 
-  rowIndex = 0;
-  for (const item of marginItems) {
-    if (rowIndex % 2 === 0) {
-      page.drawRectangle({
-        x: margin,
-        y: y - 6,
-        width: contentWidth,
-        height: 22,
-        color: rgb(0.98, 1, 0.98),
-      });
-    }
-    drawRow(item.label, item.value, y, item.bold, item.color);
-    y -= 20;
-    rowIndex++;
-  }
+  const profitMarginItems: ReceiptRowData[] = [
+    {
+      label: "Total Profit Margin",
+      value: formatMoney((data.grossMargin || 0) + (data.totalSubsidy || 0)),
+      bold: true,
+    },
+    {
+      label: "Subsidy",
+      value: formatMoney(data.totalSubsidy || 0),
+      color: RED_ALERT,
+    },
+    {
+      label: "Store Profit (50%)",
+      value: formatMoney(data.storeProfit || 0),
+      color: GREEN_PRIMARY,
+    },
+    {
+      label: "Platform Profit",
+      value: formatMoney(data.platformProfit || 0),
+      color: GREEN_PRIMARY,
+    },
+  ];
 
-  // --- Section 3: Payment Details & Notes ---
-  y -= 8;
-  page.drawRectangle({
-    x: margin,
-    y: y - 4,
-    width: contentWidth,
-    height: 22,
-    color: GREEN_LIGHT,
-  });
-  page.drawText("PAYMENT DETAILS", {
-    x: margin + 8,
-    y: y + 4,
-    font: boldFont,
-    size: 8,
-    color: GREEN_PRIMARY,
-  });
-  y -= 24;
+  const platformBreakdownItems: ReceiptRowData[] = [
+    {
+      label: "Platform GST",
+      value: formatMoney(
+        data.platformMarkupGSTTax || data.platformMarkuptax || 0,
+      ),
+    },
+    {
+      label: "Platform PST",
+      value: formatMoney(data.platformMarkupPSTTax || 0),
+    },
+    {
+      label: "Platform Profit",
+      value: formatMoney(data.platformProfit || 0),
+      bold: true,
+      color: GREEN_PRIMARY,
+    },
+  ];
 
-  if (data.additionalNote) {
-    page.drawText("Notes:", {
-      x: margin + 8,
-      y,
-      font: boldFont,
-      size: 10,
-      color: GREEN_DARK,
-    });
-    page.drawText(
-      data.additionalNote.slice(0, 85) +
-        (data.additionalNote.length > 85 ? "..." : ""),
-      { x: margin + 50, y, font, size: 10, color: GREEN_DARK },
-    );
-    y -= 24;
-  }
-
-  if (data.paymentReciept?.url) {
-    page.drawText("Receipt Document:", {
-      x: margin + 8,
-      y,
-      font: boldFont,
-      size: 10,
-      color: GREEN_DARK,
-    });
-    page.drawText(data.paymentReciept.url, {
-      x: margin + 100,
-      y,
-      font,
-      size: 9,
-      color: rgb(0.1, 0.4, 0.8),
-    });
-    y -= 24;
-  }
+  // --- Draw Sections ---
+  drawSection("ORDER BREAKDOWN", orderBreakdownItems);
+  drawSection("STORE BREAKDOWN", storeBreakdownItems);
+  drawSection("PROFIT & MARGINS", profitMarginItems);
+  drawSection("PLATFORM BREAKDOWN", platformBreakdownItems);
 
   // --- Final Payouts Block ---
-  y -= 12;
+  y -= 8;
   const totalLabelX = width - margin - 220;
 
   page.drawRectangle({
@@ -911,65 +898,123 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
     color: WHITE,
   });
 
-  y -= 36;
+  drawFooter(page);
 
-  // --- Order IDs Block ---
-  if (data.orderIds && data.orderIds.length > 0) {
-    page.drawText(
-      `INCLUDED ORDERS (${data.totalNumberofOrders || data.orderIds.length}):`,
-      {
+  // --- Build Page 2 (Appendix: Notes & Orders) ---
+  const hasNotes = !!data.additionalNote || !!data.paymentReciept?.url;
+  const hasOrders = data.orderIds && data.orderIds.length > 0;
+
+  if (hasNotes || hasOrders) {
+    const extraPage = pdfDoc.addPage([595, 842]);
+    drawHeader(extraPage, "APPENDIX");
+    let extraY = height - 130;
+
+    // --- Additional Notes & Documents ---
+    if (hasNotes) {
+      extraPage.drawRectangle({
         x: margin,
-        y: y,
+        y: extraY - 4,
+        width: contentWidth,
+        height: 20,
+        color: GREEN_LIGHT,
+      });
+      extraPage.drawText("PAYMENT DETAILS & NOTES", {
+        x: margin + 8,
+        y: extraY + 3,
         font: boldFont,
-        size: 9,
+        size: 8,
         color: GREEN_PRIMARY,
-      },
-    );
-    y -= 14;
+      });
+      extraY -= 22;
 
-    const orderString = data.orderIds.join(", ");
-    y = drawWrappedText(
-      page,
-      orderString,
-      margin,
-      y,
-      contentWidth,
-      font,
-      7,
-      MUTED,
-      60,
-    );
+      if (data.additionalNote) {
+        extraPage.drawText("Notes:", {
+          x: margin + 8,
+          y: extraY,
+          font: boldFont,
+          size: 10,
+          color: GREEN_DARK,
+        });
+
+        // Wrap notes so they don't flow off the page
+        extraY = drawWrappedText(
+          extraPage,
+          data.additionalNote,
+          margin + 50,
+          extraY,
+          contentWidth - 60,
+          font,
+          10,
+          GREEN_DARK,
+          60,
+        );
+        extraY -= 12; // Extra padding
+      }
+
+      if (data.paymentReciept?.url) {
+        extraPage.drawText("Receipt Document:", {
+          x: margin + 8,
+          y: extraY,
+          font: boldFont,
+          size: 10,
+          color: GREEN_DARK,
+        });
+
+        // If the URL is extremely long, we slice it to prevent it from running off the PDF page
+        const receiptUrl = data.paymentReciept.url;
+        const displayUrl =
+          receiptUrl.length > 70 ? receiptUrl.slice(0, 70) + "..." : receiptUrl;
+
+        extraPage.drawText(displayUrl, {
+          x: margin + 110,
+          y: extraY,
+          font,
+          size: 9,
+          color: rgb(0.1, 0.4, 0.8),
+        });
+        extraY -= 24;
+      }
+
+      extraY -= 12; // Spacing before orders
+    }
+
+    // --- Order IDs ---
+    if (hasOrders) {
+      extraPage.drawRectangle({
+        x: margin,
+        y: extraY - 4,
+        width: contentWidth,
+        height: 20,
+        color: GREEN_LIGHT,
+      });
+      extraPage.drawText(
+        `INCLUDED ORDERS (${data.totalNumberofOrders || data.orderIds.length})`,
+        {
+          x: margin + 8,
+          y: extraY + 3,
+          font: boldFont,
+          size: 8,
+          color: GREEN_PRIMARY,
+        },
+      );
+      extraY -= 18;
+
+      const orderString = data.orderIds.join(", ");
+      drawWrappedText(
+        extraPage,
+        orderString,
+        margin,
+        extraY,
+        contentWidth,
+        font,
+        8,
+        MUTED,
+        60,
+      );
+    }
+
+    drawFooter(extraPage);
   }
-
-  // --- Footer ---
-  const footerY = 52;
-  page.drawRectangle({
-    x: 0,
-    y: 0,
-    width,
-    height: footerY,
-    color: GREEN_LIGHT,
-  });
-  page.drawRectangle({ x: 0, y: footerY, width, height: 1, color: GRAY_LINE });
-
-  page.drawText("Thank you for partnering with Candian's Cart!", {
-    x: margin,
-    y: footerY - 18,
-    font,
-    size: 9,
-    color: MUTED,
-  });
-
-  page.drawText(
-    `Receipt generated on ${new Date().toLocaleDateString("en-CA")}`,
-    {
-      x: margin,
-      y: footerY - 32,
-      font,
-      size: 8,
-      color: rgb(0.72, 0.78, 0.72),
-    },
-  );
 
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes).toString("base64");

@@ -5,7 +5,7 @@ type LogoProps = {
   href?: string;
 };
 
-export const Logo = ({ variant = "icon", href = "/customer" }: LogoProps) => {
+export const Logo = ({ variant = "icon", href = "/" }: LogoProps) => {
   const src =
     variant === "full"
       ? "https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo.png"

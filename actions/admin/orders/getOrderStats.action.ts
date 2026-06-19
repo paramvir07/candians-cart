@@ -45,7 +45,16 @@ export async function getOrderStats(
     OrderModel.countDocuments({ ...match, status: "completed" }),
     OrderModel.aggregate([
       { $match: match },
-      { $group: { _id: null, total: { $sum: "$cartTotal" } } },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: {
+              $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }],
+            },
+          },
+        },
+      },
     ]),
   ]);
 

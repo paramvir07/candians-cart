@@ -1,6 +1,6 @@
 import Logo from "@/components/shared/Logo";
 import SearchBar from "./searchBar";
-import { ShoppingCartIcon, Wallet } from "lucide-react";
+import { Search, ShoppingCartIcon, Wallet } from "lucide-react";
 import Link from "next/link";
 import { getCustomerDataAction } from "@/actions/customer/User.action";
 import { Customer } from "@/types/customer/customer";
@@ -11,7 +11,6 @@ import {
   getUnreadNotificationCount,
 } from "@/actions/common/notification.action";
 import { NotificationDropdown } from "../notification/NotificationDropdown";
-
 
 const Navbar = async () => {
   const [
@@ -38,8 +37,8 @@ const Navbar = async () => {
     .slice(0, 2);
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-background border-b border-border">
-      <div className="flex items-center justify-between px-5 h-14 gap-4">
+    <nav className="sticky top-0 z-50 w-screen max-w-[100vw] overflow-hidden bg-background border-b border-border">
+      <div className="flex w-full max-w-[100vw] min-w-0 items-center justify-between px-2 min-[360px]:px-3 sm:px-5 h-14 gap-2 sm:gap-4">
         {/* Logo */}
         <div className="shrink-0 flex items-center h-full">
           <Logo variant="icon" />
@@ -54,18 +53,27 @@ const Navbar = async () => {
         </Link>
 
         {/* Spacer on mobile */}
-        <div className="flex-1 md:hidden" />
+        <div className="flex-1 min-w-0 md:hidden" />
 
         {/* Right actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Notifications Dropdown (Replaced Link block) */}
-          <NotificationDropdown
-            unreadCount={unreadCount}
-            notifications={notifications}
-          />
+        <div className="flex min-w-0 shrink-0 items-center gap-1 min-[360px]:gap-1.5 sm:gap-2">
+          {/* Search — mobile */}
+          <Link href="/customer/search" className="md:hidden shrink-0">
+            <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary/80 active:scale-[0.97] transition-all">
+              <Search className="w-[16px] h-[16px] text-primary" />
+            </div>
+          </Link>
+
+          {/* Notifications Dropdown */}
+          <div className="shrink-0">
+            <NotificationDropdown
+              unreadCount={unreadCount}
+              notifications={notifications}
+            />
+          </div>
 
           {/* Cart */}
-          <Link href="/customer/cart">
+          <Link href="/customer/cart" className="shrink-0">
             <div className="relative w-9 h-9 rounded-xl bg-secondary border border-border flex items-center justify-center hover:bg-secondary/80 active:scale-[0.97] transition-all">
               <ShoppingCartIcon className="w-[16px] h-[16px] text-primary" />
               {(cartCount ?? 0) > 0 && (
@@ -77,16 +85,17 @@ const Navbar = async () => {
           </Link>
 
           {/* Wallet pill */}
-          <Link href="/customer/wallet">
-            <div className="flex items-center gap-2 bg-secondary border border-border rounded-xl px-5 py-1.5 hover:bg-secondary/80 active:scale-[0.97] transition-all">
+          <Link href="/customer/wallet" className="shrink-0">
+            <div className="flex h-9 items-center gap-1.5 sm:gap-2 bg-secondary border border-border rounded-xl px-2 min-[360px]:px-3 sm:px-5 py-0 hover:bg-secondary/80 active:scale-[0.97] transition-all">
               <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
                 <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
               </div>
+
               <div className="flex flex-col leading-none">
-                <span className="text-[9px] text-primary font-semibold uppercase tracking-wide">
+                <span className="hidden min-[390px]:block text-[9px] text-primary font-semibold uppercase tracking-wide">
                   Balance
                 </span>
-                <span className="text-sm font-black text-foreground tracking-tight mt-0.5">
+                <span className="text-[13px] sm:text-sm font-black text-foreground tracking-tight min-[390px]:mt-0.5 whitespace-nowrap">
                   ${(customerData.walletBalance / 100).toFixed(2)}
                 </span>
               </div>
@@ -94,10 +103,12 @@ const Navbar = async () => {
           </Link>
 
           {/* Divider */}
-          <div className="w-px h-5 bg-border mx-1" />
+          <div className="hidden sm:block w-px h-5 bg-border mx-1" />
 
           {/* Avatar dropdown */}
-          <NavAvatarMenu name={customerData.name} initials={initials} />
+          <div className="shrink-0 ml-1 min-[360px]:ml-1.5 sm:ml-0 flex items-center">
+            <NavAvatarMenu name={customerData.name} initials={initials} />
+          </div>
         </div>
       </div>
     </nav>

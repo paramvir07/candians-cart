@@ -2,6 +2,7 @@
 
 import { dbConnect } from "@/db/dbConnect";
 import Customer from "@/db/models/customer/customer.model";
+import OrderModel from "@/db/models/customer/Orders.Model";
 import mongoose from "mongoose";
 
 export interface CustomerStats {
@@ -11,7 +12,7 @@ export interface CustomerStats {
   newUsersThisMonth: number;
   newUsersChange: string;
   newUsersUp: boolean;
-  activeUsers: number; // walletBalance > 0
+  activeUsers: number; // unique customers who placed completed orders this month
   activeUsersChange: string;
   activeUsersUp: boolean;
   avgMonthlyBudget: number; // in dollars (divided by 100 already)
@@ -59,15 +60,27 @@ export async function getCustomerStats(
     return d >= startOfLastMonth && d <= endOfLastMonth;
   }).length;
 
-  // Active (walletBalance > 0)
-  const activeUsersThisMonth = customers.filter(
-    (c) => (c.walletBalance ?? 0) > 0,
-  ).length;
-  const activeUsersLastMonth = customers.filter(
-    (c) =>
-      new Date(c.createdAt as any) <= endOfLastMonth &&
-      (c.walletBalance ?? 0) > 0,
-  ).length;
+  // Active users = unique customers/users who placed completed orders this month
+  const activeUserIdsThisMonth = await OrderModel.distinct("userId", {
+    ...(storeId ? { storeId: new mongoose.Types.ObjectId(storeId) } : {}),
+    createdAt: {
+      $gte: startOfMonth,
+      $lt: new Date(now.getFullYear(), now.getMonth() + 1, 1),
+    },
+    status: "completed",
+  });
+
+  const activeUserIdsLastMonth = await OrderModel.distinct("userId", {
+    ...(storeId ? { storeId: new mongoose.Types.ObjectId(storeId) } : {}),
+    createdAt: {
+      $gte: startOfLastMonth,
+      $lt: startOfMonth,
+    },
+    status: "completed",
+  });
+
+  const activeUsersThisMonth = activeUserIdsThisMonth.length;
+  const activeUsersLastMonth = activeUserIdsLastMonth.length;
 
   // Avg monthly budget (stored in cents)
   const avgBudgetCents =

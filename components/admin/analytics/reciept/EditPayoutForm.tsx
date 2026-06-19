@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
   FileDown,
   UploadCloud,
@@ -17,6 +18,10 @@ import {
   Save,
   ExternalLink,
   FileText,
+  ShoppingCart,
+  Store,
+  TrendingUp,
+  PanelsTopLeft,
 } from "lucide-react";
 import { updateStorePayoutAction } from "@/actions/admin/reciept/managePayout";
 import { downloadSavedPayoutPdfAction } from "@/actions/admin/reciept/DownloadReciept";
@@ -34,7 +39,7 @@ export default function EditPayoutForm({
   const [status, setStatus] = useState<"pending" | "paid">(initialData.status);
   const [note, setNote] = useState(initialData.additionalNote);
   const [additionalCost, setAdditionalCost] = useState(
-    initialData.additionalCost || 0,
+    (initialData.additionalCost || initialData.additionalPrice || 0) / 100
   );
 
   // Existing uploaded receipt from the database
@@ -158,10 +163,13 @@ export default function EditPayoutForm({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Left Column: Payout Summary & PDF Download */}
-      <Card className="lg:col-span-1 h-fit">
-        <CardHeader>
-          <CardTitle className="text-lg flex justify-between items-center">
-            Summary
+      <Card className="lg:col-span-1 h-fit shadow-sm border-muted">
+        <CardHeader className="bg-muted/30 border-b pb-6">
+          <CardTitle className="text-xl flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Store className="h-5 w-5 text-primary" />
+              Summary
+            </div>
             <Badge
               variant={status === "paid" ? "default" : "secondary"}
               className={
@@ -172,203 +180,219 @@ export default function EditPayoutForm({
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Timeline */}
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <span className="text-muted-foreground">Period Start:</span>
-            <span className="font-medium text-right">
-              {format(new Date(initialData.startDate), "MMM dd, yyyy")}
-            </span>
-            <span className="text-muted-foreground">Period End:</span>
-            <span className="font-medium text-right">
-              {format(new Date(initialData.endDate), "MMM dd, yyyy")}
-            </span>
-            <span className="text-muted-foreground">Total Orders:</span>
-            <span className="font-medium text-right">
-              {initialData.totalNumberofOrders}
-            </span>
-          </div>
-
-          {/* Order Breakdown */}
-          <div>
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Order Breakdown
-            </h4>
-            <div className="grid grid-cols-2 gap-2 text-sm bg-muted/30 p-3 rounded-lg border">
-              <span className="text-muted-foreground">Customer Paid:</span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.totalCustomerPaid)}
+        <CardContent className="p-0">
+          {/* Big Top Metrics Grid */}
+          <div className="grid grid-cols-2 divide-x divide-y border-b bg-muted/10">
+            <div className="p-4 flex flex-col justify-center">
+              <span className="text-xs font-medium mb-1 uppercase tracking-wider text-muted-foreground">
+                Total Revenue
               </span>
-
-              <span className="text-muted-foreground">Total Base Price:</span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.totalBasePrice)}
+              <span className="text-2xl font-bold text-foreground">
+                {formatCurrency(
+                  (initialData.totalCustomerPaid || 0) +
+                    (initialData.totalSubsidy || 0),
+                )}
               </span>
-
-              <div className="col-span-2 border-t my-1 border-dashed" />
-
-              {/* Detailed Tax Breakdown */}
-              <span className="text-muted-foreground">
-                Total Tax Collected:
+            </div>
+            <div className="p-4 flex flex-col justify-center">
+              <span className="text-xs text-blue-700 font-medium mb-1 uppercase tracking-wider">
+                Store Payout
               </span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.totalTax)}
+              <span className="text-2xl font-bold text-blue-700">
+                {formatCurrency(initialData.storePayout || 0)}
               </span>
-
-              <span className="text-muted-foreground ml-4">
-                - Base Tax (Total):
+            </div>
+            <div className="p-4 flex flex-col justify-center">
+              <span className="text-xs text-primary font-medium mb-1 uppercase tracking-wider">
+                Platform Profit
               </span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.baseTax)}
+              <span className="text-2xl font-bold text-primary">
+                {formatCurrency(initialData.platformProfit || 0)}
               </span>
-
-              <span className="text-muted-foreground ml-4">
-                - Markup Tax (Total):
+            </div>
+            <div className="p-4 flex flex-col justify-center">
+              <span className="text-xs font-medium mb-1 uppercase tracking-wider text-muted-foreground">
+                Total Orders
               </span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.markupTax)}
-              </span>
-
-              <div className="col-span-2 border-t my-1 border-dashed" />
-
-              <span className="text-muted-foreground">
-                Store Tax Liability:
-              </span>
-              <span className="font-medium text-right"></span>
-
-              <span className="text-muted-foreground ml-4">
-                - Store Base GST:
-              </span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.storebasetaxGST)}
-              </span>
-
-              <span className="text-muted-foreground ml-4">
-                - Store Base PST:
-              </span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.storebasetaxPST)}
-              </span>
-
-              <span className="text-muted-foreground ml-4">
-                - Store Markup Tax:
-              </span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.storeMarkupTax)}
-              </span>
-
-              <div className="col-span-2 border-t my-1 border-dashed" />
-
-              <span className="text-muted-foreground">Disposable Fees:</span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.totalDisposableFee)}
-              </span>
-
-              {initialData.totalSubsidy > 0 && (
-                <>
-                  <span className="text-muted-foreground">
-                    Subsidies Applied:
-                  </span>
-                  <span className="font-medium text-right text-red-500">
-                    -{formatCurrency(initialData.totalSubsidy)}
-                  </span>
-                </>
-              )}
-
-              <div className="col-span-2 border-t my-1" />
-
-              <span className="font-medium">Store Fixed Value (Cost):</span>
-              <span className="font-bold text-right">
-                {formatCurrency(initialData.storeFixedValue)}
+              <span className="text-2xl font-bold text-foreground">
+                {initialData.totalNumberofOrders || initialData.orderCount || 0}
               </span>
             </div>
           </div>
 
-          {/* Margins & Adjustments */}
-          <div>
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Margins & Adjustments
-            </h4>
-            <div className="grid grid-cols-2 gap-2 text-sm bg-muted/30 p-3 rounded-lg border">
-              <span className="text-muted-foreground">Store Profit (30%):</span>
+          <div className="p-6 space-y-6">
+            {/* Timeline */}
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <span className="text-muted-foreground">Period Start:</span>
               <span className="font-medium text-right">
-                {formatCurrency(initialData.storeProfit)}
+                {format(new Date(initialData.startDate), "MMM dd, yyyy")}
               </span>
-
-              <div className="col-span-2 border-t my-1 border-dashed" />
-
-              <span className="text-muted-foreground">
-                Cash Collected (Orders):
-              </span>
-              <span className="font-medium text-right text-red-500">
-                -{formatCurrency(initialData.totalOrderCashCollected || 0)}
-              </span>
-              <span className="text-muted-foreground">
-                Cash Collected (Topups):
-              </span>
-              <span className="font-medium text-right text-red-500">
-                -
-                {formatCurrency(initialData.totalWalletTopUpCashCollected || 0)}
-              </span>
-
-              <span className="font-medium">Net Cash Deducted:</span>
-              <span className="font-bold text-right text-red-600">
-                -{formatCurrency(initialData.totalCashCollected || 0)}
-              </span>
-
-              <div className="col-span-2 border-t my-1 border-dashed" />
-
-              <span className="text-muted-foreground">
-                Platform Markup GST:
-              </span>
+              <span className="text-muted-foreground">Period End:</span>
               <span className="font-medium text-right">
-                {formatCurrency(initialData.platformMarkupGSTTax)}
-              </span>
-
-              <span className="text-muted-foreground">
-                Platform Markup PST:
-              </span>
-              <span className="font-medium text-right">
-                {formatCurrency(initialData.platformMarkupPSTTax)}
-              </span>
-
-              <span className="font-medium mt-1">
-                Platform Comm. (Fees/Subsidy):
-              </span>
-              <span className="font-bold text-right mt-1">
-                {formatCurrency(initialData.platformCommision)}
+                {format(new Date(initialData.endDate), "MMM dd, yyyy")}
               </span>
             </div>
-          </div>
 
-          {/* Final Totals */}
-          <div>
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Final Totals
-            </h4>
-            <div className="grid grid-cols-2 gap-2 text-sm bg-green-50/50 p-3 rounded-lg border border-green-100">
-              <span className="font-medium text-green-900">Store Payout:</span>
-              <span className="font-bold text-right text-green-700 text-base">
-                {formatCurrency(initialData.storePayout)}
-              </span>
+            <div className="space-y-8">
+              {/* Column 1: Order Breakdown & Store Breakdown */}
+              <div className="space-y-4">
+                <h4 className="font-semibold flex items-center gap-2 text-foreground text-lg">
+                  <ShoppingCart className="w-4 h-4 text-foreground" /> Order
+                  Breakdown
+                </h4>
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      Total Base Price
+                    </span>
+                    <span className="text-muted-foreground">
+                      {formatCurrency(initialData.totalBasePrice || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Total GST</span>
+                    <span className="font-medium text-muted-foreground">
+                      {formatCurrency(initialData.totalGST || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Total PST</span>
+                    <span className="font-medium text-muted-foreground">
+                      {formatCurrency(initialData.totalPST || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      Total Disposable Fees
+                    </span>
+                    <span className="font-medium text-muted-foreground">
+                      {formatCurrency(initialData.totalDisposableFee || 0)}
+                    </span>
+                  </div>
 
-              <span className="font-medium text-green-900">
-                Platform Profit:
-              </span>
-              <span className="font-bold text-right text-green-700">
-                {formatCurrency(initialData.platformProfit)}
-              </span>
+                  <h2 className="font-semibold flex items-center gap-2 pt-2 text-lg text-blue-700">
+                    <Store className="w-4 h-4 text-blue-700" /> Store Breakdown
+                  </h2>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      Total Base Price
+                    </span>
+                    <span className="font-medium text-muted-foreground">
+                      {formatCurrency(initialData.totalBasePrice || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Store GST</span>
+                    <span className="font-medium text-muted-foreground">
+                      {formatCurrency(initialData.storebasetaxGST || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Store PST</span>
+                    <span className="font-medium text-muted-foreground">
+                      {formatCurrency(initialData.storebasetaxPST || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">
+                      Total Disposable Fees
+                    </span>
+                    <span className="font-medium text-muted-foreground">
+                      {formatCurrency(initialData.totalDisposableFee || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-blue-700">
+                      Store Profit (50%)
+                    </span>
+                    <span className="font-medium text-blue-700">
+                      {formatCurrency(initialData.storeProfit || 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <span>Total Cash Collected</span>
+                    <span>
+                      -
+                      {formatCurrency(
+                        initialData.totalWalletTopUpCashCollected || 0,
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center font-medium text-blue-700 mt-2">
+                    <span>Total Store Payout</span>
+                    <span>{formatCurrency(initialData.storePayout || 0)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Column 2: Margins, Profits & Platform Breakdown */}
+              <div className="space-y-4">
+                <h4 className="font-semibold flex items-center gap-2 text-foreground/80 text-lg">
+                  <TrendingUp className="w-4 h-4" /> Profit & Margins
+                </h4>
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold">Total Profit Margin</span>
+                    <span className="font-bold">
+                      {formatCurrency(
+                        (initialData.grossMargin || 0) +
+                          (initialData.totalSubsidy || 0),
+                      )}
+                    </span>
+                  </div>
+                  <Separator className="my-2" />
+                  <div className="flex justify-between items-center font-medium text-pink-700">
+                    <span>Subsidy</span>
+                    <span>{formatCurrency(initialData.totalSubsidy || 0)}</span>
+                  </div>
+                  <div className="flex justify-between items-center font-medium text-blue-700">
+                    <span>Store Profit (50%)</span>
+                    <span>{formatCurrency(initialData.storeProfit || 0)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-medium text-primary mt-2">
+                    <span>Platform Profit</span>
+                    <span>
+                      {formatCurrency(initialData.platformProfit || 0)}
+                    </span>
+                  </div>
+
+                  <h4 className="font-semibold flex items-center gap-2 text-primary pt-2 text-lg">
+                    <PanelsTopLeft className="w-4 h-4 text-primary" /> Platform
+                    Breakdown
+                  </h4>
+                  <div className="space-y-1 pt-1">
+                    <div className="flex justify-between items-center text-muted-foreground">
+                      <span>Platform GST</span>
+                      <span>
+                        {formatCurrency(initialData.platformMarkupGSTTax || 0)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-muted-foreground">
+                      <span>Platform PST</span>
+                      <span>
+                        {formatCurrency(initialData.platformMarkupPSTTax || 0)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-medium text-primary mt-2">
+                    <span>Platform Profit</span>
+                    <span>
+                      {formatCurrency(initialData.platformProfit || 0)}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <Button
-            onClick={handleDownloadSystemPDF}
-            className="w-full mt-4"
-            variant="outline"
-          >
-            <FileDown className="w-4 h-4 mr-2" />
-            Download Generated PDF
-          </Button>
+            <Button
+              onClick={handleDownloadSystemPDF}
+              className="w-full mt-4"
+              variant="outline"
+            >
+              <FileDown className="w-4 h-4 mr-2" />
+              Download Generated PDF
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -418,8 +442,6 @@ export default function EditPayoutForm({
             </label>
             <Input
               type="number"
-              min={0}
-              step={0.01}
               placeholder="e.g. 12.50"
               value={additionalCost}
               onChange={(e) => setAdditionalCost(Number(e.target.value))}
@@ -499,7 +521,11 @@ export default function EditPayoutForm({
               </div>
             ) : (
               <div
-                className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${isSaving ? "bg-muted/10 cursor-not-allowed opacity-50" : "bg-muted/20 hover:bg-muted/40 cursor-pointer"}`}
+                className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-colors ${
+                  isSaving
+                    ? "bg-muted/10 cursor-not-allowed opacity-50"
+                    : "bg-muted/20 hover:bg-muted/40 cursor-pointer"
+                }`}
                 onClick={() => !isSaving && fileInputRef.current?.click()}
               >
                 <UploadCloud className="w-8 h-8 text-muted-foreground mb-2" />

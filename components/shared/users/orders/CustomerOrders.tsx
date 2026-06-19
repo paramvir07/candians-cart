@@ -9,9 +9,11 @@ import OrdersHistoryClient from "./OrdersHistoryClient";
 async function OrdersLoader({
   customerId,
   allOrders,
+  immigrationRole,
 }: {
   customerId?: string;
   allOrders?: boolean;
+  immigrationRole?: boolean;
 }) {
   // Fetch initial Page 1
   const response = allOrders
@@ -32,6 +34,7 @@ async function OrdersLoader({
       allOrders={allOrders}
       initialOrders={ordersData}
       initialTotalPages={totalPages}
+      immigrationRole={immigrationRole}
     />
   );
 }
@@ -39,9 +42,11 @@ async function OrdersLoader({
 const CustomerOrders = ({
   customerId,
   allOrders,
+  immigrationRole,
 }: {
   customerId?: string;
   allOrders?: boolean;
+  immigrationRole?: boolean;
 }) => {
   const showNavbar = !customerId && !allOrders;
 
@@ -49,7 +54,7 @@ const CustomerOrders = ({
     <>
       {showNavbar && <Navbar />}
       <Suspense fallback={<OrdersHistorySkeleton withNavbar={false} />}>
-        <OrdersLoader customerId={customerId} allOrders={allOrders} />
+        <OrdersLoader customerId={customerId} allOrders={allOrders} immigrationRole={immigrationRole} />
       </Suspense>
     </>
   );

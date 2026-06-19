@@ -22,6 +22,7 @@ export interface SerializedStorePayout {
   status: PayoutStatus;
   createdAt: string;
   additionalNote: string;
+  totalNumberofOrders: number;
   paymentReciept: { url: string; fileId: string } | null;
   storebasetaxGST: number;
   storebasetaxPST: number;
@@ -31,6 +32,7 @@ export interface SerializedStorePayout {
   platformCommision: number;
   totalSubsidy: number;
   totalCashCollected?: number;
+  additionalCost?: number;
 }
 
 type LeanPayout = IStorePayout & {
@@ -103,6 +105,8 @@ export async function getVendorPayoutsAction(
       platformCommision: p.platformCommision || 0, // Added
       totalSubsidy: p.totalSubsidy || 0, // Added
       totalCashCollected: p.totalCashCollected || 0,
+      additionalCost: p.additionalCost || 0,
+      totalNumberofOrders: p.totalNumberofOrders || 0,
     }));
 
     return { success: true, data: serializedData };
@@ -143,6 +147,7 @@ export async function getSingleVendorPayoutAction(
       storeProfit: payout.storeProfit || 0,
       storeMarkupTax: payout.storeMarkupTax || 0, // Added
       storeFixedValue: payout.storeFixedValue || 0, // Added
+      totalNumberofOrders: payout.totalNumberofOrders || 0,
       storePayout: payout.storePayout,
       status: payout.status,
       createdAt: payout.createdAt.toISOString(),
@@ -161,6 +166,7 @@ export async function getSingleVendorPayoutAction(
       platformProfit: payout.platformProfit || 0,
       totalCashCollected: payout.totalCashCollected || 0,
       totalSubsidy: payout.totalSubsidy || 0,
+      additionalCost: payout.additionalCost || 0,
     };
 
     return { success: true, data: serializedData };

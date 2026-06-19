@@ -22,6 +22,10 @@ export const roles = {
     user: [],
     session: [],
   }),
+  immigration: ac.newRole({
+    user: [],
+    session: [],
+  }),
   admin: ac.newRole({
     ...adminAc.statements, // admin gets admin permissions
   }),
