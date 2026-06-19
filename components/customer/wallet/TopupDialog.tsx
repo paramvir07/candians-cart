@@ -93,9 +93,23 @@ export function TopUpDialog({
 
     setAmount(dollars);
     setInputVal(dollars.toFixed(2));
-    setCashReceived(dollars);
-    setCashReceivedInput(dollars.toFixed(2));
+    if(isCashPayment){
+      setCashReceived(dollars);
+    }
   };
+
+  const handleCashRecivedPreset = () =>{
+    let finalCents = Math.max((cartTotal ?? 0) - (WalletBalance ?? 0), 0);
+
+    const coveredCents = finalCents + (WalletBalance ?? 0);
+    if (coveredCents < (cartTotal ?? 0)) {
+      finalCents += (cartTotal ?? 0) - coveredCents;
+    }
+
+    const dollars = finalCents / 100;
+    setCashReceivedInput(dollars.toFixed(2));
+
+  }
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -401,10 +415,10 @@ export function TopUpDialog({
                   <p className="text-sm font-semibold text-gray-700">
                     Cash Received
                   </p>
-                  <Banknote
-                    size={16}
-                    style={{ color: "var(--color-primary)" }}
-                  />
+                  <Button variant={'default'} onClick={handleCashRecivedPreset} className="py-1 px-2 rounded-lg text-xs">
+                    <Banknote size={14}/>
+                    Exact
+                  </Button>
                 </div>
 
                 <div className="flex items-baseline gap-1.5">

@@ -14,9 +14,7 @@ import { cn } from "@/lib/utils";
 
 const CITIES = [
   { value: "abbotsford", label: "Abbotsford", province: "BC", available: true },
-  { value: "vancouver",  label: "Vancouver",  province: "BC", available: false },
   { value: "surrey",     label: "Surrey",     province: "BC", available: false },
-  { value: "kelowna",    label: "Kelowna",    province: "BC", available: false },
 ];
 
 const Location = () => {

@@ -507,6 +507,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             <div  className="data-cart-scroll max-h-[460px] overflow-y-auto rounded-xl space-y-2 pr-0.5">
               {items.map((item: ICartItem) => {
                 const { afterMarkup } = calcLine(item);
+                const markup = item.productId.markup;
                 const hasImage = item.productId.images?.[0]?.url;
                 const isMeasuredInWeight = item.productId.isMeasuredInWeight;
                 return (
@@ -517,19 +518,35 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                   >
                     <div className="relative h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-secondary">
                       {hasImage ? (
-                        <Image
-                          src={item.productId.images?.[0]?.url ?? ""}
-                          alt={item.productId.name}
-                          width={64}
-                          height={64}
-                          className="w-full h-full object-cover"
-                        />
+                        <>
+                          <Image
+                            src={item.productId.images?.[0]?.url ?? ""}
+                            alt={item.productId.name}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                          />
+                        </>
                       ) : (
                         <CategoryIllustration
                           category={item.productId.category}
                           className="w-full h-full"
                         />
                       )}
+                      {/* Margin tier dot — always shown regardless of image */}
+                        {!item.productId.subsidised && (
+                            <span
+                              className={`absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-black leading-none tracking-wide ${
+                                markup >= 100
+                                  ? "bg-red-500 text-white"
+                                  : markup >= 50
+                                  ? "bg-amber-400 text-amber-950"
+                                  : "bg-emerald-500 text-white"
+                              }`}
+                            >
+                              {markup >= 100 ? "HIGH" : markup >= 50 ? "MED" : "LOW"}
+                            </span>
+                        )}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col gap-2">
                       <div className="flex items-start justify-between gap-2">
@@ -537,6 +554,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                           <div>
                             <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2 flex gap-2 items-center">
                               {item.productId.name}
+                              
                               {isMeasuredInWeight &&
                                 `/${item.productId.UOM?.toLowerCase()}`}
                               {item.productId?.PriceDrop ? (
@@ -551,6 +569,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                                 ""
                               )}
                             </p>
+
                             <p className="text-xs font-semibold text-muted-foreground"></p>
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5 truncate">
@@ -707,6 +726,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 <div  className="data-cart-scroll max-h-[420px] overflow-y-auto divide-y divide-border/50">
                   {items.map((item: ICartItem) => {
                     const { afterMarkup } = calcLine(item);
+                    const markup = item.productId.markup;
                     const hasImage = item.productId.images?.[0]?.url;
                     const isMeasuredInWeight =
                       item.productId.isMeasuredInWeight;
@@ -730,6 +750,19 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                               category={item.productId.category}
                               className="w-full h-full"
                             />
+                          )}
+                           {!item.productId.subsidised && (
+                            <span
+                              className={`absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-black leading-none tracking-wide ${
+                                markup >= 100
+                                  ? "bg-red-500 text-white"
+                                  : markup >= 50
+                                  ? "bg-amber-400 text-amber-950"
+                                  : "bg-emerald-500 text-white"
+                              }`}
+                            >
+                              {markup >= 100 ? "HIGH" : markup >= 50 ? "MED" : "LOW"}
+                            </span>
                           )}
                         </div>
 
@@ -756,10 +789,12 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                             {" "}
                             {/* changed items-center to items-start */}
                             <p className="text-sm font-semibold text-foreground truncate flex-1 min-w-0">
+                              
                               {item.productId.name}
                               {isMeasuredInWeight &&
                                 `/${item.productId.UOM?.toLowerCase()}`}
                             </p>
+
                             <p className="text-xs font-semibold text-muted-foreground">
                               {item.productId?.PriceDrop ? (
                                 <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm">

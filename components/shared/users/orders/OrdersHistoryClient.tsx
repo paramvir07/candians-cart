@@ -2,8 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, Search, Package } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { ChevronLeft, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OrderWithProductsClient } from "@/types/customer/OrdersClient";
 import OrderCard from "./OrderCard";

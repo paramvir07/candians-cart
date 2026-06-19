@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Check, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { Button } from "../../ui/button";
 import Link from "next/link";
 import { stepAtom } from "@/atoms/customer/signUp";
