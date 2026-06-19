@@ -8,7 +8,6 @@ import {
   MapPin,
   CalendarDays,
   X,
-  KeyRound,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -183,16 +182,6 @@ export default function ProfileHero({ customer }: Props) {
               Edit Profile
             </Link>
           </Button>
-
-          {/* <Button
-            size="icon"
-            variant="outline"
-            className="rounded-xl border-green-500 text-green-600 hover:bg-green-50"
-          >
-            <Link href="/customer/change-password" className="flex">
-              <KeyRound className="h-4 w-4" />
-            </Link>
-          </Button> */}
           <div className="shrink-0">
             <ShareButton />
           </div>

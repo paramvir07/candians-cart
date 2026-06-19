@@ -7,11 +7,23 @@ import { QRCodeSVG } from "qrcode.react";
 
 const DEFAULT_URL = "https://www.canadianscart.ca";
 
+const getShareMessage = (
+  url: string,
+) => `🛒 FREE Milk, Atta & Ghee just for shopping groceries?! YES!
+Candian's Cart (CC) is NOW launching at Sunfarm Produce, Abbotsford BC! 🎉
+
+🎁 Win a $500 Grocery Gift Card — One lucky member will take it home!
+
+📲 Sign Up TODAY with referral code: WELCOMETOCC
+
+📍 3670 Town Line Rd #108, Abbotsford, BC`;
+
+
 interface AppConfig {
   label: string;
   bg: string;
   icon: React.ReactNode;
-  href: (url: string) => string;
+  href: (url: string, message: string) => string;
 }
 
 const APPS: AppConfig[] = [
@@ -24,7 +36,8 @@ const APPS: AppConfig[] = [
         <path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.561 4.14 1.535 5.877L.057 23.887l6.197-1.455A11.937 11.937 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.937 0-3.748-.5-5.325-1.373l-.38-.224-3.938.924.966-3.834-.245-.396A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
       </svg>
     ),
-    href: (url) => `https://wa.me/?text=${encodeURIComponent(url)}`,
+    href: (_url, message) =>
+      `https://wa.me/?text=${encodeURIComponent(message)}`,
   },
   {
     label: "X",
@@ -34,8 +47,8 @@ const APPS: AppConfig[] = [
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
       </svg>
     ),
-    href: (url) =>
-      `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`,
+    href: (_url, message) =>
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`,
   },
   {
     label: "Mail",
@@ -53,8 +66,10 @@ const APPS: AppConfig[] = [
         <polyline points="22,6 12,13 2,6" />
       </svg>
     ),
-    href: (url) =>
-      `mailto:?subject=Check this out&body=${encodeURIComponent(url)}`,
+    href: (_url, message) =>
+      `mailto:?subject=${encodeURIComponent(
+        "Canadians Cart Grocery Giveaway",
+      )}&body=${encodeURIComponent(message)}`,
   },
   {
     label: "Messages",
@@ -71,7 +86,7 @@ const APPS: AppConfig[] = [
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
     ),
-    href: (url) => `sms:?body=${encodeURIComponent(url)}`,
+    href: (_url, message) => `sms:?body=${encodeURIComponent(message)}`,
   },
 ];
 
@@ -83,12 +98,13 @@ interface ShareButtonProps {
 
 export default function ShareButton({ link }: ShareButtonProps) {
   const url = link ?? DEFAULT_URL;
+  const shareMessage = getShareMessage(url);
+
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<ModalView>("picker");
   const [copied, setCopied] = useState(false);
 
-  const isMobile =
-    typeof navigator !== "undefined" && !!navigator.share;
+  const isMobile = typeof navigator !== "undefined" && !!navigator.share;
 
   const openModal = (v: ModalView) => {
     setView(v);
@@ -97,25 +113,23 @@ export default function ShareButton({ link }: ShareButtonProps) {
 
   const closeModal = () => {
     setOpen(false);
-    // reset after animation settles
+
     setTimeout(() => setView("picker"), 200);
   };
 
   const handleShare = async () => {
-    if (isMobile) {
-      // On mobile show the picker so they can still choose QR
-      openModal("picker");
-    } else {
-      openModal("picker");
-    }
+    openModal("picker");
   };
 
   const handleNativeOrCustomShare = async () => {
     if (isMobile) {
       try {
-        await navigator.share({ url });
+        await navigator.share({
+          title: "Canadians Cart Grocery Giveaway",
+          text: shareMessage,
+          url,
+        });
       } catch {
-        // cancelled or failed — fall back to custom share sheet
         setView("share");
       }
     } else {
@@ -124,7 +138,7 @@ export default function ShareButton({ link }: ShareButtonProps) {
   };
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(url);
+    await navigator.clipboard.writeText(shareMessage);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -136,70 +150,88 @@ export default function ShareButton({ link }: ShareButtonProps) {
         variant="outline"
         className="rounded-xl border-green-500 text-green-600 hover:bg-green-50"
         onClick={handleShare}
+        aria-label="Share"
       >
         <Share2 className="h-4 w-4" />
       </Button>
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm pb-[calc(env(safe-area-inset-bottom)+4rem)] sm:pb-0"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm pb-[calc(env(safe-area-inset-bottom)+4rem)] sm:items-center sm:pb-0"
           onClick={closeModal}
         >
           <div
-            className="w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl bg-background border border-border shadow-2xl overflow-hidden"
+            className="w-full overflow-hidden rounded-t-3xl border border-border bg-background shadow-2xl sm:max-w-sm sm:rounded-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <div className="flex items-center justify-between px-5 pb-3 pt-5">
               <button
-                onClick={view !== "picker" ? () => setView("picker") : closeModal}
-                className="text-muted-foreground hover:text-foreground transition-colors p-1 -ml-1"
-                aria-label="Back"
+                onClick={
+                  view !== "picker" ? () => setView("picker") : closeModal
+                }
+                className="-ml-1 p-1 text-muted-foreground transition-colors hover:text-foreground"
+                aria-label={view !== "picker" ? "Back" : "Close"}
               >
                 {view !== "picker" ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M19 12H5M12 5l-7 7 7 7" />
                   </svg>
                 ) : (
                   <X className="h-5 w-5" />
                 )}
               </button>
+
               <p className="text-sm font-semibold text-foreground">
                 {view === "picker" && "Share"}
                 {view === "qr" && "QR Code"}
                 {view === "share" && "Share via"}
               </p>
+
               <div className="w-7" />
             </div>
 
             {/* Picker view */}
             {view === "picker" && (
-              <div className="px-5 pb-8 pt-2 grid grid-cols-2 gap-3">
-                {/* QR Code option */}
+              <div className="grid grid-cols-2 gap-3 px-5 pb-8 pt-2">
                 <button
                   onClick={() => setView("qr")}
-                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-muted/40 hover:bg-muted/70 active:scale-95 transition-all p-5"
+                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-muted/40 p-5 transition-all hover:bg-muted/70 active:scale-95"
                 >
                   <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-600">
                     <QrCode className="h-7 w-7" />
                   </span>
-                  <span className="text-sm font-medium text-foreground">QR Code</span>
-                  <span className="text-xs text-muted-foreground text-center leading-relaxed">
+
+                  <span className="text-sm font-medium text-foreground">
+                    QR Code
+                  </span>
+
+                  <span className="text-center text-xs leading-relaxed text-muted-foreground">
                     Scan to open on another device
                   </span>
                 </button>
 
-                {/* Share option */}
                 <button
                   onClick={handleNativeOrCustomShare}
-                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-muted/40 hover:bg-muted/70 active:scale-95 transition-all p-5"
+                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-muted/40 p-5 transition-all hover:bg-muted/70 active:scale-95"
                 >
                   <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-600">
                     <Share2 className="h-7 w-7" />
                   </span>
-                  <span className="text-sm font-medium text-foreground">Share Link</span>
-                  <span className="text-xs text-muted-foreground text-center leading-relaxed">
-                    Send via apps or copy link
+
+                  <span className="text-sm font-medium text-foreground">
+                    Share Link
+                  </span>
+
+                  <span className="text-center text-xs leading-relaxed text-muted-foreground">
+                    Send via apps or copy message
                   </span>
                 </button>
               </div>
@@ -207,19 +239,27 @@ export default function ShareButton({ link }: ShareButtonProps) {
 
             {/* QR Code view */}
             {view === "qr" && (
-              <div className="px-5 pb-8 pt-2 flex flex-col items-center gap-5">
-                <div className="rounded-2xl bg-white p-5 shadow-inner border border-border">
+              <div className="flex flex-col items-center gap-5 px-5 pb-8 pt-2">
+                <div className="rounded-2xl border border-border bg-white p-5 shadow-inner">
                   <QRCodeSVG value={url} size={200} />
                 </div>
-                <div className="text-center space-y-1">
-                  <p className="text-sm font-medium text-foreground">Scan with your camera</p>
-                  <p className="text-xs text-muted-foreground max-w-[220px] leading-relaxed">
-                    Point your phone camera at the code to open the link instantly
+
+                <div className="space-y-1 text-center">
+                  <p className="text-sm font-medium text-foreground">
+                    Scan with your camera
+                  </p>
+
+                  <p className="max-w-[220px] text-xs leading-relaxed text-muted-foreground">
+                    Point your phone camera at the code to open the link
+                    instantly
                   </p>
                 </div>
-                {/* URL pill */}
-                <div className="flex items-center gap-2 w-full rounded-xl border border-border bg-muted/40 px-3 py-2">
-                  <span className="flex-1 truncate font-mono text-xs text-muted-foreground">{url}</span>
+
+                <div className="flex w-full items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2">
+                  <span className="flex-1 truncate font-mono text-xs text-muted-foreground">
+                    {url}
+                  </span>
+
                   <Button
                     size="sm"
                     className={
@@ -235,31 +275,37 @@ export default function ShareButton({ link }: ShareButtonProps) {
               </div>
             )}
 
-            {/* Custom share sheet (desktop fallback) */}
+            {/* Custom share sheet */}
             {view === "share" && (
-              <div className="px-5 pb-8 pt-2 flex flex-col gap-5">
+              <div className="flex flex-col gap-5 px-5 pb-8 pt-2">
                 <div className="flex justify-around">
                   {APPS.map((app) => (
                     <a
                       key={app.label}
-                      href={app.href(url)}
+                      href={app.href(url, shareMessage)}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex flex-col items-center gap-1.5 group"
+                      className="group flex flex-col items-center gap-1.5"
                     >
                       <span
-                        className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm group-hover:scale-110 transition-transform"
+                        className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110"
                         style={{ background: app.bg }}
                       >
                         {app.icon}
                       </span>
-                      <span className="text-[11px] text-muted-foreground">{app.label}</span>
+
+                      <span className="text-[11px] text-muted-foreground">
+                        {app.label}
+                      </span>
                     </a>
                   ))}
                 </div>
-                {/* Copy link row */}
+
                 <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2">
-                  <span className="flex-1 truncate font-mono text-xs text-muted-foreground">{url}</span>
+                  <span className="flex-1 truncate font-mono text-xs text-muted-foreground">
+                    {url}
+                  </span>
+
                   <Button
                     size="sm"
                     className={

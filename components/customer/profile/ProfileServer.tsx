@@ -172,7 +172,7 @@ export default async function ProfileServer() {
               <ProfileHero customer={customerData} />
 
               <div className="mx-auto w-full max-w-[420px]">
-                <PromotionBanner initialStats={promoStats} variant="banner" />
+                <PromotionBanner initialStats={promoStats} variant="card" />
               </div>
 
               <CustomerAdvertisements />
