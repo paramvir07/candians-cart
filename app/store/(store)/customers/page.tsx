@@ -1,133 +1,47 @@
-import { getMyStoreCustomers } from "@/actions/customer/User.action";
+import {
+  getMyStoreCustomers,
+  getMyStoreCustomerStats,
+} from "@/actions/customer/User.action";
 import MainOverviewUser from "@/components/shared/users/MainOverviewUser";
 import UserList from "@/components/shared/users/UserList";
 import { SerializedCustomer } from "@/types/customer/customer";
 
+export const dynamic = "force-dynamic";
+
 const ITEMS_PER_PAGE = 12;
 
 const page = async () => {
-  const { myStoreCustomersData, pagination } = await getMyStoreCustomers(
-    1,
-    ITEMS_PER_PAGE,
-  );
+  const [{ myStoreCustomersData, pagination }, stats] = await Promise.all([
+    getMyStoreCustomers(1, ITEMS_PER_PAGE),
+    getMyStoreCustomerStats(),
+  ]);
 
-  // 👉 Cast the array as SerializedCustomer
   const customers: SerializedCustomer[] =
     (myStoreCustomersData as SerializedCustomer[]) ?? [];
-
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-
-  // Total Users
-  const totalUsers = customers.length;
-
-  const totalUsersLastMonth = customers.filter(
-    (c: SerializedCustomer) => new Date(c.createdAt) <= endOfLastMonth,
-  ).length;
-
-  const totalUsersChange =
-    totalUsersLastMonth > 0
-      ? (
-          ((totalUsers - totalUsersLastMonth) / totalUsersLastMonth) *
-          100
-        ).toFixed(1)
-      : "0";
-  const totalUsersUp = totalUsers >= totalUsersLastMonth;
-
-  // New Users this month
-  const newUsersThisMonth = customers.filter(
-    (c: SerializedCustomer) => new Date(c.createdAt) >= startOfMonth,
-  ).length;
-
-  const newUsersLastMonth = customers.filter((c: SerializedCustomer) => {
-    const d = new Date(c.createdAt);
-    return d >= startOfLastMonth && d <= endOfLastMonth;
-  }).length;
-
-  const newUsersChange =
-    newUsersLastMonth > 0
-      ? (
-          ((newUsersThisMonth - newUsersLastMonth) / newUsersLastMonth) *
-          100
-        ).toFixed(1)
-      : "0";
-  const newUsersUp = newUsersThisMonth >= newUsersLastMonth;
-
-  // Active Users = walletBalance > 0
-  const activeUsersThisMonth = customers.filter(
-    (c: SerializedCustomer) => c.walletBalance > 0,
-  ).length;
-
-  const activeUsersLastMonth = customers.filter(
-    (c: SerializedCustomer) =>
-      new Date(c.createdAt) <= endOfLastMonth && c.walletBalance > 0,
-  ).length;
-
-  const activeUsersChange =
-    activeUsersLastMonth > 0
-      ? (
-          ((activeUsersThisMonth - activeUsersLastMonth) /
-            activeUsersLastMonth) *
-          100
-        ).toFixed(1)
-      : "0";
-  const activeUsersUp = activeUsersThisMonth >= activeUsersLastMonth;
-
-  // Avg Monthly Budget
-  const avgMonthlyBudgetCents =
-    customers.length > 0
-      ? customers.reduce(
-          (sum: number, c: SerializedCustomer) => sum + (c.monthlyBudget ?? 0),
-          0,
-        ) / customers.length
-      : 0;
-
-  const lastMonthCustomers: SerializedCustomer[] = customers.filter(
-    (c: SerializedCustomer) => new Date(c.createdAt) <= endOfLastMonth,
-  );
-
-  const avgMonthlyBudgetLastMonthCents =
-    lastMonthCustomers.length > 0
-      ? lastMonthCustomers.reduce(
-          (sum: number, c: SerializedCustomer) => sum + (c.monthlyBudget ?? 0),
-          0,
-        ) / lastMonthCustomers.length
-      : 0;
-
-  const avgBudgetChange =
-    avgMonthlyBudgetLastMonthCents > 0
-      ? (
-          ((avgMonthlyBudgetCents - avgMonthlyBudgetLastMonthCents) /
-            avgMonthlyBudgetLastMonthCents) *
-          100
-        ).toFixed(1)
-      : "0";
-  const avgBudgetUp = avgMonthlyBudgetCents >= avgMonthlyBudgetLastMonthCents;
-
-  const avgMonthlyBudget = avgMonthlyBudgetCents / 100;
 
   return (
     <div className="flex flex-col gap-5 px-8">
       <h1 className="text-2xl mt-5 font-semibold">Customer Management</h1>
+
       <p className="text-sm text-muted-foreground">
         View all customers for your store.
       </p>
+
       <MainOverviewUser
-        totalUsers={totalUsers}
-        totalUsersChange={totalUsersChange}
-        totalUsersUp={totalUsersUp}
-        newUsersThisMonth={newUsersThisMonth}
-        newUsersChange={newUsersChange}
-        newUsersUp={newUsersUp}
-        activeUsers={activeUsersThisMonth}
-        activeUsersChange={activeUsersChange}
-        activeUsersUp={activeUsersUp}
-        avgMonthlyBudget={avgMonthlyBudget}
-        avgBudgetChange={avgBudgetChange}
-        avgBudgetUp={avgBudgetUp}
+        totalUsers={stats.totalUsers}
+        totalUsersChange={stats.totalUsersChange}
+        totalUsersUp={stats.totalUsersUp}
+        newUsersThisMonth={stats.newUsersThisMonth}
+        newUsersChange={stats.newUsersChange}
+        newUsersUp={stats.newUsersUp}
+        activeUsers={stats.activeUsers}
+        activeUsersChange={stats.activeUsersChange}
+        activeUsersUp={stats.activeUsersUp}
+        avgMonthlyBudget={stats.avgMonthlyBudget}
+        avgBudgetChange={stats.avgBudgetChange}
+        avgBudgetUp={stats.avgBudgetUp}
       />
+
       <UserList
         myStoreCustomersData={customers}
         initialPagination={pagination}

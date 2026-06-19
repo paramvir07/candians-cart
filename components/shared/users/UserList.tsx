@@ -43,7 +43,7 @@ const CustomerCardSkeleton = () => (
 );
 
 type UserListProps = {
-  userRole?: "cashier" | "store" | "admin";
+  userRole?: "cashier" | "store" | "admin" | "immigration";
   adminMode?: boolean;
   storeId?: string;
   myStoreCustomersData?: SerializedCustomer[];
@@ -53,73 +53,81 @@ type UserListProps = {
 const ITEMS_PER_PAGE = 12;
 const OBJECT_ID_RE = /^[a-f0-9]{24}$/i;
 
-// Hoisted outside component to prevent recreation on every render
 const getSortableTime = (c: SerializedCustomer) => {
   const t = new Date(c.createdAt).getTime();
   if (Number.isFinite(t) && t > 0) return t;
+
   const idStr = c._id.toString();
-  if (/^[a-fA-F0-9]{24}$/.test(idStr))
+
+  if (/^[a-fA-F0-9]{24}$/.test(idStr)) {
     return parseInt(idStr.slice(0, 8), 16) * 1000;
+  }
+
   return 0;
 };
 
 const UserList = (props: UserListProps) => {
   const isAdminMode = props.adminMode === true;
   const userRole = props.userRole;
+
   const cashierRole = userRole === "cashier";
   const storeRole = userRole === "store";
+  const immigrationRole = userRole === "immigration";
+
+  // Immigration uses store-style customer card behavior
+  const customerCardRole = immigrationRole ? "store" : userRole;
+
   const router = useRouter();
 
   const storeId = props.storeId;
-  const isAllStores = isAdminMode && !storeId;
 
-  // ── State ───────────────────────────────────────────────────────────────────
+  // Admin without storeId = all stores
+  // Immigration without storeId = all stores
+  const isAllStores = (isAdminMode || immigrationRole) && !storeId;
+
   const [fetchedCustomers, setFetchedCustomers] = useState<
     SerializedCustomer[]
   >((props.myStoreCustomersData || []).slice(0, ITEMS_PER_PAGE));
 
   const [isLoading, setIsLoading] = useState(
-    isAdminMode && !props.myStoreCustomersData,
+    (isAdminMode || immigrationRole) && !props.myStoreCustomersData,
   );
+
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
   const [serverPagination, setServerPagination] =
     useState<PaginationMeta | null>(props.initialPagination || null);
 
-  // ── Package Hook ────────────────────────────────────────────────────────────
   const [debouncedSearch] = useDebounce(search, 500);
 
-  // ── Scanner refs ────────────────────────────────────────────────────────────
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
 
-
-  
-  // Focus input on mount
   useEffect(() => {
     setTimeout(() => searchInputRef.current?.focus(), 0);
   }, []);
 
-  // Reset to page 1 when the debounced search changes
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
 
-  // ── Universal scanner handler ───────────────────────────────────────────────
   useEffect(() => {
     const commitScan = (value: string) => {
       const trimmed = value.trim();
       if (!OBJECT_ID_RE.test(trimmed)) return;
+
       searchInputRef.current?.blur();
       setSearch(trimmed);
     };
 
     const accumulate = (chars: string) => {
       scanBufferRef.current += chars;
+
       if (scanBufferRef.current.length > 24) {
         scanBufferRef.current = scanBufferRef.current.slice(-24);
       }
+
       if (OBJECT_ID_RE.test(scanBufferRef.current)) {
         const id = scanBufferRef.current;
         scanBufferRef.current = "";
@@ -131,15 +139,19 @@ const UserList = (props: UserListProps) => {
       if (e.key === "Enter") {
         const buf = scanBufferRef.current;
         scanBufferRef.current = "";
+
         if (OBJECT_ID_RE.test(buf)) commitScan(buf);
         return;
       }
+
       if (e.key.length !== 1) return;
+
       accumulate(e.key);
     };
 
     const handleCompositionEnd = (e: CompositionEvent) => {
       if (!e.data) return;
+
       scanBufferRef.current = "";
       accumulate(e.data);
     };
@@ -153,41 +165,44 @@ const UserList = (props: UserListProps) => {
     };
   }, []);
 
-  // ── QR button scan (camera-based) ──────────────────────────────────────────
   const handleScanResult = (scannedId: string) => {
     const trimmed = scannedId.trim();
     if (!OBJECT_ID_RE.test(trimmed)) return;
+
     searchInputRef.current?.blur();
     setSearch(trimmed);
   };
 
-  // ── Unified Server Fetch (For Admins AND Cashiers) ─────────────────────────
   useEffect(() => {
     let mounted = true;
 
     const load = async () => {
       const query = debouncedSearch.trim();
 
-      // IF CASHIER AND NO SEARCH: Don't load anything, show empty state immediately
       if (cashierRole && !query) {
         if (mounted) {
           setFetchedCustomers([]);
           setServerPagination(null);
           setIsLoading(false);
         }
+
         return;
       }
 
       if (
         !isAdminMode &&
+        !immigrationRole &&
         page === 1 &&
         !query &&
         props.myStoreCustomersData &&
         props.myStoreCustomersData.length > 0
       ) {
         setFetchedCustomers(props.myStoreCustomersData);
-        if (props.initialPagination)
+
+        if (props.initialPagination) {
           setServerPagination(props.initialPagination);
+        }
+
         setIsLoading(false);
         return;
       }
@@ -200,49 +215,57 @@ const UserList = (props: UserListProps) => {
 
       if (!mounted) return;
 
-    if (result.success) {
-      setFetchedCustomers(result.data as unknown as SerializedCustomer[]);
-      if (result.pagination) setServerPagination(result.pagination);
+      if (result.success) {
+        setFetchedCustomers(result.data as unknown as SerializedCustomer[]);
 
-      const isBarcodeScan = cashierRole && OBJECT_ID_RE.test(query);
-      if (isBarcodeScan && result.data.length === 1) {
-        router.push(`/cashier/customer/${result.data[0]._id}/cart`);
-        return;
-      }
-    } else {
+        if (result.pagination) {
+          setServerPagination(result.pagination);
+        }
+
+        const isBarcodeScan = cashierRole && OBJECT_ID_RE.test(query);
+
+        if (isBarcodeScan && result.data.length === 1) {
+          router.push(`/cashier/customer/${result.data[0]._id}/cart`);
+          return;
+        }
+      } else {
         toast.error(result.error || "Failed to fetch customers");
       }
+
       setIsLoading(false);
     };
 
     load();
+
     return () => {
       mounted = false;
     };
   }, [
     isAdminMode,
+    immigrationRole,
     storeId,
     page,
     debouncedSearch,
     props.myStoreCustomersData,
     props.initialPagination,
     cashierRole,
+    router,
   ]);
 
-  // ── Derived Data / Sort ────────────────────────────────────────────────────
   const displayData = useMemo(() => {
     return [...fetchedCustomers].sort(
-      (a, b) => getSortableTime(b) - getSortableTime(a)
+      (a, b) => getSortableTime(b) - getSortableTime(a),
     );
   }, [fetchedCustomers]);
 
   const totalPages = serverPagination ? serverPagination.totalPages : 1;
+
   const totalCount = serverPagination
     ? serverPagination.totalCount
     : fetchedCustomers.length;
 
-  // ── Heading ─────────────────────────────────────────────────────────────────
   const heading = isAllStores ? "All Customers" : "Customers";
+
   const searchPlaceholder = isAllStores
     ? "Search id, name, email, phone or store…"
     : cashierRole || storeRole
@@ -253,16 +276,16 @@ const UserList = (props: UserListProps) => {
     <div
       className={`space-y-3 mb-20 sm:mb-0 ${cashierRole ? "px-0 md:px-5" : ""}`}
     >
-      {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
       <div className="border border-border rounded-xl bg-card">
         <div className="flex items-center justify-between px-3 pt-3 pb-2 sm:px-4">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-muted-foreground shrink-0" />
+
             <h1 className="text-base sm:text-lg font-semibold">{heading}</h1>
+
             {isLoading ? (
               <Skeleton className="h-5 w-10 rounded-full" />
             ) : cashierRole && !debouncedSearch ? null : (
-              // Hides the customer count badge for cashiers if no search
               <Badge variant="secondary" className="text-xs tabular-nums">
                 {totalCount} Customers
               </Badge>
@@ -273,6 +296,7 @@ const UserList = (props: UserListProps) => {
         <div className="flex items-center gap-2 px-3 pb-3 sm:px-4">
           <div className="flex items-center flex-1 min-w-0 gap-2">
             <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+
             <div className="relative flex-1 bg-accent/70 rounded-xl">
               <Input
                 ref={searchInputRef}
@@ -286,6 +310,7 @@ const UserList = (props: UserListProps) => {
                 spellCheck={false}
                 className="rounded-xl border-0 bg-transparent focus-visible:ring-1 text-sm h-9 pr-9"
               />
+
               {search && (
                 <button
                   onClick={() => setSearch("")}
@@ -297,11 +322,11 @@ const UserList = (props: UserListProps) => {
               )}
             </div>
           </div>
+
           {!isAllStores && <QrScannerButton onScan={handleScanResult} />}
         </div>
       </div>
 
-      {/* ── Grid ────────────────────────────────────────────────────────────── */}
       {isLoading ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
@@ -309,9 +334,9 @@ const UserList = (props: UserListProps) => {
           ))}
         </div>
       ) : cashierRole && !debouncedSearch ? (
-        // New State specifically for Cashiers before they execute a search
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
           <Search className="w-10 h-10 opacity-20" />
+
           <p className="text-sm">
             Search for a customer by name, ID, or scan a QR code to begin.
           </p>
@@ -319,9 +344,11 @@ const UserList = (props: UserListProps) => {
       ) : displayData.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
           <Users className="w-10 h-10 opacity-20" />
+
           <p className="text-sm">
             {search ? "No customers match your search" : "No customers yet"}
           </p>
+
           {search && (
             <Button
               variant="ghost"
@@ -339,33 +366,48 @@ const UserList = (props: UserListProps) => {
             {displayData.map((customer) => (
               <div
                 key={customer._id.toString()}
-                className={`flex flex-col gap-0 ${cashierRole || isAdminMode ? "hover:cursor-pointer" : ""}`}
+                className={`flex flex-col gap-0 ${
+                  cashierRole || isAdminMode ? "hover:cursor-pointer" : ""
+                }`}
                 onClick={() => {
-                  if (cashierRole)
+                  if (cashierRole) {
                     router.push(`/cashier/customer/${customer._id}/cart`);
-                  if (isAdminMode)
+                  }
+
+                  if (isAdminMode) {
                     router.push(`/admin/customers/${customer._id}`);
+                  }
                 }}
               >
-                {isAllStores && customer.associatedStoreId && (
-                  <Link
-                    href={`/admin/store/${customer.associatedStoreId}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="group inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors"
-                  >
-                    <Store className="w-3 h-3 text-emerald-500 shrink-0" />
-                    <span className="text-xs font-semibold text-emerald-700 truncate max-w-40 group-hover:underline underline-offset-2">
-                      {customer.storeName ?? "Unknown Store"}
-                    </span>
-                  </Link>
-                )}
-                {/* No typecasting needed; customer is strictly typed */}
-                <CustomerCard customer={customer} userRole={userRole} />
+                {isAllStores &&
+                  customer.associatedStoreId &&
+                  (isAdminMode ? (
+                    <Link
+                      href={`/admin/store/${customer.associatedStoreId}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="group inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors"
+                    >
+                      <Store className="w-3 h-3 text-emerald-500 shrink-0" />
+
+                      <span className="text-xs font-semibold text-emerald-700 truncate max-w-40 group-hover:underline underline-offset-2">
+                        {customer.storeName ?? "Unknown Store"}
+                      </span>
+                    </Link>
+                  ) : (
+                    <div className="inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100">
+                      <Store className="w-3 h-3 text-emerald-500 shrink-0" />
+
+                      <span className="text-xs font-semibold text-emerald-700 truncate max-w-40">
+                        {customer.storeName ?? "Unknown Store"}
+                      </span>
+                    </div>
+                  ))}
+
+                <CustomerCard customer={customer} userRole={customerCardRole} />
               </div>
             ))}
           </div>
 
-          {/* ── Shadcn Pagination ────────────────────────────────────────────────── */}
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between pt-4 pb-6 border-t border-border mt-4 gap-4">
               <span className="text-sm text-muted-foreground hidden sm:inline-block">
@@ -379,7 +421,10 @@ const UserList = (props: UserListProps) => {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        if (page > 1) setPage((p) => p - 1);
+
+                        if (page > 1) {
+                          setPage((p) => p - 1);
+                        }
                       }}
                       className={
                         page <= 1 ? "pointer-events-none opacity-50" : ""
@@ -399,6 +444,7 @@ const UserList = (props: UserListProps) => {
                             <PaginationEllipsis />
                           </PaginationItem>
                         )}
+
                         <PaginationItem>
                           <PaginationLink
                             href="#"
@@ -419,7 +465,10 @@ const UserList = (props: UserListProps) => {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
-                        if (page < totalPages) setPage((p) => p + 1);
+
+                        if (page < totalPages) {
+                          setPage((p) => p + 1);
+                        }
                       }}
                       className={
                         page >= totalPages

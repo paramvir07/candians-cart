@@ -6,7 +6,6 @@ import { ChevronLeft, Search, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { OrderWithProductsClient } from "@/types/customer/OrdersClient";
-import QrScannerButton from "../QrScannerButton";
 import OrderCard from "./OrderCard";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 
@@ -37,11 +36,13 @@ export default function OrdersHistoryClient({
   allOrders,
   initialOrders = [],
   initialTotalPages = 1,
+  immigrationRole,
 }: {
   customerId?: string;
   allOrders?: boolean;
   initialOrders: OrderWithProductsClient[];
   initialTotalPages?: number;
+  immigrationRole?: boolean;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
@@ -51,8 +52,6 @@ export default function OrdersHistoryClient({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleScanResult = (scannedId: string) => setQ(scannedId);
 
   useEffect(() => {
     if (currentPage === 1) {
@@ -117,9 +116,6 @@ export default function OrdersHistoryClient({
     });
   }, [orders, filter, q]);
 
-  const pendingCount = orders.filter((o) => o.status === "pending").length;
-  const completedCount = orders.filter((o) => o.status === "completed").length;
-
   const getPageNumbers = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
     if (totalPages <= 5) {
@@ -155,6 +151,7 @@ export default function OrdersHistoryClient({
 
   const pageTitle = customerId
     ? "Customer Orders"
+    : immigrationRole ? "All Orders"
     : allOrders
       ? "Store Orders"
       : "Order History";
@@ -164,71 +161,19 @@ export default function OrdersHistoryClient({
       {!customerId && !allOrders && <CustomerAdvertisements maxHeight={250} />}
 
       {/* Header */}
+
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
-          <Link href={backHref}>
-            <Button className="rounded-full" variant="outline" size="icon">
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-          </Link>
+          {!immigrationRole && (
+            <Link href={backHref}>
+              <Button className="rounded-full" variant="outline" size="icon">
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+            </Link>
+          )}
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-950">
             {pageTitle}
           </h1>
-        </div>
-        <p className="text-sm text-muted-foreground ml-11">
-          <span className="font-semibold text-foreground">{orders.length}</span>{" "}
-          total on page ·{" "}
-          <span className="text-amber-600 font-medium">
-            {pendingCount} pending
-          </span>{" "}
-          ·{" "}
-          <span className="text-green-600 font-medium">
-            {completedCount} completed
-          </span>
-        </p>
-      </div>
-
-      {/* Filters + search */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            size="sm"
-            variant={filter === "all" ? "default" : "outline"}
-            onClick={() => setFilter("all")}
-          >
-            All
-          </Button>
-          <Button
-            size="sm"
-            variant={filter === "pending" ? "default" : "outline"}
-            onClick={() => setFilter("pending")}
-          >
-            Pending {pendingCount > 0 && `(${pendingCount})`}
-          </Button>
-          <Button
-            size="sm"
-            variant={filter === "completed" ? "default" : "outline"}
-            onClick={() => setFilter("completed")}
-          >
-            Completed {completedCount > 0 && `(${completedCount})`}
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {(customerId || allOrders) && (
-            <div className="shrink-0">
-              <QrScannerButton onScan={handleScanResult} usedFor="orders" />
-            </div>
-          )}
-          <div className="relative flex-1 sm:w-60">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Order ID, product name…"
-              className="pl-9 h-9 text-sm bg-white border-gray-200 placeholder:text-gray-400"
-            />
-          </div>
         </div>
       </div>
 

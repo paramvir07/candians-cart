@@ -3,20 +3,15 @@
 import {
   Banknote,
   BarChart,
-  BellIcon,
   HandCoins,
-  Handshake,
   HomeIcon,
-  LinkIcon,
   List,
   Menu,
   Package,
   Receipt,
   ShoppingCart,
-  UserPlus,
   Users2,
   X,
-  Store,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
@@ -43,7 +38,6 @@ const NAV_GROUPS = [
       { href: "/store/products", label: "Products", icon: Package },
       { href: "/store/subsidy-list", label: "Subsidy List", icon: List },
       { href: "/store/customers", label: "Customers", icon: Users2 },
-      // { href: "/store/profile", label: "Profile", icon: UserRoundPen },
     ],
   },
   {
@@ -225,7 +219,7 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
         {/* Brand header */}
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-            <Logo variant="icon" href="/store" />
+            <Logo variant="icon" />
           </div>
           <span className="text-[15px] font-bold text-gray-900 tracking-tight">
             Store Panel
@@ -251,7 +245,7 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
         </button>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
-            <Logo variant="icon" href="/store" />
+            <Logo variant="icon"/>
           </div>
           <span className="text-sm font-bold text-gray-900">Store Panel</span>
         </div>
@@ -278,7 +272,7 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
         <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center">
-              <Logo variant="icon" href="/store" />
+              <Logo variant="icon"/>
             </div>
             <span className="text-[15px] font-bold text-gray-900">
               Store Panel

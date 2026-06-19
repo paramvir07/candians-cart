@@ -183,6 +183,7 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
   const admin = userRole === "admin";
   const store = userRole === "store";
   const cashier = userRole === "cashier";
+  const immigration = userRole === "immigration";
 
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
@@ -208,7 +209,9 @@ useEffect(() => {
       ? "Login to your admin account"
       : cashier
         ? "Login to your cashier account"
-        : "Login to your account";
+        : immigration
+          ? "Login to Immigration account"
+          : "Login to your account";
 
   const formContent = (
     <>

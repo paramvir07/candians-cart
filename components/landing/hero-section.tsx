@@ -322,7 +322,7 @@ export default function HeroSection({
         >
           <PromotionBanner
             initialStats={initialPromoStats}
-            variant="banner"
+            variant="card"
           />
         </motion.div>
 

@@ -86,7 +86,9 @@ export const getAllOrders = async (
 ): Promise<PaginatedStoreOrdersResult> => {
   try {
     const session = await getUserSession();
-    if (!session?.user?.id) {
+    const role = session?.user?.role;
+
+    if (!session?.user?.id || (role !== "cashier" && role !== "immigration")) {
       return {
         success: false,
         error: "Unauthorized",
@@ -95,22 +97,30 @@ export const getAllOrders = async (
 
     await dbConnect();
 
-    const cashier = await Cashier.findOne({ userId: session.user.id })
-      .select("storeId")
-      .lean();
-
-    if (!cashier?.storeId) {
-      console.log("No cashier or storeId found");
-      return {
-        success: false,
-        error: "No cashier or storeId found",
-      };
-    }
-
     const skip = (page - 1) * limit;
 
+    const isImmigrationUser = session.user.role === "immigration";
+
+    let orderQuery = {};
+
+    if (!isImmigrationUser) {
+      const cashier = await Cashier.findOne({ userId: session.user.id })
+        .select("storeId")
+        .lean();
+
+      if (!cashier?.storeId) {
+        console.log("No cashier or storeId found");
+        return {
+          success: false,
+          error: "No cashier or storeId found",
+        };
+      }
+
+      orderQuery = { storeId: cashier.storeId };
+    }
+
     const [prevOrders, totalCount] = await Promise.all([
-      OrderModel.find({ storeId: cashier.storeId })
+      OrderModel.find(orderQuery)
         .populate([
           {
             path: "products.productId",
@@ -125,10 +135,12 @@ export const getAllOrders = async (
         .skip(skip)
         .limit(limit)
         .lean(),
-      OrderModel.countDocuments({ storeId: cashier.storeId }),
+
+      OrderModel.countDocuments(orderQuery),
     ]);
 
     const totalPages = Math.ceil(totalCount / limit);
+
     const serializedOrders = JSON.parse(
       JSON.stringify(prevOrders),
     ) as OrderWithProductsClient[];

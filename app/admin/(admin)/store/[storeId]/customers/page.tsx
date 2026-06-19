@@ -46,7 +46,7 @@ const AdminStoreUsersPage = async ({
         />
 
         {/* adminMode + storeId → fetches only this store's customers */}
-        <UserList adminMode={true} storeId={storeId} />  {/* http://localhost:3000/admin/store/69cdfefeaa9db6b0ab8872ed/customers */}
+        <UserList adminMode={true} storeId={storeId} />
       </div>
     </>
   );

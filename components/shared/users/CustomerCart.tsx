@@ -93,11 +93,14 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   )
     return (
       <>
-        <div className=" mt-5 mx-5">
           {customerId && (
-            <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
+            <div className="w-full flex items-center gap-2 px-4 xl:px-8 pt-5 xl:pt-8">
+              <div className="flex-1">
+                <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
+              </div>
+              <AddMiscItemModalTrigger customerId={customerId || ""} />
+            </div>
           )}
-        </div>
         <EmptyCart customerId={customerId} />
       </>
     );

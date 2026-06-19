@@ -12,24 +12,33 @@ const roleRedirectMap = {
   admin: "/admin",
   store: "/store",
   cashier: "/cashier",
+  immigration: "/immigration",
 } as const;
 
-const rolePortalNameMap: Record<string, string> = {
+type UserRole = keyof typeof roleRedirectMap;
+
+const rolePortalNameMap: Record<UserRole, string> = {
   customer: "Customer",
   admin: "Admin",
   store: "Store",
   cashier: "Cashier",
+  immigration: "Immigration",
 };
 
-const roleLoginPageMap: Record<string, string> = {
+const roleLoginPageMap: Record<UserRole, string> = {
   customer: "/login",
   admin: "/admin/login",
   store: "/store/login",
   cashier: "/cashier/login",
+  immigration: "/immigration/login",
 };
 
 type LoginActionResponse = IFormActionResponse & {
   redirectTo?: string;
+};
+
+const isUserRole = (role: unknown): role is UserRole => {
+  return typeof role === "string" && role in roleRedirectMap;
 };
 
 export const loginAction = async (
@@ -42,6 +51,7 @@ export const loginAction = async (
 
     if (!result.success) {
       const errorMessage = zodErrorResponse(result);
+
       return {
         success: false,
         message: errorMessage || "Validation error",
@@ -71,25 +81,43 @@ export const loginAction = async (
     const actualRole = user.role;
     const expectedRole = data.role;
 
-if (actualRole !== expectedRole) {
-  await auth.api.signOut({
-    headers: requestHeaders,
-  });
+    if (!isUserRole(expectedRole)) {
+      await auth.api.signOut({
+        headers: requestHeaders,
+      });
 
-  const safeActualRole = actualRole ?? "";
-  const safeExpectedRole = expectedRole ?? "";
+      return {
+        success: false,
+        message: "Invalid login portal.",
+      };
+    }
 
-  const actualPortalName = rolePortalNameMap[safeActualRole] ?? safeActualRole;
-  const expectedPortalName =
-    rolePortalNameMap[safeExpectedRole] ?? safeExpectedRole;
-  const correctLoginPage = roleLoginPageMap[safeActualRole] ?? "/login";
+    if (!isUserRole(actualRole)) {
+      await auth.api.signOut({
+        headers: requestHeaders,
+      });
 
-  return {
-    success: false,
-    message: `This is the ${expectedPortalName} portal. Your account belongs to the ${actualPortalName} portal.`,
-    redirectTo: correctLoginPage,
-  };
-}
+      return {
+        success: false,
+        message: "Your account role is not supported. Please contact support.",
+      };
+    }
+
+    if (actualRole !== expectedRole) {
+      await auth.api.signOut({
+        headers: requestHeaders,
+      });
+
+      const actualPortalName = rolePortalNameMap[actualRole];
+      const expectedPortalName = rolePortalNameMap[expectedRole];
+      const correctLoginPage = roleLoginPageMap[actualRole];
+
+      return {
+        success: false,
+        message: `This is the ${expectedPortalName} portal. Your account belongs to the ${actualPortalName} portal.`,
+        redirectTo: correctLoginPage,
+      };
+    }
 
     return {
       success: true,
@@ -103,7 +131,7 @@ if (actualRole !== expectedRole) {
       return {
         success: false,
         message:
-          "Your email is not verified. We've sent you a verification email. Please verify your email.", // and then log in again
+          "Your email is not verified. We've sent you a verification email. Please verify your email.",
       };
     }
 
