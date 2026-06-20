@@ -335,8 +335,7 @@ export default function EditPayoutForm({
                     <span className="font-bold">Total Profit Margin</span>
                     <span className="font-bold">
                       {formatCurrency(
-                        (initialData.grossMargin || 0) +
-                          (initialData.totalSubsidy || 0),
+                          (initialData.totalSubsidy || 0) + (initialData.storeProfit) + (initialData.platformProfit),
                       )}
                     </span>
                   </div>
