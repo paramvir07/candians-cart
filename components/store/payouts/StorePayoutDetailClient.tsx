@@ -206,7 +206,12 @@ export default function StorePayoutDetailClient({
       ];
 
       const profitMarginItems: ReceiptRowData[] = [
-        { label: "Total Profit Margin", value: formatCurrency(((payout as any).grossMargin || 0) + ((payout as any).totalSubsidy || 0)), bold: true },
+        { label: "Total Profit Margin",
+         value: formatCurrency(
+          ((payout as any).storeProfit || 0) + 
+          ((payout as any).totalSubsidy || 0) + 
+          ((payout as any).platformProfit || 0)
+           ), bold: true },
         { label: "Subsidy", value: formatCurrency((payout as any).totalSubsidy), color: RED_ALERT },
         { label: "Store Profit (50%)", value: formatCurrency(payout.storeProfit), color: GREEN_PRIMARY },
         { label: "Platform Profit", value: formatCurrency(payout.platformProfit), color: GREEN_PRIMARY },
