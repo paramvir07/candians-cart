@@ -56,7 +56,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
   const canToggleFeatured = role === "admin" || role === "store";
   const canEdit = role === "admin" || role === "store";
   const canDelete = role === "admin" || role === "store";
-  const showSubsidisedBadge = isSubsidised && role !== "store";
+  const showSubsidisedBadge = isSubsidised;
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
