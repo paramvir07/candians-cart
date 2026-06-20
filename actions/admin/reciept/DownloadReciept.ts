@@ -335,7 +335,11 @@ async function generateReceiptPDF(
   const profitMarginItems: ReceiptRowData[] = [
     {
       label: "Total Profit Margin",
-      value: formatMoney((data.grossMargin || 0) + (data.totalSubsidy || 0)),
+      value: formatMoney(
+        (data.storeProfit || 0) +
+          (data.totalSubsidy || 0) +
+          (data.platformProfit || 0),
+      ),
       bold: true,
     },
     {
@@ -809,7 +813,11 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   const profitMarginItems: ReceiptRowData[] = [
     {
       label: "Total Profit Margin",
-      value: formatMoney((data.grossMargin || 0) + (data.totalSubsidy || 0)),
+      value: formatMoney(
+        (data.storeProfit || 0) +
+          (data.totalSubsidy || 0) +
+          (data.platformProfit || 0),
+      ),
       bold: true,
     },
     {
