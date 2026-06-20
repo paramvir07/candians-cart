@@ -64,6 +64,7 @@ export async function saveStorePayoutAction(
       totalCashCollected: receipt.totalCashCollected || 0,
       platformProfit: receipt.platformProfit,
       platformCommision: receipt.platformCommision,
+      totalSubsidy: reciept.totalSubsidy,
       status: "pending",
     });
 
