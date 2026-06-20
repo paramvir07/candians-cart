@@ -469,8 +469,12 @@ export default function StorePayoutDetailClient({
                   <div className="flex justify-between items-center">
                     <span className="font-bold">Total Profit Margin</span>
                     <span className="font-bold">
-                      {formatCurrency(((payout as any).grossMargin || 0) + ((payout as any).totalSubsidy || 0))}
-                    </span>
+    {formatCurrency(
+    ((payout as any).storeProfit || 0) +
+    ((payout as any).totalSubsidy || 0) +
+    ((payout as any).platformProfit || 0)
+  )}
+</span>
                   </div>
                   <Separator className="my-2" />
                   <div className="flex justify-between items-center font-medium text-pink-700">
