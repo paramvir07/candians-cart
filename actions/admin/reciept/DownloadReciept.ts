@@ -303,7 +303,12 @@ async function generateReceiptPDF(
 
   const storeBreakdownItems: ReceiptRowData[] = [
     { label: "Total Base Price", value: formatMoney(data.totalBasePrice || 0) },
-    { label: "Store GST", value: formatMoney(data.storebasetaxGST || 0) },
+    {
+      label: "Store GST",
+      value: formatMoney(
+        (data.storebasetaxGST || 0) + (data.storeMarkupTax || 0),
+      ),
+    },
     { label: "Store PST", value: formatMoney(data.storebasetaxPST || 0) },
     {
       label: "Total Disposable Fees",
@@ -528,6 +533,7 @@ export interface SavedPayoutData {
   status: "pending" | "paid";
   additionalNote?: string;
   additionalPrice?: number;
+  storeMarkupTax: number;
   paymentReciept?: {
     url: string;
     fileId: string;
@@ -773,7 +779,10 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
       label: "Total Base Price",
       value: formatMoney((data as any).totalBasePrice || 0),
     },
-    { label: "Store GST", value: formatMoney(data.storebasetaxGST || 0) },
+    {
+      label: "Store GST",
+      value: formatMoney(data.storebasetaxGST + data.storeMarkupTax),
+    },
     { label: "Store PST", value: formatMoney(data.storebasetaxPST || 0) },
     {
       label: "Total Disposable Fees",

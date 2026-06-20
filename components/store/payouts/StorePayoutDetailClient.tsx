@@ -60,7 +60,7 @@ function drawWrappedText(
   font: PDFFont,
   size: number,
   color: any,
-  minY: number
+  minY: number,
 ) {
   const words = text.split(" ");
   let line = "";
@@ -98,8 +98,13 @@ export default function StorePayoutDetailClient({
 }) {
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const additionalCost = (payout as any).additionalCost || (payout as any).additionalPrice || 0;
-  const totalOrders = (payout as any).totalNumberofOrders || (payout as any).orderCount || (payout as any).orderIds?.length || 0;
+  const additionalCost =
+    (payout as any).additionalCost || (payout as any).additionalPrice || 0;
+  const totalOrders =
+    (payout as any).totalNumberofOrders ||
+    (payout as any).orderCount ||
+    (payout as any).orderIds?.length ||
+    0;
 
   // PDF Generation Logic using pdf-lib
   const handleDownloadPDF = async () => {
@@ -117,55 +122,167 @@ export default function StorePayoutDetailClient({
 
       // --- Header / Footer Helpers ---
       const drawHeader = (targetPage: any, title: string) => {
-        targetPage.drawRectangle({ x: 0, y: height - 100, width, height: 100, color: GREEN_PRIMARY });
-        targetPage.drawText("Candian's Cart", { x: margin, y: height - 44, font: boldFont, size: 22, color: WHITE });
-        targetPage.drawText("Store Payout Details", { x: margin, y: height - 62, font, size: 9, color: rgb(0.8, 0.95, 0.8) });
+        targetPage.drawRectangle({
+          x: 0,
+          y: height - 100,
+          width,
+          height: 100,
+          color: GREEN_PRIMARY,
+        });
+        targetPage.drawText("Candian's Cart", {
+          x: margin,
+          y: height - 44,
+          font: boldFont,
+          size: 22,
+          color: WHITE,
+        });
+        targetPage.drawText("Store Payout Details", {
+          x: margin,
+          y: height - 62,
+          font,
+          size: 9,
+          color: rgb(0.8, 0.95, 0.8),
+        });
         const titleW = boldFont.widthOfTextAtSize(title, 22);
-        targetPage.drawText(title, { x: width - margin - titleW, y: height - 48, font: boldFont, size: 22, color: WHITE });
+        targetPage.drawText(title, {
+          x: width - margin - titleW,
+          y: height - 48,
+          font: boldFont,
+          size: 22,
+          color: WHITE,
+        });
       };
 
       const drawFooter = (targetPage: any) => {
         const footerY = 52;
-        targetPage.drawRectangle({ x: 0, y: 0, width, height: footerY, color: GREEN_LIGHT });
-        targetPage.drawRectangle({ x: 0, y: footerY, width, height: 1, color: GRAY_LINE });
-        targetPage.drawText("Thank you for partnering with Candian's Cart!", { x: margin, y: footerY - 18, font, size: 9, color: MUTED });
-        targetPage.drawText(`Receipt generated on ${format(new Date(), "MMM dd, yyyy")}`, { x: margin, y: footerY - 32, font, size: 8, color: rgb(0.72, 0.78, 0.72) });
+        targetPage.drawRectangle({
+          x: 0,
+          y: 0,
+          width,
+          height: footerY,
+          color: GREEN_LIGHT,
+        });
+        targetPage.drawRectangle({
+          x: 0,
+          y: footerY,
+          width,
+          height: 1,
+          color: GRAY_LINE,
+        });
+        targetPage.drawText("Thank you for partnering with Candian's Cart!", {
+          x: margin,
+          y: footerY - 18,
+          font,
+          size: 9,
+          color: MUTED,
+        });
+        targetPage.drawText(
+          `Receipt generated on ${format(new Date(), "MMM dd, yyyy")}`,
+          {
+            x: margin,
+            y: footerY - 32,
+            font,
+            size: 8,
+            color: rgb(0.72, 0.78, 0.72),
+          },
+        );
       };
 
       // --- Page 1: Financials ---
-      const mainTitle = payout.status === "paid" ? "PAID RECEIPT" : "SETTLEMENT";
+      const mainTitle =
+        payout.status === "paid" ? "PAID RECEIPT" : "SETTLEMENT";
       drawHeader(page, mainTitle);
 
       let y = height - 130;
 
       const drawLabel = (label: string, value: string, yPos: number) => {
-        page.drawText(label, { x: margin, y: yPos, font, size: 9, color: MUTED });
-        page.drawText(value, { x: margin, y: yPos - 14, font: boldFont, size: 11, color: GREEN_DARK });
+        page.drawText(label, {
+          x: margin,
+          y: yPos,
+          font,
+          size: 9,
+          color: MUTED,
+        });
+        page.drawText(value, {
+          x: margin,
+          y: yPos - 14,
+          font: boldFont,
+          size: 11,
+          color: GREEN_DARK,
+        });
       };
 
       const drawLabelRight = (label: string, value: string, yPos: number) => {
         const valW = boldFont.widthOfTextAtSize(value, 11);
         const lblW = font.widthOfTextAtSize(label, 9);
-        page.drawText(label, { x: width - margin - lblW, y: yPos, font, size: 9, color: MUTED });
-        page.drawText(value, { x: width - margin - valW, y: yPos - 14, font: boldFont, size: 11, color: GREEN_DARK });
+        page.drawText(label, {
+          x: width - margin - lblW,
+          y: yPos,
+          font,
+          size: 9,
+          color: MUTED,
+        });
+        page.drawText(value, {
+          x: width - margin - valW,
+          y: yPos - 14,
+          font: boldFont,
+          size: 11,
+          color: GREEN_DARK,
+        });
       };
 
-      const drawRow = (label: string, value: string, yPos: number, isBold: boolean = false, customColor?: ReturnType<typeof rgb>) => {
+      const drawRow = (
+        label: string,
+        value: string,
+        yPos: number,
+        isBold: boolean = false,
+        customColor?: ReturnType<typeof rgb>,
+      ) => {
         const activeFont = isBold ? boldFont : font;
         const color = customColor || GREEN_DARK;
-        page.drawText(label, { x: margin + 8, y: yPos, font: activeFont, size: 10, color });
+        page.drawText(label, {
+          x: margin + 8,
+          y: yPos,
+          font: activeFont,
+          size: 10,
+          color,
+        });
         const valW = activeFont.widthOfTextAtSize(value, 10);
-        page.drawText(value, { x: width - margin - valW - 8, y: yPos, font: activeFont, size: 10, color });
+        page.drawText(value, {
+          x: width - margin - valW - 8,
+          y: yPos,
+          font: activeFont,
+          size: 10,
+          color,
+        });
       };
 
       const drawSection = (title: string, items: ReceiptRowData[]) => {
-        page.drawRectangle({ x: margin, y: y - 4, width: contentWidth, height: 20, color: GREEN_LIGHT });
-        page.drawText(title, { x: margin + 8, y: y + 3, font: boldFont, size: 8, color: GREEN_PRIMARY });
+        page.drawRectangle({
+          x: margin,
+          y: y - 4,
+          width: contentWidth,
+          height: 20,
+          color: GREEN_LIGHT,
+        });
+        page.drawText(title, {
+          x: margin + 8,
+          y: y + 3,
+          font: boldFont,
+          size: 8,
+          color: GREEN_PRIMARY,
+        });
         y -= 18;
         let rowIndex = 0;
         for (const item of items) {
           if (rowIndex % 2 === 0) {
-            page.drawRectangle({ x: margin, y: y - 6, width: contentWidth, height: 18, color: rgb(0.98, 1, 0.98) });
+            page.drawRectangle({
+              x: margin,
+              y: y - 6,
+              width: contentWidth,
+              height: 18,
+              color: rgb(0.98, 1, 0.98),
+            });
           }
           drawRow(item.label, item.value, y, item.bold, item.color);
           y -= 18;
@@ -180,47 +297,116 @@ export default function StorePayoutDetailClient({
       drawLabelRight("PERIOD", periodStr, y);
 
       y -= 44;
-      drawLabel("TOTAL REVENUE", formatCurrency((payout.totalCustomerPaid || 0) + ((payout as any).totalSubsidy || 0)), y);
+      drawLabel(
+        "TOTAL REVENUE",
+        formatCurrency(
+          (payout.totalCustomerPaid || 0) + ((payout as any).totalSubsidy || 0),
+        ),
+        y,
+      );
       drawLabelRight("TOTAL ORDERS", String(totalOrders), y);
 
       y -= 32;
-      page.drawRectangle({ x: margin, y, width: contentWidth, height: 1, color: GRAY_LINE });
+      page.drawRectangle({
+        x: margin,
+        y,
+        width: contentWidth,
+        height: 1,
+        color: GRAY_LINE,
+      });
       y -= 16;
 
       // Section Data
       const orderBreakdownItems: ReceiptRowData[] = [
-        { label: "Total Base Price", value: formatCurrency(payout.totalBasePrice) },
+        {
+          label: "Total Base Price",
+          value: formatCurrency(payout.totalBasePrice),
+        },
         { label: "Total GST", value: formatCurrency((payout as any).totalGST) },
         { label: "Total PST", value: formatCurrency((payout as any).totalPST) },
-        { label: "Total Disposable Fees", value: formatCurrency((payout as any).totalDisposableFee) },
+        {
+          label: "Total Disposable Fees",
+          value: formatCurrency((payout as any).totalDisposableFee),
+        },
       ];
 
       const storeBreakdownItems: ReceiptRowData[] = [
-        { label: "Total Base Price", value: formatCurrency(payout.totalBasePrice) },
-        { label: "Store GST", value: formatCurrency(payout.storebasetaxGST) },
+        {
+          label: "Total Base Price",
+          value: formatCurrency(payout.totalBasePrice),
+        },
+        {
+          label: "Store GST",
+          value: formatCurrency(payout.storebasetaxGST + payout.storeMarkupTax),
+        },
         { label: "Store PST", value: formatCurrency(payout.storebasetaxPST) },
-        { label: "Total Disposable Fees", value: formatCurrency((payout as any).totalDisposableFee) },
-        { label: "Store Profit (50%)", value: formatCurrency(payout.storeProfit), color: GREEN_PRIMARY },
-        { label: "Total Cash Collected", value: `-${formatCurrency(payout.totalWalletTopUpCashCollected)}`, color: MUTED },
-        { label: "Total Store Payout", value: formatCurrency(payout.storePayout), bold: true, color: GREEN_PRIMARY },
+        {
+          label: "Total Disposable Fees",
+          value: formatCurrency((payout as any).totalDisposableFee),
+        },
+        {
+          label: "Store Profit (50%)",
+          value: formatCurrency(payout.storeProfit),
+          color: GREEN_PRIMARY,
+        },
+        {
+          label: "Total Cash Collected",
+          value: `-${formatCurrency(payout.totalWalletTopUpCashCollected)}`,
+          color: MUTED,
+        },
+        {
+          label: "Total Store Payout",
+          value: formatCurrency(payout.storePayout),
+          bold: true,
+          color: GREEN_PRIMARY,
+        },
       ];
 
       const profitMarginItems: ReceiptRowData[] = [
-        { label: "Total Profit Margin",
-         value: formatCurrency(
-          ((payout as any).storeProfit || 0) + 
-          ((payout as any).totalSubsidy || 0) + 
-          ((payout as any).platformProfit || 0)
-           ), bold: true },
-        { label: "Subsidy", value: formatCurrency((payout as any).totalSubsidy), color: RED_ALERT },
-        { label: "Store Profit (50%)", value: formatCurrency(payout.storeProfit), color: GREEN_PRIMARY },
-        { label: "Platform Profit", value: formatCurrency(payout.platformProfit), color: GREEN_PRIMARY },
+        {
+          label: "Total Profit Margin",
+          value: formatCurrency(
+            ((payout as any).storeProfit || 0) +
+              ((payout as any).totalSubsidy || 0) +
+              ((payout as any).platformProfit || 0),
+          ),
+          bold: true,
+        },
+        {
+          label: "Subsidy",
+          value: formatCurrency((payout as any).totalSubsidy),
+          color: RED_ALERT,
+        },
+        {
+          label: "Store Profit (50%)",
+          value: formatCurrency(payout.storeProfit),
+          color: GREEN_PRIMARY,
+        },
+        {
+          label: "Platform Profit",
+          value: formatCurrency(payout.platformProfit),
+          color: GREEN_PRIMARY,
+        },
       ];
 
       const platformBreakdownItems: ReceiptRowData[] = [
-        { label: "Platform GST", value: formatCurrency((payout as any).platformMarkupGSTTax || (payout as any).platformMarkuptax) },
-        { label: "Platform PST", value: formatCurrency((payout as any).platformMarkupPSTTax) },
-        { label: "Platform Profit", value: formatCurrency(payout.platformProfit), bold: true, color: GREEN_PRIMARY },
+        {
+          label: "Platform GST",
+          value: formatCurrency(
+            (payout as any).platformMarkupGSTTax ||
+              (payout as any).platformMarkuptax,
+          ),
+        },
+        {
+          label: "Platform PST",
+          value: formatCurrency((payout as any).platformMarkupPSTTax),
+        },
+        {
+          label: "Platform Profit",
+          value: formatCurrency(payout.platformProfit),
+          bold: true,
+          color: GREEN_PRIMARY,
+        },
       ];
 
       // Draw Sections
@@ -233,24 +419,67 @@ export default function StorePayoutDetailClient({
       y -= 8;
       const totalLabelX = width - margin - 220;
 
-      page.drawRectangle({ x: totalLabelX - 12, y: y - 8, width: width - margin - totalLabelX + 12, height: 30, color: GREEN_PRIMARY });
-      page.drawText("TOTAL STORE PAYOUT", { x: totalLabelX, y: y + 2, font: boldFont, size: 11, color: WHITE });
+      page.drawRectangle({
+        x: totalLabelX - 12,
+        y: y - 8,
+        width: width - margin - totalLabelX + 12,
+        height: 30,
+        color: GREEN_PRIMARY,
+      });
+      page.drawText("TOTAL STORE PAYOUT", {
+        x: totalLabelX,
+        y: y + 2,
+        font: boldFont,
+        size: 11,
+        color: WHITE,
+      });
       const storePayoutStr = formatCurrency(payout.storePayout);
       const storePayoutStrW = boldFont.widthOfTextAtSize(storePayoutStr, 13);
-      page.drawText(storePayoutStr, { x: width - margin - storePayoutStrW, y: y + 2, font: boldFont, size: 13, color: WHITE });
+      page.drawText(storePayoutStr, {
+        x: width - margin - storePayoutStrW,
+        y: y + 2,
+        font: boldFont,
+        size: 13,
+        color: WHITE,
+      });
 
       y -= 36;
-      page.drawRectangle({ x: totalLabelX - 12, y: y - 8, width: width - margin - totalLabelX + 12, height: 30, color: GREEN_DARK });
-      page.drawText("PLATFORM PROFIT", { x: totalLabelX, y: y + 2, font: boldFont, size: 11, color: WHITE });
+      page.drawRectangle({
+        x: totalLabelX - 12,
+        y: y - 8,
+        width: width - margin - totalLabelX + 12,
+        height: 30,
+        color: GREEN_DARK,
+      });
+      page.drawText("PLATFORM PROFIT", {
+        x: totalLabelX,
+        y: y + 2,
+        font: boldFont,
+        size: 11,
+        color: WHITE,
+      });
       const platformProfitStr = formatCurrency(payout.platformProfit);
-      const platformProfitStrW = boldFont.widthOfTextAtSize(platformProfitStr, 13);
-      page.drawText(platformProfitStr, { x: width - margin - platformProfitStrW, y: y + 2, font: boldFont, size: 13, color: WHITE });
+      const platformProfitStrW = boldFont.widthOfTextAtSize(
+        platformProfitStr,
+        13,
+      );
+      page.drawText(platformProfitStr, {
+        x: width - margin - platformProfitStrW,
+        y: y + 2,
+        font: boldFont,
+        size: 13,
+        color: WHITE,
+      });
 
       drawFooter(page);
 
       // --- Page 2: Appendix (Notes, Add. Cost & Orders) ---
-      const hasNotes = !!payout.additionalNote || !!payout.paymentReciept?.url || additionalCost > 0;
-      const hasOrders = (payout as any).orderIds && (payout as any).orderIds.length > 0;
+      const hasNotes =
+        !!payout.additionalNote ||
+        !!payout.paymentReciept?.url ||
+        additionalCost > 0;
+      const hasOrders =
+        (payout as any).orderIds && (payout as any).orderIds.length > 0;
 
       if (hasNotes || hasOrders) {
         const extraPage = pdfDoc.addPage([595, 842]);
@@ -258,50 +487,128 @@ export default function StorePayoutDetailClient({
         let extraY = height - 130;
 
         if (hasNotes) {
-          extraPage.drawRectangle({ x: margin, y: extraY - 4, width: contentWidth, height: 20, color: GREEN_LIGHT });
-          extraPage.drawText("PAYMENT DETAILS & NOTES", { x: margin + 8, y: extraY + 3, font: boldFont, size: 8, color: GREEN_PRIMARY });
+          extraPage.drawRectangle({
+            x: margin,
+            y: extraY - 4,
+            width: contentWidth,
+            height: 20,
+            color: GREEN_LIGHT,
+          });
+          extraPage.drawText("PAYMENT DETAILS & NOTES", {
+            x: margin + 8,
+            y: extraY + 3,
+            font: boldFont,
+            size: 8,
+            color: GREEN_PRIMARY,
+          });
           extraY -= 22;
 
           if (additionalCost > 0) {
-            extraPage.drawText(`Additional Cost: ${formatCurrency(additionalCost)}`, { x: margin + 8, y: extraY, font: boldFont, size: 10, color: RED_ALERT });
+            extraPage.drawText(
+              `Additional Cost: ${formatCurrency(additionalCost)}`,
+              {
+                x: margin + 8,
+                y: extraY,
+                font: boldFont,
+                size: 10,
+                color: RED_ALERT,
+              },
+            );
             extraY -= 14;
-            extraPage.drawText("(Not added in the payout. Charged externally. Please refer to note by admin)", { x: margin + 8, y: extraY, font, size: 9, color: RED_ALERT });
+            extraPage.drawText(
+              "(Not added in the payout. Charged externally. Please refer to note by admin)",
+              { x: margin + 8, y: extraY, font, size: 9, color: RED_ALERT },
+            );
             extraY -= 20;
           }
 
           if (payout.additionalNote) {
-            extraPage.drawText("Notes:", { x: margin + 8, y: extraY, font: boldFont, size: 10, color: GREEN_DARK });
-            extraY = drawWrappedText(extraPage, payout.additionalNote, margin + 50, extraY, contentWidth - 60, font, 10, GREEN_DARK, 60);
-            extraY -= 12; 
+            extraPage.drawText("Notes:", {
+              x: margin + 8,
+              y: extraY,
+              font: boldFont,
+              size: 10,
+              color: GREEN_DARK,
+            });
+            extraY = drawWrappedText(
+              extraPage,
+              payout.additionalNote,
+              margin + 50,
+              extraY,
+              contentWidth - 60,
+              font,
+              10,
+              GREEN_DARK,
+              60,
+            );
+            extraY -= 12;
           }
 
           if (payout.paymentReciept?.url) {
-            extraPage.drawText("Receipt Document:", { x: margin + 8, y: extraY, font: boldFont, size: 10, color: GREEN_DARK });
+            extraPage.drawText("Receipt Document:", {
+              x: margin + 8,
+              y: extraY,
+              font: boldFont,
+              size: 10,
+              color: GREEN_DARK,
+            });
             const receiptUrl = payout.paymentReciept.url;
-            const displayUrl = receiptUrl.length > 70 ? receiptUrl.slice(0, 70) + "..." : receiptUrl;
-            extraPage.drawText(displayUrl, { x: margin + 110, y: extraY, font, size: 9, color: BLUE_LINK });
+            const displayUrl =
+              receiptUrl.length > 70
+                ? receiptUrl.slice(0, 70) + "..."
+                : receiptUrl;
+            extraPage.drawText(displayUrl, {
+              x: margin + 110,
+              y: extraY,
+              font,
+              size: 9,
+              color: BLUE_LINK,
+            });
             extraY -= 24;
           }
-          
+
           extraY -= 12;
         }
 
-        if (hasOrders) {
-          extraPage.drawRectangle({ x: margin, y: extraY - 4, width: contentWidth, height: 20, color: GREEN_LIGHT });
-          extraPage.drawText(`INCLUDED ORDERS (${totalOrders})`, { x: margin + 8, y: extraY + 3, font: boldFont, size: 8, color: GREEN_PRIMARY });
-          extraY -= 18;
+        // if (hasOrders) {
+        //   extraPage.drawRectangle({
+        //     x: margin,
+        //     y: extraY - 4,
+        //     width: contentWidth,
+        //     height: 20,
+        //     color: GREEN_LIGHT,
+        //   });
+        //   extraPage.drawText(`INCLUDED ORDERS (${totalOrders})`, {
+        //     x: margin + 8,
+        //     y: extraY + 3,
+        //     font: boldFont,
+        //     size: 8,
+        //     color: GREEN_PRIMARY,
+        //   });
+        //   extraY -= 18;
 
-          // Note: using comma joining for order array in PDF
-          const orderString = (payout as any).orderIds.join(", ");
-          drawWrappedText(extraPage, orderString, margin, extraY, contentWidth, font, 8, MUTED, 60);
-        }
+        //   const orderString = (payout as any).orderIds.join(", ");
+        //   drawWrappedText(
+        //     extraPage,
+        //     orderString,
+        //     margin,
+        //     extraY,
+        //     contentWidth,
+        //     font,
+        //     8,
+        //     MUTED,
+        //     60,
+        //   )
+        // }
 
         drawFooter(extraPage);
       }
 
       // Save and Download
       const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes as BlobPart], { type: "application/pdf" });
+      const blob = new Blob([pdfBytes as BlobPart], {
+        type: "application/pdf",
+      });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = `Payout_${format(new Date(payout.createdAt), "MMM-dd-yyyy")}.pdf`;
@@ -314,7 +621,7 @@ export default function StorePayoutDetailClient({
     }
   };
 
-  console.log("Payout",payout.totalNumberofOrders)
+  console.log("Payout", payout.totalNumberofOrders);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -347,7 +654,10 @@ export default function StorePayoutDetailClient({
                 Total Revenue
               </span>
               <span className="text-2xl font-bold text-foreground">
-                {formatCurrency(payout.totalCustomerPaid + ((payout as any).totalSubsidy || 0))}
+                {formatCurrency(
+                  payout.totalCustomerPaid +
+                    ((payout as any).totalSubsidy || 0),
+                )}
               </span>
             </div>
             <div className="p-4 flex flex-col justify-center">
@@ -393,11 +703,14 @@ export default function StorePayoutDetailClient({
               {/* Column 1: Order Breakdown & Store Breakdown */}
               <div className="space-y-4">
                 <h4 className="font-semibold flex items-center gap-2 text-foreground text-lg">
-                  <ShoppingCart className="w-4 h-4 text-foreground" /> Order Breakdown
+                  <ShoppingCart className="w-4 h-4 text-foreground" /> Order
+                  Breakdown
                 </h4>
                 <div className="space-y-2.5 text-sm">
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Total Base Price</span>
+                    <span className="text-muted-foreground">
+                      Total Base Price
+                    </span>
                     <span className="text-muted-foreground">
                       {formatCurrency(payout.totalBasePrice)}
                     </span>
@@ -415,7 +728,9 @@ export default function StorePayoutDetailClient({
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Total Disposable Fees</span>
+                    <span className="text-muted-foreground">
+                      Total Disposable Fees
+                    </span>
                     <span className="font-medium text-muted-foreground">
                       {formatCurrency((payout as any).totalDisposableFee)}
                     </span>
@@ -425,7 +740,9 @@ export default function StorePayoutDetailClient({
                     <Store className="w-4 h-4 text-blue-700" /> Store Breakdown
                   </h2>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Total Base Price</span>
+                    <span className="text-muted-foreground">
+                      Total Base Price
+                    </span>
                     <span className="font-medium text-muted-foreground">
                       {formatCurrency(payout.totalBasePrice)}
                     </span>
@@ -433,7 +750,9 @@ export default function StorePayoutDetailClient({
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Store GST</span>
                     <span className="font-medium text-muted-foreground">
-                      {formatCurrency(payout.storebasetaxGST)}
+                      {formatCurrency(
+                        payout.storebasetaxGST + payout.storeMarkupTax,
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -443,20 +762,26 @@ export default function StorePayoutDetailClient({
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Total Disposable Fees</span>
+                    <span className="text-muted-foreground">
+                      Total Disposable Fees
+                    </span>
                     <span className="font-medium text-muted-foreground">
                       {formatCurrency((payout as any).totalDisposableFee)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-blue-700">Store Profit (50%)</span>
+                    <span className="font-medium text-blue-700">
+                      Store Profit (50%)
+                    </span>
                     <span className="font-medium text-blue-700">
                       {formatCurrency(payout.storeProfit)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-muted-foreground">
                     <span>Total Cash Collected</span>
-                    <span>-{formatCurrency(payout.totalWalletTopUpCashCollected)}</span>
+                    <span>
+                      -{formatCurrency(payout.totalWalletTopUpCashCollected)}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center font-medium text-blue-700 mt-2">
                     <span>Total Store Payout</span>
@@ -474,12 +799,12 @@ export default function StorePayoutDetailClient({
                   <div className="flex justify-between items-center">
                     <span className="font-bold">Total Profit Margin</span>
                     <span className="font-bold">
-    {formatCurrency(
-    ((payout as any).storeProfit || 0) +
-    ((payout as any).totalSubsidy || 0) +
-    ((payout as any).platformProfit || 0)
-  )}
-</span>
+                      {formatCurrency(
+                        ((payout as any).storeProfit || 0) +
+                          ((payout as any).totalSubsidy || 0) +
+                          ((payout as any).platformProfit || 0),
+                      )}
+                    </span>
                   </div>
                   <Separator className="my-2" />
                   <div className="flex justify-between items-center font-medium text-pink-700">
@@ -496,16 +821,21 @@ export default function StorePayoutDetailClient({
                   </div>
 
                   <h4 className="font-semibold flex items-center gap-2 text-primary pt-2 text-lg">
-                    <PanelsTopLeft className="w-4 h-4 text-primary" /> Platform Breakdown
+                    <PanelsTopLeft className="w-4 h-4 text-primary" /> Platform
+                    Breakdown
                   </h4>
                   <div className="space-y-1 pt-1">
                     <div className="flex justify-between items-center text-muted-foreground">
                       <span>Platform GST</span>
-                      <span>{formatCurrency((payout as any).platformMarkupGSTTax || (payout as any).platformMarkuptax)}</span>
+                      <span>
+                        {formatCurrency((payout as any).platformMarkupGSTTax)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center text-muted-foreground">
                       <span>Platform PST</span>
-                      <span>{formatCurrency((payout as any).platformMarkupPSTTax)}</span>
+                      <span>
+                        {formatCurrency((payout as any).platformMarkupPSTTax)}
+                      </span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center text-sm font-medium text-primary mt-2">
@@ -527,12 +857,13 @@ export default function StorePayoutDetailClient({
                         Additional Cost: {formatCurrency(additionalCost)}
                       </h4>
                       <p className="text-sm text-red-800/90 leading-relaxed">
-                        (Not added in the payout. Charged externally). Please refer to the note by admin below.
+                        (Not added in the payout. Charged externally). Please
+                        refer to the note by admin below.
                       </p>
                     </div>
                   </div>
                 )}
-                
+
                 {payout.additionalNote && (
                   <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl flex items-start gap-3">
                     <FileText className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
@@ -548,7 +879,6 @@ export default function StorePayoutDetailClient({
                 )}
               </div>
             )}
-
           </div>
         </CardContent>
       </Card>

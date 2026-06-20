@@ -11,27 +11,37 @@ export type PayoutStatus = "pending" | "paid";
 
 export interface SerializedStorePayout {
   _id: string;
+  storeId: string;
+  orderIds: string[];
   startDate: string;
   endDate: string;
   totalCustomerPaid: number;
   totalBasePrice: number;
-  storeProfit: number;
+  totalGST: number;
+  totalPST: number;
+  totalTax: number;
+  baseTax: number;
+  markupTax: number;
+  storebasetaxGST: number;
+  storebasetaxPST: number;
   storeMarkupTax: number;
+  totalSubsidy: number;
+  totalDisposableFee: number;
   storeFixedValue: number;
+  storeProfit: number;
   storePayout: number;
+  totalWalletTopUpCashCollected: number;
+  totalCashCollected?: number;
+  platformMarkupGSTTax: number;
+  platformMarkupPSTTax: number;
+  platformProfit: number;
+  platformCommision: number;
   status: PayoutStatus;
   createdAt: string;
+  updatedAt: string;
   additionalNote: string;
   totalNumberofOrders: number;
   paymentReciept: { url: string; fileId: string } | null;
-  storebasetaxGST: number;
-  storebasetaxPST: number;
-  totalDisposableFee: number;
-  totalWalletTopUpCashCollected: number;
-  platformProfit: number;
-  platformCommision: number;
-  totalSubsidy: number;
-  totalCashCollected?: number;
   additionalCost?: number;
 }
 
@@ -80,17 +90,36 @@ export async function getVendorPayoutsAction(
     // Best Practice: Minimize Serialization Payload
     const serializedData: SerializedStorePayout[] = payouts.map((p) => ({
       _id: p._id.toString(),
+      storeId: p.storeId.toString(),
+      orderIds: p.orderIds?.map((id: any) => id.toString()) || [],
       startDate: p.startDate.toISOString(),
       endDate: p.endDate.toISOString(),
-      totalCustomerPaid: p.totalCustomerPaid,
-      totalBasePrice: p.totalBasePrice || 0, // Added
-      storeProfit: p.storeProfit || 0,
-      storeMarkupTax: p.storeMarkupTax || 0, // Added
-      storeFixedValue: p.storeFixedValue || 0, // Added
-      storePayout: p.storePayout,
-      platformProfit: p.platformProfit,
-      status: p.status,
       createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt ? p.updatedAt.toISOString() : p.createdAt.toISOString(),
+      totalNumberofOrders: p.totalNumberofOrders || 0,
+      totalCustomerPaid: p.totalCustomerPaid || 0,
+      totalBasePrice: p.totalBasePrice || 0,
+      totalGST: p.totalGST || 0,
+      totalPST: p.totalPST || 0,
+      totalTax: p.totalTax || 0,
+      baseTax: p.baseTax || 0,
+      markupTax: p.markupTax || 0,
+      storebasetaxGST: p.storebasetaxGST || 0,
+      storebasetaxPST: p.storebasetaxPST || 0,
+      storeMarkupTax: p.storeMarkupTax || 0,
+      platformMarkupGSTTax: p.platformMarkupGSTTax || 0,
+      platformMarkupPSTTax: p.platformMarkupPSTTax || 0,
+      totalSubsidy: p.totalSubsidy || 0,
+      totalDisposableFee: p.totalDisposableFee || 0,
+      additionalCost: p.additionalCost || 0,
+      storeFixedValue: p.storeFixedValue || 0,
+      storeProfit: p.storeProfit || 0,
+      storePayout: p.storePayout || 0,
+      totalWalletTopUpCashCollected: p.totalWalletTopUpCashCollected || 0,
+      totalCashCollected: p.totalCashCollected || 0,
+      platformProfit: p.platformProfit || 0,
+      platformCommision: p.platformCommision || 0,
+      status: p.status,
       additionalNote: p.additionalNote || "",
       paymentReciept: p.paymentReciept
         ? {
@@ -98,15 +127,6 @@ export async function getVendorPayoutsAction(
             fileId: p.paymentReciept.fileId,
           }
         : null,
-      storebasetaxGST: p.storebasetaxGST || 0, // Added
-      storebasetaxPST: p.storebasetaxPST || 0, // Added
-      totalDisposableFee: p.totalDisposableFee || 0, // Added
-      totalWalletTopUpCashCollected: p.totalWalletTopUpCashCollected || 0,
-      platformCommision: p.platformCommision || 0, // Added
-      totalSubsidy: p.totalSubsidy || 0, // Added
-      totalCashCollected: p.totalCashCollected || 0,
-      additionalCost: p.additionalCost || 0,
-      totalNumberofOrders: p.totalNumberofOrders || 0,
     }));
 
     return { success: true, data: serializedData };
@@ -140,17 +160,36 @@ export async function getSingleVendorPayoutAction(
 
     const serializedData: SerializedStorePayout = {
       _id: payout._id.toString(),
+      storeId: payout.storeId.toString(),
+      orderIds: payout.orderIds?.map((id: any) => id.toString()) || [],
       startDate: payout.startDate.toISOString(),
       endDate: payout.endDate.toISOString(),
-      totalCustomerPaid: payout.totalCustomerPaid,
-      totalBasePrice: payout.totalBasePrice,
-      storeProfit: payout.storeProfit || 0,
-      storeMarkupTax: payout.storeMarkupTax || 0, // Added
-      storeFixedValue: payout.storeFixedValue || 0, // Added
-      totalNumberofOrders: payout.totalNumberofOrders || 0,
-      storePayout: payout.storePayout,
-      status: payout.status,
       createdAt: payout.createdAt.toISOString(),
+      updatedAt: payout.updatedAt ? payout.updatedAt.toISOString() : payout.createdAt.toISOString(),
+      totalNumberofOrders: payout.totalNumberofOrders || 0,
+      totalCustomerPaid: payout.totalCustomerPaid || 0,
+      totalBasePrice: payout.totalBasePrice || 0,
+      totalGST: payout.totalGST || 0,
+      totalPST: payout.totalPST || 0,
+      totalTax: payout.totalTax || 0,
+      baseTax: payout.baseTax || 0,
+      markupTax: payout.markupTax || 0,
+      storebasetaxGST: payout.storebasetaxGST || 0,
+      storebasetaxPST: payout.storebasetaxPST || 0,
+      storeMarkupTax: payout.storeMarkupTax || 0,
+      platformMarkupGSTTax: payout.platformMarkupGSTTax || 0,
+      platformMarkupPSTTax: payout.platformMarkupPSTTax || 0,
+      totalSubsidy: payout.totalSubsidy || 0,
+      totalDisposableFee: payout.totalDisposableFee || 0,
+      additionalCost: payout.additionalCost || 0,
+      storeFixedValue: payout.storeFixedValue || 0,
+      storeProfit: payout.storeProfit || 0,
+      storePayout: payout.storePayout || 0,
+      totalWalletTopUpCashCollected: payout.totalWalletTopUpCashCollected || 0,
+      totalCashCollected: payout.totalCashCollected || 0,
+      platformProfit: payout.platformProfit || 0,
+      platformCommision: payout.platformCommision || 0,
+      status: payout.status,
       additionalNote: payout.additionalNote || "",
       paymentReciept: payout.paymentReciept
         ? {
@@ -158,15 +197,6 @@ export async function getSingleVendorPayoutAction(
             fileId: payout.paymentReciept.fileId,
           }
         : null,
-      storebasetaxGST: payout.storebasetaxGST || 0,
-      storebasetaxPST: payout.storebasetaxPST || 0,
-      totalDisposableFee: payout.totalDisposableFee || 0,
-      totalWalletTopUpCashCollected: payout.totalWalletTopUpCashCollected || 0,
-      platformCommision: payout.platformCommision || 0,
-      platformProfit: payout.platformProfit || 0,
-      totalCashCollected: payout.totalCashCollected || 0,
-      totalSubsidy: payout.totalSubsidy || 0,
-      additionalCost: payout.additionalCost || 0,
     };
 
     return { success: true, data: serializedData };

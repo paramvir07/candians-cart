@@ -388,7 +388,7 @@ export default function RecieptComponent({
                                 Store GST
                               </span>
                               <span className="font-medium text-muted-foreground">
-                                {fmt(r.storebasetaxGST)}
+                                {fmt(r.storebasetaxGST + r.storeMarkupTax)}
                               </span>
                             </div>
                             <div className="flex justify-between items-center">
@@ -431,8 +431,7 @@ export default function RecieptComponent({
                         {/* Column 2: Margins & Profits */}
                         <div className="space-y-4">
                           <h4 className="font-semibold flex items-center gap-2 text-foreground/80 text-lg">
-                            <TrendingUp className="w-4 h-4" />{" "}
-                            Profit & Margins
+                            <TrendingUp className="w-4 h-4" /> Profit & Margins
                           </h4>
                           <div className="space-y-2.5 text-sm">
                             <div className="flex justify-between items-center">

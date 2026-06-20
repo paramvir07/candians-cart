@@ -2,6 +2,12 @@
 /*
 Check the following link for the logic
 https://docs.google.com/document/d/1msayLur-Ofb5cjI1PPnytFw_ohjKGi9cmftKTKQy6AE/edit?usp=sharing
+
+NOTE: All monetary values in this file are in CENTS (integers), matching the
+DB schema (cartTotal, BaseTotal, TotalGST, TotalPST, etc. are all stored as cents).
+Rounding only happens ONCE, at the very end of the derivation, via round_(). Do not
+round any intermediate value (totalGST, totalBasePrice, basePercent, etc.) before
+that point -- doing so was the source of the mismatch against tests/test-payout.js.
 */
 import mongoose, { PipelineStage, Types } from "mongoose";
 import OrderModel, {
@@ -63,6 +69,10 @@ type OrderAggregateResult = {
   allMiscItems: PlaceOrderMiscItem[][];
 };
 
+// Round to the nearest whole cent. This must be the ONLY place rounding happens
+// in the payout derivation -- applied once, to each final output field.
+const round_ = (n: number): number => Math.round(n);
+
 export async function getRecieptDataByDateRange(
   params: GetRecieptParams,
 ): Promise<AggregatedReciept[]> {
@@ -97,10 +107,6 @@ export async function getRecieptDataByDateRange(
         ...(parsedStoreId && { storeId: parsedStoreId }),
       },
     };
-
-    // if (parsedStoreId) {
-    //   matchStage.$match.storeId = parsedStoreId;
-    // }
 
     const ordersWithMisc = await OrderModel.find({
       ...matchStage.$match,
@@ -221,6 +227,8 @@ export async function getRecieptDataByDateRange(
       ]),
     );
 
+    const STORE_PROFIT_MARGIN = 0.5;
+
     // Perform business logic transforms here (easier to test, type-safe, and avoids Mongo floating point bugs)
     return receiptsRaw.map((receipt) => {
       const storeKey = receipt._id ? receipt._id.toString() : "global";
@@ -238,6 +246,8 @@ export async function getRecieptDataByDateRange(
 
         const product = miscProductDataMap.get(miscItem.miscItemId.toString());
         if (product) {
+          // product.price / disposableFee are assumed to already be in cents,
+          // matching the rest of the schema
           const basePrice = product.price * miscItem.quantity;
           const disposableFee =
             (product.disposableFee || 0) * miscItem.quantity;
@@ -257,102 +267,172 @@ export async function getRecieptDataByDateRange(
         }
       });
 
-      // console.log(
-      //   "Misc Data: ",
-      //   miscBaseAdjustment,
-      //   miscTaxGSTAdjustment,
-      //   miscTaxPSTAdjustment,
-      //   miscDisposableAdjustment,
-      //   "Old Misc generic total",
-      //   oldMiscGenericTotal,
-      // );
+      // --- Everything below is RAW (unrounded) until the return statement ---
+      // All values are in cents.
 
-      // Ensure all raw values are cleanly rounded to integers (cents)
-      const totalCustomerPaid = Math.round(receipt.totalCustomerPaid);
-      const totalBasePrice = Math.round(
-        receipt.totalBasePrice - oldMiscGenericTotal + miscBaseAdjustment,
-      );
-      const totalDisposableFee = Math.round(
-        receipt.totalDisposableFee + miscDisposableAdjustment,
-      );
-      const totalGST = Math.round(receipt.totalGST + miscTaxGSTAdjustment);
-      const totalPST = Math.round(receipt.totalPST + miscTaxPSTAdjustment);
-      const totalSubsidy = Math.round(receipt.totalSubsidy);
+      const totalCustomerPaidRaw = receipt.totalCustomerPaid;
+      const totalBasePriceRaw =
+        receipt.totalBasePrice - oldMiscGenericTotal + miscBaseAdjustment;
+      const totalDisposableFeeRaw =
+        receipt.totalDisposableFee + miscDisposableAdjustment;
+      const totalGSTRaw = receipt.totalGST + miscTaxGSTAdjustment;
+      const totalPSTRaw = receipt.totalPST + miscTaxPSTAdjustment;
+      const totalSubsidyRaw = receipt.totalSubsidy;
 
-      const totalWalletTopUpCashCollected = Math.round(
-        topUpMap.get(storeKey) || 0,
-      );
+      const totalWalletTopUpCashCollectedRaw = topUpMap.get(storeKey) || 0;
 
       // 1. Calculate Tax & Markup
-      const totalTax = totalGST + totalPST;
-      const totalMarkup =
-        totalCustomerPaid - (totalBasePrice + totalDisposableFee + totalTax);
+      const totalTaxRaw = totalGSTRaw + totalPSTRaw;
+      const totalMarkupRaw =
+        totalCustomerPaidRaw -
+        (totalBasePriceRaw + totalDisposableFeeRaw + totalTaxRaw);
 
       // 2. Calculate Proportional Tax (Val, Base%, Markup%)
-      const val = totalBasePrice + totalMarkup;
-      const basePercent = val > 0 ? totalBasePrice / val : 0;
+      const valRaw = totalBasePriceRaw + totalMarkupRaw;
+      const basePercent = valRaw > 0 ? totalBasePriceRaw / valRaw : 0;
+      const markupPercent = valRaw > 0 ? totalMarkupRaw / valRaw : 0;
 
-      // To prevent fraction-of-a-cent losses, compute GST and PST separately, then add
-      const storebasetaxGST = Math.round(totalGST * basePercent);
-      const storebasetaxPST = Math.round(totalPST * basePercent);
-      const baseTax = storebasetaxGST + storebasetaxPST;
+      // GST and PST split proportionally by basePercent
+      const storebasetaxGSTRaw = totalGSTRaw * basePercent;
+      const storebasetaxPSTRaw = totalPSTRaw * basePercent;
+      const baseTaxRaw = storebasetaxGSTRaw + storebasetaxPSTRaw;
 
-      // Markup tax is simply the remainder of the total tax
-      const markupTax = totalTax - baseTax;
-      const platformMarkuptax = markupTax;
+      // Markup tax: proportional split (mirrors tests/test-payout.js exactly)
+      const markupTaxRaw = totalTaxRaw * markupPercent;
+      const platformMarkuptaxRaw = markupTaxRaw;
 
-      // Breaking up the total platform markup tax
-      const gstPercentage = totalGST > 0 ? totalGST / totalTax : 0;
-      const platformMarkupGSTTax = Math.round(markupTax * gstPercentage);
-      const platformMarkupPSTTax = markupTax - platformMarkupGSTTax;
+      // Breaking up the total platform markup tax into GST/PST components
+      const gstPercentage = totalTaxRaw > 0 ? totalGSTRaw / totalTaxRaw : 0;
+      const platformMarkupGSTTaxRaw = markupTaxRaw * gstPercentage;
+      const platformMarkupPSTTaxRaw = markupTaxRaw - platformMarkupGSTTaxRaw;
 
-      const STORE_PROFIT_MARGIN = 0.5;
-      const storeMarkupTax = Math.round(markupTax * STORE_PROFIT_MARGIN);
+      const storeMarkupTaxRaw = markupTaxRaw * STORE_PROFIT_MARGIN;
 
       // 3. Store Metrics
-      const storeFixedValue =
-        totalBasePrice + totalDisposableFee + baseTax + storeMarkupTax;
-      const grossMargin = totalCustomerPaid - storeFixedValue;
+      const storeFixedValueRaw =
+        totalBasePriceRaw +
+        totalDisposableFeeRaw +
+        baseTaxRaw +
+        storeMarkupTaxRaw;
+      const grossMarginRaw = totalCustomerPaidRaw - storeFixedValueRaw;
 
-      // Added totalSubsidy back in based on the formula: (grossMargin + [subsidy]) * 0.35
-      const storeProfit = Math.round(grossMargin * STORE_PROFIT_MARGIN);
+      const storeProfitRaw = grossMarginRaw * STORE_PROFIT_MARGIN;
 
       // 4. Payout Calculations
-      const totalCashCollected = totalWalletTopUpCashCollected;
-      const storePayout = storeProfit + storeFixedValue - totalCashCollected;
+      const totalCashCollectedRaw = totalWalletTopUpCashCollectedRaw;
+      const storePayoutRaw =
+        storeProfitRaw + storeFixedValueRaw - totalCashCollectedRaw;
 
       // 5. Platform Metrics
-      const platformProfit =
-        totalCustomerPaid - (storeProfit + storeFixedValue);
-      const platformCommision = platformProfit + totalSubsidy;
+      const platformProfitRaw =
+        totalCustomerPaidRaw - (storeProfitRaw + storeFixedValueRaw);
+      const platformCommisionRaw = platformProfitRaw + totalSubsidyRaw;
+
+      // --- Round to the nearest cent ONLY here, on the final output values ---
+
+      // --- Debug logs, mirrored from tests/test-payout.js ---
+      // Values here are in cents, so we convert to dollars (/100) for display,
+      // same as the test script's dollar-denominated console output.
+      // const d = (cents: number) => (cents / 100).toFixed(2);
+
+      // console.log("--- Order Financials Tester ---");
+
+      // console.log("\n--- Tax & Markup Breakdown ---");
+      // console.log(
+      //   `Total Tax = ${d(totalGSTRaw)} (GST) + ${d(totalPSTRaw)} (PST) = $${d(totalTaxRaw)}`,
+      // );
+
+      // console.log(
+      //   `Total Markup = ${d(totalCustomerPaidRaw)} (Cart Total) - [${d(totalBasePriceRaw)} (Base Price) + ${d(totalDisposableFeeRaw)} (Disposable Fee) + ${d(totalTaxRaw)} (Total Tax)] = $${d(totalMarkupRaw)}`,
+      // );
+
+      // console.log("\n--- Value (Val) Metrics ---");
+      // console.log(
+      //   `Val = ${d(totalBasePriceRaw)} (Base Price) + ${d(totalMarkupRaw)} (Total Markup) = ${d(valRaw)}`,
+      // );
+
+      // console.log(
+      //   `Base % = ${(basePercent * 100).toFixed(2)}% | Markup % = ${(markupPercent * 100).toFixed(2)}%`,
+      // );
+
+      // console.log(
+      //   `Base Tax = $${d(baseTaxRaw)} | Markup Tax = $${d(markupTaxRaw)}`,
+      // );
+
+      // console.log("\n--- Store Metrics ---");
+      // console.log(
+      //   `SFV = ${d(totalBasePriceRaw)} (base price) + ${d(totalDisposableFeeRaw)} (disposable fee) + ${d(baseTaxRaw)} (base tax) + ${d(storeMarkupTaxRaw)} (store markup tax) = $${d(storeFixedValueRaw)}`,
+      // );
+
+      // console.log(
+      //   `Gross Margin = ${d(totalCustomerPaidRaw)} (Cart Total) - ${d(storeFixedValueRaw)} (SFV) = $${d(grossMarginRaw)}`,
+      // );
+
+      // console.log(
+      //   `Store Profit (50%) = ${d(grossMarginRaw)} (Gross Margin) * 0.50 = $${d(storeProfitRaw)}`,
+      // );
+
+      // console.log(
+      //   `Store Payout = ${d(storeProfitRaw)} (Store Profit) + ${d(storeFixedValueRaw)} (SFV) - ${d(totalCashCollectedRaw)} (Cash Collected) = $${d(storePayoutRaw)}`,
+      // );
+
+      // console.log("\n--- Platform Metrics ---");
+      // console.log(
+      //   `Platform Profit = ${d(totalCustomerPaidRaw)} (Cart Total) - [${d(storeProfitRaw)} (Store Profit) + ${d(storeFixedValueRaw)} (SFV)] = $${d(platformProfitRaw)}`,
+      // );
+
+      // console.log(
+      //   `Platform Commission = ${d(platformProfitRaw)} (Platform Profit) + ${d(totalSubsidyRaw)} (Subsidy) = $${d(platformCommisionRaw)}`,
+      // );
+
+      // // Verification
+      // console.log(`\n--- Verification ---`);
+
+      // const customerPaidCalc =
+      //   platformProfitRaw + storePayoutRaw + totalCashCollectedRaw;
+
+      // console.log(
+      //   `Customer Paid Check: ${d(customerPaidCalc)} vs ${d(totalCustomerPaidRaw)}`,
+      // );
+
+      // console.log(
+      //   `Percentage Split Verification: ${((basePercent + markupPercent) * 100).toFixed(2)}%`,
+      // );
+
+      // const effectiveTaxRate = valRaw > 0 ? totalTaxRaw / valRaw : 0;
+      // const taxOnBasePrice = totalBasePriceRaw * effectiveTaxRate;
+
+      // console.log(
+      //   `Tax Verification Check: ${d(taxOnBasePrice)} vs ${d(baseTaxRaw)}`,
+      // );
 
       return {
         _id: storeKey === "global" ? null : storeKey,
         orderCount: receipt.orderCount,
         orderIds: receipt.orderIds.map((id) => id.toString()),
-        totalCustomerPaid,
-        totalBasePrice,
-        totalDisposableFee,
-        totalGST,
-        totalPST,
-        totalTax,
-        totalSubsidy,
-        baseTax,
-        markupTax,
-        platformMarkupGSTTax,
-        platformMarkupPSTTax,
-        storebasetaxGST,
-        storebasetaxPST,
-        storeMarkupTax,
-        platformMarkuptax,
-        storeFixedValue,
-        grossMargin,
-        storeProfit,
-        storePayout,
-        platformProfit,
-        platformCommision,
-        totalWalletTopUpCashCollected,
-        totalCashCollected,
+        totalCustomerPaid: round_(totalCustomerPaidRaw),
+        totalBasePrice: round_(totalBasePriceRaw),
+        totalDisposableFee: round_(totalDisposableFeeRaw),
+        totalGST: round_(totalGSTRaw),
+        totalPST: round_(totalPSTRaw),
+        totalTax: round_(totalTaxRaw),
+        totalSubsidy: round_(totalSubsidyRaw),
+        baseTax: round_(baseTaxRaw),
+        markupTax: round_(markupTaxRaw),
+        platformMarkupGSTTax: round_(platformMarkupGSTTaxRaw),
+        platformMarkupPSTTax: round_(platformMarkupPSTTaxRaw),
+        storebasetaxGST: round_(storebasetaxGSTRaw),
+        storebasetaxPST: round_(storebasetaxPSTRaw),
+        storeMarkupTax: round_(storeMarkupTaxRaw),
+        platformMarkuptax: round_(platformMarkuptaxRaw),
+        storeFixedValue: round_(storeFixedValueRaw),
+        grossMargin: round_(grossMarginRaw),
+        storeProfit: round_(storeProfitRaw),
+        storePayout: round_(storePayoutRaw),
+        platformProfit: round_(platformProfitRaw),
+        platformCommision: round_(platformCommisionRaw),
+        totalWalletTopUpCashCollected: round_(totalWalletTopUpCashCollectedRaw),
+        totalCashCollected: round_(totalCashCollectedRaw),
       };
     });
   } catch (error: unknown) {

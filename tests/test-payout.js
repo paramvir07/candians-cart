@@ -27,10 +27,10 @@ function calculateOrderMetrics(inputs) {
     totalCashCollected = 0,
   } = inputs;
 
-  const STORE_PROFIT_MARGIN = 0.35;
+  const STORE_PROFIT_MARGIN = 0.5;
 
   const totalTax = totalGST + totalPST;
-  
+
   const totalMarkup =
     cartTotal - (totalBasePrice + totalDisposableTax + totalTax);
 
@@ -47,7 +47,7 @@ function calculateOrderMetrics(inputs) {
 
   const grossMargin = cartTotal - sfv;
 
-  const storeProfit = (grossMargin) * STORE_PROFIT_MARGIN;
+  const storeProfit = grossMargin * STORE_PROFIT_MARGIN;
 
   const storePayout = storeProfit + sfv - totalCashCollected;
 
@@ -86,7 +86,7 @@ async function main() {
   const totalGST = await ask("Enter total GST ($): ");
   const totalPST = await ask("Enter total PST ($): ");
   const totalCashCollected = await ask(
-    "Total Cash Collected (Order + Topup) ($): "
+    "Total Cash Collected (Order + Topup) ($): ",
   );
 
   const metrics = calculateOrderMetrics({
@@ -101,24 +101,24 @@ async function main() {
 
   console.log("\n--- Tax & Markup Breakdown ---");
   console.log(
-    `Total Tax = ${totalGST.toFixed(2)} (GST) + ${totalPST.toFixed(2)} (PST) = $${metrics.totalTax.toFixed(2)}`
+    `Total Tax = ${totalGST.toFixed(2)} (GST) + ${totalPST.toFixed(2)} (PST) = $${metrics.totalTax.toFixed(2)}`,
   );
-  
+
   console.log(
-    `Total Markup = ${cartTotal.toFixed(2)} (Cart Total) - [${totalBasePrice.toFixed(2)} (Base Price) + ${totalDisposableTax.toFixed(2)} (Disposable Fee) + ${metrics.totalTax.toFixed(2)} (Total Tax)] = $${metrics.totalMarkup.toFixed(2)}`
+    `Total Markup = ${cartTotal.toFixed(2)} (Cart Total) - [${totalBasePrice.toFixed(2)} (Base Price) + ${totalDisposableTax.toFixed(2)} (Disposable Fee) + ${metrics.totalTax.toFixed(2)} (Total Tax)] = $${metrics.totalMarkup.toFixed(2)}`,
   );
 
   console.log("\n--- Value (Val) Metrics ---");
   console.log(
-    `Val = ${totalBasePrice.toFixed(2)} (Base Price) + ${metrics.totalMarkup.toFixed(2)} (Total Markup) = ${metrics.val.toFixed(2)}`
+    `Val = ${totalBasePrice.toFixed(2)} (Base Price) + ${metrics.totalMarkup.toFixed(2)} (Total Markup) = ${metrics.val.toFixed(2)}`,
   );
 
   console.log(
-    `Base % = ${metrics.basePercentage.toFixed(2)}% | Markup % = ${metrics.markupPercentage.toFixed(2)}%`
+    `Base % = ${metrics.basePercentage.toFixed(2)}% | Markup % = ${metrics.markupPercentage.toFixed(2)}%`,
   );
 
   console.log(
-    `Base Tax = $${metrics.baseTax.toFixed(2)} | Markup Tax = $${metrics.markupTax.toFixed(2)}`
+    `Base Tax = $${metrics.baseTax.toFixed(2)} | Markup Tax = $${metrics.markupTax.toFixed(2)}`,
   );
 
   console.log("\n--- Store Metrics ---");
@@ -127,24 +127,24 @@ async function main() {
   );
 
   console.log(
-    `Gross Margin = ${cartTotal.toFixed(2)} (Cart Total) - ${metrics.sfv.toFixed(2)} (SFV) = $${metrics.grossMargin.toFixed(2)}`
+    `Gross Margin = ${cartTotal.toFixed(2)} (Cart Total) - ${metrics.sfv.toFixed(2)} (SFV) = $${metrics.grossMargin.toFixed(2)}`,
   );
 
   console.log(
-    `Store Profit (35%) = ${metrics.grossMargin.toFixed(2)} (Gross Margin) * 0.35 = $${metrics.storeProfit.toFixed(2)}`,
+    `Store Profit (50%) = ${metrics.grossMargin.toFixed(2)} (Gross Margin) * 0.50 = $${metrics.storeProfit.toFixed(2)}`,
   );
 
   console.log(
-    `Store Payout = ${metrics.storeProfit.toFixed(2)} (Store Profit) + ${metrics.sfv.toFixed(2)} (SFV) - ${totalCashCollected.toFixed(2)} (Cash Collected) = $${metrics.storePayout.toFixed(2)}`
+    `Store Payout = ${metrics.storeProfit.toFixed(2)} (Store Profit) + ${metrics.sfv.toFixed(2)} (SFV) - ${totalCashCollected.toFixed(2)} (Cash Collected) = $${metrics.storePayout.toFixed(2)}`,
   );
 
   console.log("\n--- Platform Metrics ---");
   console.log(
-    `Platform Profit = ${cartTotal.toFixed(2)} (Cart Total) - [${metrics.storeProfit.toFixed(2)} (Store Profit) + ${metrics.sfv.toFixed(2)} (SFV)] = $${metrics.platformProfit.toFixed(2)}`
+    `Platform Profit = ${cartTotal.toFixed(2)} (Cart Total) - [${metrics.storeProfit.toFixed(2)} (Store Profit) + ${metrics.sfv.toFixed(2)} (SFV)] = $${metrics.platformProfit.toFixed(2)}`,
   );
 
   console.log(
-    `Platform Commission = ${metrics.platformProfit.toFixed(2)} (Platform Profit) + ${subsidy.toFixed(2)} (Subsidy) = $${metrics.platformCommission.toFixed(2)}`
+    `Platform Commission = ${metrics.platformProfit.toFixed(2)} (Platform Profit) + ${subsidy.toFixed(2)} (Subsidy) = $${metrics.platformCommission.toFixed(2)}`,
   );
 
   // Verification
@@ -154,17 +154,17 @@ async function main() {
     metrics.platformProfit + metrics.storePayout + totalCashCollected;
 
   console.log(
-    `Customer Paid Check: ${customerPaidCalc.toFixed(2)} vs ${cartTotal.toFixed(2)}`
+    `Customer Paid Check: ${customerPaidCalc.toFixed(2)} vs ${cartTotal.toFixed(2)}`,
   );
 
   console.log(
-    `Percentage Split Verification: ${(metrics.basePercentage + metrics.markupPercentage).toFixed(2)}%`
+    `Percentage Split Verification: ${(metrics.basePercentage + metrics.markupPercentage).toFixed(2)}%`,
   );
 
   const taxOnBasePrice = totalBasePrice * (metrics.effectiveTaxRate / 100);
 
   console.log(
-    `Tax Verification Check: ${taxOnBasePrice.toFixed(2)} vs ${metrics.baseTax.toFixed(2)}`
+    `Tax Verification Check: ${taxOnBasePrice.toFixed(2)} vs ${metrics.baseTax.toFixed(2)}`,
   );
 
   rl.close();
@@ -175,8 +175,6 @@ main().catch((err) => {
   console.error("Execution error:", err);
   process.exit(1);
 });
-
-
 
 // --- Order Financials Tester ---
 // Cart Total / Customer Paid ($): 35.94

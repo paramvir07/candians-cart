@@ -284,7 +284,7 @@ export default function EditPayoutForm({
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Store GST</span>
                     <span className="font-medium text-muted-foreground">
-                      {formatCurrency(initialData.storebasetaxGST || 0)}
+                      {formatCurrency((initialData.storebasetaxGST || 0) + (initialData.storeMarkupTax || 0))}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
