@@ -13,10 +13,7 @@ import { getStoreProductsFiltered } from "@/actions/admin/products/getProductsFi
 import { useState, useEffect, useMemo, useRef } from "react";
 import { IProduct } from "@/types/store/products.types";
 import { searchProductsWithFilters } from "@/actions/admin/products/getProductsFiltered.action";
-import {
-  CustomerProductCard,
-  ProductCardHandle,
-} from "@/components/customer/products/CustomerProductCard";
+import { CustomerProductCard } from "@/components/customer/products/CustomerProductCard";
 import {
   FilterPanel,
   FilterTriggerButton,
@@ -39,16 +36,11 @@ import {
   X,
 } from "lucide-react";
 import { Customer } from "@/types/customer/customer";
-import {
-  AddtoCart,
-  getCartQuantities,
-} from "@/actions/customer/ProductAndStore/Cart.Action";
 import { useDebounce } from "use-debounce";
-import { toast } from "sonner";
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { useSearchParams } from "next/navigation";
 import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
-import { Button } from "@react-email/components";
+import { Button } from "@/components/ui/button";
 
 interface SearchResultsClientProps {
   isCashier?: boolean;
@@ -79,14 +71,9 @@ export function SearchResultsClient({
   const [hasSearched, setHasSearched] = useState(false);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
-  const [cartMap, setCartMap] = useState<Record<string, number>>({});
   const [upcMode, setUpcMode] = useState(!!customerId);
   const prevQueryRef = useRef(debouncedQuery);
   const prevFiltersRef = useRef(filters);
-  const cardRefs = useRef<Record<string, ProductCardHandle | null>>({});
-  // ── Prevents double-add when handleBarcodeScan and the debouncedQuery
-  //    useEffect both fire for the same UPC scan ────────────────────────────
-  const scanAddedRef = useRef(false);
 
   const [pendingFilters, setPendingFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
@@ -122,44 +109,9 @@ export function SearchResultsClient({
       ? await searchProductsByUPC(value.trim(), storeId)
       : await searchAction(value.trim(), storeId);
 
-    const results = res.success && res.data ? res.data : [];
-    setAllResults(results);
+    setAllResults(res.success && res.data ? res.data : []);
     setIsLoading(false);
-
-    if (results.length === 1) {
-      const product = results[0];
-      const productId = product._id as string;
-      try {
-        // Mark that we're handling the cart add here so the debouncedQuery
-        // useEffect skips its own AddtoCart call for this scan
-        scanAddedRef.current = true;
-        await AddtoCart(productId, customerId);
-        setCartMap((prev) => ({
-          ...prev,
-          [productId]: (prev[productId] || 0) + 1,
-        }));
-        toast.success(`${product.name} added to cart`);
-        setTimeout(() => {
-          cardRefs.current[productId]?.focusQty();
-        }, 100);
-      } catch {
-        scanAddedRef.current = false;
-        toast.error("Failed to add to cart");
-      }
-    }
   };
-
-  useEffect(() => {
-    const fetchInitialCart = async () => {
-      try {
-        const map = await getCartQuantities(customerId);
-        if (map) setCartMap(map);
-      } catch (error) {
-        console.error("Failed to fetch cart products quantities:", error);
-      }
-    };
-    fetchInitialCart();
-  }, []);
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const isFirstFilterRender = useRef(true);
@@ -208,7 +160,7 @@ export function SearchResultsClient({
       filters.categories.length > 0 ||
       filters.subsidisedOnly ||
       filters.inStockOnly ||
-      !!filters.subsidyLevel; // <-- Added subsidyLevel check here
+      !!filters.subsidyLevel;
 
     const queryChanged = prevQueryRef.current !== debouncedQuery;
     const filtersChanged =
@@ -274,28 +226,6 @@ export function SearchResultsClient({
         const results = res.success && res.data ? res.data : [];
         setAllResults(results);
         setTotalPages((res as any).totalPages ?? 1);
-
-        if (upcMode && results.length === 1) {
-          if (scanAddedRef.current) {
-            scanAddedRef.current = false;
-          } else {
-            const product = results[0];
-            const productId = product._id as string;
-            try {
-              await AddtoCart(productId, customerId);
-              setCartMap((prev) => ({
-                ...prev,
-                [productId]: (prev[productId] || 0) + 1,
-              }));
-              toast.success(`${product.name} added to cart`);
-              setTimeout(() => {
-                cardRefs.current[productId]?.focusQty();
-              }, 100);
-            } catch {
-              toast.error("Failed to add to cart");
-            }
-          }
-        }
       } else {
         const res = await getStoreProductsFiltered(
           storeId,
@@ -374,34 +304,32 @@ export function SearchResultsClient({
         upcMode={upcMode}
       />
 
-      
-        <div className="mx-2 pt-4 flex flex-col">
-          <div className="flex items-center justify-end gap-2">
+      <div className="mx-2 pt-4 flex flex-col">
+        <div className="flex items-center justify-end gap-2">
           {customerId && (
-            <>            
-            <Button
-              onClick={() => setUpcMode((v) => !v)}
-              className={`cursor-pointer h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5 items-center py-1.5 text-sm font-semibold border transition-all w-fit ${
-                upcMode
-                  ? "bg-green-600 text-white border-green-600 shadow-sm"
-                  : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`}
-              />
-              {upcMode ? "UPC" : "UPC"}
-            </Button>
-            <AddMiscItemModalTrigger customerId={customerId || ""} />
+            <>
+              <Button
+                onClick={() => setUpcMode((v) => !v)}
+                className={`cursor-pointer h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5 items-center py-1.5 text-sm font-semibold border transition-all w-fit ${
+                  upcMode
+                    ? "bg-green-600 text-white border-green-600 shadow-sm"
+                    : "bg-card text-muted-foreground border-border/60 hover:border-green-300 hover:text-green-700"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${upcMode ? "bg-white" : "bg-muted-foreground/40"}`}
+                />
+                UPC
+              </Button>
+              <AddMiscItemModalTrigger customerId={customerId} />
             </>
           )}
-            <FilterTriggerButton
-              activeCount={activeFilterCount}
-              onClick={() => setFilterSheetOpen(true)}
-            />
-          </div>
+          <FilterTriggerButton
+            activeCount={activeFilterCount}
+            onClick={() => setFilterSheetOpen(true)}
+          />
         </div>
-
+      </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex gap-6">
@@ -512,15 +440,11 @@ export function SearchResultsClient({
                     >
                       {filtered.map((product) => (
                         <CustomerProductCard
-                          ref={(el) => {
-                            cardRefs.current[product._id as string] = el;
-                          }}
                           isCashier={isCashier}
                           subsidyPage={false}
                           customerId={customerId}
                           key={product._id}
                           product={product}
-                          cartQuantity={cartMap[product._id as string] || 0}
                         />
                       ))}
                     </div>

@@ -270,7 +270,7 @@ export const StoreProductsList = ({
           );
         } else if (isSearchMode) {
           res = upcMode
-            ? await searchProductsByUPC(debouncedQuery, storeId)
+            ? await searchProductsByUPC((debouncedQuery).toUpperCase(), storeId)
             : await searchProductsWithFilters(
                 debouncedQuery,
                 storeId,

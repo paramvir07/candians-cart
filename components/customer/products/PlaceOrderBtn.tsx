@@ -5,7 +5,7 @@ import {
 } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { CartTotals } from "@/components/shared/users/CheckOutActions";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ const PlaceOrderBtn = ({
   const router = useRouter();
   const footerRef = useRef<HTMLDivElement>(null);
   const [isFooterVisible, setIsFooterVisible] = useState(false);
+  const [loading, setloading] = useState(false);
 
   useEffect(() => {
     // Only apply sticky logic on mobile (< md breakpoint)
@@ -43,7 +44,12 @@ const PlaceOrderBtn = ({
   }, [compact]);
 
   const handlePlaceOrder = async () => {
-    if (!customerId) return;
+    setloading(true);
+    if (!customerId){
+      setloading(false);
+      toast.error("Customer ID is required to place an order.");
+      return;
+    }
     const placeOrder = await PlaceOrder({
       receivedCustomerId: customerId,
       paymentMode,
@@ -56,30 +62,31 @@ const PlaceOrderBtn = ({
     } else {
       toast.error(placeOrder.message);
     }
+    setloading(false);
   };
 
-  const handleCustomerOrder = async () => {
-    const res = await PlaceOrder({ TotalCart });
-    if (res.success) {
-      toast.success(res.message);
-      router.push("/customer");
-    } else {
-      toast.error(res.message);
-    }
-  };
+  // const handleCustomerOrder = async () => {
+  //   const res = await PlaceOrder({ TotalCart });
+  //   if (res.success) {
+  //     toast.success(res.message);
+  //     router.push("/customer");
+  //   } else {
+  //     toast.error(res.message);
+  //   }
+  // };
 
   // ── compact mode (cashier sidebar etc.) — unchanged ──────────────────────
   if (compact) {
     return (
       <div className="flex flex-col mb-10  gap-2 w-full">
         {customerId && (
-          <Button
-            onClick={handlePlaceOrder}
-            className="w-full py-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2"
-          >
-            Place Order
-            <ArrowRight className="w-4 h-4" />
-          </Button>
+        <Button
+          onClick={handlePlaceOrder}
+          disabled={loading}
+          className="w-full py-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Place Order <ArrowRight className="w-4 h-4" /></>}
+        </Button>
         )}
         {/* {!customerId && (
           <Button
@@ -125,10 +132,10 @@ const PlaceOrderBtn = ({
           {customerId && (
             <Button
               onClick={handlePlaceOrder}
+              disabled={loading}
               className="w-full py-5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
             >
-              Place Order
-              <ArrowRight className="w-4 h-4" />
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Place Order <ArrowRight className="w-4 h-4" /></>}
             </Button>
           )}
 
