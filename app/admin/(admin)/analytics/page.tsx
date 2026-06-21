@@ -64,7 +64,7 @@ const CardSkeleton = ({ className = "h-40" }: { className?: string }) => (
 
 export default function AnalyticsPage() {
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 pb-24 md:pb-6 max-w-[1600px] mx-auto">
+    <div className="flex flex-col gap-6 p-4 sm:p-6 pb-24 md:pb-6 max-w-400 mx-auto">
       {/* Heading */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
@@ -94,8 +94,8 @@ export default function AnalyticsPage() {
       </Suspense>
 
       {/* ── Pie + Area side by side ─────────────────────────────────────── */}
-      <div className="flex flex-col gap-5 lg:flex-row lg:h-[420px]">
-        <div className="w-full lg:w-[340px] lg:h-full shrink-0">
+      <div className="flex flex-col gap-5 lg:flex-row lg:h-105">
+        <div className="w-full lg:w-85 lg:h-full shrink-0">
           <Suspense fallback={<CardSkeleton className="h-full" />}>
             <PieChartWrapper />
           </Suspense>
@@ -108,13 +108,13 @@ export default function AnalyticsPage() {
       </div>
 
       {/* ── Top Products + Payment breakdown ────────────────────────────── */}
-      <div className="flex flex-col gap-5 lg:flex-row lg:h-[420px]">
+      <div className="flex flex-col gap-5 lg:flex-row lg:h-105">
         <div className="flex-1 lg:h-full">
           <Suspense fallback={<CardSkeleton className="h-full" />}>
             <TopProductsWrapper />
           </Suspense>
         </div>
-        <div className="w-full lg:w-[340px] lg:h-full shrink-0">
+        <div className="w-full lg:w-85 lg:h-full shrink-0">
           <Suspense fallback={<CardSkeleton className="h-full" />}>
             <PaymentBreakdownWrapper />
           </Suspense>
@@ -122,7 +122,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* ── Top Spenders — full width ───────────────────────────────────── */}
-      <div className="lg:h-[380px]">
+      <div className="lg:h-95">
         <Suspense fallback={<CardSkeleton className="h-full" />}>
           <TopSpendersWrapper />
         </Suspense>

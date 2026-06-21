@@ -101,21 +101,34 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     thisMonthProfitAgg,
     lastMonthProfitAgg,
   ] = await Promise.all([
+    // Total revenue (all-time, completed orders) = cartTotal + subsidy
     OrderModel.aggregate([
       { $match: { status: "completed" } },
       {
         $group: {
           _id: null,
-          totalRevenue: { $sum: "$cartTotal" },
+          totalRevenue: {
+            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
+          },
           totalOrders: { $sum: 1 },
         },
       },
     ]),
+
     OrderModel.countDocuments({ status: "pending" }),
+
+    // Revenue this month = cartTotal + subsidy
     OrderModel.aggregate([
       { $match: { status: "completed", createdAt: { $gte: thisMonthStart } } },
-      { $group: { _id: null, total: { $sum: "$cartTotal" } } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] } },
+        },
+      },
     ]),
+
+    // Revenue last month = cartTotal + subsidy
     OrderModel.aggregate([
       {
         $match: {
@@ -123,8 +136,14 @@ export async function getOverviewStats(): Promise<OverviewStats> {
           createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
         },
       },
-      { $group: { _id: null, total: { $sum: "$cartTotal" } } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] } },
+        },
+      },
     ]),
+
     OrderModel.countDocuments({
       status: "completed",
       createdAt: { $gte: thisMonthStart },
@@ -133,17 +152,21 @@ export async function getOverviewStats(): Promise<OverviewStats> {
       status: "completed",
       createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
     }),
+
     Customer.countDocuments(),
     Customer.countDocuments({ createdAt: { $gte: thisMonthStart } }),
     Customer.countDocuments({
       createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
     }),
+
     Store.countDocuments(),
     productsModel.countDocuments(),
+
     OrderModel.aggregate([
       { $group: { _id: null, total: { $sum: "$subsidyUsed" } } },
     ]),
-    // 1. The new combined payout aggregation
+
+    // Combined payout aggregation
     storePayoutsModel.aggregate<PayoutAggResult>([
       {
         $group: {
@@ -155,12 +178,14 @@ export async function getOverviewStats(): Promise<OverviewStats> {
         },
       },
     ]),
-    // 2. MISSING: This month's profit aggregation
+
+    // This month's profit
     storePayoutsModel.aggregate([
       { $match: { endDate: { $gte: thisMonthStart } } },
       { $group: { _id: null, total: { $sum: "$platformProfit" } } },
     ]),
-    // 3. MISSING: Last month's profit aggregation
+
+    // Last month's profit
     storePayoutsModel.aggregate([
       { $match: { endDate: { $gte: lastMonthStart, $lte: lastMonthEnd } } },
       { $group: { _id: null, total: { $sum: "$platformProfit" } } },

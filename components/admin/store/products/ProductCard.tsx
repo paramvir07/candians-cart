@@ -17,7 +17,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Edit, Trash2, Sparkles, PackageX, Star, CheckSquare } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Sparkles,
+  PackageX,
+  Star,
+  CheckSquare,
+} from "lucide-react";
 import { IProduct } from "@/types/store/products.types";
 import { fmt } from "@/lib/fomatPrice";
 import { ProductDetailDialog } from "./ProductDetailDialog";
@@ -25,7 +32,10 @@ import {
   CategoryIllustration,
   getCategoryConfig,
 } from "@/components/customer/shared/CategoryIllustration";
-import { availableProduct, featuredProduct } from "@/actions/common/FeaturedProduct.action";
+import {
+  availableProduct,
+  featuredProduct,
+} from "@/actions/common/FeaturedProduct.action";
 
 export type ProductCardRole = "admin" | "store" | "customer";
 
@@ -52,7 +62,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
   const catConfig = getCategoryConfig(product.category);
 
   // Permissions
-  const canToggleSubsidised = role === "admin";
+  const canToggleSubsidised = role === "admin" || role === "store";
   const canToggleFeatured = role === "admin" || role === "store";
   const canEdit = role === "admin" || role === "store";
   const canDelete = role === "admin" || role === "store";
@@ -101,7 +111,6 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
       setIsFeaturedLoading(false);
     }
   };
-
 
   // remove after availability check
   const handleAvailableToggle = async (checked: boolean) => {
@@ -289,44 +298,44 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
             {/* Featured toggle — admin + store */}
             {canToggleFeatured && (
               <>
-              <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-amber-50/60 border border-amber-100">
-                <div className="flex items-center gap-2">
-                  <Star
-                    className={`h-3.5 w-3.5 ${isFeatured ? "text-amber-500 fill-amber-400" : "text-muted-foreground"}`}
+                <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-amber-50/60 border border-amber-100">
+                  <div className="flex items-center gap-2">
+                    <Star
+                      className={`h-3.5 w-3.5 ${isFeatured ? "text-amber-500 fill-amber-400" : "text-muted-foreground"}`}
+                    />
+                    <span
+                      className={`text-xs font-medium ${isFeatured ? "text-amber-700" : "text-muted-foreground"}`}
+                    >
+                      {isFeatured ? "Featured" : "Not featured"}
+                    </span>
+                  </div>
+                  <Switch
+                    checked={isFeatured}
+                    onCheckedChange={handleFeaturedToggle}
+                    disabled={isFeaturedLoading}
+                    className="data-[state=checked]:bg-amber-400 h-5 w-9"
                   />
-                  <span
-                    className={`text-xs font-medium ${isFeatured ? "text-amber-700" : "text-muted-foreground"}`}
-                  >
-                    {isFeatured ? "Featured" : "Not featured"}
-                  </span>
                 </div>
-                <Switch
-                  checked={isFeatured}
-                  onCheckedChange={handleFeaturedToggle}
-                  disabled={isFeaturedLoading}
-                  className="data-[state=checked]:bg-amber-400 h-5 w-9"
-                />
-              </div>
 
-            {/* remove after availability check   */}
-              <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-primary/20 border">
-                <div className="flex items-center gap-2">
-                  <CheckSquare
-                    className={`h-3.5 w-3.5 ${isFeatured ? "text-amber-500 fill-amber-400" : "text-muted-foreground"}`}
+                {/* remove after availability check   */}
+                <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-primary/20 border">
+                  <div className="flex items-center gap-2">
+                    <CheckSquare
+                      className={`h-3.5 w-3.5 ${isFeatured ? "text-amber-500 fill-amber-400" : "text-muted-foreground"}`}
+                    />
+                    <span
+                      className={`text-xs font-medium ${isFeatured ? "text-amber-700" : "text-muted-foreground"}`}
+                    >
+                      {isAvailable ? "Available" : "Not Available"}
+                    </span>
+                  </div>
+                  <Switch
+                    checked={isAvailable}
+                    onCheckedChange={handleAvailableToggle}
+                    disabled={isAvailableLoading}
+                    className="data-[state=checked]:bg-primary h-5 w-9"
                   />
-                  <span
-                    className={`text-xs font-medium ${isFeatured ? "text-amber-700" : "text-muted-foreground"}`}
-                  >
-                    {isAvailable ? "Available" : "Not Available"}
-                  </span>
                 </div>
-                <Switch
-                  checked={isAvailable}
-                  onCheckedChange={handleAvailableToggle}
-                  disabled={isAvailableLoading}
-                  className="data-[state=checked]:bg-primary h-5 w-9"
-                />
-              </div>
               </>
             )}
 
