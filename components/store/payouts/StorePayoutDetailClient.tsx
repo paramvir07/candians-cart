@@ -670,10 +670,10 @@ export default function StorePayoutDetailClient({
             </div>
             <div className="p-4 flex flex-col justify-center">
               <span className="text-xs text-primary font-medium mb-1 uppercase tracking-wider">
-                Platform Profit
+                Store Profit (50%)
               </span>
               <span className="text-2xl font-bold text-primary">
-                {formatCurrency(payout.platformProfit)}
+                {formatCurrency(payout.storeProfit)}
               </span>
             </div>
             <div className="p-4 flex flex-col justify-center">
