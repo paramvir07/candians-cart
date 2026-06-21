@@ -134,12 +134,9 @@ export default function OrderDetail({
                 const imgUrl = p?.images?.[0]?.url;
                 const itemSub = item.subsidy ?? 0;
                 const markup = item.productId.markup ?? 0;
-                const unitBase = Math.round(
-                  (p?.price ?? 0) +
-                    (p?.price ?? 0) * ((item.markup ?? 0) / 100),
-                );
-                const lineTotal = Math.round(unitBase * item.quantity);
+                const lineTotal = Math.round((item.total ?? 0) / (1 + (item.tax ?? 0)));
 
+                const unitBase = item.quantity > 0 ? Math.round(lineTotal / item.quantity) : 0;
                 return (
                   <div
                     key={`${item.__type}-${i}`}
