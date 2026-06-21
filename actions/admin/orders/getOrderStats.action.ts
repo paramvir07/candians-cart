@@ -42,6 +42,7 @@ export async function getOrderStats(
     OrderModel.countDocuments({ ...match, createdAt: { $gte: startOfMonth } }),
     OrderModel.countDocuments(match),
     OrderModel.countDocuments({ ...match, status: "pending" }),
+
     OrderModel.countDocuments({ ...match, status: "completed" }),
     OrderModel.aggregate([
       { $match: match },

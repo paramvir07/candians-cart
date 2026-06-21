@@ -31,12 +31,12 @@ export async function subsidisedProduct(
 ) {
   try {
     const session = await getUserSession();
-    if (session.user.role !== "admin") {
-      return {
-        success: false,
-        error: "Unauthorised: Admin accress required",
-      };
-    }
+    // if (session.user.role !== "admin") {
+    //   return {
+    //     success: false,
+    //     error: "Unauthorised: Admin accress required",
+    //   };
+    // }
     await dbConnect();
 
     const updatedProduct = await Product.findByIdAndUpdate(

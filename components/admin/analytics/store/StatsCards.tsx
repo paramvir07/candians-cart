@@ -20,8 +20,8 @@ function formatCents(cents: number) {
   return (
     "$" +
     (cents / 100).toLocaleString("en-CA", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     })
   );
 }
@@ -91,7 +91,7 @@ export default function StatCards({ stats }: StatCardsProps) {
 
         const CardContent = (
           <div
-            className={`relative bg-gradient-to-br ${card.gradientFrom} to-white border ${card.border} rounded-2xl p-4 sm:p-5 overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99] ${card.href ? "cursor-pointer" : ""}`}
+            className={`relative bg-linear-to-br ${card.gradientFrom} to-white border ${card.border} rounded-2xl p-4 sm:p-5 overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99] ${card.href ? "cursor-pointer" : ""}`}
           >
             {/* Decorative blob */}
             <div

@@ -109,8 +109,8 @@ function formatCents(cents: number) {
   return (
     "$" +
     (cents / 100).toLocaleString("en-CA", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     })
   );
 }
@@ -178,7 +178,7 @@ function CustomerCell({
       <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center shrink-0">
         <User className="w-3 h-3 text-muted-foreground" />
       </div>
-      <span className="text-sm font-medium text-foreground truncate max-w-[130px]">
+      <span className="text-sm font-medium text-foreground truncate max-w-32.5">
         {order.customerName}
       </span>
     </div>
@@ -533,7 +533,7 @@ export function OrdersList({
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[780px]">
+          <table className="w-full text-sm min-w-195">
             <thead>
               <tr className="border-b border-border/60">
                 <th className="px-5 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -623,7 +623,7 @@ export function OrdersList({
                             <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center shrink-0">
                               <Store className="w-3 h-3 text-muted-foreground" />
                             </div>
-                            <span className="text-sm font-medium text-foreground truncate max-w-[110px]">
+                            <span className="text-sm font-medium text-foreground truncate max-w-27.5">
                               {order.storeName}
                             </span>
                           </Link>

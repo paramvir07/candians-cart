@@ -13,7 +13,7 @@ export interface DashboardStats {
   productGrowthPercent: number;
   totalOrders: number;
   orderGrowthPercent: number;
-  totalRevenue: number; // sum of totalCustomerPaid from StorePayout
+  totalRevenue: number; // sum of (cartTotal + subsidy) from completed Orders
   revenueGrowthPercent: number;
 }
 
@@ -76,18 +76,40 @@ export async function allStoreDataAction(): Promise<DashboardData> {
       createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
     }),
 
-    // Revenue this month = totalCustomerPaid
-    storePayoutsModel.aggregate([
-      { $match: { endDate: { $gte: startOfThisMonth } } },
-      { $group: { _id: null, total: { $sum: "$totalCustomerPaid" } } },
+    // Revenue this month = cartTotal + subsidy, completed orders only
+    OrderModel.aggregate([
+      {
+        $match: {
+          status: "completed",
+          createdAt: { $gte: startOfThisMonth },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
+          },
+        },
+      },
     ]),
 
-    // Revenue last month = totalCustomerPaid
-    storePayoutsModel.aggregate([
+    // Revenue last month = cartTotal + subsidy, completed orders only
+    OrderModel.aggregate([
       {
-        $match: { endDate: { $gte: startOfLastMonth, $lt: startOfThisMonth } },
+        $match: {
+          status: "completed",
+          createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+        },
       },
-      { $group: { _id: null, total: { $sum: "$totalCustomerPaid" } } },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
+          },
+        },
+      },
     ]),
 
     // Recent Orders — join store for name + storeId
@@ -157,13 +179,33 @@ export async function allStoreDataAction(): Promise<DashboardData> {
   });
 
   // All-time total revenue = sum of totalCustomerPaid across all payouts
-  const totalRevenueAgg = await storePayoutsModel.aggregate([
-    { $group: { _id: null, total: { $sum: "$totalCustomerPaid" } } },
+  const totalRevenueAgg = await OrderModel.aggregate([
+    { $match: { status: "completed" } },
+    {
+      $group: {
+        _id: null,
+        total: { $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] } },
+      },
+    },
   ]);
   const totalRevenue: number = totalRevenueAgg[0]?.total ?? 0;
 
+  // const allTimeCartTotal: number = totalRevenueAgg[0]?.totalCartOnly ?? 0;
+  // const allTimeSubsidy: number = totalRevenueAgg[0]?.totalSubsidyOnly ?? 0;
+
   const revenueThisMonth: number = revenueAgg[0]?.total ?? 0;
   const revenueLastMonth: number = revenueLastMonthAgg[0]?.total ?? 0;
+
+  // console.log("\n=== DASHBOARD DATE BOUNDARIES ===");
+  // console.log("Start of Last Month:", startOfLastMonth.toISOString());
+  // console.log("Start of This Month:", startOfThisMonth.toISOString());
+  // console.log("Current Date (Now): ", now.toISOString());
+
+  // console.log("\n=== REVENUE SPLIT DEBUG ===");
+  // console.log("All-Time Cart Total:  ", allTimeCartTotal);
+  // console.log("All-Time Subsidy:     ", allTimeSubsidy);
+  // console.log("Combined Total:       ", totalRevenue);
+  // console.log("===========================\n");
 
   const stats: DashboardStats = {
     totalStores,

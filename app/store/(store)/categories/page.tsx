@@ -4,18 +4,15 @@ import CategorySalesTableClient from "@/components/store/categories/CategorySale
 import CategorySalesSkeleton from "@/components/skeletons/CategorySalesSkeleton";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
+import { getTodayVancouverBoundsUTC } from "@/lib/timezone";
 
 // 1. Data-fetching Server Component
 async function CategorySalesWrapper({ storeId }: { storeId: string }) {
   // Default to 'Today'
-  const today = new Date();
-  const startOfDay = new Date(today);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(today);
-  endOfDay.setHours(23, 59, 59, 999);
+   const { start, end } = getTodayVancouverBoundsUTC();
 
   // Fetch initial data on the server
-  const initialData = await getCategorySales(storeId, startOfDay, endOfDay);
+  const initialData = await getCategorySales(storeId, start, end);
 
   return (
     <CategorySalesTableClient initialData={initialData} storeId={storeId} />
