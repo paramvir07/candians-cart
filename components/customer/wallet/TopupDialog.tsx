@@ -107,6 +107,7 @@ export function TopUpDialog({
     }
 
     const dollars = finalCents / 100;
+    setCashReceived(dollars);
     setCashReceivedInput(dollars.toFixed(2));
 
   }
