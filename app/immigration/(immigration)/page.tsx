@@ -1,13 +1,7 @@
 import { getCustomerStats } from "@/actions/admin/analytics/getCustomerStats.action";
 import MainOverviewUser from "@/components/shared/users/MainOverviewUser";
 import UserList from "@/components/shared/users/UserList";
-import {
-  ShieldCheck,
-  Users,
-  Activity,
-  WalletCards,
-  ArrowUpRight,
-} from "lucide-react";
+import { ShieldCheck, Users, Activity, WalletCards } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
