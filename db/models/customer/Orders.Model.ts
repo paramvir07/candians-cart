@@ -35,6 +35,8 @@ export interface PlaceOrderI {
   subsidy?: number;
   subsidyLeft:number;
   subsidyUsed:number;
+  storeProfit?:number;
+  platformProfit?:number;
   paymentMode?: "wallet" | "pending";
   cashierId?: Types.ObjectId;
 }
@@ -152,6 +154,16 @@ const placeOrderSchema = new Schema<PlaceOrderI>(
       required: true,
       default: 0,
       min: 0,
+    },
+    storeProfit:{
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    platformProfit:{
+      type: Number,
+      required: true,
+      default: 0,
     },
     userId: {
       type: Schema.Types.ObjectId,

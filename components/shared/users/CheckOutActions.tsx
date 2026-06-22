@@ -8,6 +8,7 @@ export interface CartTotals {
   totalTax: number;
   disposable: number;
   total: number;
+  totalMarkup: number;
 }
 
 export default function CheckoutActions({

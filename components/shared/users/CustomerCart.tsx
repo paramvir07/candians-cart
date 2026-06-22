@@ -37,7 +37,7 @@ import ClearCartDialog from "./ClearCartDialog";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
-const calcLine = (item: ICartItem) => {
+const calcLine = (item: ICartItem|ISubsidyItems) => {
   const base = item.productId.price * item.quantity;
   const markup = Math.round(base * (item.productId.markup / 100));
   const markupPercentage = item.productId.markup;
@@ -180,6 +180,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const subsidyTotals = subItems.reduce(
     (acc, item) => {
+      const {markup} = calcLine(item);
       const fullPrice = item.TotalPrice * item.quantity;
       const afterSubsidy = Math.max(fullPrice - item.subsidy, 0);
       const taxRate = item.productId.tax ?? 0;
@@ -198,9 +199,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       acc.pst += pst;
       acc.totalTax += totalTax;
       acc.total += afterSubsidy + totalTax;
+      acc.totalMarkup += markup;
       return acc;
     },
-    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0 },
+    { subtotal: 0, gst: 0, pst: 0, totalTax: 0, disposable: 0, total: 0, totalMarkup: 0 },
   );
 
   const calcMiscTotal = (miscItems: IMiscCartItem[]) => {
@@ -246,8 +248,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     total: Math.round(
       itemTotals.total + subsidyTotals.total + miscTotals.total,
     ),
+    totalMarkup: itemTotals.totalMarkup + subsidyTotals.totalMarkup,
   };
-
+  
   const showGST = totals.gst > 0;
   const showPST = totals.pst > 0;
   const active = activeMarkup ?? 0;
