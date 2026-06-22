@@ -40,9 +40,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-// Assuming you have this date picker component from your snippet
 import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
-import { Spinner } from "@/components/ui/spinner"; // Or a loading icon
+import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getTodayVancouverBoundsUTC,
   getVancouverDayBoundsUTC,
@@ -53,7 +53,6 @@ interface CategorySalesTableClientProps {
   storeId: string;
 }
 
-// Utility to convert UTC to PST (America/Vancouver corresponds to Pacific Time)
 const formatToPST = (utcDateString: string) => {
   const date = new Date(utcDateString);
   return new Intl.DateTimeFormat("en-GB", {
@@ -75,7 +74,6 @@ export default function CategorySalesTableClient({
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isPending, startTransition] = useTransition();
 
-  // Dialog State
   const [selectedCategory, setSelectedCategory] =
     useState<ICategorySales | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -150,9 +148,10 @@ export default function CategorySalesTableClient({
         )}
 
         {isPending && (
-          <span className="text-sm text-muted-foreground animate-pulse">
-            Updating...
-          </span>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Spinner className="w-4 h-4" />
+            <span>Updating...</span>
+          </div>
         )}
       </div>
 
@@ -167,7 +166,21 @@ export default function CategorySalesTableClient({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.length === 0 ? (
+            {isPending ? (
+              Array.from({ length: 5 }).map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <Skeleton className="h-5 w-30" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-10" />
+                  </TableCell>
+                  <TableCell className="text-right flex justify-end">
+                    <Skeleton className="h-8 w-25" />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} className="text-center h-24">
                   No sales found for this period.

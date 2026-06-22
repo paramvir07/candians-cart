@@ -165,7 +165,6 @@ export async function updateProduct(
       disposableFee: Math.round((disposableFee || 0) * 100),
       subsidised,
       isMeasuredInWeight,
-      UOM,
     };
 
     if (normalizedPrimaryUPC) {
@@ -173,6 +172,10 @@ export async function updateProduct(
     }
     if (normalizedInvoiceId) {
       dbPayload.InvoiceId = normalizedInvoiceId;
+    }
+
+    if (isMeasuredInWeight && typeof UOM === "string") {
+      dbPayload.UOM = UOM.toLowerCase();
     }
 
     const mongoSession = await mongoose.startSession();
@@ -251,6 +254,10 @@ export async function updateProduct(
 
         if (!normalizedPrimaryUPC) {
           unsetPayload.primaryUPC = "";
+        }
+
+        if (!isMeasuredInWeight) {
+          unsetPayload.UOM = "";
         }
 
         const updateQuery =

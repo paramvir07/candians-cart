@@ -134,13 +134,18 @@ export function BasicInfoSection({
         {isMeasuredInWeight === "true" && (
           <div className="pt-2 animate-fade-in-up space-y-1.5">
             <Label className="text-sm font-medium text-foreground/80">
-              Unit of Measurement (UOM)
+              Unit of Measurement (UOM){" "}
+              <span className="text-destructive">*</span>
             </Label>
-            <Input
-              placeholder="e.g. kg"
-              value={UOM}
-              onChange={(e) => onChange("UOM", e.target.value)}
-            />
+            <Select value={UOM} onValueChange={(v) => onChange("UOM", v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select unit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="lb">LB</SelectItem>
+                {/* Add 'kg', 'oz' etc. here later when you realize 1 option is bad UX */}
+              </SelectContent>
+            </Select>
           </div>
         )}
 

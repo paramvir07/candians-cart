@@ -82,7 +82,7 @@ export const BaseProductFormSchema = z.object({
     .default([]),
 
   isFeatured: z.boolean(),
-  
+
   subsidised: z.boolean(),
 
   markup: z.coerce.number().min(0, "Markup must be greater than or equal to 0"),
@@ -90,7 +90,10 @@ export const BaseProductFormSchema = z.object({
   primaryUPC: z
     .string()
     .trim()
-    .regex(/^[a-zA-Z0-9-]*$/, "UPC must contain only letters, numbers, and hyphens")
+    .regex(
+      /^[a-zA-Z0-9-]*$/,
+      "UPC must contain only letters, numbers, and hyphens",
+    )
     .max(18, "UPC cannot exceed 18 characters")
     .transform((val) => (val === "" ? undefined : val.toUpperCase()))
     .optional(),
@@ -139,7 +142,6 @@ export const createProductFormSchema = (role: "admin" | "store") => {
     //         .refine((val) => !val || /^[0-9a-fA-F]{24}$/.test(val), {
     //           message: "Invalid Invoice ID format",
     //         }),
-    
   }).superRefine((data, ctx) => {
     const excludedCategories = ["Fruits", "Vegetables", "Dairy"];
 
@@ -149,6 +151,17 @@ export const createProductFormSchema = (role: "admin" | "store") => {
         path: ["price"],
         message: "Price must be at least 0.01",
       });
+    }
+
+    if (data.isMeasuredInWeight) {
+      // 1. Check if it's missing or empty
+      if (!data.UOM || data.UOM.trim() === "") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["UOM"],
+          message: "Unit of Measurement is required when sold by weight",
+        });
+      }
     }
   });
 };

@@ -142,7 +142,7 @@ export async function createProduct(
       disposableFee: newDisposableFeeInCents,
       subsidised,
       isMeasuredInWeight,
-      UOM,
+      UOM: typeof UOM === "string" ? UOM.toLowerCase() : undefined,
       primaryUPC: primaryUPC,
     };
 

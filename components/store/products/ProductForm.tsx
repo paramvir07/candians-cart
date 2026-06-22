@@ -59,7 +59,9 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
 
   // Duplicate Check State
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
-  const [potentialDuplicates, setPotentialDuplicates] = useState<IProduct[]>([]);
+  const [potentialDuplicates, setPotentialDuplicates] = useState<IProduct[]>(
+    [],
+  );
 
   // Image state
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -91,8 +93,23 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
     primaryUPC: initialData?.primaryUPC?.toString() || "",
   });
 
-  const handleChange = (field: string, value: string) =>
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field: string, value: string) => {
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value };
+
+      // Wipe UOM if they switch off weight-based measurement
+      if (field === "isMeasuredInWeight" && value === "false") {
+        newData.UOM = "";
+      }
+
+      // Auto-select 'lb' if they switch to weight-based and it's empty (Saves them a click)
+      if (field === "isMeasuredInWeight" && value === "true" && !prev.UOM) {
+        newData.UOM = "lb";
+      }
+
+      return newData;
+    });
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -115,7 +132,9 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
   const resolvedStoreId = storeId || initialData?.storeId?.toString();
   const getRedirectPath = () => {
     if (role === "admin") {
-      return resolvedStoreId ? `/admin/store/${resolvedStoreId}/products` : "/admin/products";
+      return resolvedStoreId
+        ? `/admin/store/${resolvedStoreId}/products`
+        : "/admin/products";
     }
     return "/store/products";
   };
@@ -361,9 +380,12 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete "{initialData?.name}"?</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    Delete "{initialData?.name}"?
+                  </AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. The product will be permanently removed.
+                    This action cannot be undone. The product will be
+                    permanently removed.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
