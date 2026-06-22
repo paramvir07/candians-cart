@@ -128,7 +128,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
       } else if (results.length === 1) {
         const product = results[0];
 
-        if (product.isMeasuredInWeight) {
+        if (product.isMeasuredInWeight && (product.UOM === "lb" || product.UOM === "kg")) {
           setQtyInput("");
           setPendingProduct({ _id: product._id as string, name: product.name });
           setIsLoading(false);
