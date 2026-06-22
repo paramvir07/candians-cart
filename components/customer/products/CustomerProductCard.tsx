@@ -101,7 +101,7 @@ export const CustomerProductCard = forwardRef<
   const cashierMobile = useCashierMobile();
   const cashier = isCashier && !cashierMobile;
 
-  const quantityStep = 1;
+  // const quantityStep = 1;
 
   useImperativeHandle(ref, () => ({
     focusQty: () => {
@@ -347,7 +347,7 @@ export const CustomerProductCard = forwardRef<
               alt={product.name}
               fill
               onError={() => setImgError(true)}
-              className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+              className="object-contain object-center transition-transform duration-700 ease-out group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (

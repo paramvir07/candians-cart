@@ -272,7 +272,7 @@ export function ProductDetailDialog({
               src={product.images[0].url}
               alt={product.name}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="512px"
             />
           ) : (
