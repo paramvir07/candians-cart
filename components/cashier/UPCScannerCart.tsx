@@ -29,7 +29,6 @@ interface UPCScannerProps {
 interface PendingWeightProduct {
   _id: string;
   name: string;
-  UOM: string;
 }
 
 export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
@@ -131,7 +130,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
 
         if (product.isMeasuredInWeight) {
           setQtyInput("");
-          setPendingProduct({ _id: product._id as string, name: product.name, UOM: product.UOM ?? 'kg/lb'});
+          setPendingProduct({ _id: product._id as string, name: product.name });
           setIsLoading(false);
           setUpc("");
         } else {
@@ -161,17 +160,13 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
   const handleConfirmWeightQty = async () => {
     if (!pendingProduct) return;
 
-    const isPiece = pendingProduct.UOM === "pc";
-    const minQty = isPiece ? 1 : MIN_WEIGHT_QTY;
-
-    const qty = isPiece ? parseInt(qtyInput, 10) : parseFloat(qtyInput);
+    const qty = parseFloat(qtyInput);
     if (
       Number.isNaN(qty) ||
-      qty < minQty ||
-      qty > MAX_WEIGHT_QTY ||
-      (isPiece && !Number.isInteger(qty))
+      qty < MIN_WEIGHT_QTY ||
+      qty > MAX_WEIGHT_QTY
     ) {
-      toast.error(`Enter a whole number between 1 and ${MAX_WEIGHT_QTY}`);
+      toast.error(`Enter a quantity between ${MIN_WEIGHT_QTY} and ${MAX_WEIGHT_QTY}`);
       return;
     }
 
@@ -189,8 +184,6 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
       finishScan();
     }
   };
-
-  const isPiece = pendingProduct?.UOM === "pc";
 
   return (
     <>
@@ -239,9 +232,9 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
 
           <Input
             type="number"
-            inputMode={isPiece ? "numeric" : "decimal"}
-            step={isPiece ? "1" : "0.01"}
-            min={isPiece ? 1 : MIN_WEIGHT_QTY}
+            inputMode="decimal"
+            step="0.01"
+            min={MIN_WEIGHT_QTY}
             max={MAX_WEIGHT_QTY}
             autoFocus
             value={qtyInput}
@@ -252,7 +245,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
                 handleConfirmWeightQty();
               }
             }}
-            placeholder={isPiece ? `1 – ${MAX_WEIGHT_QTY}` : `${MIN_WEIGHT_QTY} – ${MAX_WEIGHT_QTY}`}
+            placeholder={`${MIN_WEIGHT_QTY} – ${MAX_WEIGHT_QTY}`}
             disabled={isSubmittingQty}
           />
 
