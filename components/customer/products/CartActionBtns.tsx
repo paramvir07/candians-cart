@@ -75,7 +75,7 @@ const CartActionBtns = ({
   const increment = useCallback(() => {
     if (qty >= 99) return;
     const next = isMeasuredInWeight
-      ? Math.round((qty + 0.5) * 100) / 100
+      ? Math.round((qty + 1) * 100) / 100
       : qty + 1;
     setQty(next);
     setInputValue(formatQty(next));
@@ -89,7 +89,7 @@ const CartActionBtns = ({
       return;
     }
     const next = isMeasuredInWeight
-      ? Math.round((qty - 0.5) * 100) / 100
+      ? Math.round((qty - 1) * 100) / 100
       : qty - 1;
     setQty(next);
     setInputValue(formatQty(next));
