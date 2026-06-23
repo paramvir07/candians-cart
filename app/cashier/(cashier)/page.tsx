@@ -1,7 +1,6 @@
 import CashierSidebar from "@/components/cashier/CashierSlidebar";
 import UserList from "@/components/shared/users/UserList";
 
-
 const page = async () => {
 
   return (
