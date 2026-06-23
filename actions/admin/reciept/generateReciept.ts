@@ -29,6 +29,7 @@ export interface GetRecieptParams {
 export interface AggregatedReciept {
   _id: string | null;
   orderCount: number;
+  totalPlatformFee: number;
   orderIds: string[];
   totalCustomerPaid: number;
   totalBasePrice: number;
@@ -60,6 +61,7 @@ type OrderAggregateResult = {
   _id: Types.ObjectId | null;
   orderCount: number;
   orderIds: Types.ObjectId[];
+  totalPlatformFeeRaw: number;
   totalCustomerPaid: number;
   totalBasePrice: number;
   totalDisposableFee: number;
@@ -228,6 +230,7 @@ export async function getRecieptDataByDateRange(
     );
 
     const STORE_PROFIT_MARGIN = 0.5;
+    const PLATFORM_FEE = 50; //50 cents
 
     // Perform business logic transforms here (easier to test, type-safe, and avoids Mongo floating point bugs)
     return receiptsRaw.map((receipt) => {
@@ -270,7 +273,10 @@ export async function getRecieptDataByDateRange(
       // --- Everything below is RAW (unrounded) until the return statement ---
       // All values are in cents.
 
-      const totalCustomerPaidRaw = receipt.totalCustomerPaid;
+      const totalPlatformFeeRaw = PLATFORM_FEE * receipt.orderCount;
+
+      const totalCustomerPaidRaw =
+        receipt.totalCustomerPaid - totalPlatformFeeRaw;
       const totalBasePriceRaw =
         receipt.totalBasePrice - oldMiscGenericTotal + miscBaseAdjustment;
       const totalDisposableFeeRaw =
@@ -314,7 +320,10 @@ export async function getRecieptDataByDateRange(
         totalDisposableFeeRaw +
         baseTaxRaw +
         storeMarkupTaxRaw;
-      const grossMarginRaw = totalCustomerPaidRaw - storeFixedValueRaw;
+
+      const grossMarginRaw = totalCustomerPaidRaw - storeFixedValueRaw - totalSubsidyRaw;
+
+      // const grossMarginRaw = totalCustomerPaidRaw - storeFixedValueRaw;
 
       const storeProfitRaw = grossMarginRaw * STORE_PROFIT_MARGIN;
 
@@ -325,7 +334,10 @@ export async function getRecieptDataByDateRange(
 
       // 5. Platform Metrics
       const platformProfitRaw =
-        totalCustomerPaidRaw - (storeProfitRaw + storeFixedValueRaw);
+        grossMarginRaw - storeProfitRaw;
+
+        // const platformProfitRaw =
+        // totalCustomerPaidRaw - (storeProfitRaw + storeFixedValueRaw);
       const platformCommisionRaw = platformProfitRaw + totalSubsidyRaw;
 
       // --- Round to the nearest cent ONLY here, on the final output values ---
@@ -406,11 +418,23 @@ export async function getRecieptDataByDateRange(
       //   `Tax Verification Check: ${d(taxOnBasePrice)} vs ${d(baseTaxRaw)}`,
       // );
 
+      console.log("Total platform fee: ", totalPlatformFeeRaw);
+      console.log(
+        "Total Customer paid before platform fee: ",
+        totalCustomerPaidRaw,
+      );
+      console.log(
+        "Total platform profit before platform fee: ",
+        platformProfitRaw,
+      );
+      console.log("Store Profit: ", storeProfitRaw);
+
       return {
         _id: storeKey === "global" ? null : storeKey,
         orderCount: receipt.orderCount,
+        totalPlatformFee: round_(receipt.totalPlatformFeeRaw),
         orderIds: receipt.orderIds.map((id) => id.toString()),
-        totalCustomerPaid: round_(totalCustomerPaidRaw),
+        totalCustomerPaid: round_(totalCustomerPaidRaw + totalPlatformFeeRaw),
         totalBasePrice: round_(totalBasePriceRaw),
         totalDisposableFee: round_(totalDisposableFeeRaw),
         totalGST: round_(totalGSTRaw),
@@ -429,7 +453,7 @@ export async function getRecieptDataByDateRange(
         grossMargin: round_(grossMarginRaw),
         storeProfit: round_(storeProfitRaw),
         storePayout: round_(storePayoutRaw),
-        platformProfit: round_(platformProfitRaw),
+        platformProfit: round_(platformProfitRaw + totalPlatformFeeRaw),
         platformCommision: round_(platformCommisionRaw),
         totalWalletTopUpCashCollected: round_(totalWalletTopUpCashCollectedRaw),
         totalCashCollected: round_(totalCashCollectedRaw),

@@ -5,6 +5,7 @@ export interface IStorePayout {
   endDate: Date;
   storeId: Types.ObjectId;
   totalNumberofOrders: number;
+  totalPlatformFee: number;
   orderIds: Types.ObjectId[];
   totalCustomerPaid: number;
   totalBasePrice: number;
@@ -54,6 +55,10 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       type: Number,
       required: true,
       default: 0,
+    },
+    totalPlatformFee: {
+      type: Number,
+      required: true,
     },
     orderIds: [
       {
