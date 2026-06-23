@@ -31,6 +31,7 @@ import {
 import {
   Loader2,
   PackageOpen,
+  Plus,
   Search,
   SlidersHorizontal,
   X,
@@ -41,6 +42,7 @@ import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { useSearchParams } from "next/navigation";
 import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface SearchResultsClientProps {
   isCashier?: boolean;
@@ -321,7 +323,12 @@ export function SearchResultsClient({
                 />
                 UPC
               </Button>
-              <AddMiscItemModalTrigger customerId={customerId} />
+              <Link href={`/cashier/customer/${customerId}/new-product`}>
+                <Button size="sm" className="gap-1.5">
+                  <Plus className="h-4 w-4" />
+                  Add Product
+                </Button>
+              </Link>
             </>
           )}
           <FilterTriggerButton
