@@ -1,8 +1,8 @@
 import ProductForm from "@/components/store/products/ProductForm";
 interface PageParams {
-  params: {
+  params: Promise<{
     storeId: string;
-  };
+  }>;
 }
 const page = async ({ params }: PageParams) => {
   const localparams = await params;
