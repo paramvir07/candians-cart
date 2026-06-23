@@ -3,9 +3,9 @@ import { getSingleProduct } from "@/actions/store/products/getSingleProduct";
 import { redirect } from "next/navigation";
 
 interface PageParams {
-  params: {
+  params: Promise<{
     productId: string;
-  };
+  }>;
 }
 
 export default async function EditProductPage({ params }: PageParams) {
