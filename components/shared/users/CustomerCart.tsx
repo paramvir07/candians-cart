@@ -239,7 +239,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const totals = {
     subtotal: Math.round(
-      itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal+50,
+      itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal,
     ),
     gst: itemTotals.gst + subsidyTotals.gst + miscTotals.gst,
     pst: itemTotals.pst + subsidyTotals.pst + miscTotals.pst,

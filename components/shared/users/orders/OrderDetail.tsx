@@ -45,8 +45,8 @@ export default function OrderDetail({
     ...subsidyProducts.map((item: any) => ({ ...item, __type: "subsidy" })),
     ...miscProducts.map((item: any) => ({ ...item, __type: "misc" })),
   ];
-
-  const subtotal = cartTotal - totalGST - totalPST - totalFee;
+  const PlatformFee = 50;
+  const subtotal = cartTotal - totalGST - totalPST - totalFee - PlatformFee;
 
   return (
     <div className="flex flex-col h-full max-h-[85vh] bg-background rounded-2xl overflow-hidden">
