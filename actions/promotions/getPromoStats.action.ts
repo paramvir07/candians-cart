@@ -6,7 +6,7 @@ import { PromoStats } from "@/types/promotions/promo.types";
 
 // Promotion config — single source of truth
 const PROMO_CONFIG = {
-  startDate: new Date("2026-06-09T07:00:00.000Z"),
+  startDate: new Date("2026-06-23T07:00:00.000Z"),
   minDays: 15,
   minCustomers: 200,
   minOrders: 1,

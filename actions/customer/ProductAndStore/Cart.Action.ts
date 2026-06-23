@@ -520,7 +520,20 @@ export const PlaceOrder = async ({
           "Insufficient wallet balance. Please add funds or choose another payment method.",
       };
     }
+    const TotalMarkupAfterSubsidy = TotalCart.totalMarkup - customerCart.cartSubsidy;
+    const StoreProfit = Math.floor(TotalMarkupAfterSubsidy*0.50);
+    const PlatformProfit = TotalMarkupAfterSubsidy-StoreProfit;
 
+
+    const ProfitFields ={
+      TotalMarkupAfterSubsidy,
+      StoreProfit:StoreProfit,
+      PlatformProfit:PlatformProfit
+    }
+
+    const PlatformFee = 50;
+    // console.log(ProfitFields)
+    
     const OrderData = {
       products,
       subsidyItems,
@@ -535,6 +548,8 @@ export const PlaceOrder = async ({
       subsidyUsed: Math.round(TotalUsedSubsidy),
       userId: User._id,
       storeId: User.associatedStoreId,
+      storeProfit: ProfitFields.StoreProfit,
+      platformProfit: ProfitFields.PlatformProfit+PlatformFee,
       paymentMode,
       status: receivedCustomerId ? "completed" : "pending",
       ...(receivedCustomerId && { cashierId }),
@@ -542,7 +557,7 @@ export const PlaceOrder = async ({
 
     // console.log(OrderData)
 
-    await OrderModel.create([OrderData], { session });
+  
 
     if (walletPayment) {
       const updated = await Customer.findOneAndUpdate(
@@ -572,7 +587,8 @@ export const PlaceOrder = async ({
         return { success: false, message: "Error while setting Gift Wallet Amount " };
       }
     }
-
+    
+    await OrderModel.create([OrderData], { session });
     await CartModel.deleteOne({ customerId: User._id }, { session });
 
     await session.commitTransaction();

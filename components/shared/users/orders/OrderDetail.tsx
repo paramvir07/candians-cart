@@ -36,8 +36,8 @@ export default function OrderDetail({
   const hasFee = totalFee > 0;
   const hasPST = totalPST > 0;
 
-  const normalProducts = order.products ?? [];
-  const subsidyProducts = order.subsidyItems ?? [];
+  const normalProducts = (order.products ?? []).filter((item: any) => item.productId != null);
+  const subsidyProducts = (order.subsidyItems ?? []).filter((item: any) => item.productId != null);
   const miscProducts = order.miscItems ?? [];
 
   const allProducts = [
@@ -98,7 +98,6 @@ export default function OrderDetail({
                       key={`misc-${i}`}
                       className="flex items-start gap-2.5 px-3 py-3 hover:bg-muted/30 transition-colors"
                     >
-                      {/* Placeholder icon instead of image */}
                       <div className="relative w-10 h-10 rounded-md overflow-hidden bg-stone-100 shrink-0 border border-border/50 flex items-center justify-center">
                         <Tag className="w-4 h-4 text-stone-400" />
                       </div>
@@ -129,14 +128,14 @@ export default function OrderDetail({
                   );
                 }
 
-                // ── Normal / subsidy product row ──
                 const p = item.productId;
+                if (!p) return null;
                 const imgUrl = p?.images?.[0]?.url;
                 const itemSub = item.subsidy ?? 0;
-                const markup = item.productId.markup ?? 0;
+                const markup = item.markup ?? 0; 
                 const lineTotal = Math.round((item.total ?? 0) / (1 + (item.tax ?? 0)));
-
                 const unitBase = item.quantity > 0 ? Math.round(lineTotal / item.quantity) : 0;
+
                 return (
                   <div
                     key={`${item.__type}-${i}`}
@@ -156,9 +155,7 @@ export default function OrderDetail({
                           category={p?.category ?? "Other"}
                         />
                       )}
-                      
                     </div>
-                    
 
                     {/* Info + Price stacked row */}
                     <div className="flex-1 min-w-0 flex flex-col gap-0.5">
@@ -167,19 +164,19 @@ export default function OrderDetail({
                         <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2 flex-1 min-w-0">
                           {p?.name ?? "Unknown product"}
                         </p>
-                          {!item.productId.subsidised && (
-                            <span
-                              className={`px-1.5 py-0.5 rounded text-[9px] font-black leading-none ${
-                                markup >= 100
-                                  ? "bg-red-500 text-white"
-                                  : markup >= 50
-                                  ? "bg-amber-400 text-amber-950"
-                                  : "bg-emerald-500 text-white"
-                              }`}
-                            >
-                              {markup >= 100 ? "HIGH" : markup >= 50 ? "MED" : "LOW"}
-                            </span>
-                          )}
+                        {!item.productId.subsidised && (
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[9px] font-black leading-none ${
+                              markup >= 100
+                                ? "bg-red-500 text-white"
+                                : markup >= 50
+                                ? "bg-amber-400 text-amber-950"
+                                : "bg-emerald-500 text-white"
+                            }`}
+                          >
+                            {markup >= 100 ? "HIGH" : markup >= 50 ? "MED" : "LOW"}
+                          </span>
+                        )}
                         <p className="text-xs font-bold text-foreground tabular-nums shrink-0 ml-1">
                           {fmt(lineTotal)}
                         </p>
@@ -212,7 +209,7 @@ export default function OrderDetail({
                     </div>
                   </div>
                 );
-              })}
+              }).filter(Boolean)}
             </div>
           </div>
 
@@ -230,6 +227,11 @@ export default function OrderDetail({
                   <span className="text-muted-foreground">Subtotal</span>
                   <span className="font-medium tabular-nums">{fmt(subtotal)}</span>
                 </div>
+                
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="text-muted-foreground">Platform Fee</span>
+                    <span className="font-medium tabular-nums">{fmt(50)}</span>
+                  </div>
 
                 {/* GST */}
                 {totalGST > 0 && (
@@ -275,12 +277,12 @@ export default function OrderDetail({
                     <span className="text-sm font-medium text-muted-foreground">
                       Was
                     </span>
-
                     <span className="text-sm font-semibold tabular-nums text-muted-foreground line-through">
                       {fmt(cartTotal + subsidyUsed)}
                     </span>
                   </div>
                 )}
+
                 {/* Total */}
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-foreground">Total paid</span>
@@ -288,7 +290,6 @@ export default function OrderDetail({
                     {fmt(cartTotal)}
                   </span>
                 </div>
-                
 
               </div>
 
