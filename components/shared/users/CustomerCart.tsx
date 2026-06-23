@@ -40,6 +40,7 @@ const fmt = (cents: number) => (cents / 100).toFixed(2);
 const calcLine = (item: ICartItem|ISubsidyItems) => {
   const base = item.productId.price * item.quantity;
   const markup = Math.round(base * (item.productId.markup / 100));
+  // console.log(item.productId.name+" : ",markup)
   const markupPercentage = item.productId.markup;
   const afterMarkup = base + markup;
   const tax = item.productId.tax;
@@ -155,7 +156,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
 
   if (prev >= 21) {
-    newSubisdyCalc = nonSubsidisedMarkup * 0.6;
+    newSubisdyCalc = nonSubsidisedMarkup * 0.55;
   }
   const activeMarkup = (() => {
     if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
@@ -251,6 +252,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     totalMarkup: itemTotals.totalMarkup + subsidyTotals.totalMarkup,
   };
   
+  console.log("Total markup : ",totals.totalMarkup)
   const showGST = totals.gst > 0;
   const showPST = totals.pst > 0;
   const active = activeMarkup ?? 0;

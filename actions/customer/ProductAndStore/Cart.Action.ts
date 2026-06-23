@@ -531,6 +531,8 @@ export const PlaceOrder = async ({
       PlatformProfit:PlatformProfit
     }
 
+    // console.log(ProfitFields)
+    
     const OrderData = {
       products,
       subsidyItems,
