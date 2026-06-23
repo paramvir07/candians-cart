@@ -1,5 +1,5 @@
 export type CustomerIdParams = {
-  params: {
+  params: Promise<{
     customerId: string;
-  };
+  }>;
 };

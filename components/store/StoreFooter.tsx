@@ -2,10 +2,8 @@
 
 import Logo from "@/components/shared/Logo";
 import {
-  BarChart,
   Banknote,
   HandCoins,
-  HomeIcon,
   LinkIcon,
   Package,
   Receipt,
@@ -34,7 +32,7 @@ const FOOTER_GROUPS = [
         label: "Cash Collection",
         icon: Banknote,
       },
-      { href: "/store/invoices", label: "Invoices", icon: Receipt },
+      { href: "/store/invoice", label: "Invoices", icon: Receipt },
     ],
   },
   {

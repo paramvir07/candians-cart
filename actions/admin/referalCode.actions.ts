@@ -30,6 +30,8 @@ export const createReferalCodeAction = async (
       maxUses: data.maxUses,
       expiresAt: data.expiresAt,
       isActive: data.isActive,
+      uses: 0,
+      type: "admin",
     });
     return { success: true, message: "Referal Code Created Successfully!!" };
   } catch (error) {
@@ -44,7 +46,6 @@ export const createReferalCodeAction = async (
 export const getReferalCodesAction = async () => {
   try {
     const session = await getUserSession();
-
     if (session.user.role !== "admin")
       return { success: false, message: "Unauthorized" };
     await dbConnect();
