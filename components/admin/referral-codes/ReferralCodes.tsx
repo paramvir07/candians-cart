@@ -1,6 +1,5 @@
 "use client";
 
-import { Pencil } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,7 +9,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ReferralCode } from "@/types/admin/referralCode";
 import { ReferralCodeDialogForm } from "./ReferralCodeDialogForm";
