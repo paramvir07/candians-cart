@@ -11,6 +11,7 @@ import {
   Receipt,
   CreditCard,
   BadgePercent,
+  Plus,
 } from "lucide-react";
 import Image from "next/image";
 import { getUser } from "@/actions/customer/User.action";
@@ -30,10 +31,11 @@ import { getFibBracketFrom21 } from "@/lib/FibBracket";
 import { RemoveButton } from "@/components/customer/products/RemoveButton";
 import { QuantityControl } from "@/components/customer/products/QuantityControls";
 import { cn } from "@/lib/utils";
-import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
 import { MiscItemsSection } from "@/components/cashier/MiscItemSection";
 import { UPCScannerCart } from "@/components/cashier/UPCScannerCart";
 import ClearCartDialog from "./ClearCartDialog";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -99,7 +101,12 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               <div className="flex-1">
                 <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
               </div>
-              <AddMiscItemModalTrigger customerId={customerId || ""} />
+              <Link href={`/cashier/customer/${customerId}/new-product`}>
+                <Button size="sm" className="gap-1.5">
+                  <Plus className="h-4 w-4" />
+                  Add Product
+                </Button>
+              </Link>
             </div>
           )}
         <EmptyCart customerId={customerId} />
@@ -467,7 +474,12 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           <div className="flex-1">
             <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
           </div>
-          <AddMiscItemModalTrigger customerId={customerId || ""} />
+              <Link href={`/cashier/customer/${customerId}/new-product`}>
+                <Button size="sm" className="gap-1.5">
+                  <Plus className="h-4 w-4" />
+                  Add Product
+                </Button>
+              </Link>
         </div>
       )}
 

@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { createProductFromMisc, getSingleMiscItem } from "@/actions/cashier/MiscItem";
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   PackageIcon,
   PlusCircleIcon,
   Loader2,
-  LockIcon,
   ShieldCheckIcon,
   ArrowLeftIcon,
   ImageIcon,
@@ -31,19 +29,7 @@ import { categories as CATEGORIES } from "@/lib/categories";
 
 // ── types ─────────────────────────────────────────────────────────────────────
 
-interface MiscItem {
-  _id: string;
-  storeId: string;
-  productName: string;
-  primaryUPC?: string;
-  price: number;
-  tax: number;
-  createdAt: string;
-}
-
 interface ProductFormData {
-  storeId: string;
-  miscItemId: string;
   name: string;
   primaryUPC: string;
   price: string;
@@ -70,50 +56,30 @@ const TAX_OPTIONS = [
   { label: "GST + PST 12%", value: "0.12" },
 ];
 
-// ── helpers ───────────────────────────────────────────────────────────────────
+const UOM_OPTIONS = [
+  { label: "lb (pound)", value: "lb" },
+  { label: "kg (kilogram)", value: "kg" },
+];
 
-function buildDefaultForm(item: MiscItem): ProductFormData {
-  return {
-    storeId: item.storeId,
-    miscItemId: item._id,
-    name: item.productName,
-    primaryUPC: item.primaryUPC?.trim() ?? "",
-    price: "",
-finalPrice: (item.price / 100).toFixed(2),
-    description: "",
-    category: "",
-    markup: "",
-    tax: String(item.tax ?? 0.05),
-    disposableFee: "",
-    stock: true,
-    subsidised: false,
-    isFeatured: false,
-    isMeasuredInWeight: false,
-    UOM: "",
-    PriceDrop: false,
-  };
-}
+const DEFAULT_FORM: ProductFormData = {
+  name: "",
+  primaryUPC: "",
+  price: "",
+  finalPrice: "",
+  description: "",
+  category: "",
+  markup: "",
+  tax: "0.05",
+  disposableFee: "",
+  stock: true,
+  subsidised: false,
+  isFeatured: false,
+  isMeasuredInWeight: false,
+  UOM: "",
+  PriceDrop: false,
+};
 
 // ── sub‑components ────────────────────────────────────────────────────────────
-
-function LockedField({ label, value, mono = true }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-1.5">
-        <LockIcon className="h-3 w-3 text-muted-foreground/70" />
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      </div>
-      <div className="flex items-center gap-2 rounded-lg border border-dashed border-border bg-muted/50 px-3 py-2.5">
-        <span className={`min-w-0 flex-1 truncate text-sm text-muted-foreground ${mono ? "font-mono tracking-tight" : ""}`}>
-          {value}
-        </span>
-        <span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-secondary-foreground/70">
-          locked
-        </span>
-      </div>
-    </div>
-  );
-}
 
 function Field({ label, hint, error, required, children }: {
   label: string; hint?: string; error?: string; required?: boolean; children: React.ReactNode;
@@ -151,7 +117,9 @@ function ToggleCard({ label, description, checked, onCheckedChange }: {
         }
       }}
       className={`group flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-all duration-200 cursor-pointer ${
-        checked ? "border-primary/30 bg-primary/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" : "border-border bg-card hover:border-border/80 hover:bg-muted/30"
+        checked
+          ? "border-primary/30 bg-primary/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+          : "border-border bg-card hover:border-border/80 hover:bg-muted/30"
       }`}
     >
       <div className="mr-3 min-w-0">
@@ -160,7 +128,12 @@ function ToggleCard({ label, description, checked, onCheckedChange }: {
         </p>
         <p className="mt-0.5 truncate text-xs text-muted-foreground">{description}</p>
       </div>
-      <Switch checked={checked} onCheckedChange={onCheckedChange} onClick={(e) => e.stopPropagation()} className="shrink-0 pointer-events-none" />
+      <Switch
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        onClick={(e) => e.stopPropagation()}
+        className="shrink-0 pointer-events-none"
+      />
     </div>
   );
 }
@@ -169,7 +142,9 @@ function SectionLabel({ label, icon }: { label: string; icon?: React.ReactNode }
   return (
     <div className="flex items-center gap-2">
       {icon && <span className="text-muted-foreground/70">{icon}</span>}
-      <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/80">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/80">
+        {label}
+      </span>
       <div className="flex-1 border-t border-border/60" />
     </div>
   );
@@ -177,14 +152,8 @@ function SectionLabel({ label, icon }: { label: string; icon?: React.ReactNode }
 
 // ── page ──────────────────────────────────────────────────────────────────────
 
-export default function NewProductPage() {
-  const params = useParams<{ miscId: string }>();
-  const miscId = params.miscId;
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [miscItem, setMiscItem] = useState<MiscItem | null>(null);
-  const [form, setForm] = useState<ProductFormData | null>(null);
+export default function CashierCreateProductForm({ customerId }: { customerId: string }) {
+  const [form, setForm] = useState<ProductFormData>(DEFAULT_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof ProductFormData, string>>>({});
 
@@ -194,61 +163,12 @@ export default function NewProductPage() {
 
   const router = useRouter();
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await getSingleMiscItem(miscId);
-        if (!res.success || !res.data) {
-          setError("Item not found");
-          toast.error("Item not found");
-          return;
-        }
-        const item = res.data;
-        setMiscItem(item);
-        setForm(buildDefaultForm(item));
-      } catch (e) {
-        setError("Failed to load item");
-        toast.error("Failed to load item data");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [miscId]);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (error || !miscItem || !form) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 ring-1 ring-destructive/20">
-          <PackageIcon className="h-7 w-7 text-destructive" />
-        </div>
-        <p className="text-sm font-medium text-destructive">{error || "Item not found"}</p>
-        <Link href="/cashier/misc-items" className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4">
-          ← Back to items
-        </Link>
-      </div>
-    );
-  }
-
-  // ── form helpers ──
   function set<K extends keyof ProductFormData>(key: K, value: ProductFormData[K]) {
-    setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
+    setForm((prev) => ({ ...prev, [key]: value }));
     if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: undefined }));
   }
 
-  // ── three-way price/markup/finalPrice calculation ──
-  // Called onBlur after the user finishes typing in any of the three fields.
-  // Whichever two are filled in, the third is derived.
   function calcMissing(changed: "price" | "markup" | "finalPrice") {
-    if (!form) return;
-
     const price = parseFloat(form.price);
     const markup = parseFloat(form.markup);
     const finalPrice = parseFloat(form.finalPrice);
@@ -258,20 +178,17 @@ export default function NewProductPage() {
     const hasFinal = !isNaN(finalPrice) && finalPrice > 0;
 
     if (changed === "price" || changed === "markup") {
-      // base price + markup → compute final price
       if (hasPrice && hasMarkup) {
         const computed = (price * (1 + markup / 100)).toFixed(2);
-        setForm((prev) => (prev ? { ...prev, finalPrice: computed } : prev));
+        setForm((prev) => ({ ...prev, finalPrice: computed }));
       }
     } else if (changed === "finalPrice") {
       if (hasFinal && hasPrice) {
-        // base price + final price → compute markup %
         const computed = (((finalPrice - price) / price) * 100).toFixed(2);
-        setForm((prev) => (prev ? { ...prev, markup: computed } : prev));
+        setForm((prev) => ({ ...prev, markup: computed }));
       } else if (hasFinal && hasMarkup) {
-        // final price + markup → compute base price
         const computed = (finalPrice / (1 + markup / 100)).toFixed(2);
-        setForm((prev) => (prev ? { ...prev, price: computed } : prev));
+        setForm((prev) => ({ ...prev, price: computed }));
       }
     }
   }
@@ -295,23 +212,23 @@ export default function NewProductPage() {
 
   function validate(): boolean {
     const next: typeof formErrors = {};
-    if (!form!.name.trim()) next.name = "Product name is required";
-    if (!form!.category) next.category = "Category is required";
-    const markup = parseFloat(form!.markup);
-    if (!form!.markup || isNaN(markup) || markup < 0) next.markup = "Enter a valid markup %";
-const price = parseFloat(form!.price);
-const finalPrice = parseFloat(form!.finalPrice);
-
-if ((!form!.price || isNaN(price) || price <= 0) && (!form!.finalPrice || isNaN(finalPrice) || finalPrice <= 0)) {
-  next.price = "Enter either base price or final price";
-}
-    if (form!.isMeasuredInWeight && !form!.UOM.trim()) next.UOM = "Unit of measurement is required when measured by weight";
+    if (!form.name.trim()) next.name = "Product name is required";
+    if (!form.category) next.category = "Category is required";
+    const markup = parseFloat(form.markup);
+    if (!form.markup || isNaN(markup) || markup < 0) next.markup = "Enter a valid markup %";
+    const price = parseFloat(form.price);
+    const finalPrice = parseFloat(form.finalPrice);
+    if ((!form.price || isNaN(price) || price <= 0) && (!form.finalPrice || isNaN(finalPrice) || finalPrice <= 0)) {
+      next.price = "Enter either base price or final price";
+    }
+    if (form.isMeasuredInWeight && !form.UOM.trim()) next.UOM = "Select a unit of measurement";
 
     setFormErrors(next);
 
     if (Object.keys(next).length > 0) {
-      const messages = Object.values(next).join("\n");
-      toast.error("Please fix the following errors:", { description: messages });
+      toast.error("Please fix the following errors:", {
+        description: Object.values(next).join("\n"),
+      });
       return false;
     }
     return true;
@@ -336,44 +253,48 @@ if ((!form!.price || isNaN(price) || price <= 0) && (!form!.finalPrice || isNaN(
       }
 
       const payload = {
-        storeId: form!.storeId,
-        miscItemId: form!.miscItemId,
-        name: form!.name.trim(),
-        description: form!.description.trim(),
-        category: form!.category,
-        markup: parseFloat(form!.markup),
-        tax: parseFloat(form!.tax),
-        disposableFee: form!.disposableFee ? Math.round(parseFloat(form!.disposableFee) * 100) : 0,
-        price: Math.round(parseFloat(form!.finalPrice || form!.price) * 100),
-        stock: form!.stock,
-        subsidised: form!.subsidised,
-        isFeatured: form!.isFeatured,
-        isMeasuredInWeight: form!.isMeasuredInWeight,
-        UOM: form!.UOM.trim() || undefined,
-        PriceDrop: form!.PriceDrop,
+        customerId,
+        name: form.name.trim(),
+        description: form.description.trim(),
+        category: form.category,
+        markup: parseFloat(form.markup),
+        tax: parseFloat(form.tax),
+        disposableFee: form.disposableFee ? Math.round(parseFloat(form.disposableFee) * 100) : 0,
+        price: Math.round(parseFloat(form.finalPrice || form.price) * 100),
+        stock: form.stock,
+        subsidised: form.subsidised,
+        isFeatured: form.isFeatured,
+        isMeasuredInWeight: form.isMeasuredInWeight,
+        UOM: form.isMeasuredInWeight ? form.UOM : undefined,
+        PriceDrop: form.PriceDrop,
         images: finalImages,
-        ...(form!.primaryUPC.trim() ? { primaryUPC: form!.primaryUPC.trim() } : {}),
+        ...(form.primaryUPC.trim() ? { primaryUPC: form.primaryUPC.trim() } : {}),
       };
 
-      const res = await createProductFromMisc(payload, miscId);
-      if (!res.success) {
-        toast.error(res.message || "Error");
-        return;
-      }
+      console.log("Payload Create Product Cashier:", payload);
+      // const res = await createProduct(payload);
+      // if (!res.success) {
+      //   toast.error(res.message || "Error creating product");
+      //   return;
+      // }
       toast.success("Product created!");
-      router.push("/cashier");
+      router.push(`/cashier/customer/${customerId}/cart`);
     } finally {
       setSubmitting(false);
     }
   }
 
-  // ── form render ──
+  // ── render ──
   return (
     <div className="mx-auto max-w-3xl px-6 py-8 sm:px-8 lg:px-10">
-      <Link href="/cashier/misc-items" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Button
+        onClick={() => router.push(`/cashier/customer/${customerId}/cart`)}
+        variant="outline"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
         <ArrowLeftIcon className="h-4 w-4" />
-        Back to items
-      </Link>
+        Back to Cart
+      </Button>
 
       <div className="mb-8">
         <div className="flex items-center gap-3">
@@ -381,22 +302,30 @@ if ((!form!.price || isNaN(price) || price <= 0) && (!form!.finalPrice || isNaN(
             <PackageIcon className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Add Product</h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Creating from{" "}
-              <span className="font-medium text-foreground/80">{miscItem.productName}</span>
-            </p>
+            <h1 className="text-xl font-bold text-foreground">New Product</h1>
+            <p className="mt-0.5 text-sm text-muted-foreground">Fill in the details to add a product to the catalogue</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-8">
-        {/* system fields */}
+
+        {/* flags — top of form */}
         <section>
-          <SectionLabel icon={<LockIcon className="h-3 w-3" />} label="System Fields" />
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <LockedField label="Store ID" value={form.storeId} />
-            <LockedField label="Misc Item ID" value={form.miscItemId} />
+          <SectionLabel icon={<ShieldCheckIcon className="h-3 w-3" />} label="Flags" />
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <ToggleCard label="In Stock" description="Product is currently available" checked={form.stock} onCheckedChange={(v) => set("stock", v)} />
+            <ToggleCard label="Featured" description="Show on featured section" checked={form.isFeatured} onCheckedChange={(v) => set("isFeatured", v)} />
+            <ToggleCard label="Subsidised" description="Item is subsidised" checked={form.subsidised} onCheckedChange={(v) => set("subsidised", v)} />
+            <ToggleCard
+              label="Measured by Weight"
+              description="Sold per lb / kg — enables unit selection below"
+              checked={form.isMeasuredInWeight}
+              onCheckedChange={(v) => {
+                set("isMeasuredInWeight", v);
+                if (!v) set("UOM", ""); // clear UOM when toggled off
+              }}
+            />
           </div>
         </section>
 
@@ -464,6 +393,7 @@ if ((!form!.price || isNaN(price) || price <= 0) && (!form!.finalPrice || isNaN(
         <section>
           <SectionLabel label="Core Details" />
           <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
+
             <div className="sm:col-span-2">
               <Field label="Product Name" required error={formErrors.name}>
                 <Input
@@ -514,7 +444,7 @@ if ((!form!.price || isNaN(price) || price <= 0) && (!form!.finalPrice || isNaN(
                   <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">$</span>
                   <Input
                     className="pl-7 border-primary/40 bg-primary/[0.02] focus-visible:ring-primary/30"
-                    value={form.finalPrice ?? ""}
+                    value={form.finalPrice}
                     onChange={(e) => set("finalPrice", e.target.value)}
                     onBlur={() => calcMissing("finalPrice")}
                     type="number"
@@ -530,7 +460,7 @@ if ((!form!.price || isNaN(price) || price <= 0) && (!form!.finalPrice || isNaN(
             </div>
             {/* ── end three-way pricing block ── */}
 
-            <Field label="Primary UPC" hint="Optional · editable">
+            <Field label="Primary UPC" hint="Optional">
               <Input
                 value={form.primaryUPC}
                 onChange={(e) => set("primaryUPC", e.target.value)}
@@ -578,13 +508,37 @@ if ((!form!.price || isNaN(price) || price <= 0) && (!form!.finalPrice || isNaN(
               </div>
             </Field>
 
-            <Field label="Unit of Measurement" hint="Optional" error={formErrors.UOM}>
-              <Input
-                value={form.UOM}
-                onChange={(e) => set("UOM", e.target.value)}
-                placeholder="e.g. kg, L, 300g"
-                className={formErrors.UOM ? "border-destructive" : ""}
-              />
+            {/* UOM — always visible, disabled until isMeasuredInWeight is true */}
+            <Field
+              label="Unit of Measurement"
+              required={form.isMeasuredInWeight}
+              error={formErrors.UOM}
+              hint={!form.isMeasuredInWeight ? undefined : undefined}
+            >
+              <div
+                className="relative"
+                title={!form.isMeasuredInWeight ? 'Enable "Measured by Weight" to select a unit' : undefined}
+              >
+                <Select
+                  value={form.UOM}
+                  onValueChange={(v) => set("UOM", v)}
+                  disabled={!form.isMeasuredInWeight}
+                >
+                  <SelectTrigger
+                    className={[
+                      formErrors.UOM ? "border-destructive" : "",
+                      !form.isMeasuredInWeight ? "cursor-not-allowed opacity-50" : "",
+                    ].join(" ")}
+                  >
+                    <SelectValue placeholder={form.isMeasuredInWeight ? "Select unit" : "Enable weight first"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {UOM_OPTIONS.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </Field>
 
             <div className="sm:col-span-2">
@@ -601,24 +555,17 @@ if ((!form!.price || isNaN(price) || price <= 0) && (!form!.finalPrice || isNaN(
           </div>
         </section>
 
-        {/* flags */}
-        <section>
-          <SectionLabel icon={<ShieldCheckIcon className="h-3 w-3" />} label="Flags" />
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <ToggleCard label="In Stock" description="Product is currently available" checked={form.stock} onCheckedChange={(v) => set("stock", v)} />
-            <ToggleCard label="Featured" description="Show on featured section" checked={form.isFeatured} onCheckedChange={(v) => set("isFeatured", v)} />
-            <ToggleCard label="Subsidised" description="Item is subsidised" checked={form.subsidised} onCheckedChange={(v) => set("subsidised", v)} />
-            <ToggleCard label="Measured by Weight" description="Sold per kg / weight unit" checked={form.isMeasuredInWeight} onCheckedChange={(v) => set("isMeasuredInWeight", v)} />
-          </div>
-        </section>
-
         {/* actions */}
         <div className="flex items-center justify-between border-t border-border pt-6">
           <p className="text-xs text-muted-foreground">* Required fields</p>
           <div className="flex gap-2">
-            <Link href="/cashier">
-              <Button variant="outline" disabled={submitting}>Cancel</Button>
-            </Link>
+            <Button
+              variant="outline"
+              disabled={submitting}
+              onClick={() => router.push(`/cashier/customer/${customerId}/cart`)}
+            >
+              Cancel
+            </Button>
             <Button onClick={handleSubmit} disabled={submitting} className="gap-2">
               {submitting ? (
                 <><Loader2 className="h-4 w-4 animate-spin" /> Creating…</>
@@ -628,6 +575,7 @@ if ((!form!.price || isNaN(price) || price <= 0) && (!form!.finalPrice || isNaN(
             </Button>
           </div>
         </div>
+
       </div>
     </div>
   );
