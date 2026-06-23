@@ -31,7 +31,7 @@ const faqItems: FAQItem[] = [
     icon: <PiggyBank size={16} strokeWidth={1.75} />,
     question: "How do I save money with this app?",
     answer:
-      "You save money by using subsidies on subsidized items. When your order has at least C$21 of regular items before tax, the app shows subsidies you can use. The more money you spend on regular items, the more subsidies you can receive. You can use those subsidies right away on subsidized items in the same order, or save them in your Gift Wallet for later. When you use subsidies, your total becomes lower and you pay less at the store.",
+      "You save money by using subsidies on subsidized items. When your order has at least C$21 of regular items before tax, the app shows subsidies you can use. You can use those subsidies right away on subsidized items in the same order, or save them in your Gift Wallet for later. When you use subsidies, your total becomes lower and you pay less at the store.",
     tag: "Savings",
   },
   {
@@ -39,19 +39,27 @@ const faqItems: FAQItem[] = [
     icon: <Wallet size={16} strokeWidth={1.75} />,
     question: "How do I earn subsidies?",
     answer:
-      "You earn subsidies when your order has at least C$21 of regular items before tax. Regular items are items that are not subsidized. Once your order reaches C$21 before tax, the app shows the subsidies you can receive. If you spend more on regular items, your subsidies can also increase.",
+      "You earn subsidies when your order has at least C$21 of regular items before tax. Regular items are items that are not subsidized. Some regular items can give more subsidy than others, so look for High, Medium, or Low Subsidy labels when shopping. Choosing High Subsidy regular items can help you earn more subsidy to use on subsidized items.",
     tag: "Rewards",
   },
   {
     id: "item-3",
-    icon: <Coins size={16} strokeWidth={1.75} />,
-    question: "What are subsidies?",
+    icon: <BadgePercent size={16} strokeWidth={1.75} />,
+    question: "What do High, Medium, and Low Subsidy mean?",
     answer:
-      "Subsidies are like reward money in the app. They help you pay less for subsidized items. You receive subsidies based on how much you spend on regular items. You can use subsidies right away when they are shown in your order, or keep them saved in your Gift Wallet for a future order.",
+      "High, Medium, and Low Subsidy labels show how much subsidy you can earn from a regular item. High Subsidy items can help you earn more subsidy, Medium Subsidy items give a moderate amount, and Low Subsidy items give a smaller amount. You can see these labels in search, product cards, cart, checkout, and order history. To earn more subsidy, try choosing High Subsidy regular items before checkout. If you need help, you can ask the cashier at your selected store.",
     tag: "Subsidies",
   },
   {
     id: "item-4",
+    icon: <Coins size={16} strokeWidth={1.75} />,
+    question: "What are subsidies?",
+    answer:
+      "Subsidies are like reward money in the app. They help you pay less for subsidized items. You receive subsidies based on the regular items you buy. You can use subsidies right away when they are shown in your order, or keep them saved in your Gift Wallet for a future order.",
+    tag: "Subsidies",
+  },
+  {
+    id: "item-5",
     icon: <BadgePercent size={16} strokeWidth={1.75} />,
     question: "Which items can I use subsidies on?",
     answer:
@@ -59,7 +67,7 @@ const faqItems: FAQItem[] = [
     tag: "Savings",
   },
   {
-    id: "item-5",
+    id: "item-6",
     icon: <Store size={16} strokeWidth={1.75} />,
     question: "Where can I use my subsidies?",
     answer:
@@ -67,7 +75,7 @@ const faqItems: FAQItem[] = [
     tag: "Subsidies",
   },
   {
-    id: "item-6",
+    id: "item-7",
     icon: <ShoppingCart size={16} strokeWidth={1.75} />,
     question: "Can I order from the app or shop in store?",
     answer:
@@ -75,7 +83,7 @@ const faqItems: FAQItem[] = [
     tag: "Orders",
   },
   {
-    id: "item-7",
+    id: "item-8",
     icon: <PackageCheck size={16} strokeWidth={1.75} />,
     question: "How do I place an order from the app?",
     answer:
@@ -83,7 +91,7 @@ const faqItems: FAQItem[] = [
     tag: "Orders",
   },
   {
-    id: "item-8",
+    id: "item-9",
     icon: <Store size={16} strokeWidth={1.75} />,
     question: "Can I shop directly at the store?",
     answer:
@@ -91,7 +99,7 @@ const faqItems: FAQItem[] = [
     tag: "Store",
   },
   {
-    id: "item-9",
+    id: "item-10",
     icon: <PiggyBank size={16} strokeWidth={1.75} />,
     question: "What happens if I do not use my subsidies?",
     answer:
@@ -99,7 +107,7 @@ const faqItems: FAQItem[] = [
     tag: "Gift Wallet",
   },
   {
-    id: "item-10",
+    id: "item-11",
     icon: <UserPlus size={16} strokeWidth={1.75} />,
     question: "How do I create an account?",
     answer:
@@ -398,46 +406,6 @@ export default function FAQsSection() {
               );
             })}
 
-            {/* Bottom CTA strip */}
-            {/* <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: 12,
-                background: "#f0fdf4",
-                border: "1px solid #bbf7d0",
-                borderRadius: 14,
-                padding: "14px 18px",
-                marginTop: 8,
-              }}
-            >
-              <div className="flex items-center gap-2.5">
-                <span style={{ fontSize: "1.3rem" }}>🇨🇦</span>
-                <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#166534" }}>
-                  Exclusive to Canadian families in Abbotsford, BC
-                </span>
-              </div>
-              <Link
-                href="#"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: "#166534",
-                  color: "#fff",
-                  fontWeight: 700,
-                  fontSize: "0.8rem",
-                  borderRadius: 10,
-                  padding: "8px 16px",
-                  textDecoration: "none",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Join waitlist <ArrowRight size={13} />
-              </Link>
-            </div> */}
           </div>
         </div>
       </div>
