@@ -239,7 +239,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const totals = {
     subtotal: Math.round(
-      itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal,
+      itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal+50,
     ),
     gst: itemTotals.gst + subsidyTotals.gst + miscTotals.gst,
     pst: itemTotals.pst + subsidyTotals.pst + miscTotals.pst,
@@ -247,7 +247,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       itemTotals.totalTax + subsidyTotals.totalTax + miscTotals.totalTax,
     disposable: itemTotals.disposable + subsidyTotals.disposable,
     total: Math.round(
-      itemTotals.total + subsidyTotals.total + miscTotals.total,
+      itemTotals.total + subsidyTotals.total + miscTotals.total+50,
     ),
     totalMarkup: itemTotals.totalMarkup + subsidyTotals.totalMarkup,
   };
@@ -275,6 +275,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const TaxRows = () => (
     <>
+      <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Platform Fee</span>
+          <span className="font-medium tabular-nums">CA${fmt(50)}</span>
+      </div>
       {showGST && (
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">GST (5%)</span>

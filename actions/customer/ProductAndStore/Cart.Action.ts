@@ -531,6 +531,7 @@ export const PlaceOrder = async ({
       PlatformProfit:PlatformProfit
     }
 
+    const PlatformFee = 50;
     // console.log(ProfitFields)
     
     const OrderData = {
@@ -548,7 +549,7 @@ export const PlaceOrder = async ({
       userId: User._id,
       storeId: User.associatedStoreId,
       storeProfit: ProfitFields.StoreProfit,
-      platformProfit: ProfitFields.PlatformProfit,
+      platformProfit: ProfitFields.PlatformProfit+PlatformFee,
       paymentMode,
       status: receivedCustomerId ? "completed" : "pending",
       ...(receivedCustomerId && { cashierId }),
