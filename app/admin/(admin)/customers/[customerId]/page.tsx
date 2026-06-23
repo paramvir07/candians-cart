@@ -10,9 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 import {
-  ShoppingCart,
-  Package,
-  ShoppingBag,
   ChevronLeft,
   Wallet,
 } from "lucide-react";
@@ -35,8 +32,8 @@ const customerCardInfo = [
 ];
 
 const Page = async ({ params }: CustomerIdParams) => {
-  const recievedParams = await params;
-  const customerId = recievedParams.customerId;
+  const receivedParams = await params;
+  const customerId = receivedParams.customerId;
 
   return (
     <div className="max-h-screen w-full bg-linear-to-b from-background to-muted/40 py-8 md:pl-10">
