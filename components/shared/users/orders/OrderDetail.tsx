@@ -227,6 +227,11 @@ export default function OrderDetail({
                   <span className="text-muted-foreground">Subtotal</span>
                   <span className="font-medium tabular-nums">{fmt(subtotal)}</span>
                 </div>
+                
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="text-muted-foreground">Platform Fee</span>
+                    <span className="font-medium tabular-nums">{fmt(50)}</span>
+                  </div>
 
                 {/* GST */}
                 {totalGST > 0 && (
