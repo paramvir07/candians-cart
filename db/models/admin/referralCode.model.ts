@@ -45,6 +45,7 @@ const referralCodeSchema = new Schema<IReferralCode>(
       ref: "Customer",
     },
     type: {
+      type: String,
       enum: ["admin", "customer"],
       required: true
     }
