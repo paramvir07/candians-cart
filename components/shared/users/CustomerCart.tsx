@@ -244,6 +244,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   // console.log(miscTotals)
 
+  const PlatformFee = 50;
+
   const totals = {
     subtotal: Math.round(
       itemTotals.subtotal + subsidyTotals.subtotal + miscTotals.subtotal,
@@ -254,12 +256,12 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       itemTotals.totalTax + subsidyTotals.totalTax + miscTotals.totalTax,
     disposable: itemTotals.disposable + subsidyTotals.disposable,
     total: Math.round(
-      itemTotals.total + subsidyTotals.total + miscTotals.total+50,
+      itemTotals.total + subsidyTotals.total + miscTotals.total + PlatformFee,
     ),
     totalMarkup: itemTotals.totalMarkup + subsidyTotals.totalMarkup,
   };
   
-  console.log("Total markup : ",totals.totalMarkup)
+  console.log("Total markup : ",totals)
   const showGST = totals.gst > 0;
   const showPST = totals.pst > 0;
   const active = activeMarkup ?? 0;
@@ -284,7 +286,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     <>
       <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Platform Fee</span>
-          <span className="font-medium tabular-nums">CA${fmt(50)}</span>
+          <span className="font-medium tabular-nums">CA${fmt(PlatformFee)}</span>
       </div>
       {showGST && (
         <div className="flex justify-between text-sm">
