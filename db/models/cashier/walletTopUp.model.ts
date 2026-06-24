@@ -5,7 +5,7 @@ export interface IWalletTopUp {
   userId: string;
   userRole: "admin" | "cashier";
   value: number; // in  cents
-  paymentMode: "cash" | "card" | "gift"
+  paymentMode: "cash" | "card" | "gift" | "referral"
 }
 
 const walletTopUpSchema = new Schema<IWalletTopUp>(
@@ -31,7 +31,7 @@ const walletTopUpSchema = new Schema<IWalletTopUp>(
     },
     paymentMode: {
       type: String,
-      enum: ["cash", "card", "gift"],
+      enum: ["cash", "card", "gift","referral"],
       required: true,
       index: true,
     },

@@ -9,7 +9,7 @@ export const walletTopUpZodSchema = z.object({
     .number({ message: "Top-up value must be a number" })
     .nonnegative({ message: "Top-up value cannot be negative" }),
 
-  paymentMode: z.enum(["cash", "card", "gift"], {
+  paymentMode: z.enum(["cash", "card", "gift","referral"], {
     message: "Payment mode must be either 'cash' or 'card'",
   }),
 });

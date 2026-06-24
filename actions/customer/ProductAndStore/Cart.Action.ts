@@ -18,6 +18,8 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import "@/db/models/customer/MiscItem.model";
 import ReferralCode from "@/db/models/admin/referralCode.model";
+import { Cashier } from "@/db/models/cashier/cashier.model";
+import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 
 export const AddtoCart = async (
   ItemId: string,
@@ -593,7 +595,7 @@ export const PlaceOrder = async ({
     await CartModel.deleteOne({ customerId: User._id }, { session });
 
     await session.commitTransaction();
-    await EnableUserReferralFlag(OrderData.subsidy,User._id.toString(),User.name)
+    await EnableUserReferralFlag(OrderData.subsidy,User._id.toString(),User.name,User.referralCodeId.toString())
     return { success: true, message: "Order Placed Successfully" };
   } catch (error) {
     await session.abortTransaction();
@@ -608,6 +610,7 @@ const EnableUserReferralFlag = async (
   orderSubsidy: number,
   customerId: string,
   customerName: string,
+  userReferralCodeId:string
 ) => {
   if (!customerId || !orderSubsidy)
     return { success: false, message: "Invalid customerId or subsidy amount" };
@@ -626,7 +629,14 @@ const EnableUserReferralFlag = async (
     if (!CustomerData)
       return { success: true, message: "Referral flags already enabled or customer not found" };
 
-    await GenerateReferralCode(customerId, customerName);
+    await Promise.all([
+      GenerateReferralCode(customerId, customerName).catch((err) =>
+        console.error("GenerateReferralCode failed:", err)
+      ),
+      CheckUserReferral(userReferralCodeId).catch((err) =>
+        console.error("CheckUserReferral failed:", err)
+      ),
+    ]);
     return { success: true, message: "Referral flags enabled successfully" };
   } catch (err) {
     console.log(err);
@@ -676,6 +686,55 @@ const GenerateReferralCode = async (customerId: string, customerName: string) =>
   }
 
   return { success: false, message: "Could not generate a unique referral code after all attempts" };
+};
+
+const CheckUserReferral = async (referralCodeId: string) => {
+  if (!referralCodeId) return { success: false, message: "No referral Code Id passed" };
+
+  await dbConnect();
+  const session = await mongoose.startSession();
+
+  try {
+    const UserSession = await getUserSession();
+
+    const [referral, cashier] = await Promise.all([
+      ReferralCode.findById(referralCodeId).lean(),
+      Cashier.findOne({ userId: UserSession.user.id }).select("_id").lean(),
+    ]);
+
+    if (!referral) return { success: false, message: "Referral not found" };
+    if (referral.type === "admin") return { success: false, message: "Referral belongs to admin account" };
+    if (!cashier) return { success: false, message: "Failed to get cashierId" };
+
+    const maxUsesReached = referral.maxUses != null && referral.uses >= referral.maxUses;
+    const isExpired = referral.expiresAt != null && Date.now() >= referral.expiresAt.getTime();
+    if (maxUsesReached || isExpired) {
+      return { success: false, message: "Referral code is expired or has reached its maximum uses" };
+    }
+
+    const ReferralValue = 500;
+    const customerId = referral.customerId;
+
+    session.startTransaction();
+
+    await Promise.all([
+      WalletTopUp.create(
+        [{ customerId, userId: cashier._id.toString(), userRole: "cashier", value: ReferralValue, paymentMode: "referral" }],
+        { session },
+      ),
+      Customer.findByIdAndUpdate(customerId, { $inc: { walletBalance: ReferralValue } }, { session, runValidators: true }),
+      ReferralCode.findByIdAndUpdate(referralCodeId, { $inc: { uses: 1 } }, { session }),
+    ]);
+
+    await session.commitTransaction();
+    return { success: true, message: "Referral topup created" };
+  } catch (error) {
+    await session.abortTransaction();
+    console.error(error);
+    return { success: false, message: "Error on CheckUserReferral" };
+  } finally {
+    await session.endSession();
+  }
 };
 
 /**
