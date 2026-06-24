@@ -17,6 +17,7 @@ import Customer from "@/db/models/customer/customer.model";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import "@/db/models/customer/MiscItem.model";
+import ReferralCode from "@/db/models/admin/referralCode.model";
 
 export const AddtoCart = async (
   ItemId: string,
@@ -592,7 +593,7 @@ export const PlaceOrder = async ({
     await CartModel.deleteOne({ customerId: User._id }, { session });
 
     await session.commitTransaction();
-    await EnableUserReferralFlag(OrderData.subsidy,User._id.toString())
+    await EnableUserReferralFlag(OrderData.subsidy,User._id.toString(),User.name)
     return { success: true, message: "Order Placed Successfully" };
   } catch (error) {
     await session.abortTransaction();
@@ -603,21 +604,79 @@ export const PlaceOrder = async ({
   }
 };
 
-const EnableUserReferralFlag = async (orderSubsidy:number,customerId:string) =>{
-  if(!customerId || !orderSubsidy) return {success:false,message:"Invalid customerId or subsidy amount"}
-  try{
+const EnableUserReferralFlag = async (
+  orderSubsidy: number,
+  customerId: string,
+  customerName: string,
+) => {
+  if (!customerId || !orderSubsidy)
+    return { success: false, message: "Invalid customerId or subsidy amount" };
+  try {
     await dbConnect();
 
-    if(orderSubsidy>0){
-      await Customer.findOneAndUpdate({ _id: customerId }, { $set: { referralCodeEnabled:true,placedFirstOrder:true} });
-      return {success:true,message:"Referral flags enabled successfully"}
-    }
-    return {success:true,message:"No subsidy used, referral flags not enabled"}
-  }catch(err){
-    console.log(err)
-    return {success:false,message:"Error while enabling referral flags"}
+    if (orderSubsidy <= 0)
+      return { success: true, message: "No subsidy used, referral flags not enabled" };
+
+    const CustomerData = await Customer.findOneAndUpdate(
+      { _id: customerId, placedFirstOrder: false, referralCodeEnabled: false },
+      { $set: { referralCodeEnabled: true, placedFirstOrder: true } },
+      { returnDocument: 'before' },
+    ).select("_id").lean();
+
+    if (!CustomerData)
+      return { success: true, message: "Referral flags already enabled or customer not found" };
+
+    await GenerateReferralCode(customerId, customerName);
+    return { success: true, message: "Referral flags enabled successfully" };
+  } catch (err) {
+    console.log(err);
+    return { success: false, message: "Error while enabling referral flags" };
   }
-}
+};
+
+const GenerateReferralCode = async (customerId: string, customerName: string) => {
+  await dbConnect();
+
+  const namePart = customerName.replace(/\s+/g, "").slice(0, 4).toUpperCase();
+  const candidates = [
+    namePart + customerId.slice(-6),
+    namePart + customerId.slice(0, 6),
+  ];
+
+  const tryCreate = async (code: string) => {
+    const exists = await ReferralCode.exists({ code });
+    if (!exists) {
+      const created = await ReferralCode.create({
+        code,
+        customerId: new Types.ObjectId(customerId),
+        type: "customer",
+        isActive: true,
+        uses: 0,
+        maxUses:10,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      });
+      await Customer.findOneAndUpdate(
+        { _id: customerId },
+        { $set: { myreferralCodeId: created._id } },
+      );
+      return code;
+    }
+    return null;
+  };
+
+  for (const code of candidates) {
+    const result = await tryCreate(code);
+    if (result) return { success: true, code: result };
+  }
+
+  for (let i = 0; i < 10; i++) {
+    const code = namePart + Math.random().toString(36).slice(2, 8).toUpperCase();
+    const result = await tryCreate(code);
+    if (result) return { success: true, code: result };
+  }
+
+  return { success: false, message: "Could not generate a unique referral code after all attempts" };
+};
 
 /**
  * Retrieves the total count of unique products currently in the user's cart.

@@ -162,8 +162,10 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const { prev, current, mid } = getFibBracketFrom21(totalInDollars);
   const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
 
+  const UserSubsidyPercentage = (UserData?.subsidy ?? 55)/100;
+  
   if (prev >= 21) {
-    newSubisdyCalc = nonSubsidisedMarkup * 0.55;
+    newSubisdyCalc = nonSubsidisedMarkup * UserSubsidyPercentage;
   }
   const activeMarkup = (() => {
     if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
