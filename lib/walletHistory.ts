@@ -46,26 +46,19 @@ export function formatFullDateTime(dateString: string): string {
 
 // ─── Label helpers per paymentMode ─────────────────────────────────────────────
 
-function cashierLabel(paymentMode: "cash" | "card" | "gift"): {
+function cashierLabel(paymentMode: "cash" | "card" | "gift" | "referral"): {
   label: string;
   sublabel: string;
 } {
   switch (paymentMode) {
     case "gift":
-      return {
-        label: "Gift Top-Up",
-        sublabel: "Special Bonus Recieved 🎉",
-      };
+      return { label: "Gift Top-Up", sublabel: "Special Bonus Received 🎉" };
     case "cash":
-      return {
-        label: "In-Store Top Up",
-        sublabel: "Paid with cash at counter",
-      };
+      return { label: "In-Store Top Up", sublabel: "Paid with cash at counter" };
     case "card":
-      return {
-        label: "In-Store Top Up",
-        sublabel: "Paid by card at counter",
-      };
+      return { label: "In-Store Top Up", sublabel: "Paid by card at counter" };
+    case "referral":
+      return { label: "Referral Bonus", sublabel: "Earned via referral code 🎟️" };
   }
 }
 

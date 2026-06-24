@@ -20,11 +20,11 @@ function getStatusStyle(status: string) {
   switch (status) {
     case "paid":
     case "completed":
-      return "text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800";
+      return "text-emerald-600 bg-emerald-50 border-emerald-200";
     case "pending":
-      return "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-800";
+      return "text-amber-600 bg-amber-50 border-amber-200";
     default:
-      return "text-red-600 bg-red-50 border-red-200 dark:bg-red-950/40 dark:border-red-800";
+      return "text-red-600 bg-red-50 border-red-200";
   }
 }
 
