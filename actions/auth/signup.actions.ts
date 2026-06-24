@@ -125,7 +125,7 @@ export const signupAction = async (
               province: data.province,
               monthlyBudget: data.monthlyBudget * 100,
               associatedStoreId: data.associatedStore,
-              referralCode: data.referralCode,
+              referralCodeId: referralCode._id,
             },
           ],
           { session },

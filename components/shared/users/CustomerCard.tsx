@@ -20,11 +20,13 @@ const CustomerCard = ({ customer, userRole }: CustomerCardProps) => {
   const cashierRole = userRole === "cashier";
   const storeRole = userRole === "store";
   const initials = customer.name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+    ? customer.name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "?";
 
   return (
     <Card className="group hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 border border-border/60 bg-card h-full">
@@ -85,7 +87,7 @@ const CustomerCard = ({ customer, userRole }: CustomerCardProps) => {
                 <Wallet className="w-3 h-3 text-muted-foreground" />
               </div>
               <p className="text-xs font-semibold tabular-nums">
-                ${(customer.walletBalance / 100).toFixed(2)}
+                ${((customer.walletBalance ?? 0) / 100).toFixed(2)}
               </p>
               <p className="text-[10px] text-muted-foreground">Wallet</p>
             </div>
@@ -96,7 +98,7 @@ const CustomerCard = ({ customer, userRole }: CustomerCardProps) => {
                 <Gift className="w-3 h-3 text-muted-foreground" />
               </div>
               <p className="text-xs font-semibold tabular-nums">
-                ${(customer.giftWalletBalance / 100).toFixed(2)}
+                ${((customer.giftWalletBalance ?? 0) / 100).toFixed(2)}
               </p>
               <p className="text-[10px] text-muted-foreground">Gift</p>
             </div>
@@ -106,7 +108,7 @@ const CustomerCard = ({ customer, userRole }: CustomerCardProps) => {
                   <Building2 className="w-3 h-3 text-muted-foreground" />
                 </div>
                 <p className="text-xs font-semibold tabular-nums">
-                  ${(customer.monthlyBudget / 100).toFixed(0)}
+                  ${((customer.monthlyBudget ?? 0) / 100).toFixed(0)}
                 </p>
                 <p className="text-[10px] text-muted-foreground">Budget</p>
               </div>

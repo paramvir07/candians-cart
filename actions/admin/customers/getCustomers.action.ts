@@ -1,6 +1,7 @@
 "use server";
 
 import { dbConnect } from "@/db/dbConnect";
+import ReferralCode from "@/db/models/admin/referralCode.model";
 import Customer from "@/db/models/customer/customer.model";
 import mongoose from "mongoose";
 
@@ -13,9 +14,13 @@ export interface AdminCustomer {
   city: string;
   province: string;
   walletBalance: number;
+  giftWalletBalance: number;
   associatedStoreId: string;
+  referralCodeId: string;
+  referralCode?: string;
   storeName: string;
-  createdAt: Date;
+  createdAt: string;
+  updatedAt?: string;
   [key: string]: any;
 }
 
@@ -64,6 +69,7 @@ export async function getStoreCustomers(
       { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: limitNum },
+
       {
         $lookup: {
           from: "stores",
@@ -73,8 +79,36 @@ export async function getStoreCustomers(
         },
       },
       { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
-      { $addFields: { storeName: "$store.name" } },
-      { $project: { store: 0 } },
+
+      {
+
+        $lookup: {
+          from: "referralcodes",
+          localField: "referralCodeId",
+          foreignField: "_id",
+          as: "referralCodeData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$referralCodeData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      {
+        $addFields: {
+          storeName: "$store.name",
+          referralCode: "$referralCodeData.code",
+        },
+      },
+
+      {
+        $project: {
+          store: 0,
+          referralCodeData: 0,
+        },
+      },
     ]);
 
     return {
@@ -84,6 +118,8 @@ export async function getStoreCustomers(
         _id: c._id?.toString(),
         userId: c.userId?.toString() ?? "",
         associatedStoreId: c.associatedStoreId?.toString() ?? "",
+        referralCodeId: c.referralCodeId?.toString() ?? "",
+        referralCode: c.referralCode ?? "",
         createdAt: c.createdAt ? new Date(c.createdAt).toISOString() : "",
         updatedAt: c.updatedAt ? new Date(c.updatedAt).toISOString() : "",
       })),
@@ -122,13 +158,32 @@ export async function getSearchCustomer(
     const pipeline: mongoose.PipelineStage[] = [];
     let totalCount = 0;
 
+    const storeObjectId =
+      storeId && mongoose.isValidObjectId(storeId)
+        ? new mongoose.Types.ObjectId(storeId)
+        : null;
+
+    /**
+     * Search ReferralCode collection first.
+     * Change "code" below if your ReferralCode model uses a different field name.
+     */
+    const matchingReferralCodes = await ReferralCode.find({
+      code: { $regex: cleanSearchTerm, $options: "i" },
+    }).select("_id");
+
+    const matchingReferralCodeIds = matchingReferralCodes.map((r) => r._id);
+
     if (mongoose.isValidObjectId(cleanSearchTerm)) {
-      const exactMatch: Record<string, mongoose.Types.ObjectId> = {
-        _id: new mongoose.Types.ObjectId(cleanSearchTerm),
+      const objectId = new mongoose.Types.ObjectId(cleanSearchTerm);
+
+      const exactMatch: Record<string, any> = {
+        $or: [{ _id: objectId }, { referralCodeId: objectId }],
       };
-      if (storeId) {
-        exactMatch.associatedStoreId = new mongoose.Types.ObjectId(storeId);
+
+      if (storeObjectId) {
+        exactMatch.associatedStoreId = storeObjectId;
       }
+
       pipeline.push({ $match: exactMatch });
       totalCount = await Customer.countDocuments(exactMatch);
     } else {
@@ -148,39 +203,64 @@ export async function getSearchCustomer(
               fuzzy: { maxEdits: 1 },
             },
           },
-          { text: { query: cleanSearchTerm, path: "mobile" } },
+          {
+            text: {
+              query: cleanSearchTerm,
+              path: "mobile",
+            },
+          },
         ],
         minimumShouldMatch: 1,
       };
-      if (storeId) {
+
+      if (storeObjectId) {
         compoundStage.filter = [
           {
             equals: {
               path: "associatedStoreId",
-              value: new mongoose.Types.ObjectId(storeId),
+              value: storeObjectId,
             },
           },
         ];
       }
+
       const searchStage: mongoose.PipelineStage = {
         $search: {
           index: "CustomerSearch",
           compound: compoundStage,
         },
       };
-      pipeline.push(searchStage);
 
-      const metaAgg = await Customer.aggregate([
-        searchStage,
-        { $count: "total" },
-      ]);
-      totalCount = metaAgg[0]?.total || 0;
+      if (matchingReferralCodeIds.length > 0) {
+        pipeline.push({
+          $match: {
+            ...(storeObjectId ? { associatedStoreId: storeObjectId } : {}),
+            referralCodeId: { $in: matchingReferralCodeIds },
+          },
+        });
+
+        totalCount = await Customer.countDocuments({
+          ...(storeObjectId ? { associatedStoreId: storeObjectId } : {}),
+          referralCodeId: { $in: matchingReferralCodeIds },
+        });
+      } else {
+        pipeline.push(searchStage);
+
+        const metaAgg = await Customer.aggregate([
+          searchStage,
+          { $count: "total" },
+        ]);
+
+        totalCount = metaAgg[0]?.total || 0;
+      }
     }
+
     const totalPages = Math.ceil(totalCount / limitNum);
 
     pipeline.push(
       { $skip: skip },
       { $limit: limitNum },
+
       {
         $lookup: {
           from: "stores",
@@ -190,8 +270,35 @@ export async function getSearchCustomer(
         },
       },
       { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
-      { $addFields: { storeName: "$store.name" } },
-      { $project: { store: 0 } },
+
+      {
+        $lookup: {
+          from: "referralcodes",
+          localField: "referralCodeId",
+          foreignField: "_id",
+          as: "referralCodeData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$referralCodeData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      {
+        $addFields: {
+          storeName: "$store.name",
+          referralCode: "$referralCodeData.code",
+        },
+      },
+
+      {
+        $project: {
+          store: 0,
+          referralCodeData: 0,
+        },
+      },
     );
 
     const data = await Customer.aggregate(pipeline);
@@ -203,6 +310,8 @@ export async function getSearchCustomer(
         _id: c._id?.toString() ?? "",
         userId: c.userId?.toString() ?? "",
         associatedStoreId: c.associatedStoreId?.toString() ?? "",
+        referralCodeId: c.referralCodeId?.toString() ?? "",
+        referralCode: c.referralCode ?? "",
         createdAt: c.createdAt ? new Date(c.createdAt).toISOString() : "",
         updatedAt: c.updatedAt ? new Date(c.updatedAt).toISOString() : "",
       })),
@@ -218,6 +327,11 @@ export async function getSearchCustomer(
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error occurred";
-    return { success: false, data: [], error: errorMessage };
+
+    return {
+      success: false,
+      data: [],
+      error: errorMessage,
+    };
   }
 }

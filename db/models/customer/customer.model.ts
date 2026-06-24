@@ -10,7 +10,10 @@ export interface ICustomer {
   province: string;
   monthlyBudget: number;
   associatedStoreId: Types.ObjectId;
-  referralCode: string;
+  referralCodeId: Types.ObjectId;
+  referralCodeEnabled: boolean;
+  placedFirstOrder: boolean;
+  subsidy: number;
   walletBalance: number;
   giftWalletBalance: number;
   createdAt?: Date;
@@ -62,9 +65,27 @@ const customerSchema = new Schema<ICustomer>(
       ref: "Store",
       required: true,
     },
-    referralCode: {
-      type: String,
+    referralCodeId: {
+      type: Schema.Types.ObjectId,
+      ref: "ReferralCode",
       required: true,
+    },
+    referralCodeEnabled: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    placedFirstOrder: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    subsidy: {
+      type: Number,
+      required: true,
+      default: 55,
+      max: 55,
+      min: 50,
     },
     walletBalance: {
       type: Number,
