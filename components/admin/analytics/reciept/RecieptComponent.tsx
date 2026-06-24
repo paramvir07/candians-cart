@@ -456,6 +456,11 @@ export default function RecieptComponent({
                               <span>{fmt(r.platformProfit)}</span>
                             </div>
 
+                            <div className="flex justify-between items-center text-sm font-medium text-primary mt-2">
+                              <span>Platform Fee</span>
+                              <span>{fmt(r.totalPlatformFee)}</span>
+                            </div>
+
                             <h4 className="font-semibold flex items-center gap-2 text-primary pt-2 text-lg">
                               <PanelsTopLeft className="w-4 h-4 text-primary" />{" "}
                               Platform Breakdown

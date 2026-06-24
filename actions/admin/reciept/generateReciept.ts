@@ -61,7 +61,6 @@ type OrderAggregateResult = {
   _id: Types.ObjectId | null;
   orderCount: number;
   orderIds: Types.ObjectId[];
-  totalPlatformFeeRaw: number;
   totalCustomerPaid: number;
   totalBasePrice: number;
   totalDisposableFee: number;
@@ -69,6 +68,8 @@ type OrderAggregateResult = {
   totalPST: number;
   totalSubsidy: number;
   allMiscItems: PlaceOrderMiscItem[][];
+  totalStoreProfitRaw: number;
+  totalPlatformProfitRaw: number;
 };
 
 // Round to the nearest whole cent. This must be the ONLY place rounding happens
@@ -163,6 +164,8 @@ export async function getRecieptDataByDateRange(
           totalPST: { $sum: "$TotalPST" },
           totalSubsidy: { $sum: "$subsidy" },
           allMiscItems: { $push: "$miscItems" },
+          totalStoreProfitRaw: { $sum: "$storeProfit" },
+          totalPlatformProfitRaw: { $sum: "$platformProfit" },
         },
       },
       {
@@ -275,6 +278,10 @@ export async function getRecieptDataByDateRange(
 
       const totalPlatformFeeRaw = PLATFORM_FEE * receipt.orderCount;
 
+      const dbStoreProfitRaw = receipt.totalStoreProfitRaw;
+      const dbPlatformProfitRaw =
+        receipt.totalPlatformProfitRaw - totalPlatformFeeRaw;
+
       const totalCustomerPaidRaw =
         receipt.totalCustomerPaid - totalPlatformFeeRaw;
       const totalBasePriceRaw =
@@ -321,7 +328,8 @@ export async function getRecieptDataByDateRange(
         baseTaxRaw +
         storeMarkupTaxRaw;
 
-      const grossMarginRaw = totalCustomerPaidRaw - storeFixedValueRaw - totalSubsidyRaw;
+      const grossMarginRaw =
+        totalCustomerPaidRaw - storeFixedValueRaw - totalSubsidyRaw;
 
       // const grossMarginRaw = totalCustomerPaidRaw - storeFixedValueRaw;
 
@@ -334,10 +342,10 @@ export async function getRecieptDataByDateRange(
 
       // 5. Platform Metrics
       const platformProfitRaw =
-        grossMarginRaw - storeProfitRaw;
+        grossMarginRaw - (storeProfitRaw + totalPlatformFeeRaw);
 
-        // const platformProfitRaw =
-        // totalCustomerPaidRaw - (storeProfitRaw + storeFixedValueRaw);
+      // const platformProfitRaw =
+      // totalCustomerPaidRaw - (storeProfitRaw + storeFixedValueRaw);
       const platformCommisionRaw = platformProfitRaw + totalSubsidyRaw;
 
       // --- Round to the nearest cent ONLY here, on the final output values ---
@@ -345,78 +353,78 @@ export async function getRecieptDataByDateRange(
       // --- Debug logs, mirrored from tests/test-payout.js ---
       // Values here are in cents, so we convert to dollars (/100) for display,
       // same as the test script's dollar-denominated console output.
-      // const d = (cents: number) => (cents / 100).toFixed(2);
+      const d = (cents: number) => (cents / 100).toFixed(2);
 
-      // console.log("--- Order Financials Tester ---");
+      console.log("--- Order Financials Tester ---");
 
-      // console.log("\n--- Tax & Markup Breakdown ---");
-      // console.log(
-      //   `Total Tax = ${d(totalGSTRaw)} (GST) + ${d(totalPSTRaw)} (PST) = $${d(totalTaxRaw)}`,
-      // );
+      console.log("\n--- Tax & Markup Breakdown ---");
+      console.log(
+        `Total Tax = ${d(totalGSTRaw)} (GST) + ${d(totalPSTRaw)} (PST) = $${d(totalTaxRaw)}`,
+      );
 
-      // console.log(
-      //   `Total Markup = ${d(totalCustomerPaidRaw)} (Cart Total) - [${d(totalBasePriceRaw)} (Base Price) + ${d(totalDisposableFeeRaw)} (Disposable Fee) + ${d(totalTaxRaw)} (Total Tax)] = $${d(totalMarkupRaw)}`,
-      // );
+      console.log(
+        `Total Markup = ${d(totalCustomerPaidRaw)} (Cart Total) - [${d(totalBasePriceRaw)} (Base Price) + ${d(totalDisposableFeeRaw)} (Disposable Fee) + ${d(totalTaxRaw)} (Total Tax)] = $${d(totalMarkupRaw)}`,
+      );
 
-      // console.log("\n--- Value (Val) Metrics ---");
-      // console.log(
-      //   `Val = ${d(totalBasePriceRaw)} (Base Price) + ${d(totalMarkupRaw)} (Total Markup) = ${d(valRaw)}`,
-      // );
+      console.log("\n--- Value (Val) Metrics ---");
+      console.log(
+        `Val = ${d(totalBasePriceRaw)} (Base Price) + ${d(totalMarkupRaw)} (Total Markup) = ${d(valRaw)}`,
+      );
 
-      // console.log(
-      //   `Base % = ${(basePercent * 100).toFixed(2)}% | Markup % = ${(markupPercent * 100).toFixed(2)}%`,
-      // );
+      console.log(
+        `Base % = ${(basePercent * 100).toFixed(2)}% | Markup % = ${(markupPercent * 100).toFixed(2)}%`,
+      );
 
-      // console.log(
-      //   `Base Tax = $${d(baseTaxRaw)} | Markup Tax = $${d(markupTaxRaw)}`,
-      // );
+      console.log(
+        `Base Tax = $${d(baseTaxRaw)} | Markup Tax = $${d(markupTaxRaw)}`,
+      );
 
-      // console.log("\n--- Store Metrics ---");
-      // console.log(
-      //   `SFV = ${d(totalBasePriceRaw)} (base price) + ${d(totalDisposableFeeRaw)} (disposable fee) + ${d(baseTaxRaw)} (base tax) + ${d(storeMarkupTaxRaw)} (store markup tax) = $${d(storeFixedValueRaw)}`,
-      // );
+      console.log("\n--- Store Metrics ---");
+      console.log(
+        `SFV = ${d(totalBasePriceRaw)} (base price) + ${d(totalDisposableFeeRaw)} (disposable fee) + ${d(baseTaxRaw)} (base tax) + ${d(storeMarkupTaxRaw)} (store markup tax) = $${d(storeFixedValueRaw)}`,
+      );
 
-      // console.log(
-      //   `Gross Margin = ${d(totalCustomerPaidRaw)} (Cart Total) - ${d(storeFixedValueRaw)} (SFV) = $${d(grossMarginRaw)}`,
-      // );
+      console.log(
+        `Gross Margin = ${d(totalCustomerPaidRaw)} (Cart Total) - ${d(storeFixedValueRaw)} (SFV) = $${d(grossMarginRaw)}`,
+      );
 
-      // console.log(
-      //   `Store Profit (50%) = ${d(grossMarginRaw)} (Gross Margin) * 0.50 = $${d(storeProfitRaw)}`,
-      // );
+      console.log(
+        `Store Profit (50%) = ${d(grossMarginRaw)} (Gross Margin) * 0.50 = $${d(storeProfitRaw)}`,
+      );
 
-      // console.log(
-      //   `Store Payout = ${d(storeProfitRaw)} (Store Profit) + ${d(storeFixedValueRaw)} (SFV) - ${d(totalCashCollectedRaw)} (Cash Collected) = $${d(storePayoutRaw)}`,
-      // );
+      console.log(
+        `Store Payout = ${d(storeProfitRaw)} (Store Profit) + ${d(storeFixedValueRaw)} (SFV) - ${d(totalCashCollectedRaw)} (Cash Collected) = $${d(storePayoutRaw)}`,
+      );
 
-      // console.log("\n--- Platform Metrics ---");
-      // console.log(
-      //   `Platform Profit = ${d(totalCustomerPaidRaw)} (Cart Total) - [${d(storeProfitRaw)} (Store Profit) + ${d(storeFixedValueRaw)} (SFV)] = $${d(platformProfitRaw)}`,
-      // );
+      console.log("\n--- Platform Metrics ---");
+      console.log(
+        `Platform Profit = ${d(totalCustomerPaidRaw)} (Cart Total) - [${d(storeProfitRaw)} (Store Profit) + ${d(storeFixedValueRaw)} (SFV)] = $${d(platformProfitRaw)}`,
+      );
 
-      // console.log(
-      //   `Platform Commission = ${d(platformProfitRaw)} (Platform Profit) + ${d(totalSubsidyRaw)} (Subsidy) = $${d(platformCommisionRaw)}`,
-      // );
+      console.log(
+        `Platform Commission = ${d(platformProfitRaw)} (Platform Profit) + ${d(totalSubsidyRaw)} (Subsidy) = $${d(platformCommisionRaw)}`,
+      );
 
-      // // Verification
-      // console.log(`\n--- Verification ---`);
+      // Verification
+      console.log(`\n--- Verification ---`);
 
-      // const customerPaidCalc =
-      //   platformProfitRaw + storePayoutRaw + totalCashCollectedRaw;
+      const customerPaidCalc =
+        platformProfitRaw + storePayoutRaw + totalCashCollectedRaw;
 
-      // console.log(
-      //   `Customer Paid Check: ${d(customerPaidCalc)} vs ${d(totalCustomerPaidRaw)}`,
-      // );
+      console.log(
+        `Customer Paid Check: ${d(customerPaidCalc)} vs ${d(totalCustomerPaidRaw)}`,
+      );
 
-      // console.log(
-      //   `Percentage Split Verification: ${((basePercent + markupPercent) * 100).toFixed(2)}%`,
-      // );
+      console.log(
+        `Percentage Split Verification: ${((basePercent + markupPercent) * 100).toFixed(2)}%`,
+      );
 
-      // const effectiveTaxRate = valRaw > 0 ? totalTaxRaw / valRaw : 0;
-      // const taxOnBasePrice = totalBasePriceRaw * effectiveTaxRate;
+      const effectiveTaxRate = valRaw > 0 ? totalTaxRaw / valRaw : 0;
+      const taxOnBasePrice = totalBasePriceRaw * effectiveTaxRate;
 
-      // console.log(
-      //   `Tax Verification Check: ${d(taxOnBasePrice)} vs ${d(baseTaxRaw)}`,
-      // );
+      console.log(
+        `Tax Verification Check: ${d(taxOnBasePrice)} vs ${d(baseTaxRaw)}`,
+      );
 
       console.log("Total platform fee: ", totalPlatformFeeRaw);
       console.log(
@@ -429,10 +437,12 @@ export async function getRecieptDataByDateRange(
       );
       console.log("Store Profit: ", storeProfitRaw);
 
+      console.log("Platform fee: ", totalPlatformFeeRaw);
+
       return {
         _id: storeKey === "global" ? null : storeKey,
         orderCount: receipt.orderCount,
-        totalPlatformFee: round_(receipt.totalPlatformFeeRaw),
+        totalPlatformFee: round_(totalPlatformFeeRaw),
         orderIds: receipt.orderIds.map((id) => id.toString()),
         totalCustomerPaid: round_(totalCustomerPaidRaw + totalPlatformFeeRaw),
         totalBasePrice: round_(totalBasePriceRaw),
@@ -451,9 +461,9 @@ export async function getRecieptDataByDateRange(
         platformMarkuptax: round_(platformMarkuptaxRaw),
         storeFixedValue: round_(storeFixedValueRaw),
         grossMargin: round_(grossMarginRaw),
-        storeProfit: round_(storeProfitRaw),
+        storeProfit: round_(dbStoreProfitRaw),
         storePayout: round_(storePayoutRaw),
-        platformProfit: round_(platformProfitRaw + totalPlatformFeeRaw),
+        platformProfit: round_(dbPlatformProfitRaw),
         platformCommision: round_(platformCommisionRaw),
         totalWalletTopUpCashCollected: round_(totalWalletTopUpCashCollectedRaw),
         totalCashCollected: round_(totalCashCollectedRaw),
