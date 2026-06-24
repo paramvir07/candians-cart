@@ -566,7 +566,7 @@ export const PlaceOrder = async ({
           $inc: { walletBalance: -OrderData.cartTotal },
           $set: { giftWalletBalance: OrderData.subsidyLeft },
         },
-        { session, new: true, runValidators: true },
+        { session, returnDocument: 'after', runValidators: true },
       );
 
       if (!updated) {
@@ -579,7 +579,7 @@ export const PlaceOrder = async ({
         {
           $set: { giftWalletBalance: OrderData.subsidyLeft },
         },
-        { session, new: true, runValidators: true },
+        { session, returnDocument: 'after', runValidators: true },
       );
 
       if (!updated) {
@@ -592,6 +592,7 @@ export const PlaceOrder = async ({
     await CartModel.deleteOne({ customerId: User._id }, { session });
 
     await session.commitTransaction();
+    await EnableUserReferralFlag(OrderData.subsidy,User._id.toString())
     return { success: true, message: "Order Placed Successfully" };
   } catch (error) {
     await session.abortTransaction();
@@ -601,6 +602,22 @@ export const PlaceOrder = async ({
     await session.endSession();
   }
 };
+
+const EnableUserReferralFlag = async (orderSubsidy:number,customerId:string) =>{
+  if(!customerId || !orderSubsidy) return {success:false,message:"Invalid customerId or subsidy amount"}
+  try{
+    await dbConnect();
+
+    if(orderSubsidy>0){
+      await Customer.findOneAndUpdate({ _id: customerId }, { $set: { referralCodeEnabled:true,placedFirstOrder:true} });
+      return {success:true,message:"Referral flags enabled successfully"}
+    }
+    return {success:true,message:"No subsidy used, referral flags not enabled"}
+  }catch(err){
+    console.log(err)
+    return {success:false,message:"Error while enabling referral flags"}
+  }
+}
 
 /**
  * Retrieves the total count of unique products currently in the user's cart.
