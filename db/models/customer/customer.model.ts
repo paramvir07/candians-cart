@@ -12,6 +12,7 @@ export interface ICustomer {
   associatedStoreId: Types.ObjectId;
   referralCodeId: Types.ObjectId;
   referralCodeEnabled: boolean;
+  myreferralCodeId?: Types.ObjectId;
   placedFirstOrder: boolean;
   subsidy: number;
   walletBalance: number;
@@ -74,6 +75,10 @@ const customerSchema = new Schema<ICustomer>(
       type: Boolean,
       required: true,
       default: false,
+    },
+    myreferralCodeId: {
+      type: Schema.Types.ObjectId,
+      ref: "ReferralCode",
     },
     placedFirstOrder: {
       type: Boolean,
