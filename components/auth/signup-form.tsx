@@ -476,22 +476,15 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
                 City
               </option>
               {[
-                "Vancouver",
-                "Burnaby",
-                "New Westminster",
-                "Coquitlam",
-                "Port Coquitlam",
-                "Port Moody",
-                "Surrey",
-                "Delta",
-                "Langley",
-                "Maple Ridge",
-                "Pitt Meadows",
-                "Abbotsford",
-                "Mission",
-                "Chilliwack",
-                "Agassiz",
-                "Hope",
+              "Abbotsford",
+              "Burnaby",
+              "Chilliwack",
+              "Delta",
+              "Hope",
+              "Langley",
+              "Mission",
+              "Surrey",
+              "Vancouver",
               ].map((city) => (
                 <option key={city} value={city}>
                   {city}
