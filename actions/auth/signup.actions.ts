@@ -80,7 +80,6 @@ export const signupAction = async (
 
       if (expired) {
         if (referralCode.type === "customer") {
-          referralCode.maxUses = 10;
           referralCode.uses = 0;
           await referralCode.save();
         } else {
