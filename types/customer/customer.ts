@@ -6,10 +6,6 @@ export type Customer = ICustomer & {
   createdAt: Date;
   updatedAt: Date;
   __v: number;
-
-  // added by populate / aggregation, not stored directly on Customer
-  referralCode?: string;
-  storeName?: string;
 };
 
 export type SerializedCustomer = Omit<
@@ -18,17 +14,19 @@ export type SerializedCustomer = Omit<
   | "userId"
   | "associatedStoreId"
   | "referralCodeId"
+  | "myreferralCodeId"
   | "createdAt"
   | "updatedAt"
+  | "lastOrderDate"
   | "__v"
 > & {
   _id: string;
   userId: string;
   associatedStoreId: string;
   referralCodeId: string;
+  myreferralCodeId?: string;
   createdAt: string;
   updatedAt: string;
   lastOrderDate?: string;
   storeName?: string;
-  referralCode?: string;
 };
