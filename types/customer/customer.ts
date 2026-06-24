@@ -6,6 +6,9 @@ export type Customer = ICustomer & {
   createdAt: Date;
   updatedAt: Date;
   __v: number;
+
+  referralCode?: string;
+  storeName?: string;
 };
 
 export type SerializedCustomer = Omit<
@@ -28,5 +31,6 @@ export type SerializedCustomer = Omit<
   createdAt: string;
   updatedAt: string;
   lastOrderDate?: string;
+  referralCode?: string;
   storeName?: string;
 };

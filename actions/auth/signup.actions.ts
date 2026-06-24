@@ -38,22 +38,15 @@ export const signupAction = async (
       }
 
       const allowedCities = [
-        "Vancouver",
-        "Burnaby",
-        "New Westminster",
-        "Coquitlam",
-        "Port Coquitlam",
-        "Port Moody",
-        "Surrey",
-        "Delta",
-        "Langley",
-        "Maple Ridge",
-        "Pitt Meadows",
         "Abbotsford",
-        "Mission",
+        "Burnaby",
         "Chilliwack",
-        "Agassiz",
+        "Delta",
         "Hope",
+        "Langley",
+        "Mission",
+        "Surrey",
+        "Vancouver",
       ];
 
       if (!allowedCities.includes(data.city)) {
@@ -70,18 +63,33 @@ export const signupAction = async (
         return { success: false, message: "Referral Code not found" };
 
       const inactive = !referralCode.isActive;
+
       const usageFull =
         referralCode.maxUses && referralCode.uses >= referralCode.maxUses;
+
       const expired =
         referralCode.expiresAt &&
         referralCode.expiresAt.getTime() <= Date.now();
 
-      if (inactive || usageFull || expired)
+      if (inactive || usageFull) {
         return {
           success: false,
           message: "Sorry, the referral code is no longer valid.",
         };
+      }
 
+      if (expired) {
+        if (referralCode.type === "customer") {
+          referralCode.maxUses = 10;
+          referralCode.uses = 0;
+          await referralCode.save();
+        } else {
+          return {
+            success: false,
+            message: "Sorry, the referral code is no longer valid.",
+          };
+        }
+      }
       // Check if store exists before starting the transaction
       const store = await Store.findById(data.associatedStore);
 
@@ -113,6 +121,21 @@ export const signupAction = async (
       session.startTransaction();
 
       try {
+
+        let subsidy = 55;
+
+        if (referralCode.type === "customer") {
+
+          const referredCustomer =
+            await Customer.findById(referralCode.customerId).session(session);
+
+          if (!referredCustomer) {
+            throw new Error("Referral customer not found");
+          }
+
+          subsidy = Math.max((referredCustomer.subsidy ?? 55) - 1, 50);
+        }
+
         const customer = await Customer.create(
           [
             {
@@ -126,6 +149,7 @@ export const signupAction = async (
               monthlyBudget: data.monthlyBudget * 100,
               associatedStoreId: data.associatedStore,
               referralCodeId: referralCode._id,
+              subsidy,
             },
           ],
           { session },

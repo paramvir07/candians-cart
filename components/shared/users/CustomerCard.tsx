@@ -58,7 +58,7 @@ const CustomerCard = ({ customer, userRole }: CustomerCardProps) => {
               className="text-[10px] px-1.5 py-0.5 shrink-0 font-mono"
             >
               <Tag className="w-2.5 h-2.5 mr-1" />
-              {customer.referralCode}
+              {customer.referralCode ?? "N/A"}
             </Badge>
           )}
         </div>
