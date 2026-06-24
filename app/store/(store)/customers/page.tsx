@@ -16,8 +16,21 @@ const page = async () => {
     getMyStoreCustomerStats(),
   ]);
 
-  const customers: SerializedCustomer[] =
-    (myStoreCustomersData as SerializedCustomer[]) ?? [];
+const customers: SerializedCustomer[] =
+  myStoreCustomersData?.map((customer) => ({
+    ...customer,
+
+    _id: customer._id.toString(),
+    userId: customer.userId.toString(),
+    associatedStoreId: customer.associatedStoreId.toString(),
+    referralCodeId: customer.referralCodeId.toString(),
+
+    myreferralCodeId: customer.myreferralCodeId?.toString(),
+
+    createdAt: customer.createdAt,
+    updatedAt: customer.updatedAt,
+    lastOrderDate: customer.lastOrderDate,
+  })) ?? [];
 
   return (
     <div className="flex flex-col gap-5 px-8">
