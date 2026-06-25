@@ -127,7 +127,7 @@ export const AddSubsidyItem = async (
 
     const newItems: PlainSubsidyItem[] = newProducts.map((item) => {
       const totalPrice =
-        item.price + Math.round(item.price * (item.markup / 100));
+        item.price + Math.round(item.price * (item.markup / 100))+ (item.disposableFee ?? 0);
       return {
         _id: new Types.ObjectId(),
         productId: item._id as unknown as Types.ObjectId,
@@ -390,7 +390,7 @@ export const movetoSubsidy = async (
     const [item] = cart.items.splice(index, 1);
     const product = item.productId as unknown as IProduct;
     const TotalPrice =
-      product.price + Math.round(product.price * (product.markup / 100));
+      product.price + Math.round(product.price * (product.markup / 100))+(product.disposableFee ?? 0);
 
       if(User.giftWalletBalance === 0 && cart.cartSubsidy === 0){
         return {success:false, message: "insufficient gift Wallet Balance"}
@@ -470,7 +470,7 @@ export const AddToSubsidyCart = async (
     }
 
     const TotalPrice =
-      product.price + Math.round(product.price * (product.markup / 100));
+      product.price + Math.round(product.price * (product.markup / 100))+ (product.disposableFee ?? 0);
 
     const existingPlain: PlainSubsidyItem[] = (cart?.subsidyItems ?? []).map(
       (s) =>

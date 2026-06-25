@@ -191,16 +191,19 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const subsidyTotals = subItems.reduce(
     (acc, item) => {
       const {markup} = calcLine(item);
-      const fullPrice = item.TotalPrice * item.quantity;
-      const afterSubsidy = Math.max(fullPrice - item.subsidy, 0);
+      const disposableFee = (item.productId.disposableFee ?? 0) * item.quantity;
+      const fullPriceWithDisposable = item.TotalPrice * item.quantity;
+      const priceForTax = fullPriceWithDisposable - disposableFee;
+
+      const afterSubsidy = Math.max(fullPriceWithDisposable - item.subsidy, 0);
       const taxRate = item.productId.tax ?? 0;
       let gst = 0,
         pst = 0;
-      if (taxRate === 0.05) gst = Math.round(fullPrice * 0.05);
-      else if (taxRate === 0.07) pst = Math.round(fullPrice * 0.07);
+      if (taxRate === 0.05) gst = Math.round(priceForTax * 0.05);
+      else if (taxRate === 0.07) pst = Math.round(priceForTax * 0.07);
       else if (taxRate === 0.12) {
-        gst = Math.round(fullPrice * 0.05);
-        pst = Math.round(fullPrice * 0.07);
+        gst = Math.round(priceForTax * 0.05);
+        pst = Math.round(priceForTax * 0.07);
       }
       const totalTax = gst + pst;
       acc.disposable += (item.productId.disposableFee ?? 0) * item.quantity;
@@ -313,6 +316,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     </>
   );
 
+
+  const isCovered = (newSubisdyCalc+(UserData?.giftWalletBalance?? 0))>=subsidyTotals.disposable;
   const DisposableRow = () => (
     <>
       {itemTotals.disposable > 0 && (
@@ -327,14 +332,16 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
             Disposable fee
+            {isCovered && (
             <Badge
               variant="secondary"
               className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400"
             >
               covered
             </Badge>
+            )}
           </span>
-          <span className="font-medium tabular-nums text-emerald-600 line-through">
+          <span className={`font-medium tabular-nums text-emerald-600 ${isCovered && 'line-through'}`}>
             CA${fmt(subsidyTotals.disposable)}
           </span>
         </div>

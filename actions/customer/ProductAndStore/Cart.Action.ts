@@ -465,34 +465,33 @@ export const PlaceOrder = async ({
       };
     });
 
-    const subsidyItems = SubItems.map((item) => {
-      const product = item.productId as unknown as IProduct;
-      const afterSubsidy = Math.max(
-        item.TotalPrice * item.quantity - item.subsidy,
-        0,
-      );
-      const tax = product.tax;
-      const disposableFee = product.disposableFee ?? 0;
+  const subsidyItems = SubItems.map((item) => {
+    const product = item.productId as unknown as IProduct;
+    const disposableFee = (product.disposableFee ?? 0) * item.quantity;
+    const fullPriceWithDisposable = item.TotalPrice * item.quantity;
+    const priceForTax = fullPriceWithDisposable - disposableFee;
+    
+    const afterSubsidy = Math.max(fullPriceWithDisposable - item.subsidy, 0);
+    const tax = product.tax;
 
-      const gst =
-        tax === 0.05 || tax === 0.12 ? Math.round(afterSubsidy * 0.05) : 0;
+    const gst =
+      tax === 0.05 || tax === 0.12 ? Math.round(priceForTax * 0.05) : 0;
+    const pst =
+      tax === 0.07 || tax === 0.12 ? Math.round(priceForTax * 0.07) : 0;
 
-      const pst =
-        tax === 0.07 || tax === 0.12 ? Math.round(afterSubsidy * 0.07) : 0;
+    baseTotal += product.price * item.quantity;
+    TotalUsedSubsidy += item.subsidy;
 
-      baseTotal += product.price * item.quantity;
-      TotalUsedSubsidy += item.subsidy;
-
-      return {
-        productId: new Types.ObjectId(product._id),
-        quantity: item.quantity,
-        markup: product.markup,
-        tax,
-        disposableFee,
-        subsidy: item.subsidy,
-        total: Math.round(afterSubsidy + gst + pst + disposableFee),
-      };
-    });
+    return {
+      productId: new Types.ObjectId(product._id),
+      quantity: item.quantity,
+      markup: product.markup,
+      tax,
+      disposableFee,
+      subsidy: item.subsidy,
+      total: Math.round(afterSubsidy + gst + pst),
+    };
+  });
 
     const miscItems = MiscItems.map((item) => {
       const populated = item.itemId as unknown as {
