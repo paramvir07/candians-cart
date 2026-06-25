@@ -17,30 +17,30 @@ import { ReferralCodeForm } from "./ReferralCodeForm";
 import Image from "next/image";
 import Logo from "@/components/shared/Logo";
 
-const STEPS = ["location", "terms", "budget", "selectStore", "code"] as const;
+const STEPS = ["code", "location", "terms", "budget", "selectStore"] as const;
 
 const STEP_META: Record<string, { label: string; description: string }> = {
+  code: { label: "Referral Code", description: "Enter your invite code" },
   location: { label: "Location", description: "Find stores near you" },
   terms: { label: "Terms", description: "Review our policies" },
   budget: { label: "Budget", description: "Set your monthly spend" },
   selectStore: { label: "Store", description: "Pick your grocery store" },
-  code: { label: "Referral Code", description: "Enter your invite code" },
 };
 
 const STEP_TITLES: Record<string, string> = {
+  code: "Enter Referral Code",
   location: "Where are you located?",
   terms: "Review & Accept Terms",
   budget: "Monthly Grocery Budget",
   selectStore: "Choose Your Store",
-  code: "Enter Referral Code",
 };
 
 const STEP_DESCRIPTIONS: Record<string, string> = {
+  code: "You'll need a referral code from an existing family member.",
   location: "Select your city to find available stores near you.",
   terms: "Please read our policies before continuing.",
   budget: "What's your estimated monthly spend on groceries?",
   selectStore: "Select the nearest grocery store to get started.",
-  code: "You'll need a referral code from an existing family member.",
 };
 
 const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
@@ -81,7 +81,9 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
 
   const stepContent = (
     <>
-      {step === "location" ? (
+      {step === "code" ? (
+        <ReferralCodeForm />
+      ) : step === "location" ? (
         <Location />
       ) : step === "terms" ? (
         <Terms />
@@ -89,8 +91,6 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
         <Budget />
       ) : step === "selectStore" ? (
         <SelectStore stores={stores} />
-      ) : step === "code" ? (
-        <ReferralCodeForm />
       ) : (
         <div className="text-destructive text-sm py-4">
           Something went wrong
@@ -119,14 +119,6 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
           {/* same deep fade as login */}
           <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black to-transparent" />
 
-          {/* Logo on image */}
-          {/* <div className="absolute top-5 left-5"> */}
-          {/* <div className=" h-12 bg-white/90 rounded-xl flex items-center justify-center shadow-2xl p-2"> */}
-          {/* <ShoppingCart size={22} className="text-primary-foreground" /> */}
-          {/* <Logo variant="icon" href="/" /> */}
-          {/* </div> */}
-          {/* </div> */}
-
           {/* Step counter */}
           <div className="absolute top-5 right-5">
             <span className="text-xs text-white/80 font-medium bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
@@ -137,8 +129,6 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
 
         {/* Form card — same deep overlap + solid bg as login */}
         <div className="relative z-10 -mt-45 flex-1 bg-background rounded-t-3xl px-6 pt-8 pb-10 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
-          {/* Step dots */}
-          {/* Logo on image */}
           <div className="">
             <div className=" h-12 mb-8 rounded-xlshadow-2xl p-2">
               <Logo variant="icon" href="/" />
@@ -221,11 +211,7 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
           <div className="flex flex-col w-[280px] xl:w-[300px] shrink-0 bg-card border-r border-border p-8">
             {/* Logo */}
             <div className="flex items-center gap-2.5 mb-12">
-              {/* <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm shadow-primary/20"> */}
-              {/* <ShoppingCart size={17} className="text-primary-foreground" /> */}
               <Logo variant="icon" href="/" />
-              {/* </div> */}
-              {/* <span className="text-sm font-semibold text-foreground">Candian's Cart</span> */}
             </div>
 
             {/* Step list */}
@@ -296,7 +282,7 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Top bar */}
             <div className="flex items-center justify-between px-12 xl:px-16 pt-8 pb-0 shrink-0">
-              {step !== "location" ? (
+              {step !== "code" ? (
                 <Button
                   variant="ghost"
                   size="sm"
