@@ -1,7 +1,6 @@
-// components/admin/store/OrdersList.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -32,22 +31,72 @@ import {
   ArrowUpRight,
   X,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
 import {
   AdminOrder,
+  DateRange,
   getOrdersPaginated,
   searchOrders,
   getFullOrderDetails,
 } from "@/actions/admin/orders/getOrders.action";
 import { OrderStats } from "@/actions/admin/orders/getOrderStats.action";
 import OrderDetail from "@/components/shared/users/orders/OrderDetail";
+import { format } from "date-fns";
+import { type DateRange as DayPickerDateRange } from "react-day-picker";
+import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
+
+// ─── useDebounce ────────────────────────────────────────────────────────────────
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+
+// ─── Period preset type ─────────────────────────────────────────────────────────
+
+type PeriodPreset = "all" | "today" | "week" | "month" | "custom";
+
+const PERIOD_OPTIONS: { label: string; value: PeriodPreset }[] = [
+  { label: "All time", value: "all" },
+  { label: "Today", value: "today" },
+  { label: "This week", value: "week" },
+  { label: "This month", value: "month" },
+  { label: "Custom…", value: "custom" },
+];
+
+/** Convert a preset to a concrete DateRange (null = no filter). */
+function presetToRange(preset: PeriodPreset): DateRange | null {
+  const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local
+  if (preset === "all" || preset === "custom") return null;
+  if (preset === "today") return { from: today, to: today };
+  if (preset === "week") {
+    const d = new Date();
+    d.setDate(d.getDate() - 6);
+    return { from: d.toLocaleDateString("en-CA"), to: today };
+  }
+  if (preset === "month") {
+    const d = new Date();
+    return {
+      from: new Date(d.getFullYear(), d.getMonth(), 1).toLocaleDateString(
+        "en-CA",
+      ),
+      to: today,
+    };
+  }
+  return null;
+}
 
 // ─── Skeletons ─────────────────────────────────────────────────────────────────
 
 const OrderRowSkeleton = () => (
   <tr className="border-b border-border/40">
-    {[32, 28, 28, 20, 20, 16, 20].map((w, i) => (
+    {[32, 28, 28, 20, 20, 20].map((w, i) => (
       <td key={i} className="px-4 py-4">
         <Skeleton className={`h-4 w-${w} rounded`} />
       </td>
@@ -66,44 +115,7 @@ const StatSkeleton = () => (
   </div>
 );
 
-// ─── Status & Payment Badges ────────────────────────────────────────────────────
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    pending: "bg-amber-50 text-amber-700 border-amber-200",
-    completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  };
-  const dots: Record<string, string> = {
-    pending: "bg-amber-500",
-    completed: "bg-emerald-500",
-  };
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border capitalize ${styles[status] ?? "bg-muted text-muted-foreground border-border"}`}
-    >
-      <span
-        className={`w-1.5 h-1.5 rounded-full ${dots[status] ?? "bg-muted-foreground"}`}
-      />
-      {status}
-    </span>
-  );
-}
-
-function PaymentBadge({ mode }: { mode: string }) {
-  const styles: Record<string, string> = {
-    wallet: "bg-violet-50 text-violet-700 border-violet-200",
-    cash: "bg-teal-50 text-teal-700 border-teal-200",
-    card: "bg-blue-50 text-blue-700 border-blue-200",
-    pending: "bg-red-50 text-red-600 border-red-200",
-  };
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border capitalize ${styles[mode] ?? "bg-muted text-muted-foreground border-border"}`}
-    >
-      {mode}
-    </span>
-  );
-}
+// ─── Helpers ────────────────────────────────────────────────────────────────────
 
 function formatCents(cents: number) {
   return (
@@ -183,7 +195,6 @@ function CustomerCell({
       </span>
     </div>
   );
-
   if (role === "admin" && order.customerId) {
     return (
       <Link
@@ -197,43 +208,131 @@ function CustomerCell({
   return inner;
 }
 
-// ─── Types ──────────────────────────────────────────────────────────────────────
+// ─── Period Filter ──────────────────────────────────────────────────────────────
 
-type StatusFilter = "all" | "pending" | "completed";
-type DateFilter = "all" | "today" | "week" | "month";
+function PeriodFilter({
+  preset,
+  customRange,
+  onPresetChange,
+  onCustomRangeChange,
+}: {
+  preset: PeriodPreset;
+  customRange: DateRange | null;
+  onPresetChange: (p: PeriodPreset) => void;
+  onCustomRangeChange: (r: DateRange | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selectedLabel =
+    PERIOD_OPTIONS.find((o) => o.value === preset)?.label ?? "All time";
+
+  // Convert string dates (YYYY-MM-DD) to native Date objects for Shadcn DatePicker
+  const datePickerValue: DayPickerDateRange | undefined = customRange
+    ? {
+        from: customRange.from
+          ? new Date(customRange.from + "T00:00:00")
+          : undefined,
+        to: customRange.to ? new Date(customRange.to + "T00:00:00") : undefined,
+      }
+    : undefined;
+
+  // Convert native Date objects back to string dates when the user selects a range
+  const handleCustomDateChange = (range: DayPickerDateRange | undefined) => {
+    if (!range || !range.from) {
+      onCustomRangeChange(null);
+      return;
+    }
+    onCustomRangeChange({
+      from: format(range.from, "yyyy-MM-dd"),
+      to: range.to
+        ? format(range.to, "yyyy-MM-dd")
+        : format(range.from, "yyyy-MM-dd"),
+    });
+  };
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-xs text-muted-foreground font-medium shrink-0">
+        Period:
+      </span>
+
+      <div className="relative" ref={ref}>
+        {/* Trigger */}
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-background border border-border text-xs font-medium text-foreground hover:bg-muted/60 transition-colors h-9"
+        >
+          <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+          {selectedLabel}
+          <ChevronDown
+            className={`w-3 h-3 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {/* Dropdown */}
+        {open && (
+          <div className="absolute left-0 top-full mt-1.5 z-30 min-w-[160px] rounded-xl border border-border bg-popover shadow-lg py-1 overflow-hidden">
+            {PERIOD_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  onPresetChange(opt.value);
+                  setOpen(false); // <-- CHANGED: Now this always closes the dropdown
+                }}
+                className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors ${
+                  preset === opt.value
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground hover:bg-muted/60"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Shadcn Date Picker — only shown when preset === "custom" */}
+      {preset === "custom" && (
+        <div className="flex items-center gap-2 fade-in animate-in">
+          <DatePickerWithRange
+            date={datePickerValue}
+            setDate={handleCustomDateChange}
+          />
+          {customRange && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => onCustomRangeChange(null)}
+              title="Clear dates"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Types ──────────────────────────────────────────────────────────────────────
 
 interface OrdersListProps {
   storeId?: string;
   stats?: OrderStats;
   role?: "admin" | "store";
-}
-
-// ─── Filter Pill ───────────────────────────────────────────────────────────────
-
-function FilterPill<T extends string>({
-  value,
-  current,
-  onClick,
-  label,
-}: {
-  value: T;
-  current: T;
-  onClick: (v: T) => void;
-  label: string;
-}) {
-  const active = value === current;
-  return (
-    <button
-      onClick={() => onClick(value)}
-      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
-        active
-          ? "bg-primary text-primary-foreground shadow-sm"
-          : "text-muted-foreground hover:text-foreground hover:bg-accent"
-      }`}
-    >
-      {label}
-    </button>
-  );
 }
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
@@ -250,10 +349,12 @@ export function OrdersList({
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
 
-  // Modal State
+  // Period state
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>("today");
+  const [customRange, setCustomRange] = useState<DateRange | null>(null);
+
+  // Modal
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedOrderData, setSelectedOrderData] = useState<AdminOrder | null>(
     null,
@@ -261,16 +362,19 @@ export function OrdersList({
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
   const isAllStores = !storeId;
+  const debouncedSearch = useDebounce(searchQuery, 350);
 
+  // Resolve the active DateRange from preset + custom, memoized to prevent infinite loops
+  const activeDateRange = useMemo<DateRange | null>(() => {
+    return periodPreset === "custom"
+      ? customRange
+      : presetToRange(periodPreset);
+  }, [periodPreset, customRange?.from, customRange?.to]);
+
+  // ── Load orders ──
   const load = async (page = currentPage) => {
     setIsLoading(true);
-    const result = await getOrdersPaginated(
-      storeId,
-      page,
-      5,
-      statusFilter,
-      dateFilter,
-    );
+    const result = await getOrdersPaginated(storeId, page, 5, activeDateRange);
     if (result.success) {
       setOrders(result.data);
       setTotalPages(result.totalPages);
@@ -284,35 +388,36 @@ export function OrdersList({
   useEffect(() => {
     if (isSearchMode) return;
     load(currentPage);
-  }, [storeId, currentPage, isSearchMode, statusFilter, dateFilter]);
+  }, [storeId, currentPage, isSearchMode, activeDateRange]);
 
+  // Reset to page 1 on period change
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, dateFilter]);
+  }, [periodPreset, customRange]);
 
+  // ── Debounced search ──
   useEffect(() => {
-    if (!searchQuery.trim()) {
+    if (!debouncedSearch.trim()) {
       setIsSearchMode(false);
       return;
     }
-    const timer = setTimeout(async () => {
-      setIsSearchMode(true);
-      setIsLoading(true);
-      const res = await searchOrders(searchQuery, storeId, statusFilter);
+    setIsSearchMode(true);
+    setIsLoading(true);
+    searchOrders(debouncedSearch, storeId).then((res) => {
       if (res.success) {
         setOrders(res.data);
         setTotalCount(res.totalCount);
-      } else toast.error(res.error || "Search failed");
+      } else {
+        toast.error(res.error || "Search failed");
+      }
       setIsLoading(false);
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [searchQuery, storeId, statusFilter]);
+    });
+  }, [debouncedSearch, storeId]);
 
   const handleViewOrder = async (orderId: string) => {
     setIsDetailOpen(true);
     setIsLoadingDetail(true);
     setSelectedOrderData(null);
-
     const res = await getFullOrderDetails(orderId);
     if (res.success) {
       setSelectedOrderData(res.data);
@@ -327,8 +432,9 @@ export function OrdersList({
     const pages: (number | "ellipsis")[] = [];
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else if (currentPage <= 3) pages.push(1, 2, 3, 4, "ellipsis", totalPages);
-    else if (currentPage >= totalPages - 2)
+    } else if (currentPage <= 3) {
+      pages.push(1, 2, 3, 4, "ellipsis", totalPages);
+    } else if (currentPage >= totalPages - 2) {
       pages.push(
         1,
         "ellipsis",
@@ -337,7 +443,7 @@ export function OrdersList({
         totalPages - 1,
         totalPages,
       );
-    else
+    } else {
       pages.push(
         1,
         "ellipsis",
@@ -347,23 +453,12 @@ export function OrdersList({
         "ellipsis",
         totalPages,
       );
+    }
     return pages;
   };
 
-  const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
-    { label: "All status", value: "all" },
-    { label: "Pending", value: "pending" },
-    { label: "Completed", value: "completed" },
-  ];
-
-  const DATE_FILTERS: { label: string; value: DateFilter }[] = [
-    { label: "All time", value: "all" },
-    { label: "Today", value: "today" },
-    { label: "Last 7 days", value: "week" },
-    { label: "This month", value: "month" },
-  ];
-
-  const colCount = (isAllStores ? 1 : 0) + 8; // +1 for the actions column
+  // Order, [Store], Customer, Date, Amount, Actions
+  const colCount = (isAllStores ? 1 : 0) + 6;
 
   return (
     <div className="space-y-5">
@@ -392,7 +487,7 @@ export function OrdersList({
         </DialogContent>
       </Dialog>
 
-      {/* ── Stat Cards ─────────────────────────────────────────────────────── */}
+      {/* ── Stat Cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
         {stats ? (
           <>
@@ -444,7 +539,7 @@ export function OrdersList({
         )}
       </div>
 
-      {/* ── Table Card ─────────────────────────────────────────────────────── */}
+      {/* ── Table Card ── */}
       <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         {/* Top bar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center justify-between px-5 py-4 border-b border-border/60">
@@ -493,47 +588,18 @@ export function OrdersList({
         </div>
 
         {/* Filter bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 px-5 py-2.5 border-b border-border/60 bg-muted/30">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-muted-foreground font-medium shrink-0">
-              Status:
-            </span>
-            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-background border border-border">
-              {STATUS_FILTERS.map((f) => (
-                <FilterPill
-                  key={f.value}
-                  value={f.value}
-                  current={statusFilter}
-                  onClick={setStatusFilter}
-                  label={f.label}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="w-px h-4 bg-border hidden sm:block shrink-0" />
-
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-muted-foreground font-medium shrink-0">
-              Period:
-            </span>
-            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-background border border-border">
-              {DATE_FILTERS.map((f) => (
-                <FilterPill
-                  key={f.value}
-                  value={f.value}
-                  current={dateFilter}
-                  onClick={setDateFilter}
-                  label={f.label}
-                />
-              ))}
-            </div>
-          </div>
+        <div className="flex items-center gap-3 px-5 py-2.5 border-b border-border/60 bg-muted/30">
+          <PeriodFilter
+            preset={periodPreset}
+            customRange={customRange}
+            onPresetChange={setPeriodPreset}
+            onCustomRangeChange={setCustomRange}
+          />
         </div>
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-195">
+          <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="border-b border-border/60">
                 <th className="px-5 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -552,12 +618,6 @@ export function OrdersList({
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Amount
-                </th>
-                <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Payment
                 </th>
                 <th className="px-4 py-3 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Actions
@@ -583,7 +643,7 @@ export function OrdersList({
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {isSearchMode
-                            ? `Nothing matched "${searchQuery}"`
+                            ? `Nothing matched "${debouncedSearch}"`
                             : "Orders will appear here once created"}
                         </p>
                       </div>
@@ -618,7 +678,7 @@ export function OrdersList({
                           <Link
                             href={`/admin/store/${order.storeId}`}
                             onClick={(e) => e.stopPropagation()}
-                            className="group/s inline-flex items-center gap-2 hover:opacity-75 transition-opacity"
+                            className="inline-flex items-center gap-2 hover:opacity-75 transition-opacity"
                           >
                             <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center shrink-0">
                               <Store className="w-3 h-3 text-muted-foreground" />
@@ -648,12 +708,6 @@ export function OrdersList({
                       <span className="text-sm font-semibold text-foreground tabular-nums">
                         {formatCents(order.amount)}
                       </span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <StatusBadge status={order.status} />
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <PaymentBadge mode={order.paymentMode} />
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       <Button
@@ -685,7 +739,6 @@ export function OrdersList({
               of{" "}
               <span className="font-medium text-foreground">{totalPages}</span>
             </p>
-
             <Pagination className="mx-0 w-auto justify-end">
               <PaginationContent>
                 <PaginationItem>
@@ -703,7 +756,6 @@ export function OrdersList({
                     }
                   />
                 </PaginationItem>
-
                 {getPageNumbers().map((page, i) => (
                   <PaginationItem key={i}>
                     {page === "ellipsis" ? (
@@ -727,7 +779,6 @@ export function OrdersList({
                     )}
                   </PaginationItem>
                 ))}
-
                 <PaginationItem>
                   <PaginationNext
                     href="#"

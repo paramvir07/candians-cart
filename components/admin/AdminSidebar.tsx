@@ -34,6 +34,7 @@ const NAV_GROUPS = [
     items: [
       { href: "/admin", label: "Dashboard", icon: HomeIcon, exact: true },
       { href: "/admin/analytics", label: "Analytics", icon: BarChart },
+      { href: "/admin/categories", label: "Categories", icon: List },
     ],
   },
   {
@@ -50,7 +51,11 @@ const NAV_GROUPS = [
     label: "Finance",
     items: [
       { href: "/admin/store-payouts", label: "Payouts", icon: HandCoins },
-      { href: "/admin/cash-collection", label: "Cash Collection", icon: Banknote },
+      {
+        href: "/admin/cash-collection",
+        label: "Cash Collection",
+        icon: Banknote,
+      },
       { href: "/admin/price-invoices", label: "Invoices", icon: Receipt },
     ],
   },
@@ -151,9 +156,11 @@ function SidebarContent({
                   key={item.href}
                   {...item}
                   badge={
-                    item.label === "Invoices" ? pendingInvoicesCount :
-                    item.label === "Requests" ? pendingRequestsCount :
-                    undefined
+                    item.label === "Invoices"
+                      ? pendingInvoicesCount
+                      : item.label === "Requests"
+                        ? pendingRequestsCount
+                        : undefined
                   }
                   onClick={onNav}
                 />
@@ -226,7 +233,7 @@ const AdminSidebar = ({ name }: AdminSidebarProps) => {
       <aside className="hidden md:flex sticky top-4 self-start flex-col bg-white rounded-2xl border border-gray-100 shadow-sm z-40 overflow-hidden w-56 ml-3 h-[calc(100vh-2rem)]">
         <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
-            <Logo variant="icon"/>
+            <Logo variant="icon" />
           </div>
           <span className="text-[15px] font-bold text-gray-900 tracking-tight">
             Admin Panel

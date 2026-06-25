@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useCallback } from "react";
 import {
   format,
   subDays,
@@ -16,6 +16,7 @@ import {
   ICategorySaleDetail,
 } from "@/types/store/categorySales.types";
 import { getCategorySales } from "@/actions/store/categories/categorySales.action";
+import { StoreDocument } from "@/types/store/store";
 
 import {
   Table,
@@ -40,6 +41,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
 import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -50,7 +52,9 @@ import {
 
 interface CategorySalesTableClientProps {
   initialData: ICategorySales[];
-  storeId: string;
+  initialStoreId: string;
+  isAdmin?: boolean;
+  stores?: StoreDocument[];
 }
 
 const formatToPST = (utcDateString: string) => {
@@ -67,9 +71,12 @@ const formatToPST = (utcDateString: string) => {
 
 export default function CategorySalesTableClient({
   initialData,
-  storeId,
+  initialStoreId,
+  isAdmin = false,
+  stores = [],
 }: CategorySalesTableClientProps) {
   const [data, setData] = useState<ICategorySales[]>(initialData);
+  const [storeId, setStoreId] = useState<string>(initialStoreId || "all");
   const [filterType, setFilterType] = useState<string>("today");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [isPending, startTransition] = useTransition();
@@ -78,29 +85,47 @@ export default function CategorySalesTableClient({
     useState<ICategorySales | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  // Helper to get dates so we can reuse it for both filter changes and store changes
+  const getDatesForFilter = useCallback(
+    (type: string, range?: DateRange): { start: Date; end: Date } | null => {
+      const today = new Date();
+      if (type === "today") {
+        return getTodayVancouverBoundsUTC();
+      }
+      if (type === "week") {
+        return {
+          start: getVancouverDayBoundsUTC(startOfWeek(today)).start,
+          end: getVancouverDayBoundsUTC(endOfWeek(today)).end,
+        };
+      }
+      if (type === "month") {
+        return {
+          start: getVancouverDayBoundsUTC(startOfMonth(today)).start,
+          end: getVancouverDayBoundsUTC(endOfMonth(today)).end,
+        };
+      }
+      if (type === "custom" && range?.from && range?.to) {
+        return {
+          start: getVancouverDayBoundsUTC(range.from).start,
+          end: getVancouverDayBoundsUTC(range.to).end,
+        };
+      }
+      return null;
+    },
+    [],
+  );
+
+  const fetchFilteredData = (start: Date, end: Date, targetStoreId: string) => {
+    startTransition(async () => {
+      const result = await getCategorySales(targetStoreId, start, end);
+      setData(result);
+    });
+  };
+
   const handleFilterChange = (value: string) => {
     setFilterType(value);
-
-    if (value === "today") {
-      const { start, end } = getTodayVancouverBoundsUTC();
-      fetchFilteredData(start, end);
-      return;
-    }
-    if (value === "week") {
-      const today = new Date();
-      const { start } = getVancouverDayBoundsUTC(startOfWeek(today));
-      const { end } = getVancouverDayBoundsUTC(endOfWeek(today));
-      fetchFilteredData(start, end);
-      return;
-    }
-    if (value === "month") {
-      const today = new Date();
-      const { start } = getVancouverDayBoundsUTC(startOfMonth(today));
-      const { end } = getVancouverDayBoundsUTC(endOfMonth(today));
-      fetchFilteredData(start, end);
-      return;
-    }
-    if (value === "custom") return;
+    const dates = getDatesForFilter(value, dateRange);
+    if (dates) fetchFilteredData(dates.start, dates.end, storeId);
   };
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
@@ -108,15 +133,14 @@ export default function CategorySalesTableClient({
     if (range?.from && range?.to) {
       const { start } = getVancouverDayBoundsUTC(range.from);
       const { end } = getVancouverDayBoundsUTC(range.to);
-      fetchFilteredData(start, end);
+      fetchFilteredData(start, end, storeId);
     }
   };
 
-  const fetchFilteredData = (start: Date, end: Date) => {
-    startTransition(async () => {
-      const result = await getCategorySales(storeId, start, end);
-      setData(result);
-    });
+  const handleStoreChange = (newStoreId: string) => {
+    setStoreId(newStoreId);
+    const dates = getDatesForFilter(filterType, dateRange);
+    if (dates) fetchFilteredData(dates.start, dates.end, newStoreId);
   };
 
   const openDetails = (categoryData: ICategorySales) => {
@@ -124,31 +148,70 @@ export default function CategorySalesTableClient({
     setIsDialogOpen(true);
   };
 
+  const selectedStoreName =
+    storeId === "all"
+      ? "All Stores (Global)"
+      : stores.find((s) => s._id.toString() === storeId)?.name ||
+        "Select a store";
+
   return (
     <div className="space-y-4">
       {/* Filters Section */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center">
-        <Select value={filterType} onValueChange={handleFilterChange}>
-          <SelectTrigger className="w-45">
-            <SelectValue placeholder="Select timeframe" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="today">Today</SelectItem>
-            <SelectItem value="week">This Week</SelectItem>
-            <SelectItem value="month">This Month</SelectItem>
-            <SelectItem value="custom">Select Time Period</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex flex-col sm:flex-row gap-4 items-end">
+        {/* Admin Store Selector Dropdown */}
+        {isAdmin && stores.length > 0 && (
+          <div className="space-y-2.5 w-full sm:w-64">
+            <Label className="text-sm font-medium">Select Store</Label>
+            <Select value={storeId} onValueChange={handleStoreChange}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="Select Store">
+                  {selectedStoreName}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Stores (Global)</SelectItem>
+                {stores.map((store) => (
+                  <SelectItem
+                    key={store._id.toString()}
+                    value={store._id.toString()}
+                  >
+                    {store.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        <div className="space-y-2.5 w-full sm:w-45">
+          {isAdmin && <Label className="text-sm font-medium">Timeframe</Label>}
+          <Select value={filterType} onValueChange={handleFilterChange}>
+            <SelectTrigger className="h-10">
+              <SelectValue placeholder="Select timeframe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="custom">Select Time Period</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {filterType === "custom" && (
-          <DatePickerWithRange
-            date={dateRange}
-            setDate={handleDateRangeChange}
-          />
+          <div className="space-y-2.5">
+            {isAdmin && (
+              <Label className="text-sm font-medium">Custom Range</Label>
+            )}
+            <DatePickerWithRange
+              date={dateRange}
+              setDate={handleDateRangeChange}
+            />
+          </div>
         )}
 
         {isPending && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground pb-2 ml-2">
             <Spinner className="w-4 h-4" />
             <span>Updating...</span>
           </div>
@@ -156,7 +219,7 @@ export default function CategorySalesTableClient({
       </div>
 
       {/* Data Table */}
-      <div className="rounded-md border relative">
+      <div className="rounded-md border relative mt-4">
         <Table>
           <TableHeader>
             <TableRow>

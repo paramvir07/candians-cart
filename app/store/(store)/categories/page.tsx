@@ -9,13 +9,16 @@ import { getTodayVancouverBoundsUTC } from "@/lib/timezone";
 // 1. Data-fetching Server Component
 async function CategorySalesWrapper({ storeId }: { storeId: string }) {
   // Default to 'Today'
-   const { start, end } = getTodayVancouverBoundsUTC();
+  const { start, end } = getTodayVancouverBoundsUTC();
 
   // Fetch initial data on the server
   const initialData = await getCategorySales(storeId, start, end);
 
   return (
-    <CategorySalesTableClient initialData={initialData} storeId={storeId} />
+    <CategorySalesTableClient 
+      initialData={initialData} 
+      initialStoreId={storeId}
+    />
   );
 }
 
@@ -40,6 +43,7 @@ export default async function StoreCategoriesPage() {
   }
 
   const storeIdString = store._id.toString();
+  
   return (
     <div className="p-6 space-y-6 flex-1 w-full">
       {/* Static Header */}

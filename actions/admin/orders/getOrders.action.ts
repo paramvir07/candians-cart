@@ -9,12 +9,17 @@ export interface AdminOrder {
   orderRef: string;
   storeId: string;
   storeName: string;
-  customerId: string; // Customer._id — used for the /admin/customers/[customerId] link
-  customerName: string; // Customer.name
+  customerId: string;
+  customerName: string;
   amount: number;
   status: "pending" | "completed";
   paymentMode: "wallet" | "cash" | "card" | "pending";
   createdAt: Date;
+}
+
+export interface DateRange {
+  from: string; // "YYYY-MM-DD"
+  to: string;   // "YYYY-MM-DD"
 }
 
 export interface GetOrdersResult {
@@ -27,7 +32,6 @@ export interface GetOrdersResult {
 
 function buildLookupStages() {
   return [
-    // Join Store
     {
       $lookup: {
         from: "stores",
@@ -37,8 +41,6 @@ function buildLookupStages() {
       },
     },
     { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
-
-    // Join Customer — Order.userId matches Customer._id (both ref the Auth user)
     {
       $lookup: {
         from: "customers",
@@ -48,14 +50,12 @@ function buildLookupStages() {
       },
     },
     { $unwind: { path: "$customer", preserveNullAndEmptyArrays: true } },
-
     {
       $project: {
         _id: 1,
         storeId: 1,
         storeName: "$store.name",
         userId: 1,
-        // Customer._id is what we use for the detail page link
         customerId: "$customer._id",
         customerName: "$customer.name",
         amount: "$cartTotal",
@@ -73,7 +73,6 @@ function mapDoc(o: any): AdminOrder {
     orderRef: `LPO/${o._id.toString().slice(-6).toUpperCase()}`,
     storeId: o.storeId?.toString() ?? "",
     storeName: o.storeName ?? "Unknown Store",
-    // customerId = Customer._id, fallback to userId so link still points somewhere
     customerId: o.customerId?.toString() ?? o.userId?.toString() ?? "",
     customerName: o.customerName ?? "—",
     amount: o.amount ?? 0,
@@ -83,36 +82,26 @@ function mapDoc(o: any): AdminOrder {
   };
 }
 
+function buildDateMatch(dateRange: DateRange): Record<string, any> {
+  // Treat the YYYY-MM-DD strings as Vancouver-local midnight boundaries.
+  // Constructing with explicit time avoids UTC-shift surprises at the edges.
+  const fromDate = new Date(`${dateRange.from}T00:00:00-08:00`);
+  const toDate   = new Date(`${dateRange.to}T23:59:59.999-08:00`);
+  return { createdAt: { $gte: fromDate, $lte: toDate } };
+}
+
 export async function getOrdersPaginated(
   storeId: string | null | undefined,
   page: number = 1,
   limit: number = 5,
-  statusFilter?: "pending" | "completed" | "all",
-  dateFilter?: "today" | "week" | "month" | "all",
+  dateRange: DateRange | null = null,
 ): Promise<GetOrdersResult> {
   try {
     await dbConnect();
 
     const match: Record<string, any> = {};
     if (storeId) match.storeId = new mongoose.Types.ObjectId(storeId);
-    if (statusFilter && statusFilter !== "all") match.status = statusFilter;
-
-    if (dateFilter && dateFilter !== "all") {
-      const now = new Date();
-      if (dateFilter === "today") {
-        match.createdAt = {
-          $gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-        };
-      } else if (dateFilter === "week") {
-        match.createdAt = {
-          $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
-        };
-      } else if (dateFilter === "month") {
-        match.createdAt = {
-          $gte: new Date(now.getFullYear(), now.getMonth(), 1),
-        };
-      }
-    }
+    if (dateRange) Object.assign(match, buildDateMatch(dateRange));
 
     const skip = (page - 1) * limit;
 
@@ -147,14 +136,12 @@ export async function getOrdersPaginated(
 export async function searchOrders(
   query: string,
   storeId?: string,
-  statusFilter?: "pending" | "completed" | "all",
 ): Promise<GetOrdersResult> {
   try {
     await dbConnect();
 
     const match: Record<string, any> = {};
     if (storeId) match.storeId = new mongoose.Types.ObjectId(storeId);
-    if (statusFilter && statusFilter !== "all") match.status = statusFilter;
 
     const docs = await OrderModel.aggregate([
       { $match: match },
@@ -170,8 +157,7 @@ export async function searchOrders(
         (o) =>
           o.orderRef.toLowerCase().includes(q) ||
           o.storeName.toLowerCase().includes(q) ||
-          o.customerName.toLowerCase().includes(q) ||
-          o.status.includes(q),
+          o.customerName.toLowerCase().includes(q),
       );
 
     return {
