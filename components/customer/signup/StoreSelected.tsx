@@ -42,7 +42,7 @@ const StoreSelected = ({ userRole }: { userRole?: UserRole }) => {
     setPendingStoreId("");
     setPendingAddress("");
     setIsStoreSelectedDialogOpen(false);
-    if (!cashierRole) setStep("code");
+    if (!cashierRole) setStep("signUpForm");
   };
 
   const handleCancel = () => {

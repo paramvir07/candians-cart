@@ -189,8 +189,7 @@ export const signupAction = async (
       }
       return {
         success: true,
-        message:
-          "Your account has been created. We’ve sent a verification link to your email. Please verify your email." // and then login
+        message: "Account created! Let's verify your phone number.",
       };
     } else if (userRole === "store") {
       const session = await getUserSession();

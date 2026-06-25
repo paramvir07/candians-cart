@@ -30,7 +30,7 @@ export function ReferralCodeForm() {
       if (state.success && state.referralCode) {
         toast.success(state.message);
         setReferralCode(state.referralCode);
-        setStep("signUpForm");
+        setStep("location");
       } else {
         toast.error(state.message);
       }

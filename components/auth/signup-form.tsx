@@ -52,7 +52,9 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
     if (state.message) {
       if (state.success) {
         toast.success(state.message);
-        userRole ? router.push(`/${userRole}`) : router.push("/customer/login");
+        if (customer) { 
+          router.push("/verify-phone")
+        }
       } else {
         toast.error(state.message);
       }
