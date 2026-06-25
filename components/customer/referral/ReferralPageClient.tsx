@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  Users,
   Copy,
   Check,
   Share2,
@@ -10,13 +9,21 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  ArrowUpRight,
+  DollarSign,
+  Users,
 } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,14 +72,6 @@ function formatDate(iso: string): string {
   });
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((n) => n[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 function monthLabel(iso: string): string {
   return new Date(iso).toLocaleDateString("en-CA", {
     month: "long",
@@ -118,91 +117,90 @@ function EarningsHero({
       document.execCommand("copy");
       document.body.removeChild(el);
     }
-
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
   }
 
   return (
-    <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Total earned
-            </p>
+    <div className="rounded-2xl overflow-hidden border border-border/60 shadow-sm">
+      {/* ── Dark green top — matches ProfileHero banner ── */}
+      <div
+        className="relative px-5 pt-5 pb-5 overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.6271 0.1699 149.2138) 0%, oklch(0.4104 0.1066 149.9393) 100%)",
+        }}
+      >
+        {/* Decorative circles — same motif as ProfileHero */}
+        <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
+        <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-white/[0.08] pointer-events-none" />
+        <div className="absolute top-4 right-20 w-10 h-10 rounded-full bg-white/10 pointer-events-none" />
 
-            <div className="mt-1 flex items-end gap-1">
-              <span className="text-4xl font-bold tracking-tight text-card-foreground">
-                ${earned}
-              </span>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1 relative">
+          Total earned
+        </p>
 
-              <span className="mb-1 text-sm text-muted-foreground">
-                CAD
-              </span>
-            </div>
-          </div>
-
-          <div className="rounded-xl bg-primary/10 px-3 py-2 text-right">
-            <p className="text-lg font-semibold text-primary">
-              {uses}
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              referrals
-            </p>
-          </div>
+        <div className="flex items-end gap-1.5 mb-5 relative">
+          <span
+            className="text-5xl font-black tracking-tight text-white leading-none"
+            style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+          >
+            ${earned}
+          </span>
+          <span className="text-sm text-white/50 mb-1.5">CAD</span>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="rounded-xl border bg-muted/40 p-3">
-            <p className="text-xs text-muted-foreground">
-              Reward
-            </p>
-            <p className="mt-1 font-semibold">
+        <div className="grid grid-cols-2 gap-2 relative">
+          <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
+            <p className="text-[10px] text-white/50 mb-1">Reward per referral</p>
+            <p
+              className="text-base font-bold text-white"
+              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+            >
               CA$5
             </p>
           </div>
-
-          <div className="rounded-xl border bg-muted/40 p-3">
-            <p className="text-xs text-muted-foreground">
-              Total referrals
-            </p>
-            <p className="mt-1 font-semibold">
+          <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
+            <p className="text-[10px] text-white/50 mb-1">Total referrals</p>
+            <p
+              className="text-base font-bold text-white"
+              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+            >
               {uses}
             </p>
           </div>
         </div>
+      </div>
 
-        <div className="mt-5">
-          <p className="mb-2 text-xs font-medium text-muted-foreground">
-            Referral code
-          </p>
+      {/* ── White bottom ── */}
+      <div className="bg-card px-5 pt-4 pb-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          Your referral code
+        </p>
 
-          <button
-            onClick={handleCopy}
-            className="group flex w-full items-center justify-between rounded-xl border bg-background px-4 py-3 transition-colors hover:bg-muted/40"
-          >
-            <span className="font-mono text-base font-semibold tracking-wider">
-              {code}
-            </span>
+        <button
+          onClick={handleCopy}
+          className="group flex w-full items-center justify-between rounded-xl border border-border bg-background px-4 py-3 transition-colors hover:bg-muted/40 hover:border-primary/40"
+        >
+          <span className="font-mono text-base font-bold tracking-wider text-foreground">
+            {code}
+          </span>
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-primary">
+            {copied ? (
+              <>
+                <Check size={15} />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy size={15} />
+                Copy
+              </>
+            )}
+          </div>
+        </button>
 
-            <div className="flex items-center gap-2 text-sm font-medium text-primary">
-              {copied ? (
-                <>
-                  <Check size={16} />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy size={16} />
-                  Copy
-                </>
-              )}
-            </div>
-          </button>
-        </div>
-
-        <div className="mt-4 border-t pt-4">
+        <div className="mt-3 border-t border-border/60 pt-3">
           <ShareRow code={code} />
         </div>
       </div>
@@ -230,10 +228,7 @@ function ShareRow({ code }: { code: string }) {
         </svg>
       ),
       fn: () =>
-        window.open(
-          `https://wa.me/?text=${encodeURIComponent(msg)}`,
-          "_blank"
-        ),
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank"),
     },
     {
       label: "Email",
@@ -250,22 +245,7 @@ function ShareRow({ code }: { code: string }) {
         <button
           key={label}
           onClick={fn}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-semibold transition-all active:scale-95"
-          style={{
-            border: "1px solid #e7e5e4",
-            color: "#57534e",
-            background: "#fafaf9",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "#f0fdf4";
-            (e.currentTarget as HTMLButtonElement).style.borderColor = "#bbf7d0";
-            (e.currentTarget as HTMLButtonElement).style.color = "#166534";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "#fafaf9";
-            (e.currentTarget as HTMLButtonElement).style.borderColor = "#e7e5e4";
-            (e.currentTarget as HTMLButtonElement).style.color = "#57534e";
-          }}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-xs font-semibold text-muted-foreground bg-background transition-all active:scale-95 hover:bg-primary/5 hover:border-primary/40 hover:text-primary"
         >
           {icon}
           {label}
@@ -275,7 +255,7 @@ function ShareRow({ code }: { code: string }) {
   );
 }
 
-// ─── How it works (shadcn Collapsible) ───────────────────────────────────────
+// ─── How it works ─────────────────────────────────────────────────────────────
 
 function HowItWorks() {
   const [open, setOpen] = useState(false);
@@ -300,75 +280,42 @@ function HowItWorks() {
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div
-        className="rounded-2xl overflow-hidden bg-white"
-        style={{ border: "1px solid #e7e5e4" }}
-      >
-        <CollapsibleTrigger className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-stone-50 focus-visible:outline-none">
+      <div className="rounded-2xl overflow-hidden bg-card border border-border/60">
+        <CollapsibleTrigger className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none">
           <div className="flex items-center gap-2.5">
-            <div
-              className="flex h-6 w-6 items-center justify-center rounded-lg"
-              style={{ background: "#dcfce7" }}
-            >
-              <span className="text-xs font-black" style={{ color: "#166534" }}>
-                ?
-              </span>
+            <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10">
+              <span className="text-xs font-black text-primary">?</span>
             </div>
-            <span
-              className="text-sm font-bold"
-              style={{
-                color: "#1c1917",
-                fontFamily: "'Sora', system-ui, sans-serif",
-              }}
-            >
+            <span className="text-sm font-bold text-foreground" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
               How it works
             </span>
           </div>
           <ChevronDown
             size={16}
-            className="transition-transform duration-200 shrink-0"
-            style={{
-              color: "#a8a29e",
-              transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            }}
+            className="text-muted-foreground shrink-0 transition-transform duration-200"
+            style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
           />
         </CollapsibleTrigger>
 
-        <CollapsibleContent>
-          <div style={{ borderTop: "1px solid #f5f5f4" }}>
+          <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
+          <div className="border-t border-border/60">
             {steps.map((step, i) => (
               <div
                 key={i}
                 className="flex items-start gap-4 px-5 py-4"
-                style={{
-                  borderBottom:
-                    i < steps.length - 1 ? "1px solid #f5f5f4" : "none",
-                }}
+                style={{ borderBottom: i < steps.length - 1 ? "1px solid hsl(var(--border) / 0.4)" : "none" }}
               >
                 <span
-                  className="text-xs font-black shrink-0 mt-0.5"
-                  style={{
-                    color: "#16a34a",
-                    fontFamily: "'Sora', system-ui, sans-serif",
-                    letterSpacing: "0.05em",
-                    width: "20px",
-                  }}
+                  className="text-xs font-black shrink-0 mt-0.5 text-primary"
+                  style={{ fontFamily: "'Sora', system-ui, sans-serif", letterSpacing: "0.05em", width: "20px" }}
                 >
                   {step.num}
                 </span>
                 <div>
-                  <p
-                    className="text-sm font-bold mb-0.5"
-                    style={{
-                      color: "#1c1917",
-                      fontFamily: "'Sora', system-ui, sans-serif",
-                    }}
-                  >
+                  <p className="text-sm font-bold text-foreground mb-0.5" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
                     {step.title}
                   </p>
-                  <p className="text-xs leading-relaxed" style={{ color: "#79716b" }}>
-                    {step.desc}
-                  </p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{step.desc}</p>
                 </div>
               </div>
             ))}
@@ -379,7 +326,7 @@ function HowItWorks() {
   );
 }
 
-// ─── Code usage ───────────────────────────────────────────────────────────────
+// ─── Usage stats ──────────────────────────────────────────────────────────────
 
 function UsageStats({
   uses,
@@ -396,55 +343,35 @@ function UsageStats({
   const filled = Math.round((uses / maxUses) * segCount);
 
   return (
-    <div
-      className="rounded-2xl bg-white px-5 py-4"
-      style={{ border: "1px solid #e7e5e4" }}
-    >
+    <div className="rounded-2xl bg-card border border-border/60 px-5 py-4">
       <div className="flex items-center justify-between mb-4">
-        <p
-          className="text-xs font-semibold uppercase tracking-widest"
-          style={{ color: "#a8a29e" }}
-        >
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Code usage
         </p>
-        <span className="text-xs" style={{ color: "#a8a29e" }}>
+        <span className="text-xs text-muted-foreground">
           Expires{" "}
-          <span className="font-semibold" style={{ color: "#57534e" }}>
-            {formatDate(expiresAt)}
-          </span>
+          <span className="font-semibold text-foreground">{formatDate(expiresAt)}</span>
         </span>
       </div>
 
-      {/* Segmented bar */}
       <div className="flex gap-1 mb-3">
         {Array.from({ length: segCount }).map((_, i) => (
           <div
             key={i}
             className="flex-1 h-1.5 rounded-full transition-all"
-            style={{
-              background: i < filled ? "#16a34a" : "#e7e5e4",
-            }}
+            style={{ background: i < filled ? "oklch(0.5271 0.1699 149.2138)" : "hsl(var(--border))" }}
           />
         ))}
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="text-sm" style={{ color: "#57534e" }}>
-          <span
-            className="font-bold"
-            style={{
-              color: "#1c1917",
-              fontFamily: "'Sora', system-ui, sans-serif",
-            }}
-          >
+        <span className="text-sm text-muted-foreground">
+          <span className="font-bold text-foreground" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
             {uses}
           </span>{" "}
           of {maxUses} uses
         </span>
-        <span
-          className="text-xs font-bold"
-          style={{ color: isFull ? "#dc2626" : "#16a34a" }}
-        >
+        <span className="text-xs font-bold" style={{ color: isFull ? "hsl(var(--destructive))" : "oklch(0.5271 0.1699 149.2138)" }}>
           {isFull ? "Limit reached" : `${remaining} remaining`}
         </span>
       </div>
@@ -452,7 +379,7 @@ function UsageStats({
   );
 }
 
-// ─── Month-paginated used-by list ─────────────────────────────────────────────
+// ─── Used-by list ─────────────────────────────────────────────────────────────
 
 function UsedByList({ usedBy }: { usedBy: ReferralUsedBy[] }) {
   const months = groupByMonth(usedBy);
@@ -461,25 +388,14 @@ function UsedByList({ usedBy }: { usedBy: ReferralUsedBy[] }) {
   if (usedBy.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center">
-        <div
-          className="flex h-12 w-12 items-center justify-center rounded-2xl"
-          style={{ background: "#f5f5f4" }}
-        >
-          <Users size={20} style={{ color: "#a8a29e" }} />
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+          <Users size={20} className="text-muted-foreground" />
         </div>
         <div>
-          <p
-            className="text-sm font-bold mb-1"
-            style={{
-              color: "#1c1917",
-              fontFamily: "'Sora', system-ui, sans-serif",
-            }}
-          >
+          <p className="text-sm font-bold text-foreground mb-1" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
             No referrals yet
           </p>
-          <p className="text-xs" style={{ color: "#79716b" }}>
-            Share your code above to start earning
-          </p>
+          <p className="text-xs text-muted-foreground">Share your code above to start earning</p>
         </div>
       </div>
     );
@@ -490,154 +406,102 @@ function UsedByList({ usedBy }: { usedBy: ReferralUsedBy[] }) {
   const canNext = page < months.length - 1;
 
   return (
-    <div>
-      {/* Month navigator */}
-      <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() => setPage((p) => p - 1)}
-          disabled={!canPrev}
-          aria-label="Previous month"
-          className="flex h-8 w-8 items-center justify-center rounded-xl transition-all active:scale-95 disabled:opacity-25 disabled:pointer-events-none"
-          style={{ border: "1px solid #e7e5e4", background: "#fafaf9" }}
-          onMouseEnter={(e) => {
-            if (canPrev)
-              (e.currentTarget as HTMLButtonElement).style.borderColor =
-                "#166534";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = "#e7e5e4";
-          }}
-        >
-          <ChevronLeft size={14} style={{ color: "#57534e" }} />
-        </button>
-
-        <div className="text-center">
-          <p
-            className="text-sm font-bold"
-            style={{
-              color: "#1c1917",
-              fontFamily: "'Sora', system-ui, sans-serif",
-            }}
+    <TooltipProvider delayDuration={0}>
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            disabled={!canPrev}
+            aria-label="Previous month"
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-background transition-all active:scale-95 disabled:opacity-25 disabled:pointer-events-none hover:border-primary/50"
           >
-            {current.label}
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: "#a8a29e" }}>
-            {current.items.length}{" "}
-            {current.items.length === 1 ? "referral" : "referrals"}
-          </p>
+            <ChevronLeft size={14} className="text-muted-foreground" />
+          </button>
+
+          <div className="text-center">
+            <p className="text-sm font-bold text-foreground" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+              {current.label}
+            </p>
+            <p className="text-xs mt-0.5 text-muted-foreground">
+              {current.items.length} {current.items.length === 1 ? "referral" : "referrals"}
+            </p>
+          </div>
+
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={!canNext}
+            aria-label="Next month"
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-background transition-all active:scale-95 disabled:opacity-25 disabled:pointer-events-none hover:border-primary/50"
+          >
+            <ChevronRight size={14} className="text-muted-foreground" />
+          </button>
         </div>
 
-        <button
-          onClick={() => setPage((p) => p + 1)}
-          disabled={!canNext}
-          aria-label="Next month"
-          className="flex h-8 w-8 items-center justify-center rounded-xl transition-all active:scale-95 disabled:opacity-25 disabled:pointer-events-none"
-          style={{ border: "1px solid #e7e5e4", background: "#fafaf9" }}
-          onMouseEnter={(e) => {
-            if (canNext)
-              (e.currentTarget as HTMLButtonElement).style.borderColor =
-                "#166534";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = "#e7e5e4";
-          }}
-        >
-          <ChevronRight size={14} style={{ color: "#57534e" }} />
-        </button>
-      </div>
+        {months.length > 1 && (
+          <div className="flex justify-center gap-1.5 mb-4">
+            {months.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i)}
+                aria-label={`Go to ${months[i].label}`}
+                className="h-1.5 rounded-full transition-all duration-200"
+                style={{
+                  width: i === page ? "20px" : "6px",
+                  background: i === page ? "oklch(0.5271 0.1699 149.2138)" : "hsl(var(--border))",
+                }}
+              />
+            ))}
+          </div>
+        )}
 
-      {/* Dot indicators */}
-      {months.length > 1 && (
-        <div className="flex justify-center gap-1.5 mb-4">
-          {months.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setPage(i)}
-              aria-label={`Go to ${months[i].label}`}
-              className="h-1.5 rounded-full transition-all duration-200"
-              style={{
-                width: i === page ? "20px" : "6px",
-                background: i === page ? "#166534" : "#d6d3d1",
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Rows */}
-      <div className="flex flex-col">
-        {current.items.map((u, i) => (
-          <div
-            key={u._id}
-            className="flex items-center gap-3 py-3 transition-colors rounded-xl px-2 -mx-2"
-            style={{
-              borderTop: i > 0 ? "1px solid #f5f5f4" : "none",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLDivElement).style.background = "#fafaf9";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLDivElement).style.background =
-                "transparent";
-            }}
-          >
-            {/* Avatar */}
+        <div className="flex flex-col">
+          {current.items.map((u, i) => (
             <div
-              className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-black"
-              style={{
-                background: "#dcfce7",
-                color: "#166534",
-                fontFamily: "'Sora', system-ui, sans-serif",
-                border: "2px solid #bbf7d0",
-              }}
+              key={u._id}
+              className="flex items-center gap-3 py-3 px-2 -mx-2 rounded-xl transition-colors hover:bg-muted/40"
+              style={{ borderTop: i > 0 ? "1px solid hsl(var(--border) / 0.5)" : "none" }}
             >
-              {getInitials(u.name)}
-              {u.placedFirstOrder && (
-                <span
-                  className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full"
-                  style={{
-                    background: "#16a34a",
-                    border: "2px solid white",
-                  }}
+              <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20 rounded-full">
+                <AvatarImage
+                  src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(u.name)}`}
+                  className="rounded-full"
                 />
+                <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold rounded-full">
+                  {u.name.split(" ").slice(0, 2).map((n) => n[0]?.toUpperCase() ?? "").join("")}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-foreground truncate" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+                  {u.name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Joined {formatDate(u.createdAt)}
+                </p>
+              </div>
+
+              {u.placedFirstOrder ? (
+                <span className="shrink-0 flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded-full">
+                  <DollarSign size={11} />
+                  CA$5
+                </span>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="shrink-0 text-xs font-semibold text-muted-foreground bg-muted border border-border px-2 py-1 rounded-full cursor-default">
+                      Pending
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    Hasn't placed an order yet
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
-
-            <div className="flex-1 min-w-0">
-              <p
-                className="text-sm font-bold truncate"
-                style={{
-                  color: "#1c1917",
-                  fontFamily: "'Sora', system-ui, sans-serif",
-                }}
-              >
-                {u.name}
-              </p>
-              <p className="text-xs mt-0.5" style={{ color: "#a8a29e" }}>
-                Joined {formatDate(u.createdAt)}
-              </p>
-            </div>
-
-            {u.placedFirstOrder ? (
-              <span
-                className="shrink-0 flex items-center gap-1 text-xs font-bold"
-                style={{ color: "#16a34a" }}
-              >
-                Qualified
-                <ArrowUpRight size={11} />
-              </span>
-            ) : (
-              <span
-                className="shrink-0 text-xs font-semibold uppercase tracking-wide"
-                style={{ color: "#a8a29e" }}
-              >
-                Pending
-              </span>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
 
@@ -647,91 +511,46 @@ export function ReferralPageClient({ referralData }: ReferralPageClientProps) {
   const earnedDisplay = (referralData.totalEarned / 100).toFixed(2);
 
   return (
-    <div className="min-h-screen w-full" style={{ background: "#fafaf9" }}>
-
-      <div
-        className="relative mx-auto w-full px-4 pb-16 pt-8 sm:px-6 sm:pt-12"
-        style={{ maxWidth: "520px", zIndex: 1 }}
-      >
+    <div className="min-h-screen w-full bg-background">
+      <div className="relative mx-auto w-full px-4 pb-16 pt-8 sm:px-6 sm:pt-12" style={{ maxWidth: "520px" }}>
         {/* Page header */}
         <div className="mb-6">
-          <div
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold mb-4"
-            style={{
-              background: "white",
-              border: "1px solid #bbf7d0",
-              color: "#166534",
-              boxShadow: "0 1px 4px rgba(22,101,52,0.08)",
-            }}
-          >
-            <span
-              className="w-2 h-2 rounded-full bg-green-500 animate-pulse inline-block"
-            />
-            Referral Programme
-          </div>
           <h1
-            className="font-black leading-tight mb-2"
+            className="font-black leading-tight mb-2 text-foreground"
             style={{
               fontFamily: "'Sora', system-ui, sans-serif",
               fontSize: "clamp(28px, 7vw, 38px)",
               letterSpacing: "-0.03em",
-              color: "#1c1917",
             }}
           >
             Refer &amp; Earn
           </h1>
-          <p
-            className="text-sm leading-relaxed"
-            style={{ color: "#79716b", maxWidth: "380px" }}
-          >
-            Earn CA$5 in gift credit for every friend who joins and places their
-            first order over CA$21.
+          <p className="text-sm leading-relaxed text-muted-foreground" style={{ maxWidth: "380px" }}>
+            Earn CA$5 in gift credit for every friend who joins and places their first order over CA$21.
           </p>
         </div>
 
-        {/* Earnings hero card */}
         <div className="mb-3">
-          <EarningsHero
-            earned={earnedDisplay}
-            uses={referralData.uses}
-            code={referralData.code}
-          />
+          <EarningsHero earned={earnedDisplay} uses={referralData.uses} code={referralData.code} />
         </div>
 
-        {/* How it works */}
         <div className="mb-3">
           <HowItWorks />
         </div>
 
-        {/* Code usage */}
         <div className="mb-3">
-          <UsageStats
-            uses={referralData.uses}
-            maxUses={referralData.maxUses}
-            expiresAt={referralData.expiresAt}
-          />
+          <UsageStats uses={referralData.uses} maxUses={referralData.maxUses} expiresAt={referralData.expiresAt} />
         </div>
 
-        {/* People who used your code */}
-        <div
-          className="rounded-2xl bg-white px-5 py-4"
-          style={{ border: "1px solid #e7e5e4" }}
-        >
+        <div className="rounded-2xl bg-card border border-border/60 px-5 py-4">
           <div className="flex items-center justify-between mb-4">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "#a8a29e" }}
-            >
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               People who used your code
             </p>
             {referralData.usedBy.length > 0 && (
               <span
-                className="text-xs font-black px-2 py-0.5 rounded-full"
-                style={{
-                  background: "#dcfce7",
-                  color: "#166534",
-                  fontFamily: "'Sora', system-ui, sans-serif",
-                }}
+                className="text-xs font-black px-2 py-0.5 rounded-full bg-primary/10 text-primary"
+                style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
               >
                 {referralData.usedBy.length}
               </span>
