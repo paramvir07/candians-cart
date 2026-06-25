@@ -200,6 +200,36 @@ export function TopUpDialog({
     }
   };
 
+  const formatChangeDue = (changeCents: number) => {
+  const rounded = Math.round(changeCents / 5) * 5;
+  if (rounded <= 0) return null;
+
+  const denominations = [
+    { value: 10000, label: "$100" },
+    { value: 5000, label: "$50" },
+    { value: 2000, label: "$20" },
+    { value: 1000, label: "$10" },
+    { value: 500, label: "$5" },
+    { value: 200, label: "$2" },
+    { value: 100, label: "$1" },
+    { value: 25, label: "25¢" },
+    { value: 10, label: "10¢" },
+    { value: 5, label: "5¢" },
+  ];
+
+  const breakdown: { label: string; count: number }[] = [];
+  let remaining = rounded;
+  for (const { value, label } of denominations) {
+    if (remaining <= 0) break;
+    const count = Math.floor(remaining / value);
+    if (count > 0) {
+      breakdown.push({ label, count });
+      remaining -= count * value;
+    }
+  }
+  return breakdown;
+};
+
   return (
     <Dialog
       open={open}
@@ -443,26 +473,32 @@ export function TopUpDialog({
                   />
                 </div>
 
-                {amount && cashReceived !== null && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span style={{ color: "var(--color-muted-foreground)" }}>
-                      Change due
-                    </span>
-                    <span
-                      className="font-bold"
-                      style={{
-                        color:
-                          changeDue !== null && changeDue >= 0
-                            ? "var(--color-primary)"
-                            : "#ef4444",
-                      }}
-                    >
-                      {changeDue !== null && changeDue >= 0
-                        ? `$${changeDue.toFixed(2)}`
-                        : "Insufficient cash"}
-                    </span>
-                  </div>
-                )}
+                  {amount && cashReceived !== null && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span style={{ color: "var(--color-muted-foreground)" }}>Change due</span>
+                      {changeDue !== null && changeDue >= 0 ? (
+                        <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                          {changeDue > 0 ? (() => {
+                            const breakdown = formatChangeDue(Math.round(changeDue * 100));
+                            return breakdown?.length ? breakdown.map(({ label, count }) => (
+                              <span key={label} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold"
+                                style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}>
+                                {count > 1 ? `${count}×${label}` : label}
+                              </span>
+                            )) : (
+                              <span className="font-bold" style={{ color: "var(--color-primary)" }}>
+                                ${changeDue.toFixed(2)}
+                              </span>
+                            );
+                          })() : (
+                            <span className="font-bold" style={{ color: "var(--color-primary)" }}>$0.00</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="font-bold" style={{ color: "#ef4444" }}>Insufficient cash</span>
+                      )}
+                    </div>
+                  )}
               </div>
             )}
 
