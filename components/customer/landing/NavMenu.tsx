@@ -16,6 +16,7 @@ import {
   LogOut,
   ChartSpline,
   PackageOpen,
+  HandCoins,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { logoutAction } from "@/actions/auth/login-logout.actions";
@@ -74,6 +75,14 @@ export function NavAvatarMenu({ name, initials }: NavAvatarMenuProps) {
         >
           <Users size={15} className="text-muted-foreground shrink-0" />
           Orders
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onClick={() => router.push("/customer/referrals")}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-sm font-medium text-foreground hover:bg-secondary focus:bg-secondary"
+        >
+          <HandCoins size={15} className="text-muted-foreground shrink-0" />
+          Referrals
         </DropdownMenuItem>
 
         <DropdownMenuItem

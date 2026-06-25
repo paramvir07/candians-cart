@@ -644,7 +644,7 @@ const EnableUserReferralFlag = async (
   }
 };
 
-const GenerateReferralCode = async (customerId: string, customerName: string) => {
+export const GenerateReferralCode = async (customerId: string, customerName: string) => {
   await dbConnect();
 
   const namePart = customerName.replace(/\s+/g, "").slice(0, 4).toUpperCase();
