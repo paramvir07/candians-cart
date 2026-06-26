@@ -40,7 +40,6 @@ import { Customer } from "@/types/customer/customer";
 import { useDebounce } from "use-debounce";
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { useSearchParams } from "next/navigation";
-import AddMiscItemModalTrigger from "@/components/cashier/MiscItemTrigger";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 

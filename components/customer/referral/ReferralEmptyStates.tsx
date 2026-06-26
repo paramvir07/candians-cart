@@ -1,11 +1,11 @@
 import Navbar from "@/components/customer/landing/Navbar";
-import { ShoppingCart, ArrowRight, Lock } from "lucide-react";
+import { ShoppingCart, Lock } from "lucide-react";
 import Link from "next/link";
 
 const steps = [
   {
     label: "Place your first order",
-    sub: "Any order over CA$21 qualifies",
+    sub: "Place an order of CA$21 or more before taxes and qualify for a subsidy.",
   },
   {
     label: "Referral code activates",
@@ -13,7 +13,7 @@ const steps = [
   },
   {
     label: "Earn CA$5 per friend",
-    sub: "Credited to your gift wallet",
+    sub: "Credited to your wallet",
   },
 ];
 
@@ -71,10 +71,6 @@ export function NotEligibleState() {
               Earn CA$5 for every
               <br />friend you bring in
             </h1>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
-              Your referral program unlocks after you place a first order over{" "}
-              <span className="font-semibold" style={{ color: "var(--foreground)" }}>CA$21</span>.
-            </p>
           </div>
 
           {/* ── Steps ── */}
@@ -120,22 +116,13 @@ export function NotEligibleState() {
                   </p>
                 </div>
 
-                {/* Connector arrow (not last) */}
-                {i < steps.length - 1 ? null : (
-                  <div
-                    className="ml-auto shrink-0 flex h-6 w-6 items-center justify-center rounded-full"
-                    style={{ background: "color-mix(in oklch, var(--primary) 12%, transparent)" }}
-                  >
-                    <ArrowRight size={11} style={{ color: "var(--primary)" }} />
-                  </div>
-                )}
               </div>
             ))}
           </div>
 
           {/* ── CTA ── */}
           <Link
-            href="/customer"
+            href="/customer/search"
             className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold transition-all active:scale-[0.97]"
             style={{
               background: "var(--primary)",
