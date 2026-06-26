@@ -200,7 +200,7 @@ const handleBarcodeScan = (value: string) => {
 
     return (
       <nav className="sticky top-0 z-30 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80 border-b border-border">
-        <div className="flex items-center gap-5 px-3 sm:px-4 md:px-6 h-14">
+        <div className="flex h-14 items-center gap-2 px-2 sm:gap-3 sm:px-4 md:px-6">
           {/* LEFT */}
           <div className="flex items-center shrink-0">
             {!customerId && (
@@ -239,7 +239,7 @@ const handleBarcodeScan = (value: string) => {
                 autoCapitalize={customerId ? "off" : "sentences"}
                 spellCheck={!customerId}
                 inputMode={customerId ? "text" : "text"}
-                className="h-9 w-full rounded-xl bg-muted border-transparent focus-visible:border-border pr-8 text-sm placeholder:text-muted-foreground"
+                className="h-9 w-full min-w-0 rounded-xl border-transparent bg-muted pr-8 text-sm placeholder:text-muted-foreground focus-visible:border-border"
               />
               {query && (
                 <button
@@ -254,7 +254,7 @@ const handleBarcodeScan = (value: string) => {
             </div>
 
             {/* Scanner — controlled via state, no ref needed */}
-            <div className="shrink-0">
+            <div className="shrink-0 scale-90 sm:scale-100 origin-right">
               <QrScannerButton
                 usedFor="barcode"
                 onScan={handleBarcodeScan}
@@ -264,48 +264,54 @@ const handleBarcodeScan = (value: string) => {
             </div>
           </form>
 
-          {/* RIGHT — desktop only */}
-          {!customerId && (
-            <div className="hidden md:flex items-center gap-2 shrink-0">
-              <Link href="/customer/cart">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="relative h-9 w-9 rounded-xl"
-                  aria-label="Cart"
-                >
-                  <ShoppingCart className="h-4 w-4" />
-                  {cartCount > 0 && (
-                    <Badge
-                      variant="default"
-                      className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 flex items-center justify-center text-[9px] font-bold rounded-full border-2 border-background leading-none"
-                    >
-                      {cartCount > 99 ? "99+" : cartCount}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
+            {/* RIGHT */}
+            {!customerId && (
+              <div className="flex items-center gap-1 sm:gap-2">
+                {/* Cart */}
+                <Link href="/customer/cart">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="relative h-9 w-9 rounded-xl"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
 
-              <Link href="/customer/wallet">
-                <div className="flex items-center gap-2 bg-muted hover:bg-muted/80 border border-border rounded-xl px-3 py-1.5 transition-colors cursor-pointer">
-                  <div className="h-6 w-6 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                    <Wallet className="h-3 w-3 text-primary-foreground" />
+                    {cartCount > 0 && (
+                      <Badge className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-background px-1 text-[9px] font-bold leading-none">
+                        {cartCount > 99 ? "99+" : cartCount}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
+                {/* Wallet - hide on very small screens */}
+                <Link href="/customer/wallet" className="hidden xs:block sm:block">
+                  <div className="flex items-center gap-2 rounded-xl border border-border bg-accent px-2.5 py-1.5 transition-colors sm:px-3">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary">
+                      <Wallet className="h-3 w-3 text-primary-foreground" />
+                    </div>
+
+                    <div className="hidden sm:flex flex-col leading-none">
+                      <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Balance
+                      </span>
+                      <span className="tabular-nums text-sm font-bold">
+                        {fmtShort(customerData.walletBalance)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col leading-none">
-                    <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Balance
-                    </span>
-                    <span className="text-sm font-bold text-foreground tabular-nums">
-                      {fmtShort(customerData.walletBalance)}
-                    </span>
-                  </div>
+                </Link>
+
+
+
+                {/* Avatar */}
+                <div className="ml-2">
+                <NavAvatarMenu
+                  name={customerData.name}
+                  initials={initials}
+                />
                 </div>
-              </Link>
-
-              <Separator orientation="vertical" className="h-5 mx-1" />
-              <NavAvatarMenu name={customerData.name} initials={initials} />
-            </div>
-          )}
+              </div>
+            )}
         </div>
       </nav>
     );
