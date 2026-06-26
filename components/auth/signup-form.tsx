@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "../shared/Logo";
+import { CUSTOMER_CITIES, CUSTOMER_PROVINCES, DEFAULT_CUSTOMER_CITY, DEFAULT_CUSTOMER_PROVINCE } from "@/lib/customer/location";
 
 const initialState = { success: false, message: "" };
 
@@ -29,9 +30,24 @@ type SignupFormProps = {
   userRole: UserRole;
   stores?: StoreDocument[];
   className?: string;
+  heardParam?: string;
 };
 
-export function SignupForm({ userRole, stores, className }: SignupFormProps) {
+export function SignupForm({
+  userRole,
+  stores,
+  className,
+  heardParam = "",
+}: SignupFormProps) {
+  const heardAboutUsOptions = [
+    { label: "Instagram", value: "instagram" },
+    { label: "TikTok", value: "tiktok" },
+    { label: "Facebook", value: "facebook" },
+    { label: "Friend or Family", value: "friend_or_family" },
+    { label: "In-store", value: "store" },
+    { label: "Google Search", value: "google" },
+  ];
+
   const [budget] = useAtom(budgetAtom);
   const [storeId] = useAtom(storeIdAtom);
   const [referralCode] = useAtom(referralCodeAtom);
@@ -52,8 +68,8 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
     if (state.message) {
       if (state.success) {
         toast.success(state.message);
-        if (customer) { 
-          router.push("/verify-phone")
+        if (customer) {
+          router.push("/verify-phone");
         }
       } else {
         toast.error(state.message);
@@ -119,7 +135,7 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
             name="password"
             pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}"
             type={showPassword ? "text" : "password"}
-            placeholder="Password"
+            placeholder="Password (e.g. John@123)"
             required
             className="h-12 rounded-xl border-border bg-background px-4 pr-11 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
           />
@@ -134,7 +150,7 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
           </Button>
         </div>
         <p className="text-[11px] text-muted-foreground -mt-1 px-1">
-          Min. 8 chars with uppercase, number & special character.
+          Min. 8 characters with uppercase, number & special character.
         </p>
 
         {/* Address */}
@@ -155,28 +171,18 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
 
         {/* City + Province — customer only */}
         {customer && (
-          <div className="flex gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <select
               id="city"
               name="city"
-              required
-              defaultValue=""
-              className="flex-1 h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              defaultValue={DEFAULT_CUSTOMER_CITY}
+              className="h-12 w-full min-w-0 rounded-xl border border-border bg-background px-4 text-sm"
             >
               <option value="" disabled>
                 City
               </option>
-              {[
-              "Abbotsford",
-              "Burnaby",
-              "Chilliwack",
-              "Delta",
-              "Hope",
-              "Langley",
-              "Mission",
-              "Surrey",
-              "Vancouver",
-              ].map((city) => (
+
+              {CUSTOMER_CITIES.map((city) => (
                 <option key={city} value={city}>
                   {city}
                 </option>
@@ -186,18 +192,72 @@ export function SignupForm({ userRole, stores, className }: SignupFormProps) {
             <select
               id="province"
               name="province"
-              required
-              defaultValue="BC"
-              className="w-28 h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              defaultValue={DEFAULT_CUSTOMER_PROVINCE}
+              className="h-12 w-full min-w-0 rounded-xl border border-border bg-background px-3 text-sm"
             >
-              <option value="BC">BC</option>
+              <option value="" disabled>
+                Province
+              </option>
+
+              {CUSTOMER_PROVINCES.map((province) => (
+                <option key={province} value={province}>
+                  {province}
+                </option>
+              ))}
             </select>
+
+            <Input
+              id="postalCode"
+              type="text"
+              name="postalCode"
+              placeholder="Postal Code"
+              required
+              maxLength={7}
+              className="h-12 w-full min-w-0 rounded-xl border-border bg-background px-4 text-sm uppercase placeholder:normal-case placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+              onChange={(e) => {
+                let value = e.target.value
+                  .toUpperCase()
+                  .replace(/[^A-Z0-9]/g, "")
+                  .slice(0, 6);
+
+                if (value.length > 3) {
+                  value = `${value.slice(0, 3)} ${value.slice(3)}`;
+                }
+
+                e.target.value = value;
+              }}
+            />
           </div>
         )}
 
+        {customer && (
+          <>
+            {heardParam ? (
+              <input type="hidden" name="heardAboutUs" value={heardParam} />
+            ) : (
+              <select
+                id="heardAboutUs"
+                name="heardAboutUs"
+                required
+                defaultValue=""
+                className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value="" disabled>
+                  Where did you hear about us?
+                </option>
+
+                {heardAboutUsOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            )}
+          </>
+        )}
+
         {/* Mobile */}
-        {/* Mobile */}
-        {!admin && (
+        {!admin && !customer && (
           <Input
             id="mobile"
             name="mobile"

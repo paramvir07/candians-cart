@@ -1,3 +1,4 @@
+import { HEARD_ABOUT_US_VALUES } from "@/lib/customer/heardAboutUs";
 import { model, Model, models, Schema, Types } from "mongoose";
 
 export interface ICustomer {
@@ -5,18 +6,21 @@ export interface ICustomer {
   name: string;
   email: string;
   address: string;
-  mobile: string;
+  mobile?: string;
   city: string;
   province: string;
+  postalCode: string;
   monthlyBudget: number;
   associatedStoreId: Types.ObjectId;
   referralCodeId: Types.ObjectId;
   referralCodeEnabled: boolean;
   myreferralCodeId?: Types.ObjectId;
+  recieveReferralInvites: boolean;
   placedFirstOrder: boolean;
   subsidy: number;
   walletBalance: number;
   giftWalletBalance: number;
+  heardAboutUs: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -41,7 +45,6 @@ const customerSchema = new Schema<ICustomer>(
     },
     mobile: {
       type: String,
-      required: true,
       unique: true,
       trim: true,
     },
@@ -56,6 +59,12 @@ const customerSchema = new Schema<ICustomer>(
     province: {
       type: String,
       required: true,
+    },
+    postalCode: {
+      type: String,
+      required: true,
+      trim: true,
+      uppercase: true,
     },
     monthlyBudget: {
       type: Number,
@@ -80,6 +89,10 @@ const customerSchema = new Schema<ICustomer>(
       type: Schema.Types.ObjectId,
       ref: "ReferralCode",
     },
+    recieveReferralInvites: {
+      type: Boolean,
+      default: false,
+    },
     placedFirstOrder: {
       type: Boolean,
       required: true,
@@ -103,6 +116,11 @@ const customerSchema = new Schema<ICustomer>(
       required: true,
       default: 0,
       min: [0, "Gift Wallet balance cannot be negative"],
+    },
+    heardAboutUs: {
+      type: String,
+      required: true,
+      enum: HEARD_ABOUT_US_VALUES,
     },
   },
   { timestamps: true },

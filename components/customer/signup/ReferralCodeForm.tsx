@@ -16,14 +16,26 @@ const initialState = {
   referralCode: "",
 };
 
-export function ReferralCodeForm() {
+export function ReferralCodeForm({
+  initialReferralCode = "",
+}: {
+  initialReferralCode?: string;
+}) {
   const setStep = useSetAtom(stepAtom);
   const setReferralCode = useSetAtom(referralCodeAtom);
-  const [value, setValue] = useState("");
+
+  const [value, setValue] = useState(initialReferralCode.toUpperCase());
+
   const [state, formAction, isPending] = useActionState(
     validateReferralCodeAction,
     initialState,
   );
+
+  useEffect(() => {
+    if (initialReferralCode) {
+      setValue(initialReferralCode.toUpperCase());
+    }
+  }, [initialReferralCode]);
 
   useEffect(() => {
     if (state.message) {
@@ -35,7 +47,7 @@ export function ReferralCodeForm() {
         toast.error(state.message);
       }
     }
-  }, [state]);
+  }, [state, setReferralCode, setStep]);
 
   const charCount = value.length;
   const maxLength = 12;
@@ -45,10 +57,10 @@ export function ReferralCodeForm() {
   return (
     <div className="w-full space-y-4">
       <form action={formAction} className="space-y-4">
-        {/* Input */}
         <div className="space-y-2">
           <div className="relative group">
             <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors duration-200 z-10" />
+
             <Input
               id="code"
               name="code"
@@ -60,7 +72,7 @@ export function ReferralCodeForm() {
               onChange={(e) => setValue(e.target.value.toUpperCase())}
               className="pl-10 pr-14 h-11 rounded-xl text-sm tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:normal-case placeholder:text-muted-foreground font-mono border-border focus-visible:ring-1 focus-visible:ring-primary transition-all"
             />
-            {/* Character counter */}
+
             <div
               className={`absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono tabular-nums transition-colors ${
                 charCount === 0
@@ -74,7 +86,6 @@ export function ReferralCodeForm() {
             </div>
           </div>
 
-          {/* Segmented progress bar */}
           <div className="flex gap-1">
             {Array.from({ length: maxLength }).map((_, i) => (
               <div
@@ -101,14 +112,16 @@ export function ReferralCodeForm() {
               <Spinner className="h-4 w-4" /> Validating…
             </span>
           ) : (
-            <div className="flex items-center gap-2">Continue <ChevronRight/></div>
+            <div className="flex items-center gap-2">
+              Continue <ChevronRight />
+            </div>
           )}
         </Button>
       </form>
 
-      {/* Helper note */}
       <p className="text-xs text-muted-foreground text-center">
-        Need a code? Ask an existing Canadian&apos;s Cart family member to share theirs.
+        Need a code? Ask an existing Canadian&apos;s Cart family member to share
+        theirs.
       </p>
     </div>
   );

@@ -20,7 +20,9 @@ const CITIES = [
 const Location = () => {
   const setStep = useSetAtom(stepAtom);
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<typeof CITIES[number] | null>(null);
+  const [selected, setSelected] = useState<(typeof CITIES)[number]>(
+    CITIES.find((city) => city.value === "abbotsford") ?? CITIES[0],
+  );
 
   const handleSelect = (city: typeof CITIES[number]) => {
     if (!city.available) return;

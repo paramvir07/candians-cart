@@ -124,11 +124,10 @@ export const auth = betterAuth({
       sendOTP: async ({ phoneNumber, code }) => {
         await sendSMS(
           phoneNumber,
-          `Your Candian's Cart code: ${code}. Expires in 10 minutes.`,
-        ).catch(console.error);
+          `Your Candian's Cart verification code is: ${code}. It expires in 10 minutes.\n@canadianscart.ca #${code}`,
+        );
       },
       callbackOnVerification: async ({ phoneNumber, user }) => {
-        // Sync to Customer model after successful verification
         try {
           await dbConnect();
           await Customer.findOneAndUpdate(
@@ -136,7 +135,7 @@ export const auth = betterAuth({
             { mobile: phoneNumber },
           );
         } catch (err) {
-          console.error("[callbackOnVerification] failed to sync mobile:", err);
+          console.error("Callback on phone number verification failed:", err);
         }
       },
     }),

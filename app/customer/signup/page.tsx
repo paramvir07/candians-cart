@@ -4,14 +4,29 @@ import { auth } from "@/lib/auth/auth";
 import { StoreDocument } from "@/types/store/store";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+
 export const metadata = {
   title: "Signup",
 };
-export default async function Page() {
+
+type PageProps = {
+  searchParams?: Promise<{
+    referralCode?: string;
+    heard?: string;
+  }>;
+};
+
+export default async function Page({ searchParams }: PageProps) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+
   if (session) redirect("/customer");
+
+  const params = await searchParams;
+
+  const referralCodeParam = params?.referralCode ?? "";
+  const heardParam = params?.heard ?? "";
 
   const storesResponse = await getStores();
 
@@ -21,5 +36,11 @@ export default async function Page() {
 
   const stores: StoreDocument[] = storesResponse.data;
 
-  return <SignupClient stores={stores} />;
+  return (
+    <SignupClient
+      stores={stores}
+      referralCodeParam={referralCodeParam}
+      heardParam={heardParam}
+    />
+  );
 }

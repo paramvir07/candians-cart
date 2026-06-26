@@ -43,7 +43,15 @@ const STEP_DESCRIPTIONS: Record<string, string> = {
   selectStore: "Select the nearest grocery store to get started.",
 };
 
-const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
+const SignupClient = ({
+  stores,
+  referralCodeParam = "",
+  heardParam = "",
+}: {
+  stores: StoreDocument[];
+  referralCodeParam?: string;
+  heardParam?: string;
+}) => {
   const [step, setStep] = useAtom(stepAtom);
 
   const handleBack = () => {
@@ -72,6 +80,7 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
             <SignupForm
               userRole="customer"
               className="w-full lg:max-w-[380px]"
+              heardParam={heardParam}
             />
           </div>
         </div>
@@ -82,7 +91,7 @@ const SignupClient = ({ stores }: { stores: StoreDocument[] }) => {
   const stepContent = (
     <>
       {step === "code" ? (
-        <ReferralCodeForm />
+        <ReferralCodeForm initialReferralCode={referralCodeParam} />
       ) : step === "location" ? (
         <Location />
       ) : step === "terms" ? (

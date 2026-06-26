@@ -360,7 +360,7 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
         {/* Header */}
         <div className="flex items-center gap-2.5 mb-5">
           <Link
-            href="/store/settings"
+            href="/store"
             className="w-8 h-8 rounded-full border border-border/60 flex items-center justify-center hover:bg-secondary/60 transition-colors shrink-0"
           >
             <ChevronLeft className="h-4 w-4 text-muted-foreground" />
