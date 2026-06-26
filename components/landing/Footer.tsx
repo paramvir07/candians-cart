@@ -320,7 +320,7 @@ export default function Footer({ isLoggedIn = false }: FooterProps) {
         {/* ── Bottom bar ── */}
         <div className="footer-bottom">
           <div className="footer-bottom-inner">
-            <p>© {currentYear} Candian's Cart Inc. All rights reserved.</p>
+            <p>© {currentYear} Candian's Cart. All rights reserved.</p>
             <div className="footer-badges">
               <span className="footer-badge">🇨🇦 Made in Canada</span>
             </div>
