@@ -45,8 +45,8 @@ export interface OverviewStats {
   pendingOrders: number;
   completedOrders: number;
   totalSubsidyGiven: number;
+  platformFee: number;
   platformProfit: number;
-  completionRate: number; // % of orders completed
 
   // This month absolute values (for "this month: $X" sub-labels)
   revenueThisMonth: number;
@@ -98,8 +98,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     totalProducts,
     subsidyAgg,
     payoutAgg,
-    thisMonthProfitAgg,
-    lastMonthProfitAgg,
   ] = await Promise.all([
     // Total revenue (all-time, completed orders) = cartTotal + subsidy
     OrderModel.aggregate([
@@ -111,6 +109,7 @@ export async function getOverviewStats(): Promise<OverviewStats> {
             $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
           },
           totalOrders: { $sum: 1 },
+          platformProfit: { $sum: "$platformProfit" },
         },
       },
     ]),
@@ -123,7 +122,10 @@ export async function getOverviewStats(): Promise<OverviewStats> {
       {
         $group: {
           _id: null,
-          total: { $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] } },
+          total: {
+            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
+          },
+          profit: { $sum: "$platformProfit" },
         },
       },
     ]),
@@ -139,7 +141,10 @@ export async function getOverviewStats(): Promise<OverviewStats> {
       {
         $group: {
           _id: null,
-          total: { $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] } },
+          total: {
+            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
+          },
+          profit: { $sum: "$platformProfit" },
         },
       },
     ]),
@@ -162,8 +167,10 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     Store.countDocuments(),
     productsModel.countDocuments(),
 
+    // Subsidy Given logic updated to grab straight from the `subsidy` field
     OrderModel.aggregate([
-      { $group: { _id: null, total: { $sum: "$subsidyUsed" } } },
+      { $match: { status: "completed" } },
+      { $group: { _id: null, total: { $sum: "$subsidy" } } },
     ]),
 
     // Combined payout aggregation
@@ -194,15 +201,19 @@ export async function getOverviewStats(): Promise<OverviewStats> {
 
   const totalRevenue = allOrderStats[0]?.totalRevenue ?? 0;
   const completedOrders = allOrderStats[0]?.totalOrders ?? 0;
+  const platformProfit = allOrderStats[0]?.platformProfit ?? 0;
   const totalOrders = completedOrders + pendingOrders;
+
+  const platformFee = totalOrders * 50;
 
   const revenueThisMonth = thisMonthRevAgg[0]?.total ?? 0;
   const revenueLastMonth = lastMonthRevAgg[0]?.total ?? 0;
-  const profitThisMonth = thisMonthProfitAgg[0]?.total ?? 0;
-  const profitLastMonth = lastMonthProfitAgg[0]?.total ?? 0;
+  const profitThisMonth = thisMonthRevAgg[0]?.profit ?? 0;
+  const profitLastMonth = lastMonthRevAgg[0]?.profit ?? 0;
 
   return {
-    platformProfit: payoutAgg[0]?.platformProfit ?? 0,
+    platformProfit,
+    platformFee,
     totalRevenue,
     totalOrders,
     avgOrderValue:
@@ -213,8 +224,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     pendingOrders,
     completedOrders,
     totalSubsidyGiven: subsidyAgg[0]?.total ?? 0,
-    completionRate:
-      totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0,
 
     revenueThisMonth,
     revenueLastMonth,

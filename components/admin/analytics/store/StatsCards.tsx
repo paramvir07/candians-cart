@@ -42,12 +42,13 @@ export default function StatCards({ stats }: StatCardsProps) {
       dot: "bg-blue-300",
     },
     {
-      title: "Total Products",
-      value: `${stats.totalProducts.toLocaleString()}+`,
-      sub: `${stats.productGrowthPercent >= 0 ? "+" : ""}${stats.productGrowthPercent}% from last month`,
-      growth: stats.productGrowthPercent,
-      href: "/admin/products",
-      icon: Package,
+      title: "Platform Profit",
+      value: formatCents(stats.platformProfit + stats.platformFee),
+      sub: `${stats.profitGrowthPercent >= 0 ? "+" : ""}${stats.profitGrowthPercent}% from last month`,
+      growth: stats.profitGrowthPercent,
+      note: `Platform Profit (${formatCents(stats.platformProfit)}) + Platform Fee (${formatCents(stats.platformFee)})`, // <-- UPDATED
+      href: "/admin/analytics",
+      icon: TrendingUp,
       iconColor: "text-emerald-600",
       iconBg: "bg-emerald-100",
       gradientFrom: "from-emerald-50",
@@ -136,6 +137,11 @@ export default function StatCards({ stats }: StatCardsProps) {
                 {card.sub}
               </p>
             </div>
+            {card.note && (
+              <p className="text-[10px] text-gray-400 mt-1.5 leading-tight relative">
+                *{card.note}
+              </p>
+            )}
           </div>
         );
 

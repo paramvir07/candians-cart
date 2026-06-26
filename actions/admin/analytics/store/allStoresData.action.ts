@@ -9,8 +9,9 @@ import Store from "@/db/models/store/store.model";
 export interface DashboardStats {
   totalStores: number;
   newStoresThisMonth: number;
-  totalProducts: number;
-  productGrowthPercent: number;
+  platformProfit: number; // in cents
+  platformFee: number;
+  profitGrowthPercent: number;
   totalOrders: number;
   orderGrowthPercent: number;
   totalRevenue: number; // sum of (cartTotal + subsidy) from completed Orders
@@ -54,8 +55,8 @@ export async function allStoreDataAction(): Promise<DashboardData> {
   const [
     totalStores,
     newStoresThisMonth,
-    totalProducts,
-    productsLastMonth,
+    profitThisMonthAgg,
+    profitLastMonthAgg,
     totalOrders,
     ordersLastMonth,
     revenueAgg, // totalCustomerPaid this month
@@ -64,12 +65,29 @@ export async function allStoreDataAction(): Promise<DashboardData> {
     recentPayoutDocs,
   ] = await Promise.all([
     Store.countDocuments(),
+
     Store.countDocuments({ createdAt: { $gte: startOfThisMonth } }),
 
-    productsModel.countDocuments(),
-    productsModel.countDocuments({
-      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
-    }),
+    OrderModel.aggregate([
+      {
+        $match: {
+          status: "completed",
+          createdAt: { $gte: startOfThisMonth },
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$platformProfit" } } },
+    ]),
+
+    // Profit last month (Sum of platformProfit)
+    OrderModel.aggregate([
+      {
+        $match: {
+          status: "completed",
+          createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$platformProfit" } } },
+    ]),
 
     OrderModel.countDocuments(),
     OrderModel.countDocuments({
@@ -170,13 +188,21 @@ export async function allStoreDataAction(): Promise<DashboardData> {
     return Math.round(((current - previous) / previous) * 100 * 10) / 10;
   };
 
-  const newProductsThisMonth = await productsModel.countDocuments({
-    createdAt: { $gte: startOfThisMonth },
-  });
+  const profitThisMonth: number = profitThisMonthAgg[0]?.total ?? 0;
+  const profitLastMonth: number = profitLastMonthAgg[0]?.total ?? 0;
+
+  // All-time platform profit across all completed orders
+  const totalProfitAgg = await OrderModel.aggregate([
+    { $match: { status: "completed" } },
+    { $group: { _id: null, total: { $sum: "$platformProfit" } } },
+  ]);
+  const platformProfit: number = totalProfitAgg[0]?.total ?? 0;
 
   const ordersThisMonth = await OrderModel.countDocuments({
     createdAt: { $gte: startOfThisMonth },
   });
+
+  const platformFee = totalOrders * 50;
 
   // All-time total revenue = sum of totalCustomerPaid across all payouts
   const totalRevenueAgg = await OrderModel.aggregate([
@@ -210,11 +236,9 @@ export async function allStoreDataAction(): Promise<DashboardData> {
   const stats: DashboardStats = {
     totalStores,
     newStoresThisMonth,
-    totalProducts,
-    productGrowthPercent: growthPercent(
-      newProductsThisMonth,
-      productsLastMonth,
-    ),
+    platformProfit,
+    platformFee,
+    profitGrowthPercent: growthPercent(profitThisMonth, profitLastMonth),
     totalOrders,
     orderGrowthPercent: growthPercent(ordersThisMonth, ordersLastMonth),
     totalRevenue,
