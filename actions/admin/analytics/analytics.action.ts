@@ -35,7 +35,6 @@ function startOfMonth(offset = 0) {
 // ─── Overview stats ─────────────────────────────────────────────────────────────
 
 export interface OverviewStats {
-  // All-time
   totalRevenue: number;
   totalOrders: number;
   avgOrderValue: number;
@@ -47,8 +46,8 @@ export interface OverviewStats {
   totalSubsidyGiven: number;
   platformFee: number;
   platformProfit: number;
+  completionRate: number;
 
-  // This month absolute values (for "this month: $X" sub-labels)
   revenueThisMonth: number;
   revenueLastMonth: number;
   ordersThisMonth: number;
@@ -58,7 +57,6 @@ export interface OverviewStats {
   profitThisMonth: number;
   profitLastMonth: number;
 
-  // MoM % changes
   revenueMoM: number;
   ordersMoM: number;
   customersMoM: number;
@@ -116,7 +114,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
 
     OrderModel.countDocuments({ status: "pending" }),
 
-    // Revenue this month = cartTotal + subsidy
     OrderModel.aggregate([
       { $match: { status: "completed", createdAt: { $gte: thisMonthStart } } },
       {
@@ -130,7 +127,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
       },
     ]),
 
-    // Revenue last month = cartTotal + subsidy
     OrderModel.aggregate([
       {
         $match: {
@@ -173,7 +169,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
       { $group: { _id: null, total: { $sum: "$subsidy" } } },
     ]),
 
-    // Combined payout aggregation
     storePayoutsModel.aggregate<PayoutAggResult>([
       {
         $group: {
@@ -186,13 +181,11 @@ export async function getOverviewStats(): Promise<OverviewStats> {
       },
     ]),
 
-    // This month's profit
     storePayoutsModel.aggregate([
       { $match: { endDate: { $gte: thisMonthStart } } },
       { $group: { _id: null, total: { $sum: "$platformProfit" } } },
     ]),
 
-    // Last month's profit
     storePayoutsModel.aggregate([
       { $match: { endDate: { $gte: lastMonthStart, $lte: lastMonthEnd } } },
       { $group: { _id: null, total: { $sum: "$platformProfit" } } },
@@ -224,6 +217,8 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     pendingOrders,
     completedOrders,
     totalSubsidyGiven: subsidyAgg[0]?.total ?? 0,
+    completionRate:
+      totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0,
 
     revenueThisMonth,
     revenueLastMonth,
@@ -243,39 +238,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     totalStoreProfits: payoutAgg[0]?.storeProfit ?? 0,
     totalPlatformCommission: payoutAgg[0]?.platformCommision ?? 0,
   };
-}
-
-// ─── Pie chart ──────────────────────────────────────────────────────────────────
-
-export async function getPieChartData() {
-  await dbConnect();
-  const data = await OrderModel.aggregate([
-    { $match: { status: "completed" } },
-    {
-      $group: {
-        _id: "$storeId",
-        orders: { $sum: 1 },
-        revenue: { $sum: "$cartTotal" },
-      },
-    },
-    {
-      $lookup: {
-        from: "stores",
-        localField: "_id",
-        foreignField: "_id",
-        as: "store",
-      },
-    },
-    { $unwind: "$store" },
-    { $project: { store: "$store.name", orders: 1, revenue: 1, _id: 0 } },
-    { $sort: { orders: -1 } },
-    { $limit: 5 },
-  ]);
-  return data.map((d) => ({
-    store: d.store,
-    orders: d.orders,
-    revenue: d.revenue,
-  }));
 }
 
 // ─── Area chart ─────────────────────────────────────────────────────────────────
@@ -398,7 +360,6 @@ export async function getTopProductsData() {
 
 export async function getTopSpendersData() {
   await dbConnect();
-  // Order.userId = Customer._id directly — group by userId, join on Customer._id
   const topUsers = await OrderModel.aggregate([
     { $match: { status: "completed" } },
     { $group: { _id: "$userId", totalSpent: { $sum: "$cartTotal" } } },
@@ -458,37 +419,6 @@ export async function getTopSpendersData() {
   return { data: formattedData, keys: Object.values(userNames) };
 }
 
-// ─── Payment breakdown ───────────────────────────────────────────────────────────
-
-export interface PaymentBreakdown {
-  method: string;
-  count: number;
-  revenue: number;
-  pct: number;
-}
-
-export async function getPaymentBreakdown(): Promise<PaymentBreakdown[]> {
-  await dbConnect();
-  const data = await OrderModel.aggregate([
-    { $match: { status: "completed" } },
-    {
-      $group: {
-        _id: "$paymentMode",
-        count: { $sum: 1 },
-        revenue: { $sum: "$cartTotal" },
-      },
-    },
-    { $sort: { count: -1 } },
-  ]);
-  const total = data.reduce((s: number, d: any) => s + d.count, 0) || 1;
-  return data.map((d: any) => ({
-    method: d._id ?? "unknown",
-    count: d.count,
-    revenue: d.revenue,
-    pct: Math.round((d.count / total) * 100),
-  }));
-}
-
 // ─── Revenue trend ───────────────────────────────────────────────────────────────
 
 export interface RevenueTrendPoint {
@@ -535,6 +465,56 @@ export async function getRevenueTrend(): Promise<RevenueTrendPoint[]> {
       month: MONTHS[month - 1],
       revenue: Math.round(val.revenue / 100),
       orders: val.orders,
+    };
+  });
+}
+
+// ─── Profit Trend ───────────────────────────────────────────────────────────────
+
+export interface ProfitTrendPoint {
+  month: string;
+  profit: number;
+  fee: number;
+}
+
+export async function getProfitTrend(): Promise<ProfitTrendPoint[]> {
+  await dbConnect();
+  const now = new Date();
+  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+  const data = await OrderModel.aggregate([
+    { $match: { status: "completed", createdAt: { $gte: twelveMonthsAgo } } },
+    {
+      $group: {
+        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+        profit: { $sum: "$platformProfit" },
+        orders: { $sum: 1 },
+      },
+    },
+    { $sort: { "_id.year": 1, "_id.month": 1 } },
+  ]);
+
+  const map = new Map<string, { profit: number; orders: number }>();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    map.set(`${d.getFullYear()}-${d.getMonth() + 1}`, {
+      profit: 0,
+      orders: 0,
+    });
+  }
+  for (const d of data) {
+    map.set(`${d._id.year}-${d._id.month}`, {
+      profit: d.profit,
+      orders: d.orders,
+    });
+  }
+
+  return Array.from(map.entries()).map(([key, val]) => {
+    const [, month] = key.split("-").map(Number);
+    return {
+      month: MONTHS[month - 1],
+      profit: Math.round(val.profit / 100),
+      fee: Math.round((val.orders * 50) / 100),
     };
   });
 }
