@@ -10,8 +10,6 @@ import {
   ChevronRight,
   ChevronDown,
   DollarSign,
-  Users,
-  Bell,
   Settings,
   Settings2,
   CheckCircle2,
@@ -31,9 +29,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { setReferralInvites } from "@/actions/customer/ReferralAction";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -105,17 +113,45 @@ function groupByMonth(
     .map(([label, items]) => ({ label, items }));
 }
 
+function getReferralUrl(code: string): string {
+  return `https://www.canadianscart.ca/?referralCode=${encodeURIComponent(code)}&heard=referred_by_customer`;
+}
+
+function getReferralShareMessage(code: string): string {
+  const url = getReferralUrl(code);
+
+  return `🛒 Canadian's Cart (CC) is now live at Sunfarm Produce, Abbotsford, BC!
+
+🎁 Join & you could win a $500 grocery gift card
+
+✨ Perks:
+• Free groceries like milk, atta & ghee on sign-up offers
+• Exclusive launch rewards for new members
+
+📲 Use referral code: ${code}
+
+📍 Location: 3670 Town Line Rd #108, Abbotsford, BC
+
+🔗 Sign up here: ${url}
+
+━━━━━━━━━━━━━━
+📢 Follow us for updates
+📸 Instagram: https://www.instagram.com/canadianscart
+📘 Facebook: https://www.facebook.com/canadianscart
+🎥 TikTok: https://vt.tiktok.com/ZSxjaYrjL/`;
+}
+
 // ─── Earnings Hero ────────────────────────────────────────────────────────────
 
 function EarningsHero({
   earned,
   uses,
   code,
-  maxUses
+  maxUses,
 }: {
   earned: string;
   uses: number;
-  maxUses:number;
+  maxUses: number;
   code: string;
 }) {
   const [copied, setCopied] = useState(false);
@@ -137,7 +173,7 @@ function EarningsHero({
 
   return (
     <div className="rounded-2xl overflow-hidden border border-border/60 shadow-sm">
-      {/* ── Dark green top — matches ProfileHero banner ── */}
+      {/* ── Dark green top ── */}
       <div
         className="relative px-5 pt-5 pb-5 overflow-hidden"
         style={{
@@ -145,7 +181,7 @@ function EarningsHero({
             "linear-gradient(135deg, oklch(0.6271 0.1699 149.2138) 0%, oklch(0.4104 0.1066 149.9393) 100%)",
         }}
       >
-        {/* Decorative circles — same motif as ProfileHero */}
+        {/* Decorative circles */}
         <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
         <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-white/[0.08] pointer-events-none" />
         <div className="absolute top-4 right-20 w-10 h-10 rounded-full bg-white/10 pointer-events-none" />
@@ -167,19 +203,28 @@ function EarningsHero({
         <div className="grid grid-cols-3 gap-2 relative">
           <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
             <p className="text-[10px] text-white/50 mb-1">Per referral</p>
-            <p className="text-base font-bold text-white" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+            <p
+              className="text-base font-bold text-white"
+              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+            >
               CA$5
             </p>
           </div>
           <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
             <p className="text-[10px] text-white/50 mb-1">Referred</p>
-            <p className="text-base font-bold text-white" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+            <p
+              className="text-base font-bold text-white"
+              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+            >
               {uses}
             </p>
           </div>
           <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
             <p className="text-[10px] text-white/50 mb-1">Left to earn</p>
-            <p className="text-base font-bold text-white" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+            <p
+              className="text-base font-bold text-white"
+              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+            >
               CA${maxUses - uses > 0 ? (maxUses - uses) * 5 : 0}
             </p>
           </div>
@@ -225,13 +270,21 @@ function EarningsHero({
 // ─── Share row ────────────────────────────────────────────────────────────────
 
 function ShareRow({ code }: { code: string }) {
-  const msg = `Use my referral code ${code} on Canadian Cart when you sign up!`;
+  const msg = getReferralShareMessage(code);
+  const url = getReferralUrl(code);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  function copyLink() {
+    navigator.clipboard.writeText(msg).catch(() => {});
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 1800);
+  }
 
   const btns = [
     {
-      label: "Link",
-      icon: <Share2 size={13} />,
-      fn: () => navigator.clipboard.writeText(code).catch(() => {}),
+      label: linkCopied ? "Copied" : "Link",
+      icon: linkCopied ? <Check size={13} /> : <Share2 size={13} />,
+      fn: copyLink,
     },
     {
       label: "WhatsApp",
@@ -248,7 +301,9 @@ function ShareRow({ code }: { code: string }) {
       label: "Email",
       icon: <Mail size={13} />,
       fn: () => {
-        window.location.href = `mailto:?subject=${encodeURIComponent("Join Canadian Cart")}&body=${encodeURIComponent(msg)}`;
+        window.location.href = `mailto:?subject=${encodeURIComponent(
+          "Join Canadian Cart"
+        )}&body=${encodeURIComponent(msg)}`;
       },
     },
   ];
@@ -300,7 +355,10 @@ function HowItWorks() {
             <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10">
               <span className="text-xs font-black text-primary">?</span>
             </div>
-            <span className="text-sm font-bold text-foreground" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+            <span
+              className="text-sm font-bold text-foreground"
+              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+            >
               How it works
             </span>
           </div>
@@ -311,25 +369,39 @@ function HowItWorks() {
           />
         </CollapsibleTrigger>
 
-          <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
+        <CollapsibleContent className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
           <div className="border-t border-border/60">
             {steps.map((step, i) => (
               <div
                 key={i}
                 className="flex items-start gap-4 px-5 py-4"
-                style={{ borderBottom: i < steps.length - 1 ? "1px solid hsl(var(--border) / 0.4)" : "none" }}
+                style={{
+                  borderBottom:
+                    i < steps.length - 1
+                      ? "1px solid hsl(var(--border) / 0.4)"
+                      : "none",
+                }}
               >
                 <span
                   className="text-xs font-black shrink-0 mt-0.5 text-primary"
-                  style={{ fontFamily: "'Sora', system-ui, sans-serif", letterSpacing: "0.05em", width: "20px" }}
+                  style={{
+                    fontFamily: "'Sora', system-ui, sans-serif",
+                    letterSpacing: "0.05em",
+                    width: "20px",
+                  }}
                 >
                   {step.num}
                 </span>
                 <div>
-                  <p className="text-sm font-bold text-foreground mb-0.5" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+                  <p
+                    className="text-sm font-bold text-foreground mb-0.5"
+                    style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+                  >
                     {step.title}
                   </p>
-                  <p className="text-xs leading-relaxed text-muted-foreground">{step.desc}</p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    {step.desc}
+                  </p>
                 </div>
               </div>
             ))}
@@ -364,7 +436,9 @@ function UsageStats({
         </p>
         <span className="text-xs text-muted-foreground">
           Expires{" "}
-          <span className="font-semibold text-foreground">{formatDate(expiresAt)}</span>
+          <span className="font-semibold text-foreground">
+            {formatDate(expiresAt)}
+          </span>
         </span>
       </div>
 
@@ -373,27 +447,40 @@ function UsageStats({
           <div
             key={i}
             className="flex-1 h-1.5 rounded-full transition-all"
-            style={{ background: i < filled ? "oklch(0.5271 0.1699 149.2138)" : "hsl(var(--border))" }}
+            style={{
+              background:
+                i < filled
+                  ? "oklch(0.5271 0.1699 149.2138)"
+                  : "hsl(var(--border))",
+            }}
           />
         ))}
       </div>
 
       <div className="flex items-center justify-between">
         <span className="text-sm text-muted-foreground">
-          <span className="font-bold text-foreground" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+          <span
+            className="font-bold text-foreground"
+            style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+          >
             {uses}
           </span>{" "}
           of {maxUses} uses
         </span>
-        <span className="text-xs font-bold" style={{ color: isFull ? "hsl(var(--destructive))" : "oklch(0.5271 0.1699 149.2138)" }}>
+        <span
+          className="text-xs font-bold"
+          style={{
+            color: isFull
+              ? "hsl(var(--destructive))"
+              : "oklch(0.5271 0.1699 149.2138)",
+          }}
+        >
           {isFull ? "Limit reached" : `${remaining} remaining`}
         </span>
       </div>
     </div>
   );
 }
-
-// ─── Used-by list ─────────────────────────────────────────────────────────────
 
 // ─── Ghost Row ────────────────────────────────────────────────────────────────
 
@@ -414,12 +501,21 @@ function GhostRow({ style }: { style?: React.CSSProperties }) {
 
 // ─── Used-by list ─────────────────────────────────────────────────────────────
 
-function UsedByList({ usedBy, maxUses }: { usedBy: ReferralUsedBy[]; maxUses: number }) {
+function UsedByList({
+  usedBy,
+  maxUses,
+}: {
+  usedBy: ReferralUsedBy[];
+  maxUses: number;
+}) {
   const months = groupByMonth(usedBy);
   const [page, setPage] = useState(0);
 
   const remainingSlots = Math.max(0, maxUses - usedBy.length);
-  const currentMonthLabel = new Date().toLocaleDateString("en-CA", { month: "long", year: "numeric" });
+  const currentMonthLabel = new Date().toLocaleDateString("en-CA", {
+    month: "long",
+    year: "numeric",
+  });
 
   // Empty state — all ghosts
   if (usedBy.length === 0) {
@@ -428,12 +524,18 @@ function UsedByList({ usedBy, maxUses }: { usedBy: ReferralUsedBy[]; maxUses: nu
         {Array.from({ length: Math.min(remainingSlots, 5) }).map((_, i) => (
           <GhostRow
             key={i}
-            style={{ borderTop: i > 0 ? "1px solid hsl(var(--border) / 0.5)" : undefined }}
+            style={{
+              borderTop:
+                i > 0
+                  ? "1px solid hsl(var(--border) / 0.5)"
+                  : undefined,
+            }}
           />
         ))}
         {remainingSlots > 5 && (
           <p className="text-[10px] text-center text-muted-foreground/50 pt-3">
-            +{remainingSlots - 5} more open spots · CA${remainingSlots * 5} left to earn
+            +{remainingSlots - 5} more open spots · CA${remainingSlots * 5}{" "}
+            left to earn
           </p>
         )}
       </div>
@@ -461,13 +563,20 @@ function UsedByList({ usedBy, maxUses }: { usedBy: ReferralUsedBy[]; maxUses: nu
           </button>
 
           <div className="text-center">
-            <p className="text-sm font-bold text-foreground" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+            <p
+              className="text-sm font-bold text-foreground"
+              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+            >
               {current.label}
             </p>
             <p className="text-xs mt-0.5 text-muted-foreground">
-              {current.items.length} {current.items.length === 1 ? "referral" : "referrals"}
+              {current.items.length}{" "}
+              {current.items.length === 1 ? "referral" : "referrals"}
               {ghostsForMonth > 0 && (
-                <span className="text-primary font-semibold"> · CA${ghostsForMonth * 5} left</span>
+                <span className="text-primary font-semibold">
+                  {" "}
+                  · CA${ghostsForMonth * 5} left
+                </span>
               )}
             </p>
           </div>
@@ -493,7 +602,10 @@ function UsedByList({ usedBy, maxUses }: { usedBy: ReferralUsedBy[]; maxUses: nu
                 className="h-1.5 rounded-full transition-all duration-200"
                 style={{
                   width: i === page ? "20px" : "6px",
-                  background: i === page ? "oklch(0.5271 0.1699 149.2138)" : "hsl(var(--border))",
+                  background:
+                    i === page
+                      ? "oklch(0.5271 0.1699 149.2138)"
+                      : "hsl(var(--border))",
                 }}
               />
             ))}
@@ -506,7 +618,12 @@ function UsedByList({ usedBy, maxUses }: { usedBy: ReferralUsedBy[]; maxUses: nu
             <div
               key={u._id}
               className="flex items-center gap-3 py-3 px-2 -mx-2 rounded-xl transition-colors hover:bg-muted/40"
-              style={{ borderTop: i > 0 ? "1px solid hsl(var(--border) / 0.5)" : undefined }}
+              style={{
+                borderTop:
+                  i > 0
+                    ? "1px solid hsl(var(--border) / 0.5)"
+                    : undefined,
+              }}
             >
               <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20 rounded-full">
                 <AvatarImage
@@ -514,12 +631,19 @@ function UsedByList({ usedBy, maxUses }: { usedBy: ReferralUsedBy[]; maxUses: nu
                   className="rounded-full"
                 />
                 <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold rounded-full">
-                  {u.name.split(" ").slice(0, 2).map((n) => n[0]?.toUpperCase() ?? "").join("")}
+                  {u.name
+                    .split(" ")
+                    .slice(0, 2)
+                    .map((n) => n[0]?.toUpperCase() ?? "")
+                    .join("")}
                 </AvatarFallback>
               </Avatar>
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground truncate" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+                <p
+                  className="text-sm font-bold text-foreground truncate"
+                  style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+                >
                   {u.name}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -548,19 +672,18 @@ function UsedByList({ usedBy, maxUses }: { usedBy: ReferralUsedBy[]; maxUses: nu
           ))}
 
           {/* Ghost slots for current month */}
-          {ghostsForMonth > 0 && Array.from({ length: ghostsForMonth }).map((_, i) => (
-            <GhostRow
-              key={`ghost-${i}`}
-              style={{ borderTop: "1px solid hsl(var(--border) / 0.5)" }}
-            />
-          ))}
+          {ghostsForMonth > 0 &&
+            Array.from({ length: ghostsForMonth }).map((_, i) => (
+              <GhostRow
+                key={`ghost-${i}`}
+                style={{ borderTop: "1px solid hsl(var(--border) / 0.5)" }}
+              />
+            ))}
         </div>
       </div>
     </TooltipProvider>
   );
 }
-
-
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -568,11 +691,7 @@ const PROMPTED_KEY = "referral_invite_prompted";
 
 // ─── Referral Invite Modal ────────────────────────────────────────────────────
 
-export function ReferralInviteModal({
-  initial,
-}: {
-  initial: boolean;
-}) {
+export function ReferralInviteModal({ initial }: { initial: boolean }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -590,84 +709,88 @@ export function ReferralInviteModal({
     setOpen(false);
   }
 
-return (
-  <Dialog open={open} onOpenChange={(v) => !v && setOpen(v)}>
-    <DialogContent
-      className="max-w-md rounded-3xl border bg-background p-0 overflow-hidden"
-      onInteractOutside={(e) => e.preventDefault()}
-      onEscapeKeyDown={(e) => e.preventDefault()}
-      showCloseButton={false}
-    >
-      <div className="p-6">
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-          <Settings2 className="h-7 w-7 text-primary" />
-        </div>
-
-        <DialogHeader className="space-y-3 text-center">
-          <DialogTitle
-            className="text-2xl font-bold tracking-tight"
-            style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
-          >
-            Let referrals find you
-          </DialogTitle>
-
-          <DialogDescription className="text-sm leading-6">
-            Instead of sharing your referral code yourself, users can send
-            <span className="font-medium text-foreground">
-              {" "}you referral requests
-            </span>
-            . Review each request and choose whether to accept it.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="mt-6 space-y-3 rounded-2xl border bg-muted/30 p-4">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-            <p className="text-sm">You stay in control : accept or decline every request.</p>
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && setOpen(v)}>
+      <DialogContent
+        className="max-w-md rounded-3xl border bg-background p-0 overflow-hidden"
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        showCloseButton={false}
+      >
+        <div className="p-6">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+            <Settings2 className="h-7 w-7 text-primary" />
           </div>
 
-          <div className="flex items-center gap-3">
-            <Gift className="h-4 w-4 text-primary shrink-0" />
-            <p className="text-sm">
-              Earn the same <span className="font-semibold">CA$5</span> reward for
-              every successful referral.
-            </p>
+          <DialogHeader className="space-y-3 text-center">
+            <DialogTitle
+              className="text-2xl font-bold tracking-tight"
+              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+            >
+              Let referrals find you
+            </DialogTitle>
+
+            <DialogDescription className="text-sm leading-6">
+              Instead of sharing your referral code yourself, users can send
+              <span className="font-medium text-foreground">
+                {" "}
+                you referral requests
+              </span>
+              . Review each request and choose whether to accept it.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-6 space-y-3 rounded-2xl border bg-muted/30 p-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+              <p className="text-sm">
+                You stay in control : accept or decline every request.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Gift className="h-4 w-4 text-primary shrink-0" />
+              <p className="text-sm">
+                Earn the same{" "}
+                <span className="font-semibold">CA$5</span> reward for every
+                successful referral.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Repeat2 className="h-4 w-4 text-primary shrink-0" />
+              <p className="text-sm">
+                Turn this on or off anytime from the settings icon.
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Repeat2 className="h-4 w-4 text-primary shrink-0" />
-            <p className="text-sm">
-              Turn this on or off anytime from the settings icon.
-            </p>
+          <div className="mt-6 flex gap-3">
+            <Button
+              variant="outline"
+              disabled={loading}
+              onClick={() => handle(false)}
+              className="flex-1 h-11"
+            >
+              Maybe later
+            </Button>
+
+            <Button
+              disabled={loading}
+              onClick={() => handle(true)}
+              className="flex-1 h-11"
+            >
+              {loading ? "Enabling..." : "Enable Invites"}
+            </Button>
           </div>
+
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            You can change this anytime in Referral Settings.
+          </p>
         </div>
-
-        <div className="mt-6 flex gap-3">
-          <Button
-            variant="outline"
-            disabled={loading}
-            onClick={() => handle(false)}
-            className="flex-1 h-11"
-          >
-            Maybe later
-          </Button>
-
-          <Button
-            disabled={loading}
-            onClick={() => handle(true)}
-            className="flex-1 h-11"
-          >
-            {loading ? "Enabling..." : "Enable Invites"}
-          </Button>
-        </div>
-
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          You can change this anytime in Referral Settings.
-        </p>
-      </div>
-    </DialogContent>
-  </Dialog>
-);
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 // ─── Referral Settings Toggle ─────────────────────────────────────────────────
@@ -753,38 +876,54 @@ export function ReferralSettingsToggle({ initial }: { initial: boolean }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export function ReferralPageClient({ referralData, userData }: ReferralPageClientProps) {
+export function ReferralPageClient({
+  referralData,
+  userData,
+}: ReferralPageClientProps) {
   const earnedDisplay = (referralData.totalEarned / 100).toFixed(2);
 
   return (
     <div className="min-h-screen w-full bg-background">
       <ReferralInviteModal initial={userData.recieveReferralInvites} />
-      <div className="relative mx-auto w-full px-4 pb-16 pt-8 sm:px-6 sm:pt-12" style={{ maxWidth: "520px" }}>
+      <div
+        className="relative mx-auto w-full px-4 pb-16 pt-8 sm:px-6 sm:pt-12"
+        style={{ maxWidth: "520px" }}
+      >
         {/* Page header */}
         <div className="mb-6">
           <div className="flex items-center justify-between">
-          <h1
-            className="font-black leading-tight mb-2 text-foreground"
-            style={{
-              fontFamily: "'Sora', system-ui, sans-serif",
-              fontSize: "clamp(28px, 7vw, 38px)",
-              letterSpacing: "-0.03em",
-            }}
+            <h1
+              className="font-black leading-tight mb-2 text-foreground"
+              style={{
+                fontFamily: "'Sora', system-ui, sans-serif",
+                fontSize: "clamp(28px, 7vw, 38px)",
+                letterSpacing: "-0.03em",
+              }}
+            >
+              Refer &amp; Earn
+            </h1>
+            <div className="shrink-0 flex items-center justify-end mb-2">
+              <ReferralSettingsToggle
+                initial={userData.recieveReferralInvites}
+              />
+            </div>
+          </div>
+          <p
+            className="text-sm leading-relaxed text-muted-foreground"
+            style={{ maxWidth: "380px" }}
           >
-            Refer &amp; Earn
-          </h1>
-          <div className="shrink-0 flex items-center justify-end mb-2">
-            <ReferralSettingsToggle initial={userData.recieveReferralInvites} />
-          </div>
-
-          </div>
-          <p className="text-sm leading-relaxed text-muted-foreground" style={{ maxWidth: "380px" }}>
-            Earn CA$5 in gift credit for every friend who joins and places their first order over CA$21.
+            Earn CA$5 in gift credit for every friend who joins and places their
+            first order over CA$21.
           </p>
         </div>
 
         <div className="mb-3">
-          <EarningsHero earned={earnedDisplay} uses={referralData.uses} code={referralData.code} maxUses={referralData.maxUses} />
+          <EarningsHero
+            earned={earnedDisplay}
+            uses={referralData.uses}
+            code={referralData.code}
+            maxUses={referralData.maxUses}
+          />
         </div>
 
         <div className="mb-3">
@@ -792,7 +931,11 @@ export function ReferralPageClient({ referralData, userData }: ReferralPageClien
         </div>
 
         <div className="mb-3">
-          <UsageStats uses={referralData.uses} maxUses={referralData.maxUses} expiresAt={referralData.expiresAt} />
+          <UsageStats
+            uses={referralData.uses}
+            maxUses={referralData.maxUses}
+            expiresAt={referralData.expiresAt}
+          />
         </div>
 
         <div className="rounded-2xl bg-card border border-border/60 px-5 py-4">
@@ -809,7 +952,10 @@ export function ReferralPageClient({ referralData, userData }: ReferralPageClien
               </span>
             )}
           </div>
-            <UsedByList usedBy={referralData.usedBy} maxUses={referralData.maxUses} />
+          <UsedByList
+            usedBy={referralData.usedBy}
+            maxUses={referralData.maxUses}
+          />
         </div>
       </div>
     </div>

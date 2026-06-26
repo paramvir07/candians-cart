@@ -621,7 +621,7 @@ const EnableUserReferralFlag = async (
 
     const CustomerData = await Customer.findOneAndUpdate(
       { _id: customerId, placedFirstOrder: false, referralCodeEnabled: false },
-      { $set: { referralCodeEnabled: true, placedFirstOrder: true } },
+      { $set: { referralCodeEnabled: true, placedFirstOrder: true, perReferAmount:5 } },
       { returnDocument: 'before' },
     ).select("_id").lean();
 
