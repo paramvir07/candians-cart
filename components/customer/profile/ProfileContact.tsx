@@ -58,7 +58,11 @@ export default function ProfileContact({ customer }: Props) {
       label: "Home Address",
       value: `${customer.address}, ${customer.city}, ${customer.province}`,
     },
-    { icon: Phone, label: "Mobile Number", value: customer.mobile },
+    {
+      icon: Phone,
+      label: "Mobile Number",
+      value: customer.mobile ?? "Not set",
+    },
   ];
 
   return (

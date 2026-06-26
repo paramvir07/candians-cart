@@ -166,7 +166,7 @@ export const signupAction = async (
           console.error("Failed to delete orphan auth user:", deleteErr);
         }
 
-        console.log("Transaction failed, rolling back:", err);
+        console.log("Customer Signup Transaction failed, rolling back:", err);
         return {
           success: false,
           message:

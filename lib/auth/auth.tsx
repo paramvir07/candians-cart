@@ -19,9 +19,6 @@ const db = client.db();
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, { client }),
-  logger: {
-    level: "debug",
-  },
   session: {
     expiresIn: 60 * 60 * 24 * 365,
   },

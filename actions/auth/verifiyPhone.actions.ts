@@ -43,19 +43,12 @@ export async function sendPhoneOTPAction(
       };
     }
 
-    // Write phone number to user so Better Auth can find them during verify
     const updated = await userCollection.updateOne(
       { _id: userObjectId },
       { $set: { phoneNumber } },
     );
 
-    console.log("[sendPhoneOTPAction] updateOne result:", updated);
-
     if (updated.matchedCount === 0) {
-      console.error(
-        "[sendPhoneOTPAction] user not found with id:",
-        session.user.id,
-      );
       return {
         success: false,
         message: "User not found. Please log in again.",
@@ -68,7 +61,7 @@ export async function sendPhoneOTPAction(
 
     return { success: true, message: "OTP sent successfully" };
   } catch (error: any) {
-    console.error("[sendPhoneOTPAction] full error:", error);
+    console.error("Error while sending OTP API request:", error);
     return { success: false, message: "Failed to send OTP. Please try again." };
   }
 }
