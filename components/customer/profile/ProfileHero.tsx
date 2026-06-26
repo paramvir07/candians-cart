@@ -41,7 +41,7 @@ export default function ProfileHero({ customer }: Props) {
 
   return (
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm">
-      {/* ── Banner ── */}
+      {/* Banner */}
       <div
         className="relative h-32 overflow-hidden"
         style={{
@@ -49,12 +49,10 @@ export default function ProfileHero({ customer }: Props) {
             "linear-gradient(135deg, oklch(0.6271 0.1699 149.2138) 0%, oklch(0.4104 0.1066 149.9393) 100%)",
         }}
       >
-        {/* Decorative circles */}
         <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10" />
         <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-white/8" />
         <div className="absolute top-4 right-20 w-10 h-10 rounded-full bg-white/10" />
 
-        {/* Customer ID chip — top right */}
         <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/20 backdrop-blur-sm border border-white/20 rounded-full px-2.5 py-1">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
           <span className="text-[10px] font-bold text-white/90 tabular-nums tracking-wide">
@@ -63,7 +61,7 @@ export default function ProfileHero({ customer }: Props) {
         </div>
       </div>
 
-      {/* ── Avatar + verified — overlapping the banner ── */}
+      {/* Avatar */}
       <div className="px-5 pb-5">
         <div className="flex items-end justify-between -mt-12 mb-4">
           <div className="relative">
@@ -78,18 +76,16 @@ export default function ProfileHero({ customer }: Props) {
                 </AvatarFallback>
               </Avatar>
             </div>
-            {/* Online dot */}
             <span className="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 rounded-full ring-2 ring-card" />
           </div>
 
-          {/* Verified badge */}
           <div className="mb-1 flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold px-3 py-1.5 rounded-full">
             <ShieldCheck className="h-3 w-3" />
             Verified Member
           </div>
         </div>
 
-        {/* ── Name + meta ── */}
+        {/* Name + meta */}
         <div className="mb-5 space-y-1.5">
           <h1 className="text-xl font-black text-foreground tracking-tight leading-none">
             {customer.name}
@@ -109,7 +105,7 @@ export default function ProfileHero({ customer }: Props) {
           </div>
         </div>
 
-        {/* ── CTAs ── */}
+        {/* CTAs — FIX: removed <Link> inside <Button>, use asChild instead */}
         <div className="flex gap-1 min-w-0">
           <Dialog>
             <DialogTrigger asChild>
@@ -176,12 +172,17 @@ export default function ProfileHero({ customer }: Props) {
             </DialogContent>
           </Dialog>
 
-          <Button className="flex-1 h-10 rounded-full text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all">
-            <Link href="/customer/profile/edit" className="flex">
+          {/* FIX: Button asChild with Link inside — no nested interactive elements */}
+          <Button
+            asChild
+            className="flex-1 h-10 rounded-full text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            <Link href="/customer/profile/edit">
               <Edit className="h-4 w-4 mr-2" />
               Edit Profile
             </Link>
           </Button>
+
           <div className="shrink-0">
             <ShareButton />
           </div>

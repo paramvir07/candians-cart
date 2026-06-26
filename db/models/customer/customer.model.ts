@@ -15,6 +15,7 @@ export interface ICustomer {
   referralCodeId: Types.ObjectId;
   referralCodeEnabled: boolean;
   myreferralCodeId?: Types.ObjectId;
+  perReferAmount: 5 | 2;
   recieveReferralInvites: boolean;
   placedFirstOrder: boolean;
   subsidy: number;
@@ -79,6 +80,10 @@ const customerSchema = new Schema<ICustomer>(
       type: Schema.Types.ObjectId,
       ref: "ReferralCode",
       required: true,
+    },
+    perReferAmount: {
+      type: Number,
+      enum: [5, 2],
     },
     referralCodeEnabled: {
       type: Boolean,

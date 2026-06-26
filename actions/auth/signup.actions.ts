@@ -65,6 +65,19 @@ export const signupAction = async (
         if (referralCode.type === "customer") {
           referralCode.uses = 0;
           await referralCode.save();
+
+          const customer = await Customer.findOneAndUpdate(
+            { referralCode: referralCode._id },
+            { $set: { perReferAmount: 2 } },
+            { new: true },
+          );
+
+          if (!customer) {
+            return {
+              success: false,
+              message: "Customer not found for this referral code.",
+            };
+          }
         } else {
           return {
             success: false,

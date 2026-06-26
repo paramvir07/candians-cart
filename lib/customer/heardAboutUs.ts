@@ -16,6 +16,10 @@ export const HEARD_ABOUT_US_OPTIONS = [
     value: "friend_or_family",
   },
   {
+    label: "Referred by a Customer",
+    value: "referred_by_customer",
+  },
+  {
     label: "In-store",
     value: "store",
   },

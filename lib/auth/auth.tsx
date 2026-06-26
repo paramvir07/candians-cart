@@ -124,13 +124,21 @@ export const auth = betterAuth({
           `Your Candian's Cart verification code is: ${code}. It expires in 10 minutes.\n@canadianscart.ca #${code}`,
         );
       },
+
       callbackOnVerification: async ({ phoneNumber, user }) => {
         try {
           await dbConnect();
-          await Customer.findOneAndUpdate(
-            { userId: user.id },
+          const { Types } = await import("mongoose");
+          const result = await Customer.findOneAndUpdate(
+            { userId: new Types.ObjectId(user.id) },
             { mobile: phoneNumber },
           );
+          if (!result) {
+            console.error(
+              "[callbackOnVerification] customer not found for userId:",
+              user.id,
+            );
+          }
         } catch (err) {
           console.error("Callback on phone number verification failed:", err);
         }

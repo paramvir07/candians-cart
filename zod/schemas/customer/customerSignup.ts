@@ -2,8 +2,18 @@ import { HEARD_ABOUT_US_VALUES } from "@/lib/customer/heardAboutUs";
 import { CUSTOMER_CITIES, CUSTOMER_PROVINCES } from "@/lib/customer/location";
 import { z } from "zod";
 
+export const toTitleCase = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
 export const CustomerSchema = z.object({
-  name: z.string().trim().min(1, "Name is Required"),
+  name: z
+  .string()
+  .trim()
+  .min(1, "Name is Required")
+  .transform(toTitleCase),
 
   email: z
     .email("Invalid email address")

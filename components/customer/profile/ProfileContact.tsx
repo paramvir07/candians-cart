@@ -9,13 +9,14 @@ import {
   User,
   ChevronDown,
   ContactRound,
+  Hash,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = {
   customer: Pick<
     Customer,
-    "name" | "email" | "address" | "city" | "province" | "mobile"
+    "name" | "email" | "address" | "city" | "province" | "postalCode" | "mobile"
   >;
 };
 
@@ -28,7 +29,7 @@ function ContactRow({
   label: string;
   value: string;
 }) {
-  const inner = (
+  return (
     <div className="flex items-center gap-3 py-3.5 group">
       <div className="shrink-0 w-9 h-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all duration-200">
         <Icon className="h-3.5 w-3.5" />
@@ -43,20 +44,23 @@ function ContactRow({
       </div>
     </div>
   );
-
-  return inner;
 }
 
 export default function ProfileContact({ customer }: Props) {
   const [open, setOpen] = useState(false);
 
-  const rows = [
+  const rows: { icon: React.ElementType; label: string; value: string }[] = [
     { icon: User, label: "Full Name", value: customer.name },
     { icon: Mail, label: "Email Address", value: customer.email },
     {
       icon: MapPin,
       label: "Home Address",
       value: `${customer.address}, ${customer.city}, ${customer.province}`,
+    },
+    {
+      icon: Hash,
+      label: "Postal Code",
+      value: customer.postalCode ?? "Not set",
     },
     {
       icon: Phone,
@@ -67,7 +71,7 @@ export default function ProfileContact({ customer }: Props) {
 
   return (
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm">
-      {/* ── Mobile: toggle ── */}
+      {/* Mobile: toggle */}
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-secondary/40 transition-colors group lg:hidden"
@@ -101,7 +105,7 @@ export default function ProfileContact({ customer }: Props) {
         </div>
       )}
 
-      {/* ── Desktop: always open ── */}
+      {/* Desktop: always open */}
       <div className="hidden lg:block">
         <div className="px-5 py-3.5 border-b border-border/40 flex items-center gap-2.5">
           <ContactRound className="h-4 w-4 text-primary" />

@@ -2,7 +2,6 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { editProfileSchema } from "@/zod/schemas/customer/customerSignup";
-import { z } from "zod";
 import { getUserSession } from "../auth/getUserSession.actions";
 import { dbConnect } from "@/db/dbConnect";
 
@@ -17,7 +16,7 @@ export type ProfileState = {
     address?: string[];
     city?: string[];
     province?: string[];
-    mobile?: string[];
+    postalCode?: string[];
   };
   message?: string | null;
   success?: boolean;
@@ -65,7 +64,6 @@ export async function editUserProfile(
         address,
         city,
         province,
-        mobile,
       };
 
       // updating in Customer table
