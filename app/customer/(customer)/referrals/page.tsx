@@ -72,6 +72,7 @@ const Page = async () => {
     placedFirstOrder: UserData.placedFirstOrder,
     referralCodeEnabled: UserData.referralCodeEnabled,
     myreferralCodeId: UserData.myreferralCodeId?.toString() ?? null,
+    recieveReferralInvites: UserData.recieveReferralInvites,
   };
 
   return (
