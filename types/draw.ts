@@ -1,22 +1,20 @@
 // ─── Draw Promotion Types ──────────────────────────────────────────────────────
 
 export type DrawPhase =
-  | "pre_draw"    // Timer counting down to the draw window (before June 27 2pm PT)
-  | "live_draw"   // Inside the draw window (June 27 2pm–4pm PT)
-  | "announced";  // At least 1 winner exists in DB — show winners
+  | "pre_event"   // Before June 27 2pm PT — countdown, entry open
+  | "live_event"  // June 27 2pm–4pm PT — event is live, entry still open
+  | "announced";  // Winners set in DB by admin — show winners list
 
 export interface DrawWinner {
-  name: string; // We only expose first name + last initial for privacy
-  // e.g. "Sarah M."
+  name: string; // First name + last initial only e.g. "Sarah M."
 }
 
 export interface DrawStats {
   phase: DrawPhase;
 
-  // Timer (only relevant during pre_draw / live_draw)
-  drawStartsAt: string;  // ISO — June 27 2pm PT
-  drawEndsAt: string;    // ISO — June 27 4pm PT
-  secondsUntilDraw: number; // 0 once draw window is open
+  // Countdown to event start (pre_event only, 0 once live)
+  eventStartsAt: string; // ISO — June 27 2pm PT
+  secondsUntilEvent: number;
 
   // Participant count (always shown)
   participantCount: number;
@@ -24,6 +22,6 @@ export interface DrawStats {
   // Winners (only populated in "announced" phase)
   winners: DrawWinner[];
 
-  // Current customer's status (null = not logged in or no customer record)
+  // Current customer's draw status (null = not logged in / no customer record)
   myStatus: "not_joined" | "participant" | "winner" | null;
 }

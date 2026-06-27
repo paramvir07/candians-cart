@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Users, ArrowRight, Sparkles, Clock, Trophy } from "lucide-react";
+import {  Users, ArrowRight, Sparkles, Clock, Trophy } from "lucide-react";
 import { DrawStats } from "@/types/draw";
 
 interface DrawPromoCardProps {
@@ -14,10 +14,10 @@ export default function DrawPromoCard({
   initialStats,
   href = "/promotions",
 }: DrawPromoCardProps) {
-  const [secondsLeft, setSecondsLeft] = useState(initialStats.secondsUntilDraw);
+  const [secondsLeft, setSecondsLeft] = useState(initialStats.secondsUntilEvent);
 
   useEffect(() => {
-    if (initialStats.phase !== "pre_draw") return;
+    if (initialStats.phase !== "pre_event") return;
     if (secondsLeft <= 0) return;
     const id = setInterval(() => setSecondsLeft((s) => Math.max(0, s - 1)), 1000);
     return () => clearInterval(id);
@@ -126,7 +126,7 @@ export default function DrawPromoCard({
   }
 
   // ── Live draw phase ───────────────────────────────────────────────────────
-  if (initialStats.phase === "live_draw") {
+  if (initialStats.phase === "live_event") {
     return (
       <Link
         href={href}
@@ -148,10 +148,10 @@ export default function DrawPromoCard({
               <p className="text-2xl font-black text-primary-foreground leading-tight tracking-tight">
                 Picking winners...
               </p>
-              <p className="text-primary-foreground/60 text-xs mt-0.5">6 lucky members will win</p>
+              <p className="text-primary-foreground/60 text-xs mt-0.5">Entry still open — winners announced live</p>
             </div>
             <div className="flex items-center gap-1 text-amber-300 text-xs font-bold group-hover:gap-2 transition-all">
-              Watch live <ArrowRight className="w-3 h-3" />
+              Enter now or see results <ArrowRight className="w-3 h-3" />
             </div>
           </div>
         </div>
