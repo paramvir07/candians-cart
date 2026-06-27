@@ -6,6 +6,8 @@ import Logo from "../shared/Logo";
 import PromotionBanner from "../promotions/PromotionsBanner";
 import { PromoStats } from "@/types/promotions/promo.types";
 import { motion } from "framer-motion";
+import DrawPromoCard from "../promotions/DrawPromoCard";
+import { DrawStats } from "@/types/draw";
 
 const TABS = [
   { icon: "🛒", label: "Order Online" },
@@ -113,11 +115,13 @@ const SAVINGS_ITEMS = [
 interface HeroSectionProps {
   isLoggedIn: boolean;
   initialPromoStats: PromoStats;
+  initialDrawStats: DrawStats;
 }
 
 export default function HeroSection({
   isLoggedIn,
   initialPromoStats,
+  initialDrawStats
 }: HeroSectionProps) {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -320,10 +324,13 @@ export default function HeroSection({
           }}
           className="mx-auto mb-6 w-full max-w-[min(92vw,760px)] sm:mt-7 lg:mt-8"
         >
+          <div className="flex flex-col gap-3">
+          <DrawPromoCard initialStats={initialDrawStats}/>
           <PromotionBanner
             initialStats={initialPromoStats}
             variant="card"
           />
+          </div>
         </motion.div>
 
         {/* ── TAB STRIP ── */}
