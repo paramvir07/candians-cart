@@ -490,7 +490,7 @@ export default function ReferralsLanding({
           <MessageCircle size={14} className="text-primary flex-shrink-0" />
           <p className="text-xs text-secondary-foreground">
             <span className="font-semibold text-primary">{sentCount}</span>{" "}
-            request{sentCount !== 1 ? "s" : ""} sent — watch your phone for a text.
+            request{sentCount !== 1 ? "s" : ""} sent You'll be notified when your request gets accepted.
           </p>
         </div>
       )}

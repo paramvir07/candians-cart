@@ -2,6 +2,7 @@
 import { dbConnect } from "@/db/dbConnect";
 import Customer from "@/db/models/customer/customer.model";
 import ReferralRequest from "@/db/models/customer/ReferralRequest.model";
+import { revalidatePath } from "next/cache";
 
 interface ReferralRequestData {
     name: string,
@@ -108,3 +109,61 @@ export const getReferralRequests = async (customerId: string) => {
         return { success: false, message: "Error fetching requests", data: null }
     }
 }
+
+
+export interface SerializedReferralRequest {
+  _id: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  accepted: boolean | null;
+  customerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Fetch all PENDING (accepted === null) requests for the logged-in member */
+export const getPendingReferralRequests = async (customerId: string) => {
+  try {
+    await dbConnect();
+    const docs = await ReferralRequest.find({
+      customerId,
+      accepted: null,
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const data: SerializedReferralRequest[] = docs.map((r) => ({
+      _id: r._id.toString(),
+      name: r.name,
+      email: r.email,
+      phoneNumber: r.phoneNumber,
+      accepted: r.accepted,
+      customerId: r.customerId.toString(),
+      createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),
+      updatedAt: r.updatedAt instanceof Date ? r.updatedAt.toISOString() : String(r.updatedAt),
+    }));
+
+    return { success: true, data };
+  } catch (err) {
+    console.error(err);
+    return { success: false, data: [] as SerializedReferralRequest[], message: "Error fetching requests" };
+  }
+};
+
+export const respondToReferralRequest = async (
+  requestId: string,
+  accept: boolean
+) => {
+  if (!requestId) return { success: false, message: "Missing request ID" };
+
+  try {
+    await dbConnect();
+    await ReferralRequest.findByIdAndUpdate(requestId, { accepted: accept });
+    revalidatePath("/referrals/requests");
+    return { success: true };
+  } catch (err) {
+    console.error(err);
+    return { success: false, message: "Failed to update request" };
+  }
+};

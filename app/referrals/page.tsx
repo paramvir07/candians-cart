@@ -3,6 +3,8 @@ import NavbarWrapper from "@/components/landing/NavbarWrapper"
 import ReferralsLanding from "@/components/landing/ReferralsLanding"
 import { getRandom10Referrals } from "@/actions/customer/ReferralRequest.Action"
 import { Suspense } from "react"
+import { getUserSession, isLoggedIn } from "@/actions/auth/getUserSession.actions"
+import { redirect } from "next/navigation"
 
 function MemberListSkeleton() {
   return (
@@ -34,6 +36,8 @@ function MemberListSkeleton() {
 }
 
 async function MemberListServer() {
+  const LoggedIn = await isLoggedIn();
+  if(LoggedIn) redirect('/customer')
   const result = await getRandom10Referrals()
   const members = result.success && result.data ? result.data : []
   return <ReferralsLanding initialMembers={members} />
@@ -41,13 +45,13 @@ async function MemberListServer() {
 
 const page = () => {
   return (
-    <div>
+    <>
       <NavbarWrapper />
       <Suspense fallback={<MemberListSkeleton />}>
         <MemberListServer />
       </Suspense>
       <FooterWrapper />
-    </div>
+      </>
   )
 }
 
