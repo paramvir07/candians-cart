@@ -9,6 +9,7 @@ import {
 import { NotEligibleState } from "@/components/customer/referral/ReferralEmptyStates";
 import { ReferralGenerate } from "@/components/customer/referral/ReferralGenerate";
 import { ReferralPageSkeleton } from "@/components/skeletons/Referralpageskeleton";
+import { getNumberofPendingRequest } from "@/actions/customer/ReferralRequest.Action";
 
 
 async function ReferralContent() {
@@ -39,9 +40,10 @@ async function ReferralContent() {
   const referralId = UserData.myreferralCodeId!.toString();
   const customerId = UserData._id.toString();
 
-  const [ReferralData, UsedReferral] = await Promise.all([
+  const [ReferralData, UsedReferral,RequestCount] = await Promise.all([
     getReferral(referralId),
     getReferralUsed(referralId, customerId),
+    getNumberofPendingRequest(customerId)
   ]);
 
   if (!ReferralData.data) return null;
@@ -91,7 +93,8 @@ async function ReferralContent() {
     recieveReferralInvites: UserData.recieveReferralInvites,
   };
 
-  return <ReferralPageClient referralData={referralDoc} userData={userData} />;
+
+  return <ReferralPageClient referralData={referralDoc} userData={userData} ReqCount={RequestCount.total} />;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────

@@ -38,6 +38,63 @@ type SentMap = Record<string, "idle" | "pending" | "sent" | "already_sent">;
 const LS_KEY = "referral_user_info";
 const LS_SUBMITTED = "referral_form_submitted";
 
+// ─── Canadian Phone Field ─────────────────────────────────────────────────────
+
+/**
+ * Shows a locked 🇨🇦 +1 prefix. The user types only the 10-digit local number.
+ * The value surfaced upward (and stored) is always "+1XXXXXXXXXX".
+ */
+function CanadianPhoneField({
+  value,
+  error,
+  onChange,
+}: {
+  value: string;           // full value including "+1", e.g. "+16045550123"
+  error?: string;
+  onChange: (v: string) => void;  // emits "+1XXXXXXXXXX"
+}) {
+  // Strip "+1" prefix for display inside the input
+  const local = value.startsWith("+1") ? value.slice(2) : value;
+
+  const handleChange = (raw: string) => {
+    // Allow only digits, max 10
+    const digits = raw.replace(/\D/g, "").slice(0, 10);
+    onChange(digits ? `+1${digits}` : "");
+  };
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-[0.8rem] font-semibold text-foreground flex items-center gap-1">
+        Phone number
+        <span className="text-destructive">*</span>
+      </label>
+      <div className="flex rounded-lg border overflow-hidden transition-colors focus-within:border-primary bg-background"
+           style={{ borderColor: error ? "var(--destructive)" : "var(--input)" }}>
+        {/* Prefix badge — not interactive */}
+        <div className="flex items-center gap-1.5 px-3 bg-secondary border-r border-border flex-shrink-0 select-none">
+          <span className="text-base leading-none">🇨🇦</span>
+          <span className="text-sm font-semibold text-foreground">+1</span>
+        </div>
+        {/* Local number input */}
+        <input
+          type="tel"
+          inputMode="numeric"
+          placeholder="604 555 0123"
+          value={local}
+          onChange={(e) => handleChange(e.target.value)}
+          className="flex-1 py-2.5 px-3 text-sm bg-transparent text-foreground placeholder:text-muted-foreground outline-none"
+        />
+      </div>
+      {error && (
+        <span className="text-[0.75rem] text-destructive flex items-center gap-1">
+          <ShieldCheck size={11} />
+          {error}
+        </span>
+      )}
+    </div>
+  );
+}
+
 // ─── Info Gate Form ───────────────────────────────────────────────────────────
 
 function InfoGate({
@@ -59,9 +116,12 @@ function InfoGate({
   const validate = (): boolean => {
     const next: Partial<Record<keyof UserInfo, string>> = {};
     if (!form.name.trim()) next.name = "Name is required.";
-    if (!form.phoneNumber.trim() || !/^\+?[\d\s\-(). ]{7,20}$/.test(form.phoneNumber))
-      next.phoneNumber = "Enter a valid phone number.";
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+
+    // Must be +1 followed by exactly 10 digits
+    if (!/^\+1\d{10}$/.test(form.phoneNumber))
+      next.phoneNumber = "Enter a valid 10-digit Canadian number.";
+
+    if (!form.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       next.email = "Enter a valid email address.";
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -89,7 +149,7 @@ function InfoGate({
           <p className="text-sm text-muted-foreground leading-relaxed">
             Canadian&apos;s Cart is invite-only. Fill in your details and send
             a request to an existing member — if they accept, your referral
-            code will be sent <strong className="text-foreground">automatically to your phone number.</strong>
+            code will be sent <strong className="text-foreground">automatically to your phone number & email.</strong>
           </p>
         </div>
 
@@ -98,7 +158,7 @@ function InfoGate({
           {([
             { icon: UserRound, text: "Fill in your name and phone number below" },
             { icon: Users,     text: "Browse members and send one a request" },
-            { icon: MessageCircle, text: "If they accept, a referral code is texted to your phone automatically" },
+            { icon: MessageCircle, text: "If accepted, a referral code is sent to your phone & email" },
           ] as const).map(({ icon: Icon, text }, i) => (
             <div key={i} className="flex items-start gap-3">
               <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
@@ -122,22 +182,20 @@ function InfoGate({
             error={errors.name}
             onChange={(v) => setForm((f) => ({ ...f, name: v }))}
           />
-          <FormField
-            label="Phone number"
-            placeholder="+1 604 555 0123"
-            type="tel"
-            icon={<Phone size={14} className="text-muted-foreground" />}
-            required
+
+          {/* Canadian phone with locked +1 prefix */}
+          <CanadianPhoneField
             value={form.phoneNumber}
             error={errors.phoneNumber}
             onChange={(v) => setForm((f) => ({ ...f, phoneNumber: v }))}
           />
+
           <FormField
             label="Email address"
-            labelSuffix="optional"
             placeholder="jane@example.com"
             type="email"
             icon={<Mail size={14} className="text-muted-foreground" />}
+            required
             value={form.email ?? ""}
             error={errors.email}
             onChange={(v) => setForm((f) => ({ ...f, email: v }))}
@@ -374,9 +432,11 @@ export default function ReferralsLanding({
           if (res.success && res.data.length > 0) {
             setSentMap((prev) => {
               const next = { ...prev };
-              res.data.forEach(({ memberId }) => {
-                if (next[memberId] !== undefined) next[memberId] = "already_sent";
-              });
+                  res.data.forEach(({ memberId, accepted }) => {
+                    if (next[memberId] !== undefined && (accepted === null || accepted ===true) ) {
+                      next[memberId] = "already_sent";
+                    }
+                  });
               return next;
             });
           }
@@ -452,7 +512,7 @@ export default function ReferralsLanding({
         </h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
           Send a request to any member below. If they accept, your referral
-          code will be <strong className="text-foreground">texted to your phone automatically.</strong>
+          code will be <strong className="text-foreground">sent to your phone & email automatically.</strong>
         </p>
       </div>
 
@@ -490,7 +550,7 @@ export default function ReferralsLanding({
           <MessageCircle size={14} className="text-primary flex-shrink-0" />
           <p className="text-xs text-secondary-foreground">
             <span className="font-semibold text-primary">{sentCount}</span>{" "}
-            request{sentCount !== 1 ? "s" : ""} sent You'll be notified when your request gets accepted.
+            request{sentCount !== 1 ? "s" : ""} sent — You'll be notified when your request gets accepted.
           </p>
         </div>
       )}

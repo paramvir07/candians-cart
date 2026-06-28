@@ -4,9 +4,10 @@ import { useState, useTransition } from "react";
 import { Check, X, Clock, Users, ChevronLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
-import { respondToReferralRequest, SerializedReferralRequest } from "@/actions/customer/ReferralRequest.Action";
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+import {
+  respondToReferralRequest,
+  SerializedReferralRequest,
+} from "@/actions/customer/ReferralRequest.Action";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -27,8 +28,13 @@ function maskPhone(phone: string): string {
 
 // ─── Single request card ──────────────────────────────────────────────────────
 
-function RequestCard({ req }: { req: SerializedReferralRequest }) {
-  const [gone, setGone] = useState(false);
+function RequestCard({
+  req,
+  onDismiss,
+}: {
+  req: SerializedReferralRequest;
+  onDismiss: (id: string) => void;
+}) {
   const [result, setResult] = useState<"accepted" | "declined" | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -37,24 +43,21 @@ function RequestCard({ req }: { req: SerializedReferralRequest }) {
       const res = await respondToReferralRequest(req._id, accept);
       if (res.success) {
         setResult(accept ? "accepted" : "declined");
-        // Fade out after brief confirmation flash
-        setTimeout(() => setGone(true), 900);
+        // After flash animation completes, tell parent to remove this item
+        setTimeout(() => onDismiss(req._id), 900);
       }
     });
   }
 
-  if (gone) return null;
-
   return (
     <div
-      className="group relative flex items-center gap-4 rounded-2xl border border-border/60 bg-card px-4 py-4 transition-all duration-300"
+      className="group relative flex items-center gap-4 rounded-2xl border border-border/60 bg-card px-4 py-4"
       style={{
         opacity: result ? 0 : 1,
         transform: result ? "scale(0.97)" : "scale(1)",
         transition: "opacity 0.35s ease, transform 0.35s ease",
       }}
     >
-      {/* Confirmation flash overlay */}
       {result && (
         <div
           className="absolute inset-0 rounded-2xl flex items-center justify-center"
@@ -87,7 +90,6 @@ function RequestCard({ req }: { req: SerializedReferralRequest }) {
         </div>
       )}
 
-      {/* Avatar */}
       <Avatar className="h-11 w-11 shrink-0 ring-2 ring-primary/15 rounded-full">
         <AvatarImage
           src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(req.name)}`}
@@ -102,7 +104,6 @@ function RequestCard({ req }: { req: SerializedReferralRequest }) {
         </AvatarFallback>
       </Avatar>
 
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <p
           className="text-sm font-bold text-foreground truncate"
@@ -122,7 +123,6 @@ function RequestCard({ req }: { req: SerializedReferralRequest }) {
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-2 shrink-0">
         <button
           onClick={() => respond(false)}
@@ -160,7 +160,8 @@ function EmptyRequests() {
         No pending requests
       </p>
       <p className="text-sm text-muted-foreground max-w-xs">
-        When someone sends you a referral request, it'll show up here. Make sure "Receive Invites" is on in your referral settings.
+        When someone sends you a referral request, it'll show up here. Make
+        sure "Receive Invites" is on in your referral settings.
       </p>
       <Link
         href="/customer/referrals"
@@ -175,20 +176,21 @@ function EmptyRequests() {
 
 // ─── Main client ──────────────────────────────────────────────────────────────
 
-interface ReferralRequestsDashboardProps {
-  requests: SerializedReferralRequest[];
-}
-
 export function ReferralRequestsDashboard({
   requests,
-}: ReferralRequestsDashboardProps) {
+}: {
+  requests: SerializedReferralRequest[];
+}) {
   const [list, setList] = useState(requests);
+
+  function handleDismiss(id: string) {
+    setList((prev) => prev.filter((r) => r._id !== id));
+  }
 
   if (list.length === 0) return <EmptyRequests />;
 
   return (
     <div className="flex flex-col gap-2.5">
-      {/* Batch context */}
       <div className="flex items-center justify-between mb-1">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Pending · {list.length}
@@ -199,12 +201,8 @@ export function ReferralRequestsDashboard({
       </div>
 
       {list.map((req) => (
-        <RequestCard key={req._id} req={req} />
+        <RequestCard key={req._id} req={req} onDismiss={handleDismiss} />
       ))}
-
-      <p className="text-center text-[10px] text-muted-foreground/50 mt-2">
-        Declined requests won't appear again.
-      </p>
     </div>
   );
 }
