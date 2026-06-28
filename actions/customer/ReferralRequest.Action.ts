@@ -5,7 +5,7 @@ import ReferralCode from "@/db/models/admin/referralCode.model";
 import Customer from "@/db/models/customer/customer.model";
 import ReferralRequest from "@/db/models/customer/ReferralRequest.model";
 import { sendEmail } from "@/lib/auth/email";
-import { getReferralShareMessage } from "@/lib/shareMessage";
+import { getReferralShareMessageTwilio } from "@/lib/shareMessage";
 import { sendSMS } from "@/lib/twilio/twilio";
 import { revalidatePath } from "next/cache";
 
@@ -61,6 +61,10 @@ export const GetAlreadySentProfiles = async (Data: ReferralRequestData) => {
 
 export const SendReferralRequest = async (Data: ReferralRequestData, memberId: string) => {
     if (!memberId || !Data) return { success: false, message: "Partial Data sent" }
+    const normalizeCanadianPhone = (raw: string) => {
+      const digits = raw.replace(/\D/g, "");
+      return `+1${digits.startsWith("1") ? digits.slice(1) : digits}`;
+    };
     try {
         await dbConnect();
         const existing = await ReferralRequest.findOne({
@@ -83,7 +87,7 @@ export const SendReferralRequest = async (Data: ReferralRequestData, memberId: s
         await ReferralRequest.create({
             name: Data.name,
             email: Data.email ?? "",
-            phoneNumber: Data.phoneNumber.replace(/[\s\-().]/g, ""),
+            phoneNumber: normalizeCanadianPhone(Data.phoneNumber),
             customerId: memberId,
             accepted: null
         })
@@ -193,7 +197,7 @@ export const respondToReferralRequest = async (
     const signUpUrl = `https://www.canadianscart.ca/sign-up?referralCode=${code}&heard=referred_by_customer`;
 
     await Promise.all([
-      sendSMS(request.phoneNumber, getReferralShareMessage(code)),
+      sendSMS(request.phoneNumber, getReferralShareMessageTwilio(code)),
       sendEmail({
         to: request.email,
         subject: `${customer.name} accepted your referral request 🎉`,

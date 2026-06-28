@@ -38,6 +38,63 @@ type SentMap = Record<string, "idle" | "pending" | "sent" | "already_sent">;
 const LS_KEY = "referral_user_info";
 const LS_SUBMITTED = "referral_form_submitted";
 
+// ─── Canadian Phone Field ─────────────────────────────────────────────────────
+
+/**
+ * Shows a locked 🇨🇦 +1 prefix. The user types only the 10-digit local number.
+ * The value surfaced upward (and stored) is always "+1XXXXXXXXXX".
+ */
+function CanadianPhoneField({
+  value,
+  error,
+  onChange,
+}: {
+  value: string;           // full value including "+1", e.g. "+16045550123"
+  error?: string;
+  onChange: (v: string) => void;  // emits "+1XXXXXXXXXX"
+}) {
+  // Strip "+1" prefix for display inside the input
+  const local = value.startsWith("+1") ? value.slice(2) : value;
+
+  const handleChange = (raw: string) => {
+    // Allow only digits, max 10
+    const digits = raw.replace(/\D/g, "").slice(0, 10);
+    onChange(digits ? `+1${digits}` : "");
+  };
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-[0.8rem] font-semibold text-foreground flex items-center gap-1">
+        Phone number
+        <span className="text-destructive">*</span>
+      </label>
+      <div className="flex rounded-lg border overflow-hidden transition-colors focus-within:border-primary bg-background"
+           style={{ borderColor: error ? "var(--destructive)" : "var(--input)" }}>
+        {/* Prefix badge — not interactive */}
+        <div className="flex items-center gap-1.5 px-3 bg-secondary border-r border-border flex-shrink-0 select-none">
+          <span className="text-base leading-none">🇨🇦</span>
+          <span className="text-sm font-semibold text-foreground">+1</span>
+        </div>
+        {/* Local number input */}
+        <input
+          type="tel"
+          inputMode="numeric"
+          placeholder="604 555 0123"
+          value={local}
+          onChange={(e) => handleChange(e.target.value)}
+          className="flex-1 py-2.5 px-3 text-sm bg-transparent text-foreground placeholder:text-muted-foreground outline-none"
+        />
+      </div>
+      {error && (
+        <span className="text-[0.75rem] text-destructive flex items-center gap-1">
+          <ShieldCheck size={11} />
+          {error}
+        </span>
+      )}
+    </div>
+  );
+}
+
 // ─── Info Gate Form ───────────────────────────────────────────────────────────
 
 function InfoGate({
@@ -59,8 +116,11 @@ function InfoGate({
   const validate = (): boolean => {
     const next: Partial<Record<keyof UserInfo, string>> = {};
     if (!form.name.trim()) next.name = "Name is required.";
-    if (!form.phoneNumber.trim() || !/^\+?[\d\s\-(). ]{7,20}$/.test(form.phoneNumber))
-      next.phoneNumber = "Enter a valid phone number.";
+
+    // Must be +1 followed by exactly 10 digits
+    if (!/^\+1\d{10}$/.test(form.phoneNumber))
+      next.phoneNumber = "Enter a valid 10-digit Canadian number.";
+
     if (!form.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       next.email = "Enter a valid email address.";
     setErrors(next);
@@ -122,16 +182,14 @@ function InfoGate({
             error={errors.name}
             onChange={(v) => setForm((f) => ({ ...f, name: v }))}
           />
-          <FormField
-            label="Phone number"
-            placeholder="+1 604 555 0123"
-            type="tel"
-            icon={<Phone size={14} className="text-muted-foreground" />}
-            required
+
+          {/* Canadian phone with locked +1 prefix */}
+          <CanadianPhoneField
             value={form.phoneNumber}
             error={errors.phoneNumber}
             onChange={(v) => setForm((f) => ({ ...f, phoneNumber: v }))}
           />
+
           <FormField
             label="Email address"
             placeholder="jane@example.com"
@@ -375,7 +433,7 @@ export default function ReferralsLanding({
             setSentMap((prev) => {
               const next = { ...prev };
                   res.data.forEach(({ memberId, accepted }) => {
-                    if (next[memberId] !== undefined && accepted === null) {
+                    if (next[memberId] !== undefined && (accepted === null || accepted ===true) ) {
                       next[memberId] = "already_sent";
                     }
                   });
@@ -492,7 +550,7 @@ export default function ReferralsLanding({
           <MessageCircle size={14} className="text-primary flex-shrink-0" />
           <p className="text-xs text-secondary-foreground">
             <span className="font-semibold text-primary">{sentCount}</span>{" "}
-            request{sentCount !== 1 ? "s" : ""} sent You'll be notified when your request gets accepted.
+            request{sentCount !== 1 ? "s" : ""} sent — You'll be notified when your request gets accepted.
           </p>
         </div>
       )}

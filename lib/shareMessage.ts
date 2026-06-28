@@ -25,3 +25,10 @@ export function getReferralShareMessage(code: string): string {
 📘 Facebook: https://www.facebook.com/canadianscart
 🎥 TikTok: https://vt.tiktok.com/ZSxjaYrjL/`;
 }
+
+
+export function getReferralShareMessageTwilio(code: string): string {
+  const url = getReferralUrl(code);
+  return `🛒 You're invited to Canadian's Cart! 
+  Here's your SignUp Link: ${url}`;
+}
