@@ -375,9 +375,9 @@ export default function ReferralsLanding({
             setSentMap((prev) => {
               const next = { ...prev };
                   res.data.forEach(({ memberId, accepted }) => {
-                    if (next[memberId] !== undefined && accepted !== false) {
+                    if (next[memberId] !== undefined && accepted === null) {
                       next[memberId] = "already_sent";
-                    }AvatarFallback
+                    }
                   });
               return next;
             });
