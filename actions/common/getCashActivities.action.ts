@@ -6,24 +6,6 @@ import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import mongoose from "mongoose";
 
-// ─── Schema reference (CONFIRMED) ─────────────────────────────────────────────
-//
-// Order:       userId (ObjectId → Customer._id), storeId, cartTotal, cashierId (ObjectId → Cashier._id)
-// WalletTopUp: customerId (ObjectId → Customer._id), userId (String = Cashier._id), value, paymentMode
-// Cashier:     _id, userId (ObjectId → Auth/User), name, storeId
-//
-// Cash collection only ever involves cashiers (paymentMode: "cash").
-// Admin top-ups are always paymentMode: "gift" — never appear in cash queries.
-//
-// Correct join patterns:
-//   Order → Customer:    Order.userId          → Customer._id        (foreignField: "_id")
-//   Order → Cashier:     Order.cashierId       → Cashier._id         (foreignField: "_id")
-//   Order → Store:       Order.storeId         → Store._id           (foreignField: "_id")
-//   TopUp → Customer:    WalletTopUp.customerId → Customer._id       (foreignField: "_id")
-//   TopUp → Cashier:     $toObjectId(WalletTopUp.userId) → Cashier._id  (foreignField: "_id")
-//   TopUp → Store:       Cashier.storeId       → Store._id           (via cashier)
-// ──────────────────────────────────────────────────────────────────────────────
-
 export type CashActivityType = "order" | "wallet_topup";
 
 export interface CashActivity {
@@ -34,7 +16,7 @@ export interface CashActivity {
   cashierName: string;
   storeName: string;
   storeId: string;
-  amount: number; // cents
+  amount: number;
   createdAt: Date;
 }
 
@@ -54,9 +36,23 @@ export interface CashSummary {
   totalCashCollected: number;
 }
 
-// ─── Scope topups to a store ───────────────────────────────────────────────────
-// WalletTopUp.userId stores Cashier._id as a String.
-// Find Cashier._ids for the store, cast to string, match against WalletTopUp.userId.
+interface DBQueryResult {
+  _id: mongoose.Types.ObjectId;
+  amount: number;
+  customerName?: string;
+  cashierName?: string;
+  storeName?: string;
+  storeId?: mongoose.Types.ObjectId;
+  createdAt: Date;
+}
+
+// Strictly typed query criteria to eliminate 'any'
+interface CashFilterQuery {
+  paymentMode: string;
+  status?: string;
+  storeId?: mongoose.Types.ObjectId;
+  userId?: { $in: string[] };
+}
 
 async function getCashierIdsForStore(
   storeId: mongoose.Types.ObjectId,
@@ -65,10 +61,7 @@ async function getCashierIdsForStore(
   return (cashiers as any[]).map((c) => c._id.toString());
 }
 
-// ─── Lookup stages: cash orders ───────────────────────────────────────────────
-
 const orderLookups = [
-  // Order.userId → Customer._id  (userId on Order IS Customer._id)
   {
     $lookup: {
       from: "customers",
@@ -78,7 +71,6 @@ const orderLookups = [
     },
   },
   { $unwind: { path: "$customer", preserveNullAndEmptyArrays: true } },
-  // Order.storeId → Store._id
   {
     $lookup: {
       from: "stores",
@@ -88,7 +80,6 @@ const orderLookups = [
     },
   },
   { $unwind: { path: "$store", preserveNullAndEmptyArrays: true } },
-  // Order.cashierId → Cashier._id
   {
     $lookup: {
       from: "cashiers",
@@ -111,10 +102,7 @@ const orderLookups = [
   },
 ];
 
-// ─── Lookup stages: cash wallet top-ups ──────────────────────────────────────
-
 const topupLookups = [
-  // WalletTopUp.customerId → Customer._id
   {
     $lookup: {
       from: "customers",
@@ -124,7 +112,6 @@ const topupLookups = [
     },
   },
   { $unwind: { path: "$customer", preserveNullAndEmptyArrays: true } },
-  // WalletTopUp.userId is a String storing Cashier._id → convert then join Cashier._id
   { $addFields: { cashierObjId: { $toObjectId: "$userId" } } },
   {
     $lookup: {
@@ -135,7 +122,6 @@ const topupLookups = [
     },
   },
   { $unwind: { path: "$cashier", preserveNullAndEmptyArrays: true } },
-  // Cashier.storeId → Store._id
   {
     $lookup: {
       from: "stores",
@@ -158,9 +144,7 @@ const topupLookups = [
   },
 ];
 
-// ─── Mappers ──────────────────────────────────────────────────────────────────
-
-function mapOrder(o: any): CashActivity {
+function mapOrder(o: DBQueryResult): CashActivity {
   return {
     id: o._id.toString(),
     type: "order",
@@ -174,7 +158,7 @@ function mapOrder(o: any): CashActivity {
   };
 }
 
-function mapTopUp(t: any): CashActivity {
+function mapTopUp(t: DBQueryResult): CashActivity {
   return {
     id: t._id.toString(),
     type: "wallet_topup",
@@ -199,21 +183,19 @@ function mergeAndSort(
   return limit ? merged.slice(0, limit) : merged;
 }
 
-// ─── Summary ──────────────────────────────────────────────────────────────────
-
 export async function getCashSummary(
   storeId?: string | null,
 ): Promise<CashSummary> {
   await dbConnect();
   const sid = storeId ? new mongoose.Types.ObjectId(storeId) : null;
 
-  const orderMatch: Record<string, any> = {
+  const orderMatch: CashFilterQuery = {
     paymentMode: "cash",
     status: "completed",
   };
   if (sid) orderMatch.storeId = sid;
 
-  const topupMatch: Record<string, any> = { paymentMode: "cash" };
+  const topupMatch: CashFilterQuery = { paymentMode: "cash" };
   if (sid) {
     const cashierIds = await getCashierIdsForStore(sid);
     topupMatch.userId = { $in: cashierIds };
@@ -250,8 +232,10 @@ export async function getCashSummary(
   };
 }
 
-// ─── Recent activities (widget) ───────────────────────────────────────────────
-
+/**
+ * Fetches the most recent cash activities across all or specific stores.
+ * Required for the dashboard widget.
+ */
 export async function getRecentCashActivities(
   storeId?: string | null,
   limit = 6,
@@ -259,13 +243,13 @@ export async function getRecentCashActivities(
   await dbConnect();
   const sid = storeId ? new mongoose.Types.ObjectId(storeId) : null;
 
-  const orderMatch: Record<string, any> = {
+  const orderMatch: CashFilterQuery = {
     paymentMode: "cash",
     status: "completed",
   };
   if (sid) orderMatch.storeId = sid;
 
-  const topupMatch: Record<string, any> = { paymentMode: "cash" };
+  const topupMatch: CashFilterQuery = { paymentMode: "cash" };
   if (sid) {
     const cashierIds = await getCashierIdsForStore(sid);
     topupMatch.userId = { $in: cashierIds };
@@ -287,74 +271,50 @@ export async function getRecentCashActivities(
   ]);
 
   return mergeAndSort(
-    (orderDocs as any[]).map(mapOrder),
-    (topupDocs as any[]).map(mapTopUp),
+    (orderDocs as DBQueryResult[]).map(mapOrder),
+    (topupDocs as DBQueryResult[]).map(mapTopUp),
     limit,
   );
 }
 
-// ─── Paginated full list ───────────────────────────────────────────────────────
-
 export async function getCashActivitiesPaginated(
   storeId: string | null | undefined,
   page = 1,
-  limit = 15,
-  typeFilter?: "all" | "order" | "wallet_topup",
-  searchQuery?: string,
+  limit = 8,
 ): Promise<CashActivityResult> {
   try {
     await dbConnect();
     const sid = storeId ? new mongoose.Types.ObjectId(storeId) : null;
 
-    const fetchOrders =
-      !typeFilter || typeFilter === "all" || typeFilter === "order";
-    const fetchTopups =
-      !typeFilter || typeFilter === "all" || typeFilter === "wallet_topup";
-
-    const orderMatch: Record<string, any> = {
+    const orderMatch: CashFilterQuery = {
       paymentMode: "cash",
       status: "completed",
     };
     if (sid) orderMatch.storeId = sid;
 
-    const topupMatch: Record<string, any> = { paymentMode: "cash" };
+    const topupMatch: CashFilterQuery = { paymentMode: "cash" };
     if (sid) {
       const cashierIds = await getCashierIdsForStore(sid);
       topupMatch.userId = { $in: cashierIds };
     }
 
     const [orderDocs, topupDocs] = await Promise.all([
-      fetchOrders
-        ? OrderModel.aggregate([
-            { $match: orderMatch },
-            { $sort: { createdAt: -1 } },
-            ...orderLookups,
-          ])
-        : Promise.resolve([]),
-      fetchTopups
-        ? WalletTopUp.aggregate([
-            { $match: topupMatch },
-            { $sort: { createdAt: -1 } },
-            ...topupLookups,
-          ])
-        : Promise.resolve([]),
+      OrderModel.aggregate([
+        { $match: orderMatch },
+        { $sort: { createdAt: -1 } },
+        ...orderLookups,
+      ]),
+      WalletTopUp.aggregate([
+        { $match: topupMatch },
+        { $sort: { createdAt: -1 } },
+        ...topupLookups,
+      ]),
     ]);
 
-    let all = mergeAndSort(
-      (orderDocs as any[]).map(mapOrder),
-      (topupDocs as any[]).map(mapTopUp),
+    const all = mergeAndSort(
+      (orderDocs as DBQueryResult[]).map(mapOrder),
+      (topupDocs as DBQueryResult[]).map(mapTopUp),
     );
-
-    if (searchQuery?.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      all = all.filter(
-        (a) =>
-          a.customerName.toLowerCase().includes(q) ||
-          a.cashierName.toLowerCase().includes(q) ||
-          a.storeName.toLowerCase().includes(q) ||
-          a.label.toLowerCase().includes(q),
-      );
-    }
 
     const totalCount = all.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / limit));
