@@ -479,13 +479,23 @@ export function TopUpDialog({
                       {changeDue !== null && changeDue >= 0 ? (
                         <div className="flex items-center gap-1.5 flex-wrap justify-end">
                           {changeDue > 0 ? (() => {
-                            const breakdown = formatChangeDue(Math.round(changeDue * 100));
-                            return breakdown?.length ? breakdown.map(({ label, count }) => (
-                              <span key={label} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold"
-                                style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}>
-                                {count > 1 ? `${count}×${label}` : label}
-                              </span>
-                            )) : (
+                            const changeCents = Math.round(changeDue * 100);
+                            const roundedCents = Math.round(changeCents / 5) * 5;
+                            const breakdown = formatChangeDue(changeCents);
+                            return breakdown?.length ? (
+                              <>
+                                <span className="font-bold tabular-nums" style={{ color: "var(--color-primary)" }}>
+                                  ${(roundedCents / 100).toFixed(2)}
+                                </span>
+                                <span style={{ color: "var(--color-muted-foreground)", opacity: 0.4 }}>·</span>
+                                {breakdown.map(({ label, count }) => (
+                                  <span key={label} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold"
+                                    style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}>
+                                    {count > 1 ? `${count}×${label}` : label}
+                                  </span>
+                                ))}
+                              </>
+                            ) : (
                               <span className="font-bold" style={{ color: "var(--color-primary)" }}>
                                 ${changeDue.toFixed(2)}
                               </span>
