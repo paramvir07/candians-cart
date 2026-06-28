@@ -26,7 +26,7 @@ export function ReferralAcceptedEmail({
   referralCode,
   referrerName,
   signUpUrl,
-  appName = "Canadian's Cart",
+  appName = "Candian's Cart",
   supportEmail = "info@canadianscart.ca",
 }: ReferralAcceptedEmailProps) {
   return (

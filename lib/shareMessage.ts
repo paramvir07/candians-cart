@@ -1,11 +1,11 @@
 export function getReferralUrl(code: string): string {
-  return `https://www.canadianscart.ca/?referralCode=${encodeURIComponent(code)}&heard=referred_by_customer`;
+  return `https://www.canadianscart.ca/customer/sign-up?referralCode=${encodeURIComponent(code)}&heard=refer`;
 }
 
 export function getReferralShareMessage(code: string): string {
   const url = getReferralUrl(code);
 
-  return `🛒 Canadian's Cart (CC) is now live at Sunfarm Produce, Abbotsford, BC!
+  return `🛒 Candian's Cart (CC) is now live at Sunfarm Produce, Abbotsford, BC!
 
 🎁 Join & you could win a $500 grocery gift card
 
@@ -27,8 +27,7 @@ export function getReferralShareMessage(code: string): string {
 }
 
 
-export function getReferralShareMessageTwilio(code: string): string {
+export function getReferralShareMessageTwilio(code: string,name:string): string {
   const url = getReferralUrl(code);
-  return `🛒 You're invited to Canadian's Cart! 
-  Here's your SignUp Link: ${url}`;
+  return `${name} You're invited to Candian's Cart!🛒 ${url}`;
 }

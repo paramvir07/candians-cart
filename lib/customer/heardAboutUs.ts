@@ -17,7 +17,7 @@ export const HEARD_ABOUT_US_OPTIONS = [
   },
   {
     label: "Referred by a Customer",
-    value: "referred_by_customer",
+    value: "refer",
   },
   {
     label: "In-store",

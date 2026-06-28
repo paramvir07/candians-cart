@@ -194,10 +194,12 @@ export const respondToReferralRequest = async (
     if (!referralCode) return { success: false, message: "Referral code not found" };
 
     const code      = referralCode.code;
-    const signUpUrl = `https://www.canadianscart.ca/sign-up?referralCode=${code}&heard=referred_by_customer`;
+    const signUpUrl = `https://www.canadianscart.ca/customer/sign-up?referralCode=${code}&heard=refer`;
 
+    const splitName = request.name.split(" ")
+    
     await Promise.all([
-      sendSMS(request.phoneNumber, getReferralShareMessageTwilio(code)),
+      sendSMS(request.phoneNumber, getReferralShareMessageTwilio(code,splitName[0])),
       sendEmail({
         to: request.email,
         subject: `${customer.name} accepted your referral request 🎉`,
