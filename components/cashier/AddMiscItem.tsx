@@ -145,7 +145,10 @@ export default function AddMiscItemModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden border-border bg-card">
+      <DialogContent
+        aria-describedby={undefined}
+        className="sm:max-w-md p-0 gap-0 overflow-hidden border-border bg-card"
+      >
         <div className="h-1 w-full bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
 
         <div className="p-6 space-y-6">

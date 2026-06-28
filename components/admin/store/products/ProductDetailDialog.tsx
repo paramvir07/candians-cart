@@ -121,8 +121,9 @@ export const ProductDetailDialog = ({
                 {product.name}
               </h2>
               <p>
-              <span className="font-semibold">UPC: </span>{product.primaryUPC}
-            </p>
+                <span className="font-semibold">UPC: </span>
+                {product.primaryUPC}
+              </p>
               {product.description && (
                 <p className="text-sm text-gray-500 mt-1.5 leading-relaxed line-clamp-2">
                   {product.description}
@@ -145,12 +146,13 @@ export const ProductDetailDialog = ({
           {/* ── Metrics grid ─────────────────────────────────────────────────── */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {/* Price — always shown */}
-<div className="col-span-2 sm:col-span-2 bg-gray-50 rounded-2xl p-4 border border-gray-100">
+            <div className="col-span-2 sm:col-span-2 bg-gray-50 rounded-2xl p-4 border border-gray-100">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
                 Price
               </p>
               <p className="text-2xl font-bold text-gray-900 tracking-tight">
-                {fmt(product.price + product.price * (product.markup / 100))}{product.UOM && `/${product.UOM.toUpperCase()}`}{" "}
+                {fmt(product.price + product.price * (product.markup / 100))}
+                {product.UOM && `/${product.UOM.toUpperCase()}`}{" "}
               </p>
               <p className="text-xs text-gray-400 mt-0.5">
                 Base: {fmt(product.price)}
