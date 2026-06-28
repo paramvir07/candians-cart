@@ -632,7 +632,7 @@ const EnableUserReferralFlag = async (
       GenerateReferralCode(customerId, customerName).catch((err) =>
         console.error("GenerateReferralCode failed:", err)
       ),
-      CheckUserReferral(userReferralCodeId).catch((err) =>
+      CheckUserReferral(userReferralCodeId,CustomerData.perReferAmount).catch((err) =>
         console.error("CheckUserReferral failed:", err)
       ),
     ]);
@@ -687,7 +687,7 @@ export const GenerateReferralCode = async (customerId: string, customerName: str
   return { success: false, message: "Could not generate a unique referral code after all attempts" };
 };
 
-const CheckUserReferral = async (referralCodeId: string) => {
+const CheckUserReferral = async (referralCodeId: string,perReferAmount:number) => {
   if (!referralCodeId) return { success: false, message: "No referral Code Id passed" };
 
   await dbConnect();
@@ -711,7 +711,7 @@ const CheckUserReferral = async (referralCodeId: string) => {
       return { success: false, message: "Referral code is expired or has reached its maximum uses" };
     }
 
-    const ReferralValue = 500;
+    const ReferralValue = perReferAmount;
     const customerId = referral.customerId;
 
     session.startTransaction();

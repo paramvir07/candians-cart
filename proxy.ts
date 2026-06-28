@@ -42,7 +42,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(home, request.url));
   if (pathname.startsWith("/immigration") && role !== "immigration")
     return NextResponse.redirect(new URL(home, request.url));
-
+  
   // Gate unverified customers
   if (
     role === "customer" &&
@@ -57,6 +57,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!$|api/auth|store/login|admin/login|customer/login|cashier/login|immigration/login|customer/signup|partner-access|about|contact|terms-and-conditions|careers|privacy-policy|forgot-password|verify-phone|promotions|_next|favicon.ico|icon.png|apple-icon.png|api/stripe/webhook|sitemap\\.xml|robots\\.txt|google0e73eb402c7f3d0e\\.html).*)",
+    "/((?!$|api/auth|store/login|admin/login|customer/login|cashier/login|immigration/login|customer/signup|partner-access|about|referrals|contact|terms-and-conditions|careers|privacy-policy|forgot-password|reset-password|verify-phone|promotions|_next|favicon.ico|icon.png|apple-icon.png|apple-touch-icon.png|api/stripe/webhook|sitemap\\.xml|robots\\.txt|google0e73eb402c7f3d0e\\.html).*)",
   ],
 };

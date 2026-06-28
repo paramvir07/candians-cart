@@ -37,7 +37,7 @@ const referralRequestSchema = new Schema<IReferralRequest>(
     },
     accepted: {
       type: Boolean,
-      required:true,
+      required:false,
       default: null,
     },
     customerId: {

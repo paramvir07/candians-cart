@@ -142,17 +142,12 @@ export default function OrdersHistoryClient({
     return pages;
   };
 
-  const backHref = customerId
-    ? `/cashier/customer/${customerId}`
-    : allOrders
-      ? "/cashier"
-      : "/customer/";
 
   const pageTitle = customerId
     ? "Customer Orders"
     : immigrationRole ? "All Orders"
     : allOrders
-      ? "Store Orders"
+      ? "All Store Orders"
       : "Order History";
 
   return (
@@ -163,8 +158,8 @@ export default function OrdersHistoryClient({
 
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
-          {!immigrationRole && (
-            <Link href={backHref}>
+          {!immigrationRole && !customerId && !allOrders && (
+            <Link href="/customer/">
               <Button className="rounded-full" variant="outline" size="icon">
                 <ChevronLeft className="w-4 h-4" />
               </Button>

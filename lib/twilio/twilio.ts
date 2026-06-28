@@ -6,9 +6,15 @@ const client = twilio(
 );
 
 export async function sendSMS(to: string, body: string) {
-  await client.messages.create({
-    body,
-    from: process.env.TWILIO_PHONE_NUMBER!,
-    to,
-  });
+  try {
+    const msg = await client.messages.create({
+      body,
+      from: process.env.TWILIO_PHONE_NUMBER!,
+      to,
+    });
+    console.log("[Twilio] SMS sent:", msg.sid, "| status:", msg.status);
+  } catch (err) {
+    console.error("[Twilio] SMS failed:", err);
+    throw err;
+  }
 }

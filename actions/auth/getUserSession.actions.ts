@@ -47,3 +47,17 @@ export const getUserSession= cache(async () => {
     redirect("/customer/login");
   }
 })
+
+export const isLoggedIn = cache(async ()=>{
+  try{
+    let isLoggedIn = false;
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if(!session) return isLoggedIn;
+    isLoggedIn = true;
+    return isLoggedIn;
+  }catch(err){
+    console.log("Error fetching user session:", err);
+  }
+})

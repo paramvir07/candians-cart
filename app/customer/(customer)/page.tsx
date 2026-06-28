@@ -9,6 +9,8 @@ import { HeroBannerLoader } from "@/components/customer/landing/HeroBannerLoader
 import { ProductsSectionLoader } from "@/components/customer/products/ProductsSectionLoader";
 import { getPromoStats } from "@/actions/promotions/getPromoStats.action";
 import PromotionBanner from "@/components/promotions/PromotionsBanner";
+import DrawPromoCard from "@/components/promotions/DrawPromoCard";
+import { getDrawStats } from "@/actions/promotions/getDrawStats.action";
 
 export const metadata: Metadata = {
   description:
@@ -18,18 +20,18 @@ export const metadata: Metadata = {
 // ✅ No awaits here — page shell renders instantly
 export default async function CustomerPage() {
   const promoStats = await getPromoStats();
+  const drawStats = await getDrawStats();
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <Navbar />
-
       <Suspense fallback={<HeroBannerSkeleton />}>
         <HeroBannerLoader /> {/* auth + store fetch happens inside here */}
       </Suspense>
-      <div className="mx-auto mb-6 w-full max-w-[min(92vw,760px)] sm:mt-7 lg:mt-8">
+      <div className="flex flex-col gap-3 mx-auto mb-6 w-full max-w-[min(92vw,760px)] sm:mt-7 lg:mt-8">
+        <DrawPromoCard initialStats={drawStats} />
         <PromotionBanner initialStats={promoStats} variant="card" />
       </div>
       <CustomerAdvertisements maxHeight={250} />
-
       <Suspense fallback={<ProductsSkeleton />}>
         <ProductsSectionLoader /> {/* products fetch happens inside here */}
       </Suspense>

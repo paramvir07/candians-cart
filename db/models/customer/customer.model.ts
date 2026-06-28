@@ -1,6 +1,8 @@
 import { HEARD_ABOUT_US_VALUES } from "@/lib/customer/heardAboutUs";
 import { model, Model, models, Schema, Types } from "mongoose";
 
+export type EventParticipantStatus = "participant" | "winner";
+``
 export interface ICustomer {
   userId: Types.ObjectId;
   name: string;
@@ -22,6 +24,7 @@ export interface ICustomer {
   walletBalance: number;
   giftWalletBalance: number;
   heardAboutUs: string;
+  eventParticipant?: EventParticipantStatus;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -126,6 +129,11 @@ const customerSchema = new Schema<ICustomer>(
       type: String,
       required: true,
       enum: HEARD_ABOUT_US_VALUES,
+    },
+    eventParticipant: {
+      type: String,
+      enum: ["participant", "winner"],
+      // No default — undefined means they haven't joined the draw yet
     },
   },
   { timestamps: true },

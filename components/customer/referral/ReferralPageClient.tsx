@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Gift,
   Repeat2,
+  Users,
 } from "lucide-react";
 import {
   Collapsible,
@@ -43,6 +44,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import Link from "next/link";
+import { getReferralShareMessage, getReferralUrl } from "@/lib/shareMessage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,6 +74,7 @@ export interface ReferralDocument {
 
 export interface UserDataProps {
   name: string;
+  perReferAmount:number,
   placedFirstOrder: boolean;
   referralCodeEnabled: boolean;
   myreferralCodeId?: string | null;
@@ -80,6 +84,7 @@ export interface UserDataProps {
 interface ReferralPageClientProps {
   referralData: ReferralDocument;
   userData: UserDataProps;
+  ReqCount:number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -113,33 +118,7 @@ function groupByMonth(
     .map(([label, items]) => ({ label, items }));
 }
 
-function getReferralUrl(code: string): string {
-  return `https://www.canadianscart.ca/?referralCode=${encodeURIComponent(code)}&heard=referred_by_customer`;
-}
 
-function getReferralShareMessage(code: string): string {
-  const url = getReferralUrl(code);
-
-  return `🛒 Canadian's Cart (CC) is now live at Sunfarm Produce, Abbotsford, BC!
-
-🎁 Join & you could win a $500 grocery gift card
-
-✨ Perks:
-• Free groceries like milk, atta & ghee on sign-up offers
-• Exclusive launch rewards for new members
-
-📲 Use referral code: ${code}
-
-📍 Location: 3670 Town Line Rd #108, Abbotsford, BC
-
-🔗 Sign up here: ${url}
-
-━━━━━━━━━━━━━━
-📢 Follow us for updates
-📸 Instagram: https://www.instagram.com/canadianscart
-📘 Facebook: https://www.facebook.com/canadianscart
-🎥 TikTok: https://vt.tiktok.com/ZSxjaYrjL/`;
-}
 
 // ─── Earnings Hero ────────────────────────────────────────────────────────────
 
@@ -148,11 +127,13 @@ function EarningsHero({
   uses,
   code,
   maxUses,
+  perReferAmount,
 }: {
   earned: string;
   uses: number;
   maxUses: number;
   code: string;
+  perReferAmount:number;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -207,7 +188,7 @@ function EarningsHero({
               className="text-base font-bold text-white"
               style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
             >
-              CA$5
+              CA${perReferAmount}
             </p>
           </div>
           <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
@@ -225,7 +206,7 @@ function EarningsHero({
               className="text-base font-bold text-white"
               style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
             >
-              CA${maxUses - uses > 0 ? (maxUses - uses) * 5 : 0}
+              CA${maxUses - uses > 0 ? (maxUses - uses) * perReferAmount : 0}
             </p>
           </div>
         </div>
@@ -484,7 +465,7 @@ function UsageStats({
 
 // ─── Ghost Row ────────────────────────────────────────────────────────────────
 
-function GhostRow({ style }: { style?: React.CSSProperties }) {
+function GhostRow({ style,ReferAmount }: { style?: React.CSSProperties,ReferAmount:number }) {
   return (
     <div className="flex items-center gap-3 py-3 px-2 -mx-2" style={style}>
       <div className="h-10 w-10 shrink-0 rounded-full bg-muted/60 border-2 border-dashed border-border/60" />
@@ -493,7 +474,7 @@ function GhostRow({ style }: { style?: React.CSSProperties }) {
         <div className="h-2.5 w-16 rounded-full bg-muted/40" />
       </div>
       <span className="shrink-0 text-xs font-semibold text-muted-foreground/40 border border-dashed border-border/40 px-2 py-1 rounded-full">
-        CA$5
+        CA${ReferAmount}
       </span>
     </div>
   );
@@ -504,9 +485,11 @@ function GhostRow({ style }: { style?: React.CSSProperties }) {
 function UsedByList({
   usedBy,
   maxUses,
+  perReferAmount,
 }: {
   usedBy: ReferralUsedBy[];
   maxUses: number;
+  perReferAmount:number;
 }) {
   const months = groupByMonth(usedBy);
   const [page, setPage] = useState(0);
@@ -523,6 +506,7 @@ function UsedByList({
       <div>
         {Array.from({ length: Math.min(remainingSlots, 5) }).map((_, i) => (
           <GhostRow
+            ReferAmount={perReferAmount}
             key={i}
             style={{
               borderTop:
@@ -534,7 +518,7 @@ function UsedByList({
         ))}
         {remainingSlots > 5 && (
           <p className="text-[10px] text-center text-muted-foreground/50 pt-3">
-            +{remainingSlots - 5} more open spots · CA${remainingSlots * 5}{" "}
+            +{remainingSlots - 5} more open spots · CA${remainingSlots * perReferAmount}{" "}
             left to earn
           </p>
         )}
@@ -575,7 +559,7 @@ function UsedByList({
               {ghostsForMonth > 0 && (
                 <span className="text-primary font-semibold">
                   {" "}
-                  · CA${ghostsForMonth * 5} left
+                  · CA${ghostsForMonth * perReferAmount} left
                 </span>
               )}
             </p>
@@ -654,7 +638,7 @@ function UsedByList({
               {u.placedFirstOrder ? (
                 <span className="shrink-0 flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded-full">
                   <DollarSign size={11} />
-                  CA$5
+                  CA${perReferAmount}
                 </span>
               ) : (
                 <Tooltip>
@@ -675,6 +659,7 @@ function UsedByList({
           {ghostsForMonth > 0 &&
             Array.from({ length: ghostsForMonth }).map((_, i) => (
               <GhostRow
+              ReferAmount={perReferAmount}
                 key={`ghost-${i}`}
                 style={{ borderTop: "1px solid hsl(var(--border) / 0.5)" }}
               />
@@ -691,7 +676,7 @@ const PROMPTED_KEY = "referral_invite_prompted";
 
 // ─── Referral Invite Modal ────────────────────────────────────────────────────
 
-export function ReferralInviteModal({ initial }: { initial: boolean }) {
+export function ReferralInviteModal({ initial,perReferAmount }: { initial: boolean,perReferAmount:number }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -752,7 +737,7 @@ export function ReferralInviteModal({ initial }: { initial: boolean }) {
               <Gift className="h-4 w-4 text-primary shrink-0" />
               <p className="text-sm">
                 Earn the same{" "}
-                <span className="font-semibold">CA$5</span> reward for every
+                <span className="font-semibold">CA${perReferAmount}</span> reward for every
                 successful referral.
               </p>
             </div>
@@ -879,12 +864,13 @@ export function ReferralSettingsToggle({ initial }: { initial: boolean }) {
 export function ReferralPageClient({
   referralData,
   userData,
+  ReqCount,
 }: ReferralPageClientProps) {
   const earnedDisplay = (referralData.totalEarned / 100).toFixed(2);
 
   return (
     <div className="min-h-screen w-full bg-background">
-      <ReferralInviteModal initial={userData.recieveReferralInvites} />
+      <ReferralInviteModal initial={userData.recieveReferralInvites} perReferAmount={userData.perReferAmount} />
       <div
         className="relative mx-auto w-full px-4 pb-16 pt-8 sm:px-6 sm:pt-12"
         style={{ maxWidth: "520px" }}
@@ -902,17 +888,34 @@ export function ReferralPageClient({
             >
               Refer &amp; Earn
             </h1>
-            <div className="shrink-0 flex items-center justify-end mb-2">
+            <div className="shrink-0 flex items-center justify-end mb-2 gap-2 flex-row-reverse">
               <ReferralSettingsToggle
                 initial={userData.recieveReferralInvites}
               />
+              <Link href={"/customer/referrals/requests"} className="relative inline-flex">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 rounded-xl border-border hover:border-primary/40 hover:bg-muted/40"
+                  aria-label="Referral settings"
+                >
+                  <Users size={15} className="text-muted-foreground" />
+                </Button>
+
+                {/* badge */}
+                {ReqCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                    {ReqCount > 9 ? "9+" : ReqCount}
+                  </span>
+                )}
+              </Link>
             </div>
           </div>
           <p
             className="text-sm leading-relaxed text-muted-foreground"
             style={{ maxWidth: "380px" }}
           >
-            Earn CA$5 in gift credit for every friend who joins and places their
+            Earn CA${userData.perReferAmount} in gift credit for every friend who joins and places their
             first order over CA$21.
           </p>
         </div>
@@ -923,6 +926,7 @@ export function ReferralPageClient({
             uses={referralData.uses}
             code={referralData.code}
             maxUses={referralData.maxUses}
+            perReferAmount={userData.perReferAmount}
           />
         </div>
 
@@ -955,6 +959,7 @@ export function ReferralPageClient({
           <UsedByList
             usedBy={referralData.usedBy}
             maxUses={referralData.maxUses}
+            perReferAmount={userData.perReferAmount}
           />
         </div>
       </div>
