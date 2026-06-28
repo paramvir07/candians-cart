@@ -1,18 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import {
-  Search,
-  Banknote,
-  ShoppingCart,
-  Wallet,
-  Store,
-  User,
-  Filter,
-} from "lucide-react";
+import { Banknote, Wallet, Store, User } from "lucide-react";
 import Link from "next/link";
 import {
   Pagination,
@@ -72,10 +63,6 @@ const SummarySkeleton = () => (
   </div>
 );
 
-// ─── Type filter ───────────────────────────────────────────────────────────────
-
-type TypeFilter = "all" | "order" | "wallet_topup";
-
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
 interface CashCollectionListProps {
@@ -97,8 +84,6 @@ export function CashCollectionList({
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
 
   const isAllStores = !storeId;
 
@@ -112,13 +97,7 @@ export function CashCollectionList({
     let mounted = true;
     const load = async () => {
       setIsLoading(true);
-      const res = await getCashActivitiesPaginated(
-        storeId,
-        currentPage,
-        15,
-        typeFilter,
-        searchQuery,
-      );
+      const res = await getCashActivitiesPaginated(storeId, currentPage, 8);
       if (!mounted) return;
       if (res.success) {
         setActivities(res.data);
@@ -133,18 +112,7 @@ export function CashCollectionList({
     return () => {
       mounted = false;
     };
-  }, [storeId, currentPage, typeFilter, searchQuery]);
-
-  // Reset page on filter change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [typeFilter]);
-
-  // Debounce search
-  useEffect(() => {
-    const t = setTimeout(() => setCurrentPage(1), 350);
-    return () => clearTimeout(t);
-  }, [searchQuery]);
+  }, [storeId, currentPage]);
 
   const getPageNumbers = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
@@ -173,17 +141,11 @@ export function CashCollectionList({
     return pages;
   };
 
-  const TYPE_FILTERS: { label: string; value: TypeFilter }[] = [
-    { label: "All", value: "all" },
-    { label: "Orders", value: "order" },
-    { label: "Top-Ups", value: "wallet_topup" },
-  ];
-
   return (
     <div className="space-y-5">
       {/* ── Summary cards ──────────────────────────────────────────────────── */}
       {summary ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl">
           {[
             {
               label: "Total Collected",
@@ -193,29 +155,8 @@ export function CashCollectionList({
               icon: Banknote,
             },
             {
-              label: "Cash Orders",
-              value: summary.totalCashOrders.toLocaleString(),
-              bg: "bg-emerald-50/60",
-              border: "border-emerald-100",
-              icon: ShoppingCart,
-            },
-            {
-              label: "Order Revenue",
-              value: formatCents(summary.totalCashOrderAmount),
-              bg: "bg-emerald-50/60",
-              border: "border-emerald-100",
-              icon: ShoppingCart,
-            },
-            {
               label: "Cash Top-Ups",
               value: summary.totalCashTopUps.toLocaleString(),
-              bg: "bg-blue-50/60",
-              border: "border-blue-100",
-              icon: Wallet,
-            },
-            {
-              label: "Top-Up Revenue",
-              value: formatCents(summary.totalCashTopUpAmount),
               bg: "bg-blue-50/60",
               border: "border-blue-100",
               icon: Wallet,
@@ -238,8 +179,8 @@ export function CashCollectionList({
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl">
+          {Array.from({ length: 2 }).map((_, i) => (
             <SummarySkeleton key={i} />
           ))}
         </div>
@@ -269,34 +210,6 @@ export function CashCollectionList({
               </span>
             )}
           </div>
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search customer, cashier or store..."
-              className="pl-10 rounded-xl h-9 text-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* Filter bar */}
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-50 bg-gray-50/40">
-          <Filter className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-          <span className="text-xs text-gray-400 font-medium mr-1">Type:</span>
-          {TYPE_FILTERS.map((f) => (
-            <button
-              key={f.value}
-              onClick={() => setTypeFilter(f.value)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                typeFilter === f.value
-                  ? "bg-amber-500 text-white"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-amber-300 hover:text-amber-600"
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
         </div>
 
         {/* Table */}
@@ -339,14 +252,6 @@ export function CashCollectionList({
                     <p className="text-sm text-gray-400 font-medium">
                       No cash activities found
                     </p>
-                    {searchQuery && (
-                      <button
-                        onClick={() => setSearchQuery("")}
-                        className="text-xs text-emerald-600 underline underline-offset-2 mt-1"
-                      >
-                        Clear search
-                      </button>
-                    )}
                   </td>
                 </tr>
               ) : (
@@ -364,11 +269,6 @@ export function CashCollectionList({
                             : "bg-blue-100 text-blue-700"
                         }`}
                       >
-                        {a.type === "order" ? (
-                          <ShoppingCart className="w-3 h-3" />
-                        ) : (
-                          <Wallet className="w-3 h-3" />
-                        )}
                         {a.label}
                       </span>
                     </td>
@@ -473,7 +373,8 @@ export function CashCollectionList({
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage < totalPages && !isLoading)
-                        setCurrentPage((p) => p + 1);
+                        setCurrentPage((p) => p - 1);
+                      setCurrentPage((p) => p + 1);
                     }}
                     className={
                       currentPage === totalPages || isLoading

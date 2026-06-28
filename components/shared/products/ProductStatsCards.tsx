@@ -31,12 +31,10 @@ function StatCard({
           {label}
         </p>
         <div className={`${bg.replace("60", "100")} p-1.5 rounded-xl shrink-0`}>
-          <Icon className={`w-3.5 h-3.5 `} />
+          <Icon className="w-3.5 h-3.5" />
         </div>
       </div>
-      <p
-        className={`text-2xl sm:text-3xl font-bold tracking-tight`}
-      >
+      <p className="text-2xl sm:text-3xl font-bold tracking-tight">
         {value}
       </p>
       <p className="text-xs text-gray-400 mt-1">{sub}</p>

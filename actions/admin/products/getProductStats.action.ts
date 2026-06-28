@@ -14,6 +14,16 @@ export interface ProductStats {
   soldWeekly: number;
   totalSold: number;
 }
+interface StatFilterQuery {
+  storeId?: mongoose.Types.ObjectId;
+  stock?: boolean;
+  subsidised?: boolean;
+}
+
+interface AggregationResult {
+  _id: null;
+  total: number;
+}
 
 /**
  * Compute product stats.
@@ -25,10 +35,10 @@ export async function getProductStats(
 ): Promise<ProductStats> {
   await dbConnect();
 
-  const match: Record<string, any> = {};
+  const match: StatFilterQuery = {};
   if (storeId) match.storeId = new mongoose.Types.ObjectId(storeId);
 
-  const orderMatch: Record<string, any> = {};
+  const orderMatch: StatFilterQuery = {};
   if (storeId) orderMatch.storeId = new mongoose.Types.ObjectId(storeId);
 
   const now = new Date();
@@ -46,21 +56,26 @@ export async function getProductStats(
     productsModel.countDocuments(match),
     productsModel.countDocuments({ ...match, stock: true }),
     productsModel.countDocuments({ ...match, subsidised: true }),
-    // Sold today = sum of quantities in orders placed today
-    OrderModel.aggregate([
+    
+    // Sold today = sum of ceilinged quantities (e.g., 0.54 quantity becomes 1 item)
+    OrderModel.aggregate<AggregationResult>([
       { $match: { ...orderMatch, createdAt: { $gte: startOfDay } } },
       { $unwind: "$products" },
-      { $group: { _id: null, total: { $sum: "$products.quantity" } } },
+      { $group: { _id: null, total: { $sum: { $ceil: "$products.quantity" } } } },
     ]),
-    OrderModel.aggregate([
+    
+    // Sold weekly
+    OrderModel.aggregate<AggregationResult>([
       { $match: { ...orderMatch, createdAt: { $gte: startOfWeek } } },
       { $unwind: "$products" },
-      { $group: { _id: null, total: { $sum: "$products.quantity" } } },
+      { $group: { _id: null, total: { $sum: { $ceil: "$products.quantity" } } } },
     ]),
-    OrderModel.aggregate([
+    
+    // Total Sold
+    OrderModel.aggregate<AggregationResult>([
       { $match: orderMatch },
       { $unwind: "$products" },
-      { $group: { _id: null, total: { $sum: "$products.quantity" } } },
+      { $group: { _id: null, total: { $sum: { $ceil: "$products.quantity" } } } },
     ]),
   ]);
 
