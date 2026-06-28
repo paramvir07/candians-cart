@@ -80,7 +80,7 @@ const Page = () => {
             Referral Requests
           </h1>
           <p className="text-sm leading-relaxed text-muted-foreground" style={{ maxWidth: "380px" }}>
-            People who want to use your referral code. Accept to earn CA$5 when they place their first order.
+            People who want to use your referral code. Accept to earn when they place their first order.
           </p>
         </div>
 

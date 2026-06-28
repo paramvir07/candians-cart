@@ -3,7 +3,7 @@ import NavbarWrapper from "@/components/landing/NavbarWrapper"
 import ReferralsLanding from "@/components/landing/ReferralsLanding"
 import { getRandom10Referrals } from "@/actions/customer/ReferralRequest.Action"
 import { Suspense } from "react"
-import { getUserSession, isLoggedIn } from "@/actions/auth/getUserSession.actions"
+import {  isLoggedIn } from "@/actions/auth/getUserSession.actions"
 import { redirect } from "next/navigation"
 
 function MemberListSkeleton() {

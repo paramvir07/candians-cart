@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
+import { getReferralShareMessage, getReferralUrl } from "@/lib/shareMessage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -83,6 +84,7 @@ export interface UserDataProps {
 interface ReferralPageClientProps {
   referralData: ReferralDocument;
   userData: UserDataProps;
+  ReqCount:number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -116,33 +118,7 @@ function groupByMonth(
     .map(([label, items]) => ({ label, items }));
 }
 
-function getReferralUrl(code: string): string {
-  return `https://www.canadianscart.ca/?referralCode=${encodeURIComponent(code)}&heard=referred_by_customer`;
-}
 
-function getReferralShareMessage(code: string): string {
-  const url = getReferralUrl(code);
-
-  return `🛒 Canadian's Cart (CC) is now live at Sunfarm Produce, Abbotsford, BC!
-
-🎁 Join & you could win a $500 grocery gift card
-
-✨ Perks:
-• Free groceries like milk, atta & ghee on sign-up offers
-• Exclusive launch rewards for new members
-
-📲 Use referral code: ${code}
-
-📍 Location: 3670 Town Line Rd #108, Abbotsford, BC
-
-🔗 Sign up here: ${url}
-
-━━━━━━━━━━━━━━
-📢 Follow us for updates
-📸 Instagram: https://www.instagram.com/canadianscart
-📘 Facebook: https://www.facebook.com/canadianscart
-🎥 TikTok: https://vt.tiktok.com/ZSxjaYrjL/`;
-}
 
 // ─── Earnings Hero ────────────────────────────────────────────────────────────
 
@@ -888,6 +864,7 @@ export function ReferralSettingsToggle({ initial }: { initial: boolean }) {
 export function ReferralPageClient({
   referralData,
   userData,
+  ReqCount,
 }: ReferralPageClientProps) {
   const earnedDisplay = (referralData.totalEarned / 100).toFixed(2);
 
@@ -915,15 +892,22 @@ export function ReferralPageClient({
               <ReferralSettingsToggle
                 initial={userData.recieveReferralInvites}
               />
-              <Link href={"/customer/referrals/requests"}>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 rounded-xl border-border hover:border-primary/40 hover:bg-muted/40"
-                aria-label="Referral settings"
-              >
-                <Users size={15} className="text-muted-foreground" />
-              </Button>
+              <Link href={"/customer/referrals/requests"} className="relative inline-flex">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 rounded-xl border-border hover:border-primary/40 hover:bg-muted/40"
+                  aria-label="Referral settings"
+                >
+                  <Users size={15} className="text-muted-foreground" />
+                </Button>
+
+                {/* badge */}
+                {ReqCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                    {ReqCount > 9 ? "9+" : ReqCount}
+                  </span>
+                )}
               </Link>
             </div>
           </div>

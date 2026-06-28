@@ -61,7 +61,7 @@ function InfoGate({
     if (!form.name.trim()) next.name = "Name is required.";
     if (!form.phoneNumber.trim() || !/^\+?[\d\s\-(). ]{7,20}$/.test(form.phoneNumber))
       next.phoneNumber = "Enter a valid phone number.";
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+    if (!form.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       next.email = "Enter a valid email address.";
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -89,7 +89,7 @@ function InfoGate({
           <p className="text-sm text-muted-foreground leading-relaxed">
             Canadian&apos;s Cart is invite-only. Fill in your details and send
             a request to an existing member — if they accept, your referral
-            code will be sent <strong className="text-foreground">automatically to your phone number.</strong>
+            code will be sent <strong className="text-foreground">automatically to your phone number & email.</strong>
           </p>
         </div>
 
@@ -98,7 +98,7 @@ function InfoGate({
           {([
             { icon: UserRound, text: "Fill in your name and phone number below" },
             { icon: Users,     text: "Browse members and send one a request" },
-            { icon: MessageCircle, text: "If they accept, a referral code is texted to your phone automatically" },
+            { icon: MessageCircle, text: "If accepted, a referral code is sent to your phone & email" },
           ] as const).map(({ icon: Icon, text }, i) => (
             <div key={i} className="flex items-start gap-3">
               <div className="mt-0.5 flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
@@ -134,10 +134,10 @@ function InfoGate({
           />
           <FormField
             label="Email address"
-            labelSuffix="optional"
             placeholder="jane@example.com"
             type="email"
             icon={<Mail size={14} className="text-muted-foreground" />}
+            required
             value={form.email ?? ""}
             error={errors.email}
             onChange={(v) => setForm((f) => ({ ...f, email: v }))}
@@ -374,9 +374,11 @@ export default function ReferralsLanding({
           if (res.success && res.data.length > 0) {
             setSentMap((prev) => {
               const next = { ...prev };
-              res.data.forEach(({ memberId }) => {
-                if (next[memberId] !== undefined) next[memberId] = "already_sent";
-              });
+                  res.data.forEach(({ memberId, accepted }) => {
+                    if (next[memberId] !== undefined && accepted !== false) {
+                      next[memberId] = "already_sent";
+                    }AvatarFallback
+                  });
               return next;
             });
           }
@@ -452,7 +454,7 @@ export default function ReferralsLanding({
         </h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
           Send a request to any member below. If they accept, your referral
-          code will be <strong className="text-foreground">texted to your phone automatically.</strong>
+          code will be <strong className="text-foreground">sent to your phone & email automatically.</strong>
         </p>
       </div>
 
