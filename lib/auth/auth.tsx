@@ -130,7 +130,7 @@ export const auth = betterAuth({
           await dbConnect();
           const { Types } = await import("mongoose");
           const result = await Customer.findOneAndUpdate(
-            { userId: new Types.ObjectId(user.id) },
+            { userId: user.id },
             { mobile: phoneNumber },
           );
           if (!result) {

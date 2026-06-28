@@ -464,7 +464,10 @@ export function OrdersList({
     <div className="space-y-5">
       {/* ── Order Detail Modal ── */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-md md:max-w-2xl p-0 bg-transparent border-none shadow-none [&>button]:hidden">
+        <DialogContent
+          aria-describedby={undefined}
+           className="max-w-md md:max-w-2xl p-0 bg-transparent border-none shadow-none [&>button]:hidden"
+        >
           <DialogTitle className="sr-only">Order Details</DialogTitle>
           {isLoadingDetail ? (
             <div className="bg-background rounded-2xl p-12 flex flex-col items-center justify-center gap-3">

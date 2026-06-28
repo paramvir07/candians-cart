@@ -4,30 +4,24 @@ import { Button } from "@/components/ui/button";
 
 export default function NoOrdersScreen({
   customerId,
-  allOrders
+  allOrders,
 }: {
   customerId?: string;
   allOrders?: boolean;
 }) {
   return (
     <>
-      <div className="flex items-center justify-center gap-2 m-4">
-        <Link
-          href={
-            customerId
-              ? `/cashier/customer/${customerId}`
-              : allOrders
-                ? "/cashier"
-                : "/customer"
-          }
-        >
-          <Button className="rounded-full" variant="outline" size="icon">
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-        </Link>
+      <div className="flex items-center justify-center gap-2 m-4 mt-6">
+        {!customerId && (
+          <Link href="/customer">
+            <Button className="rounded-full" variant="outline" size="icon">
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+        )}
 
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-950">
-          {customerId ? "Customer order history" : "Order history"}
+          {customerId ? "Customer Orders" : "Order history"}
         </h1>
       </div>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16 flex flex-col items-center justify-center text-center gap-6">
@@ -50,7 +44,11 @@ export default function NoOrdersScreen({
         {/* CTA */}
         <Button asChild>
           <Link
-            href={customerId ? `/cashier/customer/${customerId}/products` : "/customer/search"}
+            href={
+              customerId
+                ? `/cashier/customer/${customerId}/products`
+                : "/customer/search"
+            }
           >
             Browse products
           </Link>

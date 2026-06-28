@@ -119,22 +119,30 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button type="button" className="w-full text-left group focus:outline-none">
+        <button
+          type="button"
+          className="w-full text-left group focus:outline-none"
+        >
           <div
             className="relative overflow-hidden rounded-2xl border bg-white"
             style={{
-              borderColor: isCompleted ? "rgba(16,185,129,0.2)" : "rgba(245,158,11,0.25)",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)",
+              borderColor: isCompleted
+                ? "rgba(16,185,129,0.2)"
+                : "rgba(245,158,11,0.25)",
+              boxShadow:
+                "0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)",
               transition: "box-shadow 0.18s ease, transform 0.18s ease",
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.boxShadow = "0 4px 12px rgba(0,0,0,0.07), 0 12px 32px rgba(0,0,0,0.07)";
+              el.style.boxShadow =
+                "0 4px 12px rgba(0,0,0,0.07), 0 12px 32px rgba(0,0,0,0.07)";
               el.style.transform = "translateY(-1px)";
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLDivElement;
-              el.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)";
+              el.style.boxShadow =
+                "0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04)";
               el.style.transform = "translateY(0)";
             }}
           >
@@ -151,15 +159,28 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
               {/* Thumbnail */}
               <div
                 className="relative shrink-0 rounded-xl overflow-hidden"
-                style={{ width: 52, height: 52, border: "1.5px solid rgba(0,0,0,0.07)", background: "#f8f8f6" }}
+                style={{
+                  width: 52,
+                  height: 52,
+                  border: "1.5px solid rgba(0,0,0,0.07)",
+                  background: "#f8f8f6",
+                }}
               >
                 {thumbUrl ? (
-                  <Image src={thumbUrl} alt="Order" fill className="object-cover" />
+                  <Image
+                    src={thumbUrl}
+                    alt="Order"
+                    fill
+                    className="object-cover"
+                  />
                 ) : (
                   <CategoryIllustration category={firstCat} />
                 )}
                 {(hasSubsidyUsed || hasSubsidyGenerated) && (
-                  <div className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg" style={{ background: "#f59e0b" }}>
+                  <div
+                    className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg"
+                    style={{ background: "#f59e0b" }}
+                  >
                     <Sparkles className="w-2.5 h-2.5 text-white" />
                   </div>
                 )}
@@ -172,14 +193,19 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
                   <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider">
                     #{orderId}
                   </p>
-                  <p className="font-bold text-[15px] tabular-nums" style={{ color: "#16a34a" }}>
+                  <p
+                    className="font-bold text-[15px] tabular-nums"
+                    style={{ color: "#16a34a" }}
+                  >
                     {fmt(order.cartTotal)}
                   </p>
                 </div>
 
                 {/* Row 2: date + item count */}
                 <div className="flex items-center justify-between gap-2 mt-0.5">
-                  <p className="text-[11px] text-stone-400 font-medium">{date}</p>
+                  <p className="text-[11px] text-stone-400 font-medium">
+                    {date}
+                  </p>
                   <p className="text-[11px] text-stone-400 font-medium">
                     {totalItems} item{totalItems !== 1 ? "s" : ""}
                   </p>
@@ -210,15 +236,30 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
               {/* Thumbnail */}
               <div
                 className="relative shrink-0 rounded-xl overflow-hidden"
-                style={{ width: 54, height: 54, border: "1.5px solid rgba(0,0,0,0.07)", background: "#f8f8f6", boxShadow: "0 2px 6px rgba(0,0,0,0.06)" }}
+                style={{
+                  width: 54,
+                  height: 54,
+                  border: "1.5px solid rgba(0,0,0,0.07)",
+                  background: "#f8f8f6",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
+                }}
               >
                 {thumbUrl ? (
-                  <Image src={thumbUrl} alt="Order" fill className="object-cover" />
+                  <Image
+                    src={thumbUrl}
+                    alt="Order"
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                  />
                 ) : (
                   <CategoryIllustration category={firstCat} />
                 )}
                 {(hasSubsidyUsed || hasSubsidyGenerated) && (
-                  <div className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg" style={{ background: "#f59e0b" }}>
+                  <div
+                    className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg"
+                    style={{ background: "#f59e0b" }}
+                  >
                     <Sparkles className="w-2.5 h-2.5 text-white" />
                   </div>
                 )}
@@ -228,41 +269,61 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
               <div className="flex-1 grid grid-cols-[1.4fr_1.3fr_0.5fr_1fr_1.1fr_1fr] items-center gap-x-2 min-w-0">
                 {/* Order # */}
                 <div className="min-w-0">
-                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Order</p>
-                  <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider truncate">#{orderId}</p>
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">
+                    Order
+                  </p>
+                  <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider truncate">
+                    #{orderId}
+                  </p>
                 </div>
 
                 {/* Date */}
                 <div className="min-w-0">
-                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Date</p>
-                  <p className="text-[13px] font-semibold text-stone-600 truncate">{date}</p>
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">
+                    Date
+                  </p>
+                  <p className="text-[13px] font-semibold text-stone-600 truncate">
+                    {date}
+                  </p>
                 </div>
 
                 {/* Items */}
                 <div className="min-w-0">
-                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Items</p>
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">
+                    Items
+                  </p>
                   <div className="flex items-center gap-1">
                     <Package className="w-3 h-3 text-stone-400 shrink-0" />
-                    <p className="text-[13px] font-bold text-stone-700">{totalItems}</p>
+                    <p className="text-[13px] font-bold text-stone-700">
+                      {totalItems}
+                    </p>
                   </div>
                 </div>
 
                 {/* Payment */}
                 <div className="min-w-0 overflow-hidden">
-                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">Payment</p>
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">
+                    Payment
+                  </p>
                   <PaymentBadge mode={order.paymentMode} />
                 </div>
 
                 {/* Status */}
                 <div className="min-w-0 overflow-hidden">
-                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">Status</p>
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">
+                    Status
+                  </p>
                   <StatusBadge status={order.status} />
                 </div>
 
                 {/* Total */}
                 <div className="min-w-0 text-right">
-                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Total</p>
-                  <p className="tabular-nums font-bold text-[15px] text-green-700 truncate">{fmt(order.cartTotal)}</p>
+                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">
+                    Total
+                  </p>
+                  <p className="tabular-nums font-bold text-[15px] text-green-700 truncate">
+                    {fmt(order.cartTotal)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -277,7 +338,11 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </DialogClose>
-        <OrderDetail order={order} customerId={customerId} allOrders={allOrders} />
+        <OrderDetail
+          order={order}
+          customerId={customerId}
+          allOrders={allOrders}
+        />
       </DialogContent>
     </Dialog>
   );
