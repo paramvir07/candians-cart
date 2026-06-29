@@ -466,7 +466,7 @@ export function OrdersList({
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent
           aria-describedby={undefined}
-           className="max-w-md md:max-w-2xl p-0 bg-transparent border-none shadow-none [&>button]:hidden"
+          className="max-w-md md:max-w-2xl p-0 bg-transparent border-none shadow-none [&>button]:hidden"
         >
           <DialogTitle className="sr-only">Order Details</DialogTitle>
           {isLoadingDetail ? (
@@ -514,20 +514,6 @@ export function OrdersList({
               sub="All time"
               icon={Package}
               accent="bg-amber-500"
-            />
-            <StatCard
-              label="Pending"
-              value={stats.pendingOrders}
-              sub="Awaiting action"
-              icon={Clock}
-              accent="bg-rose-500"
-            />
-            <StatCard
-              label="Completed"
-              value={stats.completedOrders.toLocaleString()}
-              sub="Successfully done"
-              icon={CheckCircle2}
-              accent="bg-teal-500"
             />
             <StatCard
               label="Revenue"

@@ -16,10 +16,12 @@ export interface StoreDashboardStats {
   productGrowthPercent: number;
   totalOrders: number;
   orderGrowthPercent: number;
-  totalRevenue: number; // all-time sum of storePayout (cents)
+  totalRevenue: number;
   revenueGrowthPercent: number;
-  storeUsers: number; // customers associated with this store
-  newUsersRecently: number; // new this month
+  totalStoreProfit: number;
+  storeProfitGrowthPercent: number;
+  storeUsers: number;
+  newUsersRecently: number;
 }
 
 export interface StoreRecentOrder {
@@ -85,18 +87,17 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
     totalProducts,
     productsLastMonth,
     productsThisMonth,
-
     totalOrders,
     ordersLastMonth,
     ordersThisMonth,
-
     storeUsers,
     newUsersThisMonth,
-
     revenueAllTimeAgg,
     revenueThisMonthAgg,
     revenueLastMonthAgg,
-
+    storeProfitAllTimeAgg,
+    storeProfitThisMonthAgg,
+    storeProfitLastMonthAgg,
     recentOrdersDocs,
     recentPayoutDocs,
   ] = await Promise.all([
@@ -129,27 +130,100 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
       createdAt: { $gte: startOfThisMonth },
     }),
 
-    // Revenue (storePayout) all-time
-    storePayoutsModel.aggregate([
-      { $match: { storeId } },
-      { $group: { _id: null, total: { $sum: "$storePayout" } } },
+    // Total revenue (cartTotal + subsidy) from completed orders — all-time
+    OrderModel.aggregate([
+      { $match: { storeId, status: "completed" } },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
+          },
+        },
+      },
     ]),
 
-    // Revenue this month
-    storePayoutsModel.aggregate([
-      { $match: { storeId, endDate: { $gte: startOfThisMonth } } },
-      { $group: { _id: null, total: { $sum: "$storePayout" } } },
-    ]),
-
-    // Revenue last month
-    storePayoutsModel.aggregate([
+    // Total revenue this month
+    OrderModel.aggregate([
       {
         $match: {
           storeId,
-          endDate: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+          status: "completed",
+          createdAt: { $gte: startOfThisMonth },
         },
       },
-      { $group: { _id: null, total: { $sum: "$storePayout" } } },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
+          },
+        },
+      },
+    ]),
+
+    // Total revenue last month
+    OrderModel.aggregate([
+      {
+        $match: {
+          storeId,
+          status: "completed",
+          createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
+          },
+        },
+      },
+    ]),
+
+    // Store profit all-time
+    OrderModel.aggregate([
+      { $match: { storeId, status: "completed" } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $ifNull: ["$storeProfit", 0] } },
+        },
+      },
+    ]),
+
+    // Store profit this month
+    OrderModel.aggregate([
+      {
+        $match: {
+          storeId,
+          status: "completed",
+          createdAt: { $gte: startOfThisMonth },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $ifNull: ["$storeProfit", 0] } },
+        },
+      },
+    ]),
+
+    // Store profit last month
+    OrderModel.aggregate([
+      {
+        $match: {
+          storeId,
+          status: "completed",
+          createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $ifNull: ["$storeProfit", 0] } },
+        },
+      },
     ]),
 
     // Recent orders — join customer name
@@ -196,6 +270,11 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
       revenueThisMonthAgg[0]?.total ?? 0,
       revenueLastMonthAgg[0]?.total ?? 0,
     ),
+    totalStoreProfit: storeProfitAllTimeAgg[0]?.total ?? 0, // ← new
+    storeProfitGrowthPercent: growthPercent(
+      storeProfitThisMonthAgg[0]?.total ?? 0,
+      storeProfitLastMonthAgg[0]?.total ?? 0,
+    ), // ← new
     storeUsers,
     newUsersRecently: newUsersThisMonth,
   };
