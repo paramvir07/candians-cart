@@ -17,17 +17,28 @@ import logoIcon from "@/app/icon.jpg";
 
 const DEFAULT_URL = "https://www.canadianscart.ca";
 
-function getDefaultShareMessage(url: string): string {
-  return `🛒 FREE Milk, Atta & Ghee just for shopping groceries?! YES!
-Canadian's Cart (CC) is NOW launching at Sunfarm Produce, Abbotsford BC! 🎉
+function getDefaultShareMessage(): string {
+  const url = 'www.canadianscart.ca/customer/signup?referralCode=WELCOMETOCC&heard=friend_or_family'
 
-🎁 Win a $500 Grocery Gift Card — One lucky member will take it home!
+  return `🛒 Candian's Cart (CC) is now live at Sunfarm Produce, Abbotsford, BC!
 
-📲 Sign Up TODAY with referral code: WELCOMETOCC
+🎁 Join & you could win a $500 grocery gift card
 
-📍 3670 Town Line Rd #108, Abbotsford, BC
+✨ Perks:
+• Free groceries like milk, atta & ghee on sign-up offers
+• Exclusive launch rewards for new members
 
-${url}`;
+📲 Use referral code: ${'WELCOMETOCC'}
+
+📍 Location: 3670 Town Line Rd #108, Abbotsford, BC
+
+🔗 Sign up here: ${url}
+
+━━━━━━━━━━━━━━
+📢 Follow us for updates
+📸 Instagram: https://www.instagram.com/canadianscart
+📘 Facebook: https://www.facebook.com/canadianscart
+🎥 TikTok: https://vt.tiktok.com/ZSxjaYrjL/`;
 }
 
 // ─── Share app configs ────────────────────────────────────────────────────────
@@ -181,7 +192,7 @@ function PickerView({
         </span>
         <span className="text-sm font-medium text-foreground">QR Code</span>
         <span className="text-center text-xs leading-relaxed text-muted-foreground">
-          Scan to open on another device
+          Scan to send <span className="font-bold">Referral</span>
         </span>
       </button>
 
@@ -194,7 +205,7 @@ function PickerView({
         </span>
         <span className="text-sm font-medium text-foreground">Share Link</span>
         <span className="text-center text-xs leading-relaxed text-muted-foreground">
-          Send via apps or copy message
+          Send <span className="font-bold">Referral</span> via app or copy message
         </span>
       </button>
     </div>
@@ -286,9 +297,9 @@ export default function ShareButton({ link, code }: ShareButtonProps) {
 
   const shareMessage = code
     ? getReferralShareMessage(code)
-    : getDefaultShareMessage(url);
+    : getDefaultShareMessage();
 
-  const shareUrl = code ? getReferralUrl(code) : url;
+  const shareUrl = code ? getReferralUrl(code) : 'www.canadianscart.ca/customer/signup?referralCode=WELCOMETOCC&heard=friend_or_family';
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<ModalView>("picker");
 
@@ -310,6 +321,7 @@ async function handleShareClick() {
     } catch {
    
     }
+    return;
   }
 
   setView("share");

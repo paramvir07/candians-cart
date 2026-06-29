@@ -1,6 +1,8 @@
 export function getReferralUrl(code: string): string {
-  return `https://www.canadianscart.ca/customer/sign-up?referralCode=${encodeURIComponent(code)}&heard=refer`;
+  return `https://www.canadianscart.ca/customer/signup?referralCode=${encodeURIComponent(code)}&heard=refer`;
 }
+
+const websiteURL = 'https://canadianscart.ca'
 
 export function getReferralShareMessage(code: string): string {
   const url = getReferralUrl(code);
@@ -30,4 +32,8 @@ export function getReferralShareMessage(code: string): string {
 export function getReferralShareMessageTwilio(code: string,name:string): string {
   const url = getReferralUrl(code);
   return `${name} You're invited to Candian's Cart!🛒 ${url}`;
+}
+
+export function getReferralRequestMessage(name: string): string {
+  return `${name} requested a referral invite. Review the request here: 🛒 ${websiteURL}/customer/referrals`;
 }
