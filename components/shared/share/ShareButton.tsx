@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Share2, QrCode, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
@@ -17,7 +17,6 @@ Candian's Cart (CC) is NOW launching at Sunfarm Produce, Abbotsford BC! 🎉
 📲 Sign Up TODAY with referral code: WELCOMETOCC
 
 📍 3670 Town Line Rd #108, Abbotsford, BC`;
-
 
 interface AppConfig {
   label: string;
@@ -104,7 +103,11 @@ export default function ShareButton({ link }: ShareButtonProps) {
   const [view, setView] = useState<ModalView>("picker");
   const [copied, setCopied] = useState(false);
 
-  const isMobile = typeof navigator !== "undefined" && !!navigator.share;
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(!!navigator.share);
+  }, []);
 
   const openModal = (v: ModalView) => {
     setView(v);

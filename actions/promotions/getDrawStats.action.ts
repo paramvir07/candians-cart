@@ -2,7 +2,7 @@
 
 import { dbConnect } from "@/db/dbConnect";
 import Customer from "@/db/models/customer/customer.model";
-import { DrawStats, DrawWinner } from "@/types/draw";
+import { DrawStats, DrawWinner } from "@/types/promotions/draw";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 
@@ -11,7 +11,7 @@ import { headers } from "next/headers";
 // The event runs 2pm–4pm PT but entry stays open throughout.
 // Winners are announced whenever admin sets eventParticipant: "winner" in MongoDB.
 const EVENT_START = new Date("2026-06-27T21:00:00.000Z"); // 2pm PT
-const EVENT_END   = new Date("2026-06-27T23:00:00.000Z"); // 4pm PT — event window ends
+const EVENT_END = new Date("2026-06-27T23:00:00.000Z"); // 4pm PT — event window ends
 
 export async function getDrawStats(): Promise<DrawStats> {
   const now = new Date();
@@ -42,7 +42,8 @@ export async function getDrawStats(): Promise<DrawStats> {
     const winners: DrawWinner[] = winnerDocs.map((w) => {
       const parts = (w.name as string).trim().split(/\s+/);
       const first = parts[0] ?? "Winner";
-      const lastInitial = parts.length > 1 ? `${parts[parts.length - 1][0]}.` : "";
+      const lastInitial =
+        parts.length > 1 ? `${parts[parts.length - 1][0]}.` : "";
       return { name: lastInitial ? `${first} ${lastInitial}` : first };
     });
 
@@ -71,9 +72,15 @@ export async function getDrawStats(): Promise<DrawStats> {
 
         if (!customer) {
           myStatus = null;
-        } else if ((customer as { eventParticipant?: string }).eventParticipant === "winner") {
+        } else if (
+          (customer as { eventParticipant?: string }).eventParticipant ===
+          "winner"
+        ) {
           myStatus = "winner";
-        } else if ((customer as { eventParticipant?: string }).eventParticipant === "participant") {
+        } else if (
+          (customer as { eventParticipant?: string }).eventParticipant ===
+          "participant"
+        ) {
           myStatus = "participant";
         } else {
           myStatus = "not_joined";

@@ -12,6 +12,7 @@ import { ChangeEmailConfirmationEmail } from "@/components/EmailTemplates/Change
 import { sendSMS } from "../twilio/twilio";
 import Customer from "@/db/models/customer/customer.model";
 import { dbConnect } from "@/db/dbConnect";
+import { revalidateCustomerCache } from "@/actions/cache/user.cache";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const client = new MongoClient(MONGODB_URI as string);
@@ -129,16 +130,20 @@ export const auth = betterAuth({
         try {
           await dbConnect();
           const { Types } = await import("mongoose");
+
           const result = await Customer.findOneAndUpdate(
-            { userId: user.id },
+            { userId: new Types.ObjectId(user.id) },
             { mobile: phoneNumber },
           );
+
           if (!result) {
             console.error(
               "[callbackOnVerification] customer not found for userId:",
               user.id,
             );
           }
+
+          await revalidateCustomerCache();
         } catch (err) {
           console.error("Callback on phone number verification failed:", err);
         }

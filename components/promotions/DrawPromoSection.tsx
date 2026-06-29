@@ -16,7 +16,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { DrawStats, DrawWinner } from "@/types/draw";
+import { DrawStats, DrawWinner } from "@/types/promotions/draw";
 import { joinDraw } from "@/actions/promotions/joinDraw.action";
 
 // ─── TikTok icon ──────────────────────────────────────────────────────────────
@@ -56,7 +56,8 @@ function JoinSuccessModal({ onClose }: { onClose: () => void }) {
       <div
         className="relative w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl"
         style={{
-          background: "linear-gradient(160deg, oklch(0.22 0.08 80) 0%, oklch(0.15 0.05 60) 100%)",
+          background:
+            "linear-gradient(160deg, oklch(0.22 0.08 80) 0%, oklch(0.15 0.05 60) 100%)",
           border: "1px solid rgba(251,191,36,0.25)",
         }}
         onClick={(e) => e.stopPropagation()}
@@ -64,23 +65,29 @@ function JoinSuccessModal({ onClose }: { onClose: () => void }) {
         {/* Glow */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse at top, rgba(251,191,36,0.2) 0%, transparent 60%)" }}
+          style={{
+            background:
+              "radial-gradient(ellipse at top, rgba(251,191,36,0.2) 0%, transparent 60%)",
+          }}
         />
 
         {/* Confetti dots */}
         {[
-          { top: "8%",  left: "8%",  size: 8, color: "#fbbf24", delay: "0s" },
+          { top: "8%", left: "8%", size: 8, color: "#fbbf24", delay: "0s" },
           { top: "12%", left: "85%", size: 6, color: "#86efac", delay: "0.3s" },
-          { top: "75%", left: "6%",  size: 7, color: "#fbbf24", delay: "0.6s" },
+          { top: "75%", left: "6%", size: 7, color: "#fbbf24", delay: "0.6s" },
           { top: "70%", left: "88%", size: 9, color: "#a78bfa", delay: "0.2s" },
           { top: "40%", left: "92%", size: 5, color: "#fbbf24", delay: "0.8s" },
-          { top: "50%", left: "4%",  size: 6, color: "#86efac", delay: "0.4s" },
+          { top: "50%", left: "4%", size: 6, color: "#86efac", delay: "0.4s" },
         ].map((d, i) => (
           <div
             key={i}
             className="absolute rounded-full pointer-events-none"
             style={{
-              top: d.top, left: d.left, width: d.size, height: d.size,
+              top: d.top,
+              left: d.left,
+              width: d.size,
+              height: d.size,
               background: d.color,
               animation: `modalBounce 2.5s ${d.delay} infinite alternate`,
               opacity: 0.8,
@@ -102,7 +109,9 @@ function JoinSuccessModal({ onClose }: { onClose: () => void }) {
 
         <div
           className="relative z-10 p-8 text-center space-y-5"
-          style={{ animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards" }}
+          style={{
+            animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards",
+          }}
         >
           <div className="text-7xl leading-none select-none">🎉</div>
 
@@ -115,15 +124,19 @@ function JoinSuccessModal({ onClose }: { onClose: () => void }) {
             </h2>
             <p className="text-amber-100/60 text-sm leading-relaxed mt-2">
               You've entered the draw for a{" "}
-              <span className="text-amber-300 font-bold">$50 Grocery Gift Card</span>.
-              Winners will be announced at our{" "}
-              <span className="text-amber-300 font-bold">live event on June 27</span> — keep an eye on this page!
+              <span className="text-amber-300 font-bold">
+                $50 Grocery Gift Card
+              </span>
+              . Winners will be announced at our{" "}
+              <span className="text-amber-300 font-bold">
+                live event on June 27
+              </span>{" "}
+              — keep an eye on this page!
             </p>
           </div>
 
           <div className="inline-flex items-center gap-2 bg-amber-400 text-amber-950 font-black text-sm px-5 py-2.5 rounded-full shadow-lg shadow-amber-900/30">
-            <Gift className="w-4 h-4" />
-            6 × $50 Gift Cards to be won
+            <Gift className="w-4 h-4" />6 × $50 Gift Cards to be won
           </div>
 
           <p className="text-amber-200/40 text-xs">
@@ -148,12 +161,18 @@ function WinnerCelebration({ winners }: { winners: DrawWinner[] }) {
     <div className="space-y-8">
       <div
         className="relative overflow-hidden rounded-3xl border border-amber-300/30 p-8 text-center"
-        style={{ background: "linear-gradient(135deg, oklch(0.22 0.08 80) 0%, oklch(0.16 0.05 60) 100%)" }}
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.22 0.08 80) 0%, oklch(0.16 0.05 60) 100%)",
+        }}
       >
         <div className="absolute inset-0 pointer-events-none">
           <div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%)" }}
+            style={{
+              background:
+                "radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%)",
+            }}
           />
         </div>
         <div className="relative z-10 space-y-4">
@@ -167,7 +186,10 @@ function WinnerCelebration({ winners }: { winners: DrawWinner[] }) {
             </h2>
             <p className="text-amber-100/60 text-base mt-2">
               You're one of our 6 lucky winners — your{" "}
-              <span className="text-amber-300 font-bold">$50 grocery gift card</span> is ready to use.
+              <span className="text-amber-300 font-bold">
+                $50 grocery gift card
+              </span>{" "}
+              is ready to use.
             </p>
           </div>
           <div className="space-y-2">
@@ -177,7 +199,9 @@ function WinnerCelebration({ winners }: { winners: DrawWinner[] }) {
             </div>
             <p className="text-amber-200/60 text-xs">
               Redeem it at{" "}
-              <span className="text-amber-300 font-bold">Sunfarm Produce — Abbotsford</span>
+              <span className="text-amber-300 font-bold">
+                Sunfarm Produce — Abbotsford
+              </span>
             </p>
           </div>
         </div>
@@ -188,12 +212,20 @@ function WinnerCelebration({ winners }: { winners: DrawWinner[] }) {
 }
 
 // ─── Winners list ─────────────────────────────────────────────────────────────
-function WinnersList({ winners, highlightSelf = false }: { winners: DrawWinner[]; highlightSelf?: boolean }) {
+function WinnersList({
+  winners,
+  highlightSelf = false,
+}: {
+  winners: DrawWinner[];
+  highlightSelf?: boolean;
+}) {
   const trophyColors = ["text-amber-400", "text-slate-400", "text-amber-700"];
   return (
     <div className="space-y-4">
       <div className="text-center">
-        <h3 className="text-xl font-black text-foreground tracking-tight">🏆 Our 6 Lucky Winners</h3>
+        <h3 className="text-xl font-black text-foreground tracking-tight">
+          🏆 Our 6 Lucky Winners
+        </h3>
         <p className="text-sm text-muted-foreground mt-1">
           $50 Grocery Gift Card each — Grand Launch 2026
         </p>
@@ -209,7 +241,9 @@ function WinnersList({ winners, highlightSelf = false }: { winners: DrawWinner[]
             }`}
           >
             <div className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center shrink-0">
-              <Trophy className={`w-4 h-4 ${trophyColors[i] ?? "text-muted-foreground"}`} />
+              <Trophy
+                className={`w-4 h-4 ${trophyColors[i] ?? "text-muted-foreground"}`}
+              />
             </div>
             <div>
               <p className="font-bold text-foreground text-sm">{w.name}</p>
@@ -223,14 +257,26 @@ function WinnersList({ winners, highlightSelf = false }: { winners: DrawWinner[]
 }
 
 // ─── Entry steps ──────────────────────────────────────────────────────────────
-function EntrySteps({ myStatus, participantCount, dark = false }: { myStatus: DrawStats["myStatus"]; participantCount: number; dark?: boolean }) {
+function EntrySteps({
+  myStatus,
+  participantCount,
+  dark = false,
+}: {
+  myStatus: DrawStats["myStatus"];
+  participantCount: number;
+  dark?: boolean;
+}) {
   const isLoggedIn = myStatus !== null;
   const hasJoined = myStatus === "participant" || myStatus === "winner";
 
   const [fbClicked, setFbClicked] = useState(false);
   const [ttClicked, setTtClicked] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [joinResult, setJoinResult] = useState<{ success: boolean; message?: string; error?: string } | null>(null);
+  const [joinResult, setJoinResult] = useState<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  } | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   const bothClicked = fbClicked && ttClicked;
@@ -261,7 +307,8 @@ function EntrySteps({ myStatus, participantCount, dark = false }: { myStatus: Dr
     {
       num: 2,
       title: "Follow us on Facebook & TikTok",
-      description: "Click both links — the Join button unlocks once you've visited both.",
+      description:
+        "Click both links — the Join button unlocks once you've visited both.",
       done: hasJoined || bothClicked,
       disabled: !isLoggedIn,
       content: !hasJoined ? (
@@ -308,17 +355,27 @@ function EntrySteps({ myStatus, participantCount, dark = false }: { myStatus: Dr
     {
       num: 3,
       title: "Join the draw",
-      description: "One click enters you — winners announced live at the event.",
+      description:
+        "One click enters you — winners announced live at the event.",
       done: hasJoined,
       disabled: !canJoin,
       content: !hasJoined ? (
         <div className="mt-2 space-y-2">
-          <Button size="sm" className="gap-2" disabled={!canJoin || isPending} onClick={handleJoin}>
+          <Button
+            size="sm"
+            className="gap-2"
+            disabled={!canJoin || isPending}
+            onClick={handleJoin}
+          >
             <Gift className="w-3.5 h-3.5" />
             {isPending ? "Joining..." : "Join the draw"}
           </Button>
           {!bothClicked && isLoggedIn && (
-            <p className={`text-xs ${dark ? "text-red-200/50" : "text-muted-foreground"}`}>Follow us on both platforms first to unlock this.</p>
+            <p
+              className={`text-xs ${dark ? "text-red-200/50" : "text-muted-foreground"}`}
+            >
+              Follow us on both platforms first to unlock this.
+            </p>
           )}
           {joinResult && !joinResult.success && (
             <p className="text-xs text-destructive">{joinResult.error}</p>
@@ -333,11 +390,19 @@ function EntrySteps({ myStatus, participantCount, dark = false }: { myStatus: Dr
       {showModal && <JoinSuccessModal onClose={() => setShowModal(false)} />}
       <div className="space-y-6">
         {(hasJoined || joinResult?.success) && (
-          <div className={`flex items-center gap-3 rounded-2xl px-4 py-3 border ${dark ? "bg-green-500/15 border-green-500/25" : "bg-green-500/10 border-green-500/20"}`}>
+          <div
+            className={`flex items-center gap-3 rounded-2xl px-4 py-3 border ${dark ? "bg-green-500/15 border-green-500/25" : "bg-green-500/10 border-green-500/20"}`}
+          >
             <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
             <div>
-              <p className={`font-bold text-sm ${dark ? "text-white" : "text-foreground"}`}>You're in the draw!</p>
-              <p className={`text-xs ${dark ? "text-red-200/50" : "text-muted-foreground"}`}>
+              <p
+                className={`font-bold text-sm ${dark ? "text-white" : "text-foreground"}`}
+              >
+                You're in the draw!
+              </p>
+              <p
+                className={`text-xs ${dark ? "text-red-200/50" : "text-muted-foreground"}`}
+              >
                 Winners will be announced live. Keep this page open!
               </p>
             </div>
@@ -345,9 +410,16 @@ function EntrySteps({ myStatus, participantCount, dark = false }: { myStatus: Dr
         )}
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Users className={`w-4 h-4 ${dark ? "text-red-300" : "text-primary"}`} />
+          <Users
+            className={`w-4 h-4 ${dark ? "text-red-300" : "text-primary"}`}
+          />
           <span className={dark ? "text-red-200/60" : ""}>
-            <span className={`font-bold ${dark ? "text-white" : "text-foreground"}`}>{participantCount}</span> people have entered
+            <span
+              className={`font-bold ${dark ? "text-white" : "text-foreground"}`}
+            >
+              {participantCount}
+            </span>{" "}
+            people have entered
           </span>
         </div>
 
@@ -359,20 +431,34 @@ function EntrySteps({ myStatus, participantCount, dark = false }: { myStatus: Dr
                 step.done
                   ? "bg-green-500/10 border-green-500/25"
                   : step.disabled
-                  ? `opacity-40 ${dark ? "bg-white/5 border-white/10" : "bg-muted/20 border-border"}`
-                  : dark ? "bg-white/8 border-white/15" : "bg-card border-border"
+                    ? `opacity-40 ${dark ? "bg-white/5 border-white/10" : "bg-muted/20 border-border"}`
+                    : dark
+                      ? "bg-white/8 border-white/15"
+                      : "bg-card border-border"
               }`}
             >
               <div
                 className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 font-black text-xs ${
-                  step.done ? "bg-green-500 text-white" : dark ? "bg-white/15 text-white/80" : "bg-muted text-muted-foreground"
+                  step.done
+                    ? "bg-green-500 text-white"
+                    : dark
+                      ? "bg-white/15 text-white/80"
+                      : "bg-muted text-muted-foreground"
                 }`}
               >
                 {step.done ? <CheckCircle2 className="w-4 h-4" /> : step.num}
               </div>
               <div className="flex-1 min-w-0">
-                <p className={`font-bold text-sm ${dark ? "text-white" : "text-foreground"}`}>{step.title}</p>
-                <p className={`text-xs mt-0.5 ${dark ? "text-red-100/50" : "text-muted-foreground"}`}>{step.description}</p>
+                <p
+                  className={`font-bold text-sm ${dark ? "text-white" : "text-foreground"}`}
+                >
+                  {step.title}
+                </p>
+                <p
+                  className={`text-xs mt-0.5 ${dark ? "text-red-100/50" : "text-muted-foreground"}`}
+                >
+                  {step.description}
+                </p>
                 {step.content}
               </div>
             </div>
@@ -386,15 +472,27 @@ function EntrySteps({ myStatus, participantCount, dark = false }: { myStatus: Dr
 // ─── Live event banner ────────────────────────────────────────────────────────
 // Shows during the 2pm–4pm event window. Entry still open with full 3-step flow.
 // Winners NOT necessarily announced here — admin does that whenever ready.
-function LiveEventBanner({ myStatus, participantCount }: { myStatus: DrawStats["myStatus"]; participantCount: number }) {
+function LiveEventBanner({
+  myStatus,
+  participantCount,
+}: {
+  myStatus: DrawStats["myStatus"];
+  participantCount: number;
+}) {
   return (
     <div
       className="relative overflow-hidden rounded-3xl border border-red-500/30 p-6 sm:p-8 space-y-6"
-      style={{ background: "linear-gradient(135deg, oklch(0.18 0.07 20) 0%, oklch(0.13 0.04 10) 100%)" }}
+      style={{
+        background:
+          "linear-gradient(135deg, oklch(0.18 0.07 20) 0%, oklch(0.13 0.04 10) 100%)",
+      }}
     >
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at top, rgba(239,68,68,0.15) 0%, transparent 65%)" }}
+        style={{
+          background:
+            "radial-gradient(ellipse at top, rgba(239,68,68,0.15) 0%, transparent 65%)",
+        }}
       />
 
       <div className="relative z-10 space-y-5">
@@ -410,7 +508,8 @@ function LiveEventBanner({ myStatus, participantCount }: { myStatus: DrawStats["
             🎲 The draw is happening today!
           </h2>
           <p className="text-red-200/60 text-sm">
-            You can still enter! Winners will be announced here whenever we're ready — keep this page open.
+            You can still enter! Winners will be announced here whenever we're
+            ready — keep this page open.
           </p>
         </div>
 
@@ -418,11 +517,19 @@ function LiveEventBanner({ myStatus, participantCount }: { myStatus: DrawStats["
 
         {/* Same 3-step entry flow — themed for dark background */}
         <div className="space-y-2">
-          <h3 className="text-sm font-black text-white uppercase tracking-widest">How to enter</h3>
-          <p className="text-xs text-red-200/50">Still open — completely free</p>
+          <h3 className="text-sm font-black text-white uppercase tracking-widest">
+            How to enter
+          </h3>
+          <p className="text-xs text-red-200/50">
+            Still open — completely free
+          </p>
         </div>
 
-        <EntrySteps myStatus={myStatus} participantCount={participantCount} dark />
+        <EntrySteps
+          myStatus={myStatus}
+          participantCount={participantCount}
+          dark
+        />
 
         {/* Refresh hint */}
         <button
@@ -441,26 +548,32 @@ interface DrawPromoSectionProps {
   initialStats: DrawStats;
 }
 
-export default function DrawPromoSection({ initialStats }: DrawPromoSectionProps) {
-  const [secondsLeft, setSecondsLeft] = useState(initialStats.secondsUntilEvent);
+export default function DrawPromoSection({
+  initialStats,
+}: DrawPromoSectionProps) {
+  const [secondsLeft, setSecondsLeft] = useState(
+    initialStats.secondsUntilEvent,
+  );
 
   useEffect(() => {
     if (initialStats.phase !== "pre_event") return;
     if (secondsLeft <= 0) return;
-    const id = setInterval(() => setSecondsLeft((s) => Math.max(0, s - 1)), 1000);
+    const id = setInterval(
+      () => setSecondsLeft((s) => Math.max(0, s - 1)),
+      1000,
+    );
     return () => clearInterval(id);
   }, [initialStats.phase, secondsLeft]);
 
   const pad = (n: number) => String(n).padStart(2, "0");
-  const days    = Math.floor(secondsLeft / 86400);
-  const hours   = Math.floor((secondsLeft % 86400) / 3600);
+  const days = Math.floor(secondsLeft / 86400);
+  const hours = Math.floor((secondsLeft % 86400) / 3600);
   const minutes = Math.floor((secondsLeft % 3600) / 60);
-  const secs    = secondsLeft % 60;
+  const secs = secondsLeft % 60;
 
   return (
     <section className="py-10 px-4 bg-background">
       <div className="max-w-3xl mx-auto space-y-8">
-
         {/* ── Hero header ─────────────────────────────────────────────────── */}
         <div className="relative overflow-hidden rounded-3xl bg-primary pt-10 pb-12 px-6 text-center">
           <div
@@ -477,7 +590,8 @@ export default function DrawPromoSection({ initialStats }: DrawPromoSectionProps
           <div className="relative z-10 space-y-3">
             {initialStats.phase === "announced" ? (
               <div className="inline-flex items-center gap-2 bg-amber-400 text-amber-950 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow">
-                <Trophy className="w-3 h-3" /> Winners Announced <Trophy className="w-3 h-3" />
+                <Trophy className="w-3 h-3" /> Winners Announced{" "}
+                <Trophy className="w-3 h-3" />
               </div>
             ) : initialStats.phase === "live_event" ? (
               <div className="inline-flex items-center gap-2 bg-red-500 text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow animate-pulse">
@@ -485,7 +599,8 @@ export default function DrawPromoSection({ initialStats }: DrawPromoSectionProps
               </div>
             ) : (
               <div className="inline-flex items-center gap-2 bg-amber-400 text-amber-950 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow">
-                <Sparkles className="w-3 h-3" /> Free Grocery Draw <Sparkles className="w-3 h-3" />
+                <Sparkles className="w-3 h-3" /> Free Grocery Draw{" "}
+                <Sparkles className="w-3 h-3" />
               </div>
             )}
 
@@ -505,29 +620,35 @@ export default function DrawPromoSection({ initialStats }: DrawPromoSectionProps
             </div>
 
             <p className="text-primary-foreground/60 text-sm max-w-sm mx-auto">
-              Follow us on Facebook & TikTok, join the draw, and be one of 6 lucky winners.
+              Follow us on Facebook & TikTok, join the draw, and be one of 6
+              lucky winners.
             </p>
 
-            {initialStats.myStatus === "participant" && initialStats.phase !== "announced" && (
-              <div className="inline-flex items-center gap-2 bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold px-3 py-1.5 rounded-full">
-                <CheckCircle2 className="w-3 h-3" /> You're in the draw — good luck!
-              </div>
-            )}
+            {initialStats.myStatus === "participant" &&
+              initialStats.phase !== "announced" && (
+                <div className="inline-flex items-center gap-2 bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold px-3 py-1.5 rounded-full">
+                  <CheckCircle2 className="w-3 h-3" /> You're in the draw — good
+                  luck!
+                </div>
+              )}
           </div>
         </div>
 
         {/* ── Phase content ────────────────────────────────────────────────── */}
-        {initialStats.phase === "announced" && initialStats.myStatus === "winner" ? (
+        {initialStats.phase === "announced" &&
+        initialStats.myStatus === "winner" ? (
           <WinnerCelebration winners={initialStats.winners} />
         ) : initialStats.phase === "announced" ? (
           <div className="space-y-6">
             <WinnersList winners={initialStats.winners} />
             <div className="bg-muted/30 rounded-2xl p-4 text-center space-y-1">
               <p className="text-sm font-semibold text-foreground">
-                Each winner receives a <span className="text-amber-500">$50 Grocery Gift Card</span> 🎁
+                Each winner receives a{" "}
+                <span className="text-amber-500">$50 Grocery Gift Card</span> 🎁
               </p>
               <p className="text-sm text-muted-foreground">
-                Thank you to everyone who participated in our Grand Launch Draw! 🎉
+                Thank you to everyone who participated in our Grand Launch Draw!
+                🎉
               </p>
             </div>
           </div>
@@ -548,46 +669,37 @@ export default function DrawPromoSection({ initialStats }: DrawPromoSectionProps
                   June 27, 2026 · 2:00 PM Pacific Time
                 </p>
                 <p className="text-xs text-muted-foreground/60">
-                  Winners announced live at the event — could be any time after 2 PM
+                  Winners announced live at the event — could be any time after
+                  2 PM
                 </p>
               </div>
               <div className="flex items-start justify-center gap-2 sm:gap-3">
-                <CountdownTile value={days}    label="Days" />
+                <CountdownTile value={days} label="Days" />
                 <div className="text-2xl font-black text-primary mt-3">:</div>
-                <CountdownTile value={hours}   label="Hours" />
+                <CountdownTile value={hours} label="Hours" />
                 <div className="text-2xl font-black text-primary mt-3">:</div>
                 <CountdownTile value={minutes} label="Mins" />
                 <div className="text-2xl font-black text-primary mt-3">:</div>
-                <CountdownTile value={secs}    label="Secs" />
+                <CountdownTile value={secs} label="Secs" />
               </div>
             </Card>
 
             <div className="space-y-4">
               <div>
-                <h3 className="text-xl font-black text-foreground tracking-tight">How to enter</h3>
-                <p className="text-sm text-muted-foreground mt-1">3 easy steps — completely free</p>
+                <h3 className="text-xl font-black text-foreground tracking-tight">
+                  How to enter
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  3 easy steps — completely free
+                </p>
               </div>
-              <EntrySteps myStatus={initialStats.myStatus} participantCount={initialStats.participantCount} />
+              <EntrySteps
+                myStatus={initialStats.myStatus}
+                participantCount={initialStats.participantCount}
+              />
             </div>
           </div>
         )}
-
-        <Separator />
-
-        {/* Terms */}
-        <div className="bg-muted/40 rounded-xl px-4 py-3 space-y-1">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <Star className="w-3 h-3" /> Draw Terms
-          </p>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            The live event takes place on June 27, 2026 starting at 2:00 PM Pacific Time. Entry is open
-            until winners are announced. 6 winners will be selected at random from all participants and
-            announced live. Each winner receives a $50 grocery gift card redeemable on Candian's Cart.
-            Employees and immediate family members are not eligible. Void where prohibited. Candian's
-            Cart reserves the right to modify or cancel the draw at any time.
-          </p>
-        </div>
-
       </div>
     </section>
   );

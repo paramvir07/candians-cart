@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {  Users, ArrowRight, Sparkles, Clock, Trophy } from "lucide-react";
-import { DrawStats } from "@/types/draw";
+import { Users, ArrowRight, Sparkles, Clock, Trophy } from "lucide-react";
+import { DrawStats } from "@/types/promotions/draw";
 
 interface DrawPromoCardProps {
   initialStats: DrawStats;
@@ -14,12 +14,17 @@ export default function DrawPromoCard({
   initialStats,
   href = "/promotions",
 }: DrawPromoCardProps) {
-  const [secondsLeft, setSecondsLeft] = useState(initialStats.secondsUntilEvent);
+  const [secondsLeft, setSecondsLeft] = useState(
+    initialStats.secondsUntilEvent,
+  );
 
   useEffect(() => {
     if (initialStats.phase !== "pre_event") return;
     if (secondsLeft <= 0) return;
-    const id = setInterval(() => setSecondsLeft((s) => Math.max(0, s - 1)), 1000);
+    const id = setInterval(
+      () => setSecondsLeft((s) => Math.max(0, s - 1)),
+      1000,
+    );
     return () => clearInterval(id);
   }, [initialStats.phase, secondsLeft]);
 
@@ -44,9 +49,11 @@ export default function DrawPromoCard({
           href={href}
           className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
         >
-          <div className="relative overflow-hidden rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow border border-amber-300/40"
+          <div
+            className="relative overflow-hidden rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow border border-amber-300/40"
             style={{
-              background: "linear-gradient(135deg, oklch(0.25 0.08 85) 0%, oklch(0.18 0.06 60) 100%)",
+              background:
+                "linear-gradient(135deg, oklch(0.25 0.08 85) 0%, oklch(0.18 0.06 60) 100%)",
             }}
           >
             {/* Glow */}
@@ -60,7 +67,9 @@ export default function DrawPromoCard({
               </div>
 
               <div>
-                <p className="text-amber-200/80 text-xs font-medium">Grocery Gift Card Draw</p>
+                <p className="text-amber-200/80 text-xs font-medium">
+                  Grocery Gift Card Draw
+                </p>
                 <p className="text-2xl font-black text-amber-300 leading-tight tracking-tight">
                   🎉 You Won $50!
                 </p>
@@ -94,7 +103,9 @@ export default function DrawPromoCard({
             </div>
 
             <div>
-              <p className="text-primary-foreground/70 text-xs font-medium">Grocery Gift Card Draw</p>
+              <p className="text-primary-foreground/70 text-xs font-medium">
+                Grocery Gift Card Draw
+              </p>
               <p className="text-xl font-black text-primary-foreground leading-tight tracking-tight">
                 6 Winners · $50 Each!
               </p>
@@ -102,7 +113,10 @@ export default function DrawPromoCard({
 
             <div className="space-y-1">
               {initialStats.winners.slice(0, 3).map((w, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-xs text-primary-foreground/80">
+                <div
+                  key={i}
+                  className="flex items-center gap-1.5 text-xs text-primary-foreground/80"
+                >
                   <span className="w-4 h-4 rounded-full bg-amber-400/20 flex items-center justify-center text-[9px] font-black text-amber-300">
                     {i + 1}
                   </span>
@@ -133,9 +147,11 @@ export default function DrawPromoCard({
         className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
       >
         <div className="relative overflow-hidden rounded-2xl bg-primary p-5 shadow-lg hover:shadow-xl transition-shadow">
-          <div className="absolute inset-0 pointer-events-none"
+          <div
+            className="absolute inset-0 pointer-events-none"
             style={{
-              background: "radial-gradient(ellipse at top right, rgba(251,191,36,0.2) 0%, transparent 60%)",
+              background:
+                "radial-gradient(ellipse at top right, rgba(251,191,36,0.2) 0%, transparent 60%)",
             }}
           />
           <div className="relative z-10 space-y-3">
@@ -144,11 +160,15 @@ export default function DrawPromoCard({
               Draw Live Now
             </div>
             <div>
-              <p className="text-primary-foreground/70 text-xs font-medium">Grocery Gift Card Draw</p>
+              <p className="text-primary-foreground/70 text-xs font-medium">
+                Grocery Gift Card Draw
+              </p>
               <p className="text-2xl font-black text-primary-foreground leading-tight tracking-tight">
                 Picking winners...
               </p>
-              <p className="text-primary-foreground/60 text-xs mt-0.5">Entry still open — winners announced live</p>
+              <p className="text-primary-foreground/60 text-xs mt-0.5">
+                Entry still open — winners announced live
+              </p>
             </div>
             <div className="flex items-center gap-1 text-amber-300 text-xs font-bold group-hover:gap-2 transition-all">
               Enter now or see results <ArrowRight className="w-3 h-3" />
@@ -187,7 +207,9 @@ export default function DrawPromoCard({
 
           {/* Prize */}
           <div>
-            <p className="text-primary-foreground/70 text-xs font-medium">Win a grocery gift card</p>
+            <p className="text-primary-foreground/70 text-xs font-medium">
+              Win a grocery gift card
+            </p>
             <p className="text-3xl font-black text-primary-foreground leading-tight tracking-tighter">
               6 × $50
             </p>
@@ -209,7 +231,9 @@ export default function DrawPromoCard({
             </div>
             <div className="flex items-center gap-1 text-primary-foreground/70">
               <Clock className="w-3 h-3" />
-              <span className="text-primary-foreground font-bold tabular-nums">{timeStr}</span>
+              <span className="text-primary-foreground font-bold tabular-nums">
+                {timeStr}
+              </span>
             </div>
           </div>
 

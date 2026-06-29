@@ -6,7 +6,6 @@ type QrCodeClientProps = {
 const QrCodeClient = ({id}: QrCodeClientProps) => {
   return (
       <QRCodeSVG value={id} size={220} />
-  
   );
 }
 
