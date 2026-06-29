@@ -9,11 +9,7 @@ export const toTitleCase = (value: string) =>
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
 export const CustomerSchema = z.object({
-  name: z
-  .string()
-  .trim()
-  .min(1, "Name is Required")
-  .transform(toTitleCase),
+  name: z.string().trim().min(1, "Name is Required").transform(toTitleCase),
 
   email: z
     .email("Invalid email address")
@@ -73,11 +69,4 @@ export const editProfileSchema = CustomerSchema.pick({
   city: true,
   province: true,
   postalCode: true,
-}).extend({
-  mobile: z
-    .string()
-    .transform((v) => v.replace(/\D/g, ""))
-    .pipe(
-      z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits"),
-    ),
 });

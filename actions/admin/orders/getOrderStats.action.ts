@@ -8,8 +8,6 @@ export interface OrderStats {
   dailyOrders: number;
   monthlyOrders: number;
   totalOrders: number;
-  pendingOrders: number;
-  completedOrders: number;
   totalRevenue: number; // cartTotal sum in cents
 }
 
@@ -30,41 +28,33 @@ export async function getOrderStats(
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const [
-    dailyOrders,
-    monthlyOrders,
-    totalOrders,
-    pendingOrders,
-    completedOrders,
-    revenueAgg,
-  ] = await Promise.all([
-    OrderModel.countDocuments({ ...match, createdAt: { $gte: startOfDay } }),
-    OrderModel.countDocuments({ ...match, createdAt: { $gte: startOfMonth } }),
-    OrderModel.countDocuments(match),
-    OrderModel.countDocuments({ ...match, status: "pending" }),
-
-    OrderModel.countDocuments({ ...match, status: "completed" }),
-    OrderModel.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: null,
-          total: {
-            $sum: {
-              $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }],
+  const [dailyOrders, monthlyOrders, totalOrders, revenueAgg] =
+    await Promise.all([
+      OrderModel.countDocuments({ ...match, createdAt: { $gte: startOfDay } }),
+      OrderModel.countDocuments({
+        ...match,
+        createdAt: { $gte: startOfMonth },
+      }),
+      OrderModel.countDocuments(match),
+      OrderModel.aggregate([
+        { $match: match },
+        {
+          $group: {
+            _id: null,
+            total: {
+              $sum: {
+                $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }],
+              },
             },
           },
         },
-      },
-    ]),
-  ]);
+      ]),
+    ]);
 
   return {
     dailyOrders,
     monthlyOrders,
     totalOrders,
-    pendingOrders,
-    completedOrders,
     totalRevenue: revenueAgg[0]?.total ?? 0,
   };
 }

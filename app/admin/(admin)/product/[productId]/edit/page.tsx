@@ -16,7 +16,7 @@ export default async function EditProductPage({ params }: PageParams) {
 
   if (!result || !result.success) {
     console.log("Cannot find the productId");
-    redirect("/admin/store");
+    redirect("/admin/stores");
   }
 
   return (

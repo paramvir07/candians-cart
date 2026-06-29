@@ -126,15 +126,16 @@ export default async function ProfileServer() {
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center gap-3 py-4 lg:py-6">
-          <Link href="/customer">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
-            >
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
+          >
+            <Link href="/customer">
               <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <div>
             <h1 className="text-base font-bold tracking-tight leading-none">
               My Profile

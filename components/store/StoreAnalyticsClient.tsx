@@ -37,8 +37,8 @@ function fmt(cents: number) {
   return (
     "$" +
     (cents / 100).toLocaleString("en-CA", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     })
   );
 }
@@ -201,7 +201,7 @@ export default function StoreAnalyticsClient({ data }: Props) {
             bg="bg-emerald-50/60"
           />
           <KpiCard
-            label="This Month"
+            label="Revenue This Month"
             value={fmt(data.revenueThisMonth)}
             sub="Current month"
             icon={TrendingUp}
@@ -230,23 +230,16 @@ export default function StoreAnalyticsClient({ data }: Props) {
             bg="bg-pink-50/60"
           />
           <KpiCard
-            label="Completion Rate"
-            value={`${data.completionRate}%`}
-            sub={`${data.completedOrders} completed`}
-            icon={CheckCircle2}
-            bg="bg-green-50/60"
-          />
-          <KpiCard
-            label="Pending Orders"
-            value={data.pendingOrders.toLocaleString()}
-            sub="Need attention"
-            icon={Clock}
-            bg="bg-rose-50/60"
-          />
-          <KpiCard
             label="Products"
             value={data.totalProducts.toLocaleString()}
             sub={`${data.inStockProducts} in stock`}
+            icon={Package}
+            bg="bg-sky-50/60"
+          />
+          <KpiCard
+            label="Subsidy Given"
+            value={fmt(data.totalSubsidyGiven)}
+            sub="Total subsidy disbursed"
             icon={Package}
             bg="bg-sky-50/60"
           />
@@ -398,39 +391,6 @@ export default function StoreAnalyticsClient({ data }: Props) {
 
         {/* ── Payment methods + Top Products row ────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* Payment methods (horizontal bar) */}
-          <Section title="Payment methods">
-            {data.paymentMethods.length === 0 ? (
-              <div className="h-50 flex items-center justify-center text-gray-400 text-sm">
-                No orders yet
-              </div>
-            ) : (
-              <div className="space-y-4 pt-1">
-                {data.paymentMethods.map((p, i) => (
-                  <div key={p.method} className="space-y-1.5">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-gray-700 capitalize">
-                        {p.method}
-                      </span>
-                      <span className="text-gray-500 text-xs tabular-nums">
-                        {p.count} orders · {p.percentage}%
-                      </span>
-                    </div>
-                    <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${p.percentage}%`,
-                          backgroundColor: PIE_COLORS[i % PIE_COLORS.length],
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Section>
-
           {/* Top products */}
           <Section title="Top products by sales">
             {data.topProducts.length === 0 ? (

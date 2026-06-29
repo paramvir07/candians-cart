@@ -15,13 +15,13 @@ interface StoreDashStatCardsProps {
 }
 
 function formatCents(cents: number) {
-  if (cents >= 100_000_00) return "$" + (cents / 100 / 1000).toFixed(0) + "k";
+  if (cents >= 100_000_00) return "$" + (cents / 100 / 1000).toFixed(1) + "k";
   if (cents >= 10_000_00) return "$" + (cents / 100 / 1000).toFixed(1) + "k";
   return (
     "$" +
     (cents / 100).toLocaleString("en-CA", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     })
   );
 }
@@ -32,18 +32,18 @@ export default function StoreDashStatCards({
 }: StoreDashStatCardsProps) {
   const cards = [
     {
-      title: "Total Products",
-      value: stats.totalProducts.toLocaleString(),
+      title: "Store Profit",
+      value: formatCents(stats.totalStoreProfit),
       sub:
-        stats.productGrowthPercent !== 0
-          ? `${stats.productGrowthPercent > 0 ? "+" : ""}${stats.productGrowthPercent}% from last month`
-          : "0%",
-      growth: stats.productGrowthPercent,
-      icon: Package,
+        stats.storeProfitGrowthPercent !== 0
+          ? `${stats.storeProfitGrowthPercent > 0 ? "+" : ""}${stats.storeProfitGrowthPercent}% from last month`
+          : "No change",
+      growth: stats.storeProfitGrowthPercent,
+      icon: TrendingUp,
       iconColor: "text-emerald-600",
       iconBg: "bg-emerald-50",
       cardBg: "bg-emerald-50/60",
-      href: `/store/products`,
+      href: undefined,
     },
     {
       title: "Total Orders",

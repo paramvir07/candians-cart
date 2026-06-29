@@ -3,7 +3,7 @@
 import { dbConnect } from "@/db/dbConnect";
 import Customer from "@/db/models/customer/customer.model";
 import OrderModel from "@/db/models/customer/Orders.Model";
-import { unstable_cache } from "next/cache";
+import { revalidateTag, revalidatePath, unstable_cache } from "next/cache";
 
 
 export const getOrderCountCached = unstable_cache(
@@ -53,3 +53,10 @@ export const getCachedCustomerAndStore = unstable_cache(
   ["customer-and-store"],
   { tags: ["customer-and-store"] } 
 );
+
+export async function revalidateCustomerCache() {
+  revalidateTag("customer", "max");
+  revalidateTag("customer-and-store", "max");
+  revalidatePath("/customer/profile");
+  revalidatePath("/customer/profile/edit");
+}

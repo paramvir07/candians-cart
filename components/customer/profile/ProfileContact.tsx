@@ -38,7 +38,7 @@ function ContactRow({
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 font-semibold leading-none">
           {label}
         </p>
-        <p className="text-sm font-semibold text-foreground truncate mt-1 transition-colors duration-200">
+        <p className="text-sm font-semibold text-foreground break-words mt-1 transition-colors duration-200">
           {value}
         </p>
       </div>
@@ -47,6 +47,18 @@ function ContactRow({
 }
 
 export default function ProfileContact({ customer }: Props) {
+  const formatMobile = (val: string) => {
+    if (!val) return "Not set";
+    let raw = val.replace(/\D/g, "");
+    if (raw.length === 11 && raw.startsWith("1")) raw = raw.slice(1);
+    const digits = raw.slice(0, 10);
+    if (digits.length >= 7)
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    if (digits.length >= 4) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    if (digits.length >= 1) return `(${digits}`;
+    return val;
+  };
+
   const [open, setOpen] = useState(false);
 
   const rows: { icon: React.ElementType; label: string; value: string }[] = [
@@ -55,17 +67,12 @@ export default function ProfileContact({ customer }: Props) {
     {
       icon: MapPin,
       label: "Home Address",
-      value: `${customer.address}, ${customer.city}, ${customer.province}`,
-    },
-    {
-      icon: Hash,
-      label: "Postal Code",
-      value: customer.postalCode ?? "Not set",
+      value: `${customer.address}, ${customer.city}, ${customer.province}${customer.postalCode ? ` ${customer.postalCode}` : ""}`,
     },
     {
       icon: Phone,
       label: "Mobile Number",
-      value: customer.mobile ?? "Not set",
+      value: formatMobile(customer.mobile ?? ""),
     },
   ];
 
