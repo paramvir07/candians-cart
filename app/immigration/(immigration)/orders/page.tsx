@@ -147,7 +147,7 @@ const ImmigrationOrders = async () => {
 
           <StatCard
             label="Completed"
-            value={stats.completedOrders.toLocaleString()}
+            value={stats.totalOrders.toLocaleString()}
             sub="Successfully done"
             icon={CheckCircle2}
             accent="bg-teal-500"
