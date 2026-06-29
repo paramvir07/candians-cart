@@ -82,7 +82,7 @@ export function NavAvatarMenu({ name, initials }: NavAvatarMenuProps) {
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-sm font-medium text-foreground hover:bg-secondary focus:bg-secondary"
         >
           <HandCoins size={15} className="text-muted-foreground shrink-0" />
-          Invite & Earn
+          Refer & Earn
         </DropdownMenuItem>
 
         <DropdownMenuItem
