@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
-import { getReferralShareMessage } from "@/lib/shareMessage";
+import { getReferralShareMessage, getReferralUrl } from "@/lib/shareMessage";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -269,6 +269,7 @@ export default function ShareButton({ link, code }: ShareButtonProps) {
     ? getReferralShareMessage(code)
     : getDefaultShareMessage(url);
 
+  const shareUrl = code ? getReferralUrl(code) : url;
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<ModalView>("picker");
 
@@ -280,20 +281,22 @@ export default function ShareButton({ link, code }: ShareButtonProps) {
     setTimeout(() => setView("picker"), 200);
   }
 
-  async function handleShareClick() {
-    if (isMobile) {
-      try {
-        await navigator.share({
-          title: "Canadian's Cart Grocery Giveaway",
-          text: shareMessage,
-          url,
-        });
-        return;
-      } catch {
-      }
+async function handleShareClick() {
+  if (typeof navigator !== "undefined" && navigator.share) {
+    try {
+      await navigator.share({
+        title: "Canadian's Cart",
+        text: shareMessage,
+        url:shareUrl,
+      });
+      return;
+    } catch {
+   
     }
-    setView("share");
   }
+
+  setView("share");
+}
 
   const titles: Record<ModalView, string> = {
     picker: "Share",

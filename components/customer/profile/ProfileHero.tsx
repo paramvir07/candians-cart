@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Customer } from "@/types/customer/customer";
 import {
   Edit,
@@ -39,6 +39,7 @@ export default function ProfileHero({ customer,referralCode }: Props) {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+console.log(referralCode?.code)
 
   return (
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm">
@@ -174,15 +175,15 @@ export default function ProfileHero({ customer,referralCode }: Props) {
           </Dialog>
 
           {/* FIX: Button asChild with Link inside — no nested interactive elements */}
-          <Button
-            asChild
-            className="flex-1 h-10 rounded-full text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all"
+          <Link
+            href="/customer/profile/edit"
+            className={buttonVariants({
+                className:"flex-1 h-10 rounded-full! text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all"
+            })}
           >
-            <Link href="/customer/profile/edit">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Profile
-            </Link>
-          </Button>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Profile
+          </Link>
 
           <div className="shrink-0">
             <ShareButton code={referralCode?.code} />
