@@ -731,6 +731,12 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
               </div>
               <div className="px-5 py-6 flex flex-col items-center text-center gap-3">
                 <Avatar className="h-20 w-20 rounded-3xl border-2 border-border/40">
+                    <AvatarImage
+                      src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(
+                        trimmed.name,
+                      )}`}
+                      className="rounded-full"
+                    />
                   <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold rounded-3xl">
                     {initials}
                   </AvatarFallback>

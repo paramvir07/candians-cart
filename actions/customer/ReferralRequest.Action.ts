@@ -128,7 +128,7 @@ export const SendReferralRequest = async (data: ReferralRequestData, memberId: s
           react: ReferralRequestEmail({
             recipientName: member.name,
             requesterName: data.name,
-            manageRequestsUrl: "https://canadianscart.ca/customer/referrals",
+            manageRequestsUrl: "https://canadianscart.ca/customer/referrals/requests",
           }),
         })
       );
