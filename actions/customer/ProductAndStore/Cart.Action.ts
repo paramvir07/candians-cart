@@ -20,6 +20,7 @@ import "@/db/models/customer/MiscItem.model";
 import ReferralCode from "@/db/models/admin/referralCode.model";
 import { Cashier } from "@/db/models/cashier/cashier.model";
 import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
+import { revalidateCustomerCache } from "@/actions/cache/user.cache";
 
 export const AddtoCart = async (
   ItemId: string,
@@ -636,6 +637,7 @@ const EnableUserReferralFlag = async (
         console.error("CheckUserReferral failed:", err)
       ),
     ]);
+    await revalidateCustomerCache();
     return { success: true, message: "Referral flags enabled successfully" };
   } catch (err) {
     console.log(err);
@@ -675,12 +677,14 @@ export const GenerateReferralCode = async (customerId: string, customerName: str
 
   for (const code of candidates) {
     const result = await tryCreate(code);
+    await revalidateCustomerCache();
     if (result) return { success: true, code: result };
   }
 
   for (let i = 0; i < 10; i++) {
     const code = namePart + Math.random().toString(36).slice(2, 8).toUpperCase();
     const result = await tryCreate(code);
+    await revalidateCustomerCache();
     if (result) return { success: true, code: result };
   }
 

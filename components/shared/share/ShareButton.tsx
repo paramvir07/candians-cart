@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
 import { getReferralShareMessage, getReferralUrl } from "@/lib/shareMessage";
+import logoIcon from "@/app/icon.jpg";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -205,17 +206,35 @@ function PickerView({
 function QrView({ url }: { url: string }) {
   return (
     <div className="flex flex-col items-center gap-5 pt-2 pb-2">
-      <div className="rounded-2xl border border-border bg-white p-5 shadow-inner">
-        <QRCodeSVG value={url} size={200} />
+      <div className="rounded-[1.5rem] border border-primary/20 bg-card p-3 shadow-sm">
+        <div className="rounded-2xl bg-white p-3">
+          <QRCodeSVG
+            value={url}
+            size={220}
+            fgColor="#07553f"
+            bgColor="#ffffff"
+            level="H"
+            marginSize={0}
+            imageSettings={{
+              src: logoIcon.src,
+              height: 44,
+              width: 44,
+              excavate: true,
+            }}
+          />
+        </div>
       </div>
+
       <div className="space-y-1 text-center">
-        <p className="text-sm font-medium text-foreground">
+        <p className="text-sm font-semibold text-foreground">
           Scan with your camera
         </p>
-        <p className="max-w-[220px] text-xs leading-relaxed text-muted-foreground">
-          Point your phone camera at the code to open the link instantly
+        <p className="max-w-[240px] text-xs leading-relaxed text-muted-foreground">
+          Point your phone camera at the code to open the referral link
+          instantly.
         </p>
       </div>
+
       <div className="w-full">
         <UrlCopyStrip url={url} />
       </div>

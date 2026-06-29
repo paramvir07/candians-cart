@@ -29,7 +29,6 @@ async function ReferralContent() {
   if (ReferralNotGenerated)
     return (
       <>
-        <Navbar />
         <ReferralGenerate
           customerId={UserData._id.toString()}
           customerName={UserData.name}
