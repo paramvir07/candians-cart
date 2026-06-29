@@ -27,6 +27,10 @@ export const HEARD_ABOUT_US_OPTIONS = [
     label: "Google Search",
     value: "google",
   },
+  {
+    label: "Candian's Cart Team",
+    value: "cc_team",
+  },
 ] as const;
 
 export const HEARD_ABOUT_US_VALUES = HEARD_ABOUT_US_OPTIONS.map(
