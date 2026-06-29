@@ -4,7 +4,6 @@ import { Customer } from "@/types/customer/customer";
 import {
   Edit,
   QrCode,
-  ShieldCheck,
   MapPin,
   CalendarDays,
   X,
@@ -23,15 +22,17 @@ import {
 import QrCodeClient from "./QrCodeClient";
 import { getMemberSince } from "@/lib/memberSince";
 import ShareButton from "@/components/shared/share/ShareButton";
+import { IReferralCode } from "@/db/models/admin/referralCode.model";
 
 type Props = {
   customer: Pick<
     Customer,
     "_id" | "name" | "email" | "address" | "city" | "province" | "createdAt"
   >;
+  referralCode:IReferralCode|null
 };
 
-export default function ProfileHero({ customer }: Props) {
+export default function ProfileHero({ customer,referralCode }: Props) {
   const initials = customer.name
     .split(" ")
     .map((w) => w[0])
@@ -79,10 +80,10 @@ export default function ProfileHero({ customer }: Props) {
             <span className="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 rounded-full ring-2 ring-card" />
           </div>
 
-          <div className="mb-1 flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold px-3 py-1.5 rounded-full">
+          {/* <div className="mb-1 flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold px-3 py-1.5 rounded-full">
             <ShieldCheck className="h-3 w-3" />
             Verified Member
-          </div>
+          </div> */}
         </div>
 
         {/* Name + meta */}
@@ -184,7 +185,7 @@ export default function ProfileHero({ customer }: Props) {
           </Button>
 
           <div className="shrink-0">
-            <ShareButton />
+            <ShareButton code={referralCode?.code} />
           </div>
         </div>
       </div>

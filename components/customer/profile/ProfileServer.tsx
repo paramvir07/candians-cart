@@ -21,6 +21,7 @@ import { Metadata } from "next";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 import PromotionBanner from "@/components/promotions/PromotionsBanner";
 import { getPromoStats } from "@/actions/promotions/getPromoStats.action";
+import { getReferral } from "@/actions/customer/ReferralAction";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -33,6 +34,7 @@ export default async function ProfileServer() {
   ]);
   const promoStats = await getPromoStats();
   const { customerData } = customerRes;
+  const referralCodeData = await getReferral(customerData.myreferralCodeId);
   const { orderCount } = orderRes;
 
   const quickLinks = [
@@ -146,7 +148,7 @@ export default async function ProfileServer() {
         <div className="pb-20 max-w-lg mx-auto lg:max-w-none">
           {/* ── Mobile ── */}
           <div className="flex flex-col gap-4 lg:hidden">
-            <ProfileHero customer={customerData} />
+            <ProfileHero customer={customerData} referralCode={referralCodeData.data}/>
 
             <div className="mx-auto w-full max-w-[360px] sm:max-w-[420px]">
               <PromotionBanner initialStats={promoStats} variant="card" />
@@ -169,7 +171,7 @@ export default async function ProfileServer() {
           <div className="hidden lg:grid grid-cols-[1fr_340px] gap-6 items-start">
             {/* Left col */}
             <div className="flex flex-col gap-4">
-              <ProfileHero customer={customerData} />
+              <ProfileHero customer={customerData} referralCode={referralCodeData.data} />
 
               <div className="mx-auto w-full max-w-[420px]">
                 <PromotionBanner initialStats={promoStats} variant="card" />
