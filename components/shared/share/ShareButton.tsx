@@ -133,7 +133,7 @@ function UrlCopyStrip({ url }: { url: string }) {
 
   return (
     <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2">
-      <span className="flex-1 truncate font-mono text-xs text-muted-foreground">
+      <span className="flex-1 truncate font-mono text-xs text-muted-foreground w-0">
         {url}
       </span>
       <Button
@@ -273,8 +273,6 @@ export default function ShareButton({ link, code }: ShareButtonProps) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<ModalView>("picker");
 
-  const isMobile =
-    typeof navigator !== "undefined" && typeof navigator.share === "function";
 
   function handleClose() {
     setOpen(false);
@@ -354,7 +352,7 @@ async function handleShareClick() {
                 onShare={handleShareClick}
               />
             )}
-            {view === "qr" && <QrView url={url} />}
+            {view === "qr" && <QrView url={shareUrl} />}
             {view === "share" && (
               <ShareSheetView url={url} shareMessage={shareMessage} />
             )}

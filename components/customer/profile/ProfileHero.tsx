@@ -23,6 +23,7 @@ import QrCodeClient from "./QrCodeClient";
 import { getMemberSince } from "@/lib/memberSince";
 import ShareButton from "@/components/shared/share/ShareButton";
 import { IReferralCode } from "@/db/models/admin/referralCode.model";
+import { getReferralUrl } from "@/lib/shareMessage";
 
 type Props = {
   customer: Pick<
@@ -39,7 +40,7 @@ export default function ProfileHero({ customer,referralCode }: Props) {
     .join("")
     .toUpperCase()
     .slice(0, 2);
-console.log(referralCode?.code)
+
 
   return (
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm">
