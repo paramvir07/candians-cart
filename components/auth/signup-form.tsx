@@ -22,7 +22,11 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "../shared/Logo";
-import { CUSTOMER_CITIES, CUSTOMER_PROVINCES, DEFAULT_CUSTOMER_CITY, DEFAULT_CUSTOMER_PROVINCE } from "@/lib/customer/location";
+import { CUSTOMER_PROVINCE } from "@/lib/customer/location";
+import {
+  AddressAutocomplete,
+  ParsedAddress,
+} from "../shared/AddressAutocomplete";
 
 const initialState = { success: false, message: "" };
 
@@ -63,6 +67,27 @@ export function SignupForm({
     signupAction.bind(null, userRole),
     initialState,
   );
+
+  // Auto-filled from Google Places — never typed by the user
+  const [addressData, setAddressData] = useState<{
+    address: string;
+    city: string;
+    province: string;
+    postalCode: string;
+  }>({ address: "", city: "", province: "", postalCode: "" });
+
+  const handleAddressSelect = (parsed: ParsedAddress) => {
+    setAddressData({
+      address: parsed.streetAddress || "",
+      city: parsed.city || "",
+      province: parsed.province === CUSTOMER_PROVINCE ? parsed.province : "",
+      postalCode: parsed.postalCode || "",
+    });
+  };
+
+  const handleAddressClear = () => {
+    setAddressData({ address: "", city: "", province: "", postalCode: "" });
+  };
 
   useEffect(() => {
     if (state.message) {
@@ -107,7 +132,16 @@ export function SignupForm({
       </div>
 
       {/* Form */}
-      <form action={formAction} className="flex flex-col gap-3">
+      <form
+        action={formAction}
+        onSubmit={(e) => {
+          if (customer && !addressData.address) {
+            e.preventDefault();
+            toast.error("Please select your address from the dropdown.");
+          }
+        }}
+        className="flex flex-col gap-3"
+      >
         {/* Name */}
         <Input
           id="name"
@@ -155,77 +189,76 @@ export function SignupForm({
 
         {/* Address */}
         {!admin && (
-          <Input
-            id="address"
-            type="text"
-            name="address"
-            placeholder={
-              store ? "Full Store Address" : "Address (e.g. 308-123 Main St)"
-            }
-            required={customer || store || cashier}
-            className={cn(
-              "h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary",
+          <>
+            {customer ? (
+              <>
+                <AddressAutocomplete
+                  defaultValue={addressData.address}
+                  allowedProvince={CUSTOMER_PROVINCE}
+                  onSelect={handleAddressSelect}
+                  onClear={handleAddressClear}
+                  placeholder="Address (e.g. 308-123 Main St)"
+                  className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+                  required
+                />
+                {/* Hidden inputs carry values to the server action */}
+                <input
+                  type="hidden"
+                  name="address"
+                  value={addressData.address}
+                />
+                <input type="hidden" name="city" value={addressData.city} />
+                <input
+                  type="hidden"
+                  name="province"
+                  value={addressData.province}
+                />
+                <input
+                  type="hidden"
+                  name="postalCode"
+                  value={addressData.postalCode}
+                />
+              </>
+            ) : (
+              <Input
+                id="address"
+                type="text"
+                name="address"
+                placeholder={
+                  store
+                    ? "Full Store Address"
+                    : "Address (e.g. 308-123 Main St)"
+                }
+                required
+                className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+              />
             )}
-          />
+          </>
         )}
 
-        {/* City + Province — customer only */}
+        {/* Read-only city / province / postal — auto-filled from Google */}
         {customer && (
           <div className="grid grid-cols-3 gap-3">
-            <select
-              id="city"
-              name="city"
-              defaultValue={DEFAULT_CUSTOMER_CITY}
-              className="h-12 w-full min-w-0 rounded-xl border border-border bg-background px-4 text-sm"
-            >
-              <option value="" disabled>
-                City
-              </option>
-
-              {CUSTOMER_CITIES.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
-
-            <select
-              id="province"
-              name="province"
-              defaultValue={DEFAULT_CUSTOMER_PROVINCE}
-              className="h-12 w-full min-w-0 rounded-xl border border-border bg-background px-3 text-sm"
-            >
-              <option value="" disabled>
-                Province
-              </option>
-
-              {CUSTOMER_PROVINCES.map((province) => (
-                <option key={province} value={province}>
-                  {province}
-                </option>
-              ))}
-            </select>
-
             <Input
-              id="postalCode"
-              type="text"
-              name="postalCode"
+              readOnly
+              tabIndex={-1}
+              value={addressData.city}
+              placeholder="City"
+              className="h-12 rounded-xl border-border bg-secondary/30 px-4 text-sm text-muted-foreground cursor-not-allowed"
+            />
+            <Input
+              readOnly
+              tabIndex={-1}
+              value={addressData.province}
+              placeholder="Province"
+              className="h-12 rounded-xl border-border bg-secondary/30 px-4 text-sm text-muted-foreground cursor-not-allowed"
+            />
+            <Input
+              readOnly
+              tabIndex={-1}
+              value={addressData.postalCode}
               placeholder="Postal Code"
-              required
-              maxLength={7}
-              className="h-12 w-full min-w-0 rounded-xl border-border bg-background px-4 text-sm uppercase placeholder:normal-case placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-              onChange={(e) => {
-                let value = e.target.value
-                  .toUpperCase()
-                  .replace(/[^A-Z0-9]/g, "")
-                  .slice(0, 6);
-
-                if (value.length > 3) {
-                  value = `${value.slice(0, 3)} ${value.slice(3)}`;
-                }
-
-                e.target.value = value;
-              }}
+              className="h-12 rounded-xl border-border bg-secondary/30 px-4 text-sm uppercase text-muted-foreground cursor-not-allowed"
             />
           </div>
         )}
@@ -245,7 +278,6 @@ export function SignupForm({
                 <option value="" disabled>
                   Where did you hear about us?
                 </option>
-
                 {heardAboutUsOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -263,7 +295,7 @@ export function SignupForm({
             name="mobile"
             type="tel"
             placeholder="Mobile Number (10 digits)"
-            required={customer || store || cashier}
+            required={store || cashier}
             maxLength={14}
             className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
             onChange={(e) => {
@@ -279,16 +311,13 @@ export function SignupForm({
               e.target.value = formatted;
             }}
             onKeyDown={(e) => {
-              // Allow backspace to delete naturally
               if (e.key === "Backspace") {
                 const input = e.currentTarget;
                 const pos = input.selectionStart ?? 0;
-                // If cursor is right after a formatting char, skip it
                 if ([")", " ", "-"].includes(input.value[pos - 1])) {
                   e.preventDefault();
                   input.value =
                     input.value.slice(0, pos - 1) + input.value.slice(pos);
-                  // Re-trigger onChange to reformat
                   input.dispatchEvent(new Event("input", { bubbles: true }));
                 }
               }
@@ -346,17 +375,15 @@ export function SignupForm({
       {/* Footer */}
       <div className="mt-6 flex flex-col gap-1.5">
         {customer && (
-          <>
-            <p className="text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link
-                href="/customer/login"
-                className="text-primary hover:underline"
-              >
-                Log in
-              </Link>
-            </p>
-          </>
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link
+              href="/customer/login"
+              className="text-primary hover:underline"
+            >
+              Log in
+            </Link>
+          </p>
         )}
       </div>
     </>
@@ -364,7 +391,7 @@ export function SignupForm({
 
   return (
     <>
-      {/* ── MOBILE: image top, form slides up ── */}
+      {/* ── MOBILE ── */}
       <div
         className={cn(
           "flex flex-col w-full lg:hidden min-h-screen overflow-hidden",
@@ -382,14 +409,12 @@ export function SignupForm({
           <div className="absolute inset-0 bg-black/40" />
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black to-transparent" />
         </div>
-
-        {/* Form card — overlaps image */}
         <div className="relative z-10 -mt-45 flex-1 bg-background rounded-t-3xl px-6 pt-8 pb-12 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
           {formContent}
         </div>
       </div>
 
-      {/* ── DESKTOP: plain form, carousel handled by page ── */}
+      {/* ── DESKTOP ── */}
       <div className={cn("hidden lg:block w-full max-w-sm", className)}>
         {formContent}
       </div>

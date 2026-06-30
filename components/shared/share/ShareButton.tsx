@@ -92,7 +92,7 @@ const APPS: AppConfig[] = [
     ),
     href: (_url, message) =>
       `mailto:?subject=${encodeURIComponent(
-        "Canadian's Cart Grocery Giveaway"
+        "Candian's Cart Grocery Giveaway"
       )}&body=${encodeURIComponent(message)}`,
   },
   {
@@ -192,7 +192,7 @@ function PickerView({
         </span>
         <span className="text-sm font-medium text-foreground">QR Code</span>
         <span className="text-center text-xs leading-relaxed text-muted-foreground">
-          Scan to send <span className="font-bold">Referral</span>
+          My <span className="font-bold">Referral QR code</span>
         </span>
       </button>
 
@@ -205,7 +205,8 @@ function PickerView({
         </span>
         <span className="text-sm font-medium text-foreground">Share Link</span>
         <span className="text-center text-xs leading-relaxed text-muted-foreground">
-          Send <span className="font-bold">Referral</span> via app or copy message
+          Send <span className="font-bold">Referral</span> via app or copy
+          message
         </span>
       </button>
     </div>
@@ -313,7 +314,7 @@ async function handleShareClick() {
   if (typeof navigator !== "undefined" && navigator.share) {
     try {
       await navigator.share({
-        title: "Canadian's Cart",
+        title: "Candian's Cart",
         text: shareMessage,
         url:shareUrl,
       });
@@ -329,7 +330,7 @@ async function handleShareClick() {
 
   const titles: Record<ModalView, string> = {
     picker: "Share",
-    qr: "QR Code",
+    qr: "Referral Link",
     share: "Share via",
   };
 
@@ -368,7 +369,7 @@ async function handleShareClick() {
               )}
             </button>
 
-            <DialogTitle className="text-sm font-semibold text-foreground">
+            <DialogTitle className="text-lg font-bold text-foreground">
               {titles[view]}
             </DialogTitle>
 

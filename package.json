@@ -11,6 +11,7 @@
     "dev:inspect": "cross-env NODE_OPTIONS=--inspect next dev --webpack"
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "^2.1.1",
     "@google/genai": "^2.10.0",
     "@hookform/resolvers": "^5.2.2",
     "@imagekit/nodejs": "^7.3.0",
@@ -59,6 +60,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/google.maps": "^3.65.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

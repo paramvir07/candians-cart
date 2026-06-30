@@ -37,7 +37,7 @@ export async function editUserProfile(
   }
 
   const rawData = formDataToObject(formData);
-  const result = editProfileSchema.safeParse(rawData);
+  const result = await editProfileSchema.safeParseAsync(rawData);
 
   if (!result.success) {
     const errorMessage = zodErrorResponse(result);

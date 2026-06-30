@@ -8,10 +8,20 @@ const FOOTER_LINKS: Record<
   { label: string; href: string; scrollTo?: string; scrollPage?: string }[]
 > = {
   Company: [
-    { label: "How It Works", href: "/#how-it-works", scrollTo: "how-it-works", scrollPage: "/" },
+    {
+      label: "How It Works",
+      href: "/#how-it-works",
+      scrollTo: "how-it-works",
+      scrollPage: "/",
+    },
     { label: "About Us", href: "/about" },
     { label: "Promotions", href: "/promotions" },
-    { label: "Values", href: "/about#values", scrollTo: "values", scrollPage: "/about" },
+    {
+      label: "Values",
+      href: "/about#values",
+      scrollTo: "values",
+      scrollPage: "/about",
+    },
     { label: "Careers", href: "/careers" },
   ],
   Support: [
@@ -22,8 +32,18 @@ const FOOTER_LINKS: Record<
   ],
   Tools: [
     { label: "Referrals", href: "/referrals" },
-    { label: "Budget Packs", href: "/#grocery-packs", scrollTo: "grocery-packs", scrollPage: "/" },
-    { label: "Calculator", href: "/#calculator", scrollTo: "calculator", scrollPage: "/" },
+    {
+      label: "Budget Packs",
+      href: "/#grocery-packs",
+      scrollTo: "grocery-packs",
+      scrollPage: "/",
+    },
+    {
+      label: "Calculator",
+      href: "/#calculator",
+      scrollTo: "calculator",
+      scrollPage: "/",
+    },
   ],
 };
 
@@ -32,11 +52,20 @@ const SOCIAL = [
     label: "Instagram",
     href: "https://www.instagram.com/canadianscart",
     defaultColor: "text-pink-400",
-    hoverBg: "hover:[background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)]",
+    hoverBg:
+      "hover:[background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)]",
     hoverBorder: "hover:border-transparent",
     hoverText: "hover:text-white",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
         <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
         <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
@@ -77,7 +106,15 @@ const SOCIAL = [
     hoverBorder: "hover:border-transparent",
     hoverText: "hover:text-white",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
         <rect x="2" y="4" width="20" height="16" rx="2" />
         <polyline points="2,4 12,13 22,4" />
       </svg>
@@ -103,7 +140,11 @@ export default function Footer({ isLoggedIn = false }: FooterProps) {
     window.scrollTo({ top, behavior: "smooth" });
   };
 
-  const handleSectionClick = (e: React.MouseEvent, sectionId: string, scrollPage: string = "/") => {
+  const handleSectionClick = (
+    e: React.MouseEvent,
+    sectionId: string,
+    scrollPage: string = "/",
+  ) => {
     e.preventDefault();
     if (isLoggedIn && sectionId === "grocery-packs") {
       router.push("/customer/budget-packs");
@@ -120,7 +161,6 @@ export default function Footer({ isLoggedIn = false }: FooterProps) {
     <footer className="bg-[#1c1917] text-[#e7e5e4] font-sans">
       {/* Main grid */}
       <div className="mx-auto max-w-[1200px] px-6 pt-14 pb-10 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
-
         {/* Brand col */}
         <div className="sm:col-span-2 lg:col-span-1">
           <Logo variant="icon" href="/" />
@@ -166,7 +206,9 @@ export default function Footer({ isLoggedIn = false }: FooterProps) {
                 l.scrollTo ? (
                   <li key={l.label}>
                     <button
-                      onClick={(e) => handleSectionClick(e, l.scrollTo!, l.scrollPage)}
+                      onClick={(e) =>
+                        handleSectionClick(e, l.scrollTo!, l.scrollPage)
+                      }
                       className="text-[13px] font-medium text-stone-400 hover:text-green-400 transition-colors bg-transparent border-0 p-0 cursor-pointer font-sans"
                     >
                       {l.label}
@@ -192,7 +234,7 @@ export default function Footer({ isLoggedIn = false }: FooterProps) {
       <div className="border-t border-white/[0.06] px-6 py-5">
         <div className="mx-auto max-w-[1200px] flex items-center justify-between flex-wrap gap-4">
           <p className="text-[12px] text-stone-500">
-            © {currentYear} Canadian's Cart. All rights reserved.
+            © {currentYear} Candian's Cart. All rights reserved.
           </p>
         </div>
       </div>

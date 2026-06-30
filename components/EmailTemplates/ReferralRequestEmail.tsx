@@ -24,15 +24,13 @@ export function ReferralRequestEmail({
   recipientName,
   requesterName,
   manageRequestsUrl,
-  appName = "Canadian's Cart",
+  appName = "Candian's Cart",
   supportEmail = "info@canadianscart.ca",
 }: ReferralRequestEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>
-        {requesterName} has requested a referral invite.
-      </Preview>
+      <Preview>{requesterName} has requested a referral invite.</Preview>
 
       <Body style={main}>
         <Container style={container}>
@@ -46,26 +44,21 @@ export function ReferralRequestEmail({
               </Text>
 
               <Text style={heroText}>
-                <strong style={{ color: "#1e4a36" }}>
-                  {requesterName}
-                </strong>{" "}
-                has requested a referral invite for {appName}.
-                Review their request and decide whether you'd like to
-                share your referral code.
+                <strong style={{ color: "#1e4a36" }}>{requesterName}</strong>{" "}
+                has requested a referral invite for {appName}. Review their
+                request and decide whether you'd like to share your referral
+                code.
               </Text>
 
               <Section style={buttonWrap}>
-                <Button
-                  href={manageRequestsUrl}
-                  style={button}
-                >
+                <Button href={manageRequestsUrl} style={button}>
                   Review Request
                 </Button>
               </Section>
 
               <Text style={subtleText}>
-                If you approve the request, your referral code will be
-                sent to {requesterName} automatically.
+                If you approve the request, your referral code will be sent to{" "}
+                {requesterName} automatically.
               </Text>
             </Section>
 
@@ -124,10 +117,7 @@ export function ReferralRequestEmail({
             <Section style={footerSection}>
               <Text style={supportText}>
                 Need help?{" "}
-                <Link
-                  href={`mailto:${supportEmail}`}
-                  style={footerLink}
-                >
+                <Link href={`mailto:${supportEmail}`} style={footerLink}>
                   {supportEmail}
                 </Link>
               </Text>

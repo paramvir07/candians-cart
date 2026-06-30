@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import logoIcon from "@/app/icon.jpg";
 import {
   Copy,
   Check,
@@ -106,7 +107,7 @@ function monthLabel(iso: string): string {
 }
 
 function groupByMonth(
-  usedBy: ReferralUsedBy[]
+  usedBy: ReferralUsedBy[],
 ): { label: string; items: ReferralUsedBy[] }[] {
   const map = new Map<string, ReferralUsedBy[]>();
   for (const u of usedBy) {
@@ -170,7 +171,7 @@ const SHARE_APPS: AppConfig[] = [
     ),
     href: (_url, message) =>
       `mailto:?subject=${encodeURIComponent(
-        "Join Canadian's Cart"
+        "Join Candian's Cart",
       )}&body=${encodeURIComponent(message)}`,
   },
   {
@@ -256,13 +257,17 @@ function ShareSheetDialog({
                 >
                   {app.icon}
                 </span>
-                <span className="text-[11px] text-muted-foreground">{app.label}</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {app.label}
+                </span>
               </a>
             ))}
           </div>
 
           <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2">
-            <span className="flex-1 truncate font-mono text-xs text-muted-foreground">{url}</span>
+            <span className="flex-1 truncate font-mono text-xs text-muted-foreground">
+              {url}
+            </span>
             <Button
               size="sm"
               variant={urlCopied ? "outline" : "default"}
@@ -274,9 +279,13 @@ function ShareSheetDialog({
               onClick={copyUrl}
             >
               {urlCopied ? (
-                <span className="flex items-center gap-1"><Check size={11} /> Copied</span>
+                <span className="flex items-center gap-1">
+                  <Check size={11} /> Copied
+                </span>
               ) : (
-                <span className="flex items-center gap-1"><Copy size={11} /> Copy</span>
+                <span className="flex items-center gap-1">
+                  <Copy size={11} /> Copy
+                </span>
               )}
             </Button>
           </div>
@@ -300,34 +309,79 @@ function QRDialog({
   const url = getReferralUrl(code);
 
   return (
-<Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-  <DialogContent
-    className="
-      w-[92vw] max-w-sm md:max-w-md
-      rounded-2xl border border-border/60
-      bg-background
-      p-6
-      flex flex-col items-center
-      gap-5
-      shadow-2xl
-    "
-  >
-    {/* Header */}
-    <DialogHeader className="w-full flex flex-row items-center justify-between space-y-0">
-      <DialogTitle className="text-sm font-bold text-foreground">
-      
-      </DialogTitle>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent
+        className="
+          w-[92vw] max-w-sm
+          rounded-[1.75rem]
+          border border-primary/20
+          bg-card
+          p-0
+          overflow-hidden
+          shadow-2xl
+        "
+      >
+        <div className="relative px-5 pt-5 pb-6">
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
 
-    </DialogHeader>
+          {/* Header */}
+          <div className="mb-5 pr-8 text-center">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
+              <QrCode className="h-5 w-5 text-primary" />
+            </div>
 
-    {/* QR Section */}
-    <div className="flex items-center justify-center w-full">
-      <div className="rounded-xl bg-white p-2 border border-border/40">
-        <QRCodeSVG value={url} size={210} />
-      </div>
-    </div>
-  </DialogContent>
-</Dialog>
+            <DialogHeader className="space-y-1">
+              <DialogTitle
+                className="text-lg font-black tracking-tight text-foreground"
+                style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+              >
+                Scan to join
+              </DialogTitle>
+            </DialogHeader>
+
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              Scan this QR code to join with your friend’s referral. After your
+              first eligible order, your friend will receive their reward.
+            </p>
+          </div>
+
+          {/* QR Card */}
+          <div className="mx-auto flex w-fit flex-col items-center">
+            <div className="rounded-[1.5rem] border border-primary/20 bg-card p-3 shadow-sm">
+              <div className="rounded-2xl bg-white p-3">
+                <QRCodeSVG
+                  value={url}
+                  size={220}
+                  fgColor="#07553f"
+                  bgColor="#ffffff"
+                  level="H"
+                  marginSize={0}
+                  imageSettings={{
+                    src: logoIcon.src,
+                    height: 44,
+                    width: 44,
+                    excavate: true,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-full border border-primary/20 bg-primary/10 px-4 py-2">
+              <p className="font-mono text-xs font-bold tracking-wider text-primary">
+                {code}
+              </p>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -468,9 +522,16 @@ function ShareRow({ code }: { code: string }) {
   const shareMessage = getReferralShareMessage(code);
 
   async function handleShare() {
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+    if (
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function"
+    ) {
       try {
-        await navigator.share({ title: "Canadian's Cart", text: shareMessage, url });
+        await navigator.share({
+          title: "Candian's Cart",
+          text: shareMessage,
+          url,
+        });
         return;
       } catch {
         // user cancelled or native share failed — fall through
@@ -505,11 +566,7 @@ function ShareRow({ code }: { code: string }) {
         code={code}
       />
 
-      <QRDialog
-        open={qrOpen}
-        onClose={() => setQrOpen(false)}
-        code={code}
-      />
+      <QRDialog open={qrOpen} onClose={() => setQrOpen(false)} code={code} />
     </>
   );
 }
@@ -930,8 +987,11 @@ export function ReferralInviteModal({
 
           <p className="text-sm leading-6 text-muted-foreground text-center mt-2">
             Instead of sharing your referral code yourself, users can send
-            <span className="font-medium text-foreground"> you referral requests</span>.
-            Review each request and choose whether to accept it.
+            <span className="font-medium text-foreground">
+              {" "}
+              you referral requests
+            </span>
+            . Review each request and choose whether to accept it.
           </p>
 
           <div className="mt-6 space-y-3 rounded-2xl border bg-muted/30 p-4">
@@ -945,8 +1005,8 @@ export function ReferralInviteModal({
               <Gift className="h-4 w-4 text-primary shrink-0" />
               <p className="text-sm">
                 Earn the same{" "}
-                <span className="font-semibold">CA${perReferAmount}</span> reward for every
-                successful referral.
+                <span className="font-semibold">CA${perReferAmount}</span>{" "}
+                reward for every successful referral.
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -1094,7 +1154,9 @@ export function ReferralPageClient({
               Refer &amp; Earn
             </h1>
             <div className="shrink-0 flex items-center justify-end mb-2 gap-2 flex-row-reverse">
-              <ReferralSettingsToggle initial={userData.recieveReferralInvites} />
+              <ReferralSettingsToggle
+                initial={userData.recieveReferralInvites}
+              />
               <Link
                 href="/customer/referrals/requests"
                 className="relative inline-flex"
@@ -1119,8 +1181,8 @@ export function ReferralPageClient({
             className="text-sm leading-relaxed text-muted-foreground"
             style={{ maxWidth: "380px" }}
           >
-            Earn CA${userData.perReferAmount} in gift credit for every friend who joins and
-            places their first order over CA$21.
+            Earn CA${userData.perReferAmount} in gift credit for every friend
+            who joins and places their first order over CA$21.
           </p>
         </div>
 

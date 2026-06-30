@@ -23,11 +23,14 @@ import { IStore, ITimeRange } from "@/db/models/store/store.model";
 import { editStoreProfile } from "@/actions/store/EditStore.action";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { AddressAutocomplete, ParsedAddress } from "@/components/shared/AddressAutocomplete";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 function minsToTime(mins: number): string {
-  const h = Math.floor(mins / 60).toString().padStart(2, "0");
+  const h = Math.floor(mins / 60)
+    .toString()
+    .padStart(2, "0");
   const m = (mins % 60).toString().padStart(2, "0");
   return `${h}:${m}`;
 }
@@ -38,13 +41,13 @@ function timeToMins(time: string): number {
 }
 
 const DAYS = [
-  { key: "mon", label: "Monday",    short: "Mon" },
-  { key: "tue", label: "Tuesday",   short: "Tue" },
+  { key: "mon", label: "Monday", short: "Mon" },
+  { key: "tue", label: "Tuesday", short: "Tue" },
   { key: "wed", label: "Wednesday", short: "Wed" },
-  { key: "thu", label: "Thursday",  short: "Thu" },
-  { key: "fri", label: "Friday",    short: "Fri" },
-  { key: "sat", label: "Saturday",  short: "Sat" },
-  { key: "sun", label: "Sunday",    short: "Sun" },
+  { key: "thu", label: "Thursday", short: "Thu" },
+  { key: "fri", label: "Friday", short: "Fri" },
+  { key: "sat", label: "Saturday", short: "Sat" },
+  { key: "sun", label: "Sunday", short: "Sun" },
 ] as const;
 
 type DayKey = (typeof DAYS)[number]["key"];
@@ -83,6 +86,23 @@ function IconInput({
     <div className="relative group">
       <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors z-10 pointer-events-none" />
       <Input
+        {...props}
+        className={`pl-10 h-11 rounded-xl border-border/60 bg-background focus-visible:ring-1 focus-visible:ring-primary ${props.className ?? ""}`}
+      />
+    </div>
+  );
+}
+
+function IconAddressAutocomplete({
+  icon: Icon,
+  ...props
+}: { icon: React.ElementType } & React.ComponentProps<
+  typeof AddressAutocomplete
+>) {
+  return (
+    <div className="relative group">
+      <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors z-10 pointer-events-none" />
+      <AddressAutocomplete
         {...props}
         className={`pl-10 h-11 rounded-xl border-border/60 bg-background focus-visible:ring-1 focus-visible:ring-primary ${props.className ?? ""}`}
       />
@@ -196,7 +216,9 @@ function HoursSummary({
               >
                 <span
                   className={
-                    r ? "text-foreground font-medium" : "text-muted-foreground/35"
+                    r
+                      ? "text-foreground font-medium"
+                      : "text-muted-foreground/35"
                   }
                 >
                   {day.short}
@@ -264,7 +286,7 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
         result[d.key] = arr && arr.length > 0 ? arr[0] : null;
       }
       return result;
-    })()
+    })(),
   );
 
   const [fields, setFields] = useState({ ...initialRef.current });
@@ -277,6 +299,13 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFields((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddressSelect = (parsed: ParsedAddress) => {
+    setFields((prev) => ({
+      ...prev,
+      address: parsed.formattedAddress || parsed.streetAddress || prev.address,
+    }));
   };
 
   const isDirty = useMemo(() => {
@@ -307,11 +336,22 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
     const trimmedAddress = fields.address.trim();
     const trimmedMobile = fields.mobile.trim();
 
-    if (!trimmedName) { toast.error("Store name cannot be empty."); return; }
-    if (!trimmedAddress) { toast.error("Address cannot be empty."); return; }
-    if (!trimmedMobile) { toast.error("Phone number cannot be empty."); return; }
+    if (!trimmedName) {
+      toast.error("Store name cannot be empty.");
+      return;
+    }
+    if (!trimmedAddress) {
+      toast.error("Address cannot be empty.");
+      return;
+    }
+    if (!trimmedMobile) {
+      toast.error("Phone number cannot be empty.");
+      return;
+    }
     if (!/^\d{10}$/.test(trimmedMobile)) {
-      toast.error("Phone number must be exactly 10 digits (no spaces or letters).");
+      toast.error(
+        "Phone number must be exactly 10 digits (no spaces or letters).",
+      );
       return;
     }
     if (isDisabled) return;
@@ -328,7 +368,11 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
       try {
         const result = await editStoreProfile(payload);
         if (result.success) {
-          initialRef.current = { name: trimmedName, address: trimmedAddress, mobile: trimmedMobile };
+          initialRef.current = {
+            name: trimmedName,
+            address: trimmedAddress,
+            mobile: trimmedMobile,
+          };
           initialHoursRef.current = { ...hours };
           setSaveVersion((v) => v + 1);
           toast.success(result.message ?? "Store updated successfully");
@@ -349,7 +393,7 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
         .join("")
         .toUpperCase()
         .slice(0, 2),
-    [fields.name]
+    [fields.name],
   );
 
   const openDaysCount = DAYS.filter((d) => hours[d.key] !== null).length;
@@ -489,11 +533,10 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
 
               <div>
                 <FieldLabel>Address</FieldLabel>
-                <IconInput
+                <IconAddressAutocomplete
                   icon={MapPin}
-                  name="address"
-                  value={fields.address}
-                  onChange={handleChange}
+                  defaultValue={fields.address}
+                  onSelect={handleAddressSelect}
                   placeholder="123 Main Street"
                 />
               </div>
@@ -522,8 +565,8 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
                   {isPending
                     ? "Saving changes…"
                     : isDirty
-                    ? "You have unsaved changes"
-                    : "No changes made"}
+                      ? "You have unsaved changes"
+                      : "No changes made"}
                 </span>
               </div>
               <SaveButton

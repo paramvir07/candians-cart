@@ -1,5 +1,6 @@
 import { HEARD_ABOUT_US_VALUES } from "@/lib/customer/heardAboutUs";
-import { CUSTOMER_CITIES, CUSTOMER_PROVINCES } from "@/lib/customer/location";
+import { CUSTOMER_PROVINCE } from "@/lib/customer/location";
+import { validateBCAddress } from "@/lib/google/addressValidation";
 import { z } from "zod";
 
 export const toTitleCase = (value: string) =>
@@ -8,7 +9,7 @@ export const toTitleCase = (value: string) =>
     .toLowerCase()
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
-export const CustomerSchema = z.object({
+const baseCustomerObject = z.object({
   name: z.string().trim().min(1, "Name is Required").transform(toTitleCase),
 
   email: z
@@ -23,23 +24,25 @@ export const CustomerSchema = z.object({
     .regex(/[0-9]/, "Must contain at least one number")
     .regex(/[^a-zA-Z0-9]/, "Must contain at least one special character"),
 
-  address: z.string().trim().min(1, "Address is required"),
+  address: z
+    .string()
+    .trim()
+    .min(1, "Please select your address from the dropdown"),
 
-  city: z.enum(CUSTOMER_CITIES, {
-    message: "Invalid city selected",
+  city: z.string().trim().min(1, "City is required").transform(toTitleCase),
+
+  province: z.literal(CUSTOMER_PROVINCE, {
+    message: "We currently only deliver within British Columbia",
   }),
 
-  province: z.enum(CUSTOMER_PROVINCES, {
-    message: "Province must be BC",
-  }),
-
+  // BC postal codes always start with V
   postalCode: z
     .string()
     .trim()
     .toUpperCase()
     .regex(
-      /^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/,
-      "Please enter a valid Canadian postal code",
+      /^V\d[A-Z]\s?\d[A-Z]\d$/,
+      "Please enter a valid BC postal code (e.g. V2S 3K1)",
     )
     .transform((v) => {
       const cleaned = v.replace(/\s/g, "");
@@ -63,10 +66,35 @@ export const CustomerSchema = z.object({
     .transform((v) => v.trim().toUpperCase()),
 });
 
-export const editProfileSchema = CustomerSchema.pick({
-  name: true,
-  address: true,
-  city: true,
-  province: true,
-  postalCode: true,
-});
+function withAddressValidation<T extends z.ZodObject<any>>(schema: T) {
+  return schema.superRefine(async (data: any, ctx) => {
+    // Let field-level errors surface first
+    if (!data.address || !data.city || !data.postalCode) return;
+
+    const result = await validateBCAddress(
+      data.address,
+      data.city,
+      data.postalCode,
+    );
+
+    if (!result.valid) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["address"],
+        message: result.reason ?? "Please enter a valid BC address",
+      });
+    }
+  });
+}
+
+export const CustomerSchema = withAddressValidation(baseCustomerObject);
+
+export const editProfileSchema = withAddressValidation(
+  baseCustomerObject.pick({
+    name: true,
+    address: true,
+    city: true,
+    province: true,
+    postalCode: true,
+  }),
+);

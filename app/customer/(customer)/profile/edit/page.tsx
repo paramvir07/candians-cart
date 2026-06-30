@@ -6,8 +6,6 @@ import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-// Edit page always fetches fresh — no cache
-// so the form always reflects latest DB state (e.g. after phone verification)
 const EditProfilePage = async () => {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/customer/login");
