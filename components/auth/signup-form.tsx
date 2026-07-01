@@ -30,6 +30,18 @@ import {
 
 const initialState = { success: false, message: "" };
 
+const UNIT_ADDRESS_SEPARATOR = "-";
+
+function formatAddressWithUnit(streetAddress: string, unit: string) {
+  const cleanStreetAddress = streetAddress.trim();
+  const cleanUnit = unit.trim();
+
+  if (!cleanUnit) return cleanStreetAddress;
+  if (!cleanStreetAddress) return cleanUnit;
+
+  return `${cleanUnit}${UNIT_ADDRESS_SEPARATOR}${cleanStreetAddress}`;
+}
+
 type SignupFormProps = {
   userRole: UserRole;
   stores?: StoreDocument[];
@@ -71,22 +83,35 @@ export function SignupForm({
   // Auto-filled from Google Places — never typed by the user
   const [addressData, setAddressData] = useState<{
     address: string;
+    aptUnit: string;
     city: string;
     province: string;
     postalCode: string;
-  }>({ address: "", city: "", province: "", postalCode: "" });
+  }>({ address: "", aptUnit: "", city: "", province: "", postalCode: "" });
+
+  const composedAddress = formatAddressWithUnit(
+    addressData.address,
+    addressData.aptUnit,
+  );
 
   const handleAddressSelect = (parsed: ParsedAddress) => {
-    setAddressData({
+    setAddressData((prev) => ({
+      ...prev,
       address: parsed.streetAddress || "",
       city: parsed.city || "",
       province: parsed.province === CUSTOMER_PROVINCE ? parsed.province : "",
       postalCode: parsed.postalCode || "",
-    });
+    }));
   };
 
   const handleAddressClear = () => {
-    setAddressData({ address: "", city: "", province: "", postalCode: "" });
+    setAddressData((prev) => ({
+      ...prev,
+      address: "",
+      city: "",
+      province: "",
+      postalCode: "",
+    }));
   };
 
   useEffect(() => {
@@ -192,21 +217,34 @@ export function SignupForm({
           <>
             {customer ? (
               <>
-                <AddressAutocomplete
-                  defaultValue={addressData.address}
-                  allowedProvince={CUSTOMER_PROVINCE}
-                  onSelect={handleAddressSelect}
-                  onClear={handleAddressClear}
-                  placeholder="Address (e.g. 308-123 Main St)"
-                  className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-                  required
-                />
+                <div className="grid gap-3 sm:grid-cols-[9.5rem_minmax(0,1fr)]">
+                  <Input
+                    id="aptUnit"
+                    type="text"
+                    value={addressData.aptUnit}
+                    onChange={(e) =>
+                      setAddressData((prev) => ({
+                        ...prev,
+                        aptUnit: e.target.value,
+                      }))
+                    }
+                    placeholder="Apt / Unit"
+                    autoComplete="address-line2"
+                    className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+                  />
+
+                  <AddressAutocomplete
+                    defaultValue={addressData.address}
+                    allowedProvince={CUSTOMER_PROVINCE}
+                    onSelect={handleAddressSelect}
+                    onClear={handleAddressClear}
+                    placeholder="Street address (e.g. 123 Main St)"
+                    className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+                    required
+                  />
+                </div>
                 {/* Hidden inputs carry values to the server action */}
-                <input
-                  type="hidden"
-                  name="address"
-                  value={addressData.address}
-                />
+                <input type="hidden" name="address" value={composedAddress} />
                 <input type="hidden" name="city" value={addressData.city} />
                 <input
                   type="hidden"

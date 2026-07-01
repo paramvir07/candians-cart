@@ -39,7 +39,10 @@ import { CUSTOMER_PROVINCE } from "@/lib/customer/location";
 import { authClient } from "@/lib/auth/auth-client";
 import { cn } from "@/lib/utils";
 import { sendPhoneOTPAction } from "@/actions/auth/verifiyPhone.actions";
-import { AddressAutocomplete, ParsedAddress } from "@/components/shared/AddressAutocomplete";
+import {
+  AddressAutocomplete,
+  ParsedAddress,
+} from "@/components/shared/AddressAutocomplete";
 
 type FormUserData = Pick<
   Customer,
@@ -52,6 +55,32 @@ type EditableFields = Omit<FormUserData, "email"> & {
 
 const initialState: ProfileState = { message: null, errors: {} };
 type PhoneVerifyStep = "idle" | "sending" | "otp" | "verifying";
+
+const UNIT_ADDRESS_SEPARATOR = "-";
+
+function splitUnitFromStreetAddress(address: string) {
+  const trimmed = address.trim();
+  const match = trimmed.match(/^([A-Za-z0-9][A-Za-z0-9\s-]{0,15})-(\d.*)$/);
+
+  if (!match) {
+    return { unit: "", streetAddress: trimmed };
+  }
+
+  return {
+    unit: match[1].trim(),
+    streetAddress: match[2].trim(),
+  };
+}
+
+function formatAddressWithUnit(streetAddress: string, unit: string) {
+  const cleanStreetAddress = streetAddress.trim();
+  const cleanUnit = unit.trim();
+
+  if (!cleanUnit) return cleanStreetAddress;
+  if (!cleanStreetAddress) return cleanUnit;
+
+  return `${cleanUnit}${UNIT_ADDRESS_SEPARATOR}${cleanStreetAddress}`;
+}
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -436,9 +465,11 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
     mobile: (user.mobile ?? "").trim(),
   };
 
+  const initialAddress = splitUnitFromStreetAddress(trimmed.address);
+  const [aptUnit, setAptUnit] = useState(initialAddress.unit);
   const [fields, setFields] = useState<EditableFields>({
     name: trimmed.name,
-    address: trimmed.address,
+    address: initialAddress.streetAddress,
     city: trimmed.city,
     province: trimmed.province || CUSTOMER_PROVINCE,
     postalCode: trimmed.postalCode,
@@ -450,6 +481,10 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
       const { name, value } = e.target;
       if (name === "mobile") {
         setFields((prev) => ({ ...prev, mobile: formatMobile(value) }));
+        return;
+      }
+      if (name === "aptUnit") {
+        setAptUnit(value);
         return;
       }
       setFields((prev) => ({ ...prev, [name]: value }));
@@ -480,10 +515,11 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
 
   const mobileChanged =
     fields.mobile.trim() !== formatStoredMobile(trimmed.mobile ?? "");
+  const composedAddress = formatAddressWithUnit(fields.address, aptUnit);
 
   const hasChanges =
     fields.name.trim() !== trimmed.name ||
-    fields.address.trim() !== trimmed.address ||
+    composedAddress.trim() !== trimmed.address ||
     fields.city.trim() !== trimmed.city ||
     fields.province.trim() !== trimmed.province ||
     fields.postalCode.trim() !== trimmed.postalCode ||
@@ -507,6 +543,7 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
       (Object.keys(fields) as (keyof EditableFields)[]).forEach((key) => {
         fd.set(key, (fields[key] ?? "").trim());
       });
+      fd.set("address", composedAddress.trim());
 
       if (mobileChanged) {
         const digits = fields.mobile.replace(/\D/g, "");
@@ -522,7 +559,7 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
       }
       startTransition(() => formAction(fd));
     },
-    [fields, hasChanges, mobileChanged, formAction],
+    [fields, hasChanges, mobileChanged, composedAddress, formAction],
   );
 
   const handlePhoneVerified = useCallback(() => {
@@ -540,7 +577,7 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
   const previewMobile = fields.mobile.trim() || "—";
   const previewAddress =
     [
-      fields.address.trim(),
+      composedAddress.trim(),
       fields.city.trim(),
       fields.province.trim(),
       fields.postalCode.trim(),
@@ -590,19 +627,39 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
   const addressFields = (
     <div className="space-y-4">
       <SectionLabel>Address</SectionLabel>
-      <div>
-        <FieldLabel>Street Address</FieldLabel>
-        <IconAddressAutocomplete
-          icon={MapPin}
-          defaultValue={fields.address}
-          allowedProvince={CUSTOMER_PROVINCE}
-          onSelect={handleAddressSelect}
-          onClear={handleAddressClear}
-          placeholder="e.g. 123 Main St"
-          error={state?.errors?.address?.[0]}
-        />
-        {/* Sync address into FormData since AddressAutocomplete is uncontrolled by name */}
-        <input type="hidden" name="address" value={fields.address} />
+      <div className="grid gap-3 sm:grid-cols-[9.5rem_minmax(0,1fr)]">
+        <div>
+          <FieldLabel>
+            Apt / Unit{" "}
+            <span className="text-muted-foreground/50">(optional)</span>
+          </FieldLabel>
+          <Input
+            id="aptUnit"
+            name="aptUnit"
+            type="text"
+            value={aptUnit}
+            onChange={handleChange}
+            placeholder="e.g. 308"
+            autoComplete="address-line2"
+            className="h-11 rounded-xl border-border/60 bg-card text-sm focus-visible:ring-1 focus-visible:ring-primary"
+          />
+        </div>
+
+        <div>
+          <FieldLabel>Street Address</FieldLabel>
+          <IconAddressAutocomplete
+            icon={MapPin}
+            defaultValue={fields.address}
+            allowedProvince={CUSTOMER_PROVINCE}
+            onSelect={handleAddressSelect}
+            onClear={handleAddressClear}
+            placeholder="e.g. 123 Main St"
+            error={state?.errors?.address?.[0]}
+          />
+        </div>
+
+        {/* Submit a single Canadian-format address, e.g. 308-123 Main St */}
+        <input type="hidden" name="address" value={composedAddress} />
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div>

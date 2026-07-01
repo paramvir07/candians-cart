@@ -26,7 +26,7 @@ export const signupAction = async (
     const rawData = formDataToObject(formData);
 
     if (userRole === "customer") {
-      const result = CustomerSchema.safeParse(rawData);
+      const result = await CustomerSchema.safeParseAsync(rawData);
 
       if (!result.success) {
         const errorMessage = zodErrorResponse(result);
