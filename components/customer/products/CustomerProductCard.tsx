@@ -321,7 +321,6 @@ export const CustomerProductCard = forwardRef<
     normalizedInputQty !== null &&
     normalizedInputQty !== quantity;
 
-  // Calculate subsidy strictly based on markup for ALL products (no boolean check needed)
   const subsidyConfig = getSubsidyConfig(product.markup ?? 0);
 
   return (
@@ -408,7 +407,15 @@ export const CustomerProductCard = forwardRef<
               <BadgeDollarSign className="h-3 w-3 shrink-0" strokeWidth={2.5} />
               {subsidyConfig.label}
             </div>
+            
           )}
+          <div className="absolute right-4 top-8 z-10" style={{ bottom: "6.5rem" }}>
+              <img
+                src="https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo-abb.png"
+                alt="Canadian's Cart"
+                className="h-6 w-6 rounded-full object-contain drop-shadow-md"
+              />
+            </div>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 z-10">

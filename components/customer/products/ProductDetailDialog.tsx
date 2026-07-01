@@ -268,6 +268,14 @@ export function ProductDetailDialog({
           style={{ aspectRatio: "4/3" }}
         >
           {hasImage ? (
+            <>
+            <div className="absolute right-10 bottom-5 z-50">
+              <img
+                src="https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo-abb.png"
+                alt="Canadian's Cart"
+                className="h-8 w-8 rounded-full object-contain drop-shadow-md"
+              />
+            </div>            
             <Image
               src={product.images[0].url}
               alt={product.name}
@@ -275,6 +283,7 @@ export function ProductDetailDialog({
               className="object-contain"
               sizes="512px"
             />
+            </>
           ) : (
             <CategoryIllustration
               category={product.category}
