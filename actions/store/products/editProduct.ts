@@ -13,6 +13,7 @@ import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
 import ImageKit from "@imagekit/nodejs";
 import ProductInvoice from "@/db/models/store/invoice.model";
+import { triggerImageGeneration } from "@/actions/inngestActions/generateImage";
 
 const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
@@ -338,6 +339,15 @@ export async function updateProduct(
 
     const targetStoreId =
       store?._id?.toString() || existingProduct.storeId.toString();
+
+    const oldPrimaryFileId = existingProduct.images?.[0]?.fileId;
+    const newPrimaryFileId = images?.[0]?.fileId;
+    const imageHasChanged =
+      newPrimaryFileId && newPrimaryFileId !== oldPrimaryFileId;
+
+    if (imageHasChanged && images?.[0]) {
+      await triggerImageGeneration(productId, images[0], targetStoreId);
+    }
 
     const tagToBust = `products-${targetStoreId}`;
 
