@@ -1,3 +1,3 @@
 import { Inngest } from "inngest";
 
-export const inngest = new Inngest({ id: "CandiansCart" });
+export const inngestClient = new Inngest({ id: "CandiansCart" });

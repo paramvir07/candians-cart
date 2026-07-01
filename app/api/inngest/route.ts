@@ -1,9 +1,9 @@
-import { helloWorld } from "@/lib/inngest/functions/helloWorld";
-import { inngest } from "@/lib/inngest/inngest";
+import { generateGeminiImage, helloWorld } from "@/lib/inngest/functions/ImageGeneration";
+import { inngestClient } from "@/lib/inngest/inngest";
 import { serve } from "inngest/next";
 
 
 export const { GET, POST, PUT } = serve({
-  client: inngest,
-  functions: [helloWorld],
+  client: inngestClient,
+  functions: [helloWorld,generateGeminiImage],
 });
