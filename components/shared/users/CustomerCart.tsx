@@ -81,10 +81,23 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const giftWalletBalance = UserData?.giftWalletBalance ?? 0;
   const UserStoreId = UserData?.associatedStoreId?.toString() ?? "";
   const rawItems = (CartItems?.items as ICartItem[] | null) ?? [];
-  const nonSubsidised = rawItems
+
+  const PINNED_LAST_IDS = ["6a2f51207f6cc4d79650b794", "6a2f51897f6cc4d79650b796"];
+
+  const isPinned = (item: ICartItem) =>
+    PINNED_LAST_IDS.includes(item.productId._id?.toString());
+
+  const nonSubsidisedAll = rawItems
     .filter((i) => !i.productId.subsidised)
     .reverse();
+
+  const nonSubsidisedPinned = nonSubsidisedAll.filter(isPinned);
+  const nonSubsidisedRest = nonSubsidisedAll.filter((i) => !isPinned(i));
+
+  const nonSubsidised = [...nonSubsidisedRest, ...nonSubsidisedPinned];
+
   const subsidised = rawItems.filter((i) => i.productId.subsidised).reverse();
+
   const items = [...nonSubsidised, ...subsidised];
   const subItems = (CartItems?.subItems as ISubsidyItems[]) ?? [];
   const MiscItems = (CartItems?.miscItems as IMiscCartItem[]) ?? [];
