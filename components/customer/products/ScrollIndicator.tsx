@@ -78,7 +78,7 @@ export function ScrollIndicator({
     >
       <div className="w-[3px] h-full rounded-full bg-transparent group-hover:bg-border/50 transition-colors" />
       <div
-        className="absolute right-0 w-[3px] rounded-full bg-foreground/20 group-hover:bg-foreground/40 transition-colors"
+        className="absolute right-0 w-[3px] rounded-full bg-primary/30 group-hover:bg-primary transition-colors duration-300"
         style={{
           height: `${thumbHeight}%`,
           top: `${(scrollPercent * (100 - thumbHeight)) / 100}%`,
