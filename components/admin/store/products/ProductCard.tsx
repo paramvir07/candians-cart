@@ -170,7 +170,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
         <button
           type="button"
           onClick={() => setDialogOpen(true)}
-          className="relative aspect-4/3 bg-muted overflow-hidden w-full shrink-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="relative aspect-4/3 bg-white overflow-hidden w-full shrink-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={`View details for ${product.name}`}
         >
           {!product.stock && (

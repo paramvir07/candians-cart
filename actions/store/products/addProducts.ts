@@ -226,7 +226,7 @@ export async function createProduct(
     }
 
     if (createdProductId && dbPayload.images?.[0]) {
-      await triggerImageGeneration(createdProductId, dbPayload.images[0]);
+      await triggerImageGeneration(createdProductId, dbPayload.images[0],storeId);
     }    
     return {
       success: true,

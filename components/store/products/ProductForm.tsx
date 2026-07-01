@@ -143,6 +143,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
 
   // Step 1: Pre-Submit Validation and Duplicate Check
   const handlePreSubmitValidation = async () => {
+    if (loading) return;
     const rawpayload: ProductFormValues = {
       name: formData.name,
       description: formData.description,
@@ -195,6 +196,7 @@ const ProductForm = ({ initialData, storeId, role }: ProductFormProps) => {
 
   // Step 2: Final Execution (Image upload + Save)
   const executeSubmit = async (preValidatedPayload?: ProductFormValues) => {
+    if (loading) return;
     setLoading(true);
     setIsDuplicateModalOpen(false);
 
