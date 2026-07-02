@@ -3,8 +3,8 @@
 import { dbConnect } from "@/db/dbConnect";
 import storePayoutsModel from "@/db/models/admin/storePayouts.model";
 import OrderModel from "@/db/models/customer/Orders.Model";
-import productsModel from "@/db/models/store/products.model";
 import Store from "@/db/models/store/store.model";
+import { getAnalyticsBoundaries } from "@/lib/timezone";
 
 export interface DashboardStats {
   totalStores: number;
@@ -47,10 +47,7 @@ export interface DashboardData {
 
 export async function allStoreDataAction(): Promise<DashboardData> {
   await dbConnect();
-
-  const now = new Date();
-  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const { utcStartOfThisMonth, utcStartOfLastMonth } = getAnalyticsBoundaries();
 
   const [
     totalStores,
@@ -66,13 +63,13 @@ export async function allStoreDataAction(): Promise<DashboardData> {
   ] = await Promise.all([
     Store.countDocuments(),
 
-    Store.countDocuments({ createdAt: { $gte: startOfThisMonth } }),
+    Store.countDocuments({ createdAt: { $gte: utcStartOfThisMonth } }),
 
     OrderModel.aggregate([
       {
         $match: {
           status: "completed",
-          createdAt: { $gte: startOfThisMonth },
+          createdAt: { $gte: utcStartOfThisMonth },
         },
       },
       { $group: { _id: null, total: { $sum: "$platformProfit" } } },
@@ -83,7 +80,7 @@ export async function allStoreDataAction(): Promise<DashboardData> {
       {
         $match: {
           status: "completed",
-          createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+          createdAt: { $gte: utcStartOfLastMonth, $lt: utcStartOfThisMonth },
         },
       },
       { $group: { _id: null, total: { $sum: "$platformProfit" } } },
@@ -91,7 +88,7 @@ export async function allStoreDataAction(): Promise<DashboardData> {
 
     OrderModel.countDocuments(),
     OrderModel.countDocuments({
-      createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+      createdAt: { $gte: utcStartOfLastMonth, $lt: utcStartOfThisMonth },
     }),
 
     // Revenue this month = cartTotal + subsidy, completed orders only
@@ -99,7 +96,7 @@ export async function allStoreDataAction(): Promise<DashboardData> {
       {
         $match: {
           status: "completed",
-          createdAt: { $gte: startOfThisMonth },
+          createdAt: { $gte: utcStartOfThisMonth },
         },
       },
       {
@@ -117,7 +114,7 @@ export async function allStoreDataAction(): Promise<DashboardData> {
       {
         $match: {
           status: "completed",
-          createdAt: { $gte: startOfLastMonth, $lt: startOfThisMonth },
+          createdAt: { $gte: utcStartOfLastMonth, $lt: utcStartOfThisMonth },
         },
       },
       {
@@ -199,7 +196,7 @@ export async function allStoreDataAction(): Promise<DashboardData> {
   const platformProfit: number = totalProfitAgg[0]?.total ?? 0;
 
   const ordersThisMonth = await OrderModel.countDocuments({
-    createdAt: { $gte: startOfThisMonth },
+    createdAt: { $gte: utcStartOfThisMonth },
   });
 
   const platformFee = totalOrders * 50;

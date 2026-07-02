@@ -101,23 +101,23 @@ export function AnalyticsPanel({ transactions }: AnalyticsPanelProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div className="flex items-center justify-between bg-muted/30 rounded-xl px-4 py-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
-                <Wifi size={13} className="text-blue-600" />
+              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Wifi size={13} className="text-primary" />
               </div>
               <span className="text-sm font-medium">Online</span>
             </div>
-            <span className="text-sm font-bold text-blue-600">
+            <span className="text-sm font-bold text-primary">
               {analytics.onlinePct}%
             </span>
           </div>
           <div className="flex items-center justify-between bg-muted/30 rounded-xl px-4 py-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center">
-                <Store size={13} className="text-violet-600" />
+              <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
+                <Store size={13} className="text-secondary-foreground" />
               </div>
               <span className="text-sm font-medium">In-Store</span>
             </div>
-            <span className="text-sm font-bold text-violet-600">
+            <span className="text-sm font-bold text-secondary-foreground">
               {analytics.inStorePct}%
             </span>
           </div>
@@ -125,11 +125,11 @@ export function AnalyticsPanel({ transactions }: AnalyticsPanelProps) {
         <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
           <div className="h-full flex rounded-full overflow-hidden">
             <div
-              className="bg-blue-500 transition-all duration-700"
+              className="bg-primary transition-all duration-700"
               style={{ width: `${analytics.onlinePct}%` }}
             />
             <div
-              className="bg-violet-500 transition-all duration-700"
+              className="bg-secondary-foreground/60 transition-all duration-700"
               style={{ width: `${analytics.inStorePct}%` }}
             />
           </div>
@@ -143,10 +143,10 @@ export function AnalyticsPanel({ transactions }: AnalyticsPanelProps) {
 
       {/* Gift row — only when gifts exist */}
       {analytics.giftCount > 0 && (
-        <div className="flex items-center justify-between bg-amber-100/10 border border-amber-200/40 rounded-2xl px-4 py-3">
+        <div className="flex items-center justify-between bg-primary/5 border border-primary/15 rounded-2xl px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100/50 flex items-center justify-center">
-              <Gift size={16} className="text-amber-600" />
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Gift size={16} className="text-primary" />
             </div>
 
             <div>
@@ -161,7 +161,7 @@ export function AnalyticsPanel({ transactions }: AnalyticsPanelProps) {
             </div>
           </div>
 
-          <span className="text-lg font-bold text-amber-600/90">
+          <span className="text-lg font-bold text-primary">
             {formatCurrency(analytics.gifts, "cad")}
           </span>
         </div>
@@ -198,15 +198,15 @@ export function AnalyticsPanel({ transactions }: AnalyticsPanelProps) {
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
-          <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl px-3 py-3">
+          <div className="bg-primary/5 rounded-xl px-3 py-3">
             <p className="text-[10px] text-muted-foreground">Online</p>
-            <p className="text-sm font-bold text-blue-600 mt-0.5">
+            <p className="text-sm font-bold text-primary mt-0.5">
               {formatCurrency(analytics.online, "cad")}
             </p>
           </div>
-          <div className="bg-violet-50 dark:bg-violet-950/30 rounded-xl px-3 py-3">
+          <div className="bg-secondary rounded-xl px-3 py-3">
             <p className="text-[10px] text-muted-foreground">In-Store</p>
-            <p className="text-sm font-bold text-violet-600 mt-0.5">
+            <p className="text-sm font-bold text-secondary-foreground mt-0.5">
               {formatCurrency(analytics.inStore, "cad")}
             </p>
           </div>

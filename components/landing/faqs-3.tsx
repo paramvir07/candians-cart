@@ -14,6 +14,7 @@ import {
   ShoppingCart,
   BadgePercent,
   PiggyBank,
+  Gift,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -28,91 +29,75 @@ type FAQItem = {
 const faqItems: FAQItem[] = [
   {
     id: "item-1",
-    icon: <PiggyBank size={16} strokeWidth={1.75} />,
-    question: "How do I save money with this app?",
+    icon: <UserPlus size={16} strokeWidth={1.75} />,
+    question: "How do I create an account?",
     answer:
-      "You save money by using subsidies on subsidized items. When your order has at least C$21 of regular items before tax, the app shows subsidies you can use. You can use those subsidies right away on subsidized items in the same order, or save them in your Gift Wallet for later. When you use subsidies, your total becomes lower and you pay less at the store.",
-    tag: "Savings",
+      "Tap Sign Up and choose your city, then select the store you want to shop from, enter your details, and add your referral code if you have one. After you verify your email, your account will be ready. Choose your store carefully.",
+    tag: "Account",
   },
   {
     id: "item-2",
-    icon: <Wallet size={16} strokeWidth={1.75} />,
-    question: "How do I earn subsidies?",
+    icon: <UserPlus size={16} strokeWidth={1.75} />,
+    question: "How does the referral program work?",
     answer:
-      "You earn subsidies when your order has at least C$21 of regular items before tax. Regular items are items that are not subsidized. Some regular items can give more subsidy than others, so look for High, Medium, or Low Subsidy labels when shopping. Choosing High Subsidy regular items can help you earn more subsidy to use on subsidized items.",
-    tag: "Rewards",
+      "Canadian's Cart is invite-only. To join, fill in your name, phone number, and email, then browse members and send your request to one of them. If they accept, a referral code is sent automatically to your phone and email, which you use to sign up.",
+    tag: "Referrals",
   },
   {
     id: "item-3",
-    icon: <BadgePercent size={16} strokeWidth={1.75} />,
-    question: "What do High, Medium, and Low Subsidy mean?",
+    icon: <Gift size={16} strokeWidth={1.75} />,
+    question: "What does the person who refers me get?",
     answer:
-      "High, Medium, and Low Subsidy labels show how much subsidy you can earn from a regular item. High Subsidy items can help you earn more subsidy, Medium Subsidy items give a moderate amount, and Low Subsidy items give a smaller amount. You can see these labels in search, product cards, cart, checkout, and order history. To earn more subsidy, try choosing High Subsidy regular items before checkout. If you need help, you can ask the cashier at your selected store.",
-    tag: "Subsidies",
+          "When someone shares their referral code with you and you sign up using it, they receive a reward added to their account. It's C$5 during this initial launch phase of the referral feature, and will drop to C$2 once that phase ends. This rewards existing members who help grow the community.",
+    tag: "Referrals",
   },
   {
     id: "item-4",
-    icon: <Coins size={16} strokeWidth={1.75} />,
-    question: "What are subsidies?",
+    icon: <ShoppingCart size={16} strokeWidth={1.75} />,
+    question: "How do I actually place an order?",
     answer:
-      "Subsidies are like reward money in the app. They help you pay less for subsidized items. You receive subsidies based on the regular items you buy. You can use subsidies right away when they are shown in your order, or keep them saved in your Gift Wallet for a future order.",
-    tag: "Subsidies",
+      "There's no delivery or app checkout — everything happens in store. Use the app to browse and build your cart ahead of time, then visit your selected store. The cashier scans your ID, pulls up your cart, and completes checkout for you, applying any subsidies in your Gift Wallet.",
+    tag: "Orders",
   },
   {
     id: "item-5",
-    icon: <BadgePercent size={16} strokeWidth={1.75} />,
-    question: "Which items can I use subsidies on?",
+    icon: <PiggyBank size={16} strokeWidth={1.75} />,
+    question: "How do I save money with this app?",
     answer:
-      "Subsidies can be used only on subsidized items. These are special items where you can pay less using subsidies. Subsidized items may include milk, vegetables, fruits, and selected daily grocery items.",
+      "You save money by using subsidies on subsidized items. When your order has at least C$21 of regular items before tax, the app shows subsidies you can use. You can use those subsidies right away in the same order, or save them in your Gift Wallet for a future order.",
     tag: "Savings",
   },
   {
     id: "item-6",
-    icon: <Store size={16} strokeWidth={1.75} />,
-    question: "Where can I use my subsidies?",
+    icon: <Wallet size={16} strokeWidth={1.75} />,
+    question: "How do I earn subsidies?",
     answer:
-      "You can use your subsidies at your selected store on subsidized items only. Subsidies do not work on every item. They only work on items that are marked as subsidized.",
-    tag: "Subsidies",
+      "You earn subsidies when your order has at least C$21 of regular (non-subsidized) items before tax. Some regular items give more subsidy than others — look for High, Medium, or Low Subsidy labels when shopping. Choosing High Subsidy items can help you earn more.",
+    tag: "Rewards",
   },
   {
     id: "item-7",
-    icon: <ShoppingCart size={16} strokeWidth={1.75} />,
-    question: "Can I order from the app or shop in store?",
+    icon: <BadgePercent size={16} strokeWidth={1.75} />,
+    question: "What do High, Medium, and Low Subsidy mean?",
     answer:
-      "Yes. You can shop in two ways. You can add items to your cart in the app and tap Pay at Store to place your order. You can also go directly to your selected store and shop like regular grocery shopping. At checkout, the cashier can scan your ID and place the order for you.",
-    tag: "Orders",
+      "These labels show how much subsidy a regular item earns you — High gives the most, Medium a moderate amount, and Low the least. You'll see these labels in search, product cards, cart, checkout, and order history. If you need help, ask the cashier at your selected store.",
+    tag: "Subsidies",
   },
   {
     id: "item-8",
-    icon: <PackageCheck size={16} strokeWidth={1.75} />,
-    question: "How do I place an order from the app?",
+    icon: <BadgePercent size={16} strokeWidth={1.75} />,
+    question: "Which items can I use subsidies on?",
     answer:
-      "Choose the items you want and add them to your cart. At checkout, the app shows any subsidies you can use on subsidized items. If you use subsidies, your price becomes lower. If you do not use your subsidies, they will stay saved in your Gift Wallet for later. Then tap Pay at Store and pay when you visit the store.",
-    tag: "Orders",
+      "Subsidies can only be used on subsidized items — special items where you pay less using subsidies. These may include milk, vegetables, fruits, and selected daily grocery items, and are only redeemable at your selected store.",
+    tag: "Savings",
   },
   {
     id: "item-9",
-    icon: <Store size={16} strokeWidth={1.75} />,
-    question: "Can I shop directly at the store?",
-    answer:
-      "Yes. You can go directly to your selected store and shop like you normally do for groceries. At checkout, the cashier can scan your ID and place the order for you. If you have subsidies in your Gift Wallet, they can be used on subsidized items.",
-    tag: "Store",
-  },
-  {
-    id: "item-10",
     icon: <PiggyBank size={16} strokeWidth={1.75} />,
     question: "What happens if I do not use my subsidies?",
     answer:
-      "Your subsidies do not disappear. If you do not use them, they stay safely saved in your Gift Wallet. You can use them later on future orders when you buy subsidized items.",
+      "Your subsidies do not disappear. If you do not use them, they stay safely saved in your Gift Wallet for you to use on a future order.",
     tag: "Gift Wallet",
-  },
-  {
-    id: "item-11",
-    icon: <UserPlus size={16} strokeWidth={1.75} />,
-    question: "How do I create an account?",
-    answer:
-      "Tap Sign Up and choose your city. Then select the store you want to shop from, enter your details, and add your referral code if you have one. After you verify your email, your account will be ready. Please choose your store carefully because it cannot be changed later.",
-    tag: "Account",
   },
 ];
 
