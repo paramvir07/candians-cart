@@ -336,7 +336,7 @@ export const CustomerProductCard = forwardRef<
 
       <div
         onClick={() => setDialogOpen(true)}
-        className="group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className="group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 bg-white"
         style={{ aspectRatio: "2/3" }}
       >
         <div className="absolute inset-0 h-full w-full">
