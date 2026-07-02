@@ -4,6 +4,7 @@ import { dbConnect } from "@/db/dbConnect";
 import productsModel from "@/db/models/store/products.model";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import mongoose from "mongoose";
+import { getAnalyticsBoundaries } from "@/lib/timezone";
 
 export interface ProductStats {
   totalProducts: number;
@@ -14,6 +15,7 @@ export interface ProductStats {
   soldWeekly: number;
   totalSold: number;
 }
+
 interface StatFilterQuery {
   storeId?: mongoose.Types.ObjectId;
   stock?: boolean;
@@ -41,9 +43,8 @@ export async function getProductStats(
   const orderMatch: StatFilterQuery = {};
   if (storeId) orderMatch.storeId = new mongoose.Types.ObjectId(storeId);
 
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  // 1. Fetch exactly the boundaries you need from your central timezone utility
+  const { utcStartOfDay, utcRolling7Days } = getAnalyticsBoundaries();
 
   const [
     totalProducts,
@@ -56,26 +57,71 @@ export async function getProductStats(
     productsModel.countDocuments(match),
     productsModel.countDocuments({ ...match, stock: true }),
     productsModel.countDocuments({ ...match, subsidised: true }),
-    
-    // Sold today = sum of ceilinged quantities (e.g., 0.54 quantity becomes 1 item)
+
+    // Sold today
     OrderModel.aggregate<AggregationResult>([
-      { $match: { ...orderMatch, createdAt: { $gte: startOfDay } } },
-      { $unwind: "$products" },
-      { $group: { _id: null, total: { $sum: { $ceil: "$products.quantity" } } } },
+      { $match: { ...orderMatch, createdAt: { $gte: utcStartOfDay } } },
+      {
+        $addFields: {
+          combinedItems: {
+            $concatArrays: [
+              { $ifNull: ["$products", []] },
+              { $ifNull: ["$subsidyItems", []] },
+            ],
+          },
+        },
+      },
+      { $unwind: "$combinedItems" },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $ceil: "$combinedItems.quantity" } },
+        },
+      },
     ]),
-    
-    // Sold weekly
+
+    // Sold weekly (Rolling 7 days)
     OrderModel.aggregate<AggregationResult>([
-      { $match: { ...orderMatch, createdAt: { $gte: startOfWeek } } },
-      { $unwind: "$products" },
-      { $group: { _id: null, total: { $sum: { $ceil: "$products.quantity" } } } },
+      { $match: { ...orderMatch, createdAt: { $gte: utcRolling7Days } } },
+      {
+        $addFields: {
+          combinedItems: {
+            $concatArrays: [
+              { $ifNull: ["$products", []] },
+              { $ifNull: ["$subsidyItems", []] },
+            ],
+          },
+        },
+      },
+      { $unwind: "$combinedItems" },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $ceil: "$combinedItems.quantity" } },
+        },
+      },
     ]),
-    
+
     // Total Sold
     OrderModel.aggregate<AggregationResult>([
       { $match: orderMatch },
-      { $unwind: "$products" },
-      { $group: { _id: null, total: { $sum: { $ceil: "$products.quantity" } } } },
+      {
+        $addFields: {
+          combinedItems: {
+            $concatArrays: [
+              { $ifNull: ["$products", []] },
+              { $ifNull: ["$subsidyItems", []] },
+            ],
+          },
+        },
+      },
+      { $unwind: "$combinedItems" },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $ceil: "$combinedItems.quantity" } },
+        },
+      },
     ]),
   ]);
 

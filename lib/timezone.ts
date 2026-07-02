@@ -1,4 +1,5 @@
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
+import { startOfDay, startOfMonth, startOfWeek, subDays } from "date-fns";
 
 export const STORE_TIMEZONE = "America/Vancouver";
 
@@ -29,4 +30,24 @@ export function getVancouverDayBoundsUTC(localDate: Date) {
 export function getTodayVancouverBoundsUTC() {
   const nowInVancouver = toZonedTime(new Date(), STORE_TIMEZONE);
   return getVancouverDayBoundsUTC(nowInVancouver);
+}
+
+/**
+ * Returns UTC Date objects aligned to the start of the day, week, 
+ * and month for the store's specific timezone.
+ * Mongoose requires UTC Dates for $match / $gte operations.
+ */
+export function getAnalyticsBoundaries(baseDate = new Date()) {
+  // 1. Shift current UTC time to Vancouver time
+  const zonedNow = toZonedTime(baseDate, STORE_TIMEZONE);
+
+  // 2. Calculate boundaries in Vancouver time, then shift them back to standard UTC Dates
+  return {
+    utcStartOfDay: fromZonedTime(startOfDay(zonedNow), STORE_TIMEZONE),
+    utcStartOfMonth: fromZonedTime(startOfMonth(zonedNow), STORE_TIMEZONE),
+    // Standard calendar week (e.g., Sunday 12:00 AM)
+    utcStartOfWeek: fromZonedTime(startOfWeek(zonedNow), STORE_TIMEZONE),
+    // Rolling 7-day window (exactly 7 days ago from today at midnight)
+    utcRolling7Days: fromZonedTime(subDays(startOfDay(zonedNow), 7), STORE_TIMEZONE),
+  };
 }
