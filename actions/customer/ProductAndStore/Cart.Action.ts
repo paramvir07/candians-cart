@@ -598,7 +598,7 @@ const EnableUserReferralFlag = async (
     await dbConnect();
 
     if (orderSubsidy <= 0)
-      return { success: true, message: "No subsidy used, referral flags not enabled" };
+      return { success: true, message: "No subsidy made, referral flags not enabled" };
 
     const CustomerData = await Customer.findOneAndUpdate(
       { _id: customerId, placedFirstOrder: false, referralCodeEnabled: false },
