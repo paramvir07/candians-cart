@@ -16,11 +16,13 @@ export interface AdminOrder {
   status: "pending" | "completed";
   paymentMode: "wallet" | "cash" | "card" | "pending";
   createdAt: Date;
+  platformProfit: number;
+  storeProfit: number;
 }
 
 export interface DateRange {
   from: string; // "YYYY-MM-DD"
-  to: string;   // "YYYY-MM-DD"
+  to: string; // "YYYY-MM-DD"
 }
 
 export interface GetOrdersResult {
@@ -63,12 +65,15 @@ function buildLookupStages() {
         status: 1,
         paymentMode: 1,
         createdAt: 1,
+        storeProfit: 1,
+        platformProfit: 1,
       },
     },
   ];
 }
 
 function mapDoc(o: any): AdminOrder {
+  console.log("Order Store Profit: ", o.storeProfit);
   return {
     orderId: o._id.toString(),
     orderRef: `LPO/${o._id.toString().slice(-6).toUpperCase()}`,
@@ -80,12 +85,18 @@ function mapDoc(o: any): AdminOrder {
     status: o.status,
     paymentMode: o.paymentMode,
     createdAt: o.createdAt,
+    platformProfit: o.platformProfit ?? 0,
+    storeProfit: o.storeProfit ?? 0,
   };
 }
 
 function buildDateMatch(dateRange: DateRange): Record<string, any> {
-  const { start } = getVancouverDayBoundsUTC(new Date(`${dateRange.from}T00:00:00`));
-  const { end } = getVancouverDayBoundsUTC(new Date(`${dateRange.to}T00:00:00`));
+  const { start } = getVancouverDayBoundsUTC(
+    new Date(`${dateRange.from}T00:00:00`),
+  );
+  const { end } = getVancouverDayBoundsUTC(
+    new Date(`${dateRange.to}T00:00:00`),
+  );
   return { createdAt: { $gte: start, $lte: end } };
 }
 

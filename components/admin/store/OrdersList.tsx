@@ -24,8 +24,6 @@ import {
   Eye,
   Calendar,
   CalendarDays,
-  CheckCircle2,
-  Clock,
   DollarSign,
   Package,
   ArrowUpRight,
@@ -134,6 +132,10 @@ function formatDate(date: Date) {
     month: "short",
     day: "numeric",
   });
+}
+
+function getProfitForRole(order: AdminOrder, role: "admin" | "store") {
+  return role === "admin" ? order.platformProfit : order.storeProfit;
 }
 
 // ─── Stat Card ─────────────────────────────────────────────────────────────────
@@ -525,7 +527,7 @@ export function OrdersList({
             />
           </>
         ) : (
-          Array.from({ length: 6 }).map((_, i) => <StatSkeleton key={i} />)
+          Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
         )}
       </div>
 
@@ -608,6 +610,9 @@ export function OrdersList({
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Amount
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  {role === "admin" ? "Platform Profit" : "Store Profit"}
                 </th>
                 <th className="px-4 py-3 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Actions
@@ -699,6 +704,11 @@ export function OrdersList({
                         {formatCents(order.amount)}
                       </span>
                     </td>
+                    <td className="px-4 py-3.5">
+                      <span className="text-sm font-semibold text-foreground tabular-nums">
+                        {formatCents(getProfitForRole(order, role))}
+                      </span>
+                    </td>
                     <td className="px-4 py-3.5 text-right">
                       <Button
                         variant="ghost"
@@ -775,7 +785,7 @@ export function OrdersList({
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage < totalPages && !isLoading)
-                        setCurrentPage((p) => p + 1);
+                        setCurrentPage((p) => p - 1);
                     }}
                     className={
                       currentPage === totalPages || isLoading
