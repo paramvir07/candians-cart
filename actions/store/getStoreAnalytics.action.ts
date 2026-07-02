@@ -2,12 +2,15 @@
 
 import { dbConnect } from "@/db/dbConnect";
 import OrderModel from "@/db/models/customer/Orders.Model";
-import storePayoutsModel from "@/db/models/admin/storePayouts.model";
 import productsModel from "@/db/models/store/products.model";
 import Customer from "@/db/models/customer/customer.model";
 import Store from "@/db/models/store/store.model";
 import mongoose from "mongoose";
 import { getUserSession } from "../auth/getUserSession.actions";
+import { getAnalyticsBoundaries } from "@/lib/timezone";
+import { toZonedTime } from "date-fns-tz";
+
+const STORE_TIMEZONE = "America/Vancouver";
 
 // ─── Interfaces ────────────────────────────────────────────────────────────────
 
@@ -107,15 +110,15 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
 
   const storeId = (storeDoc as any)._id as mongoose.Types.ObjectId;
 
-  const now = new Date();
-  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const { utcStartOfThisMonth, utcStartOfLastMonth } = getAnalyticsBoundaries();
+  const startOfThisMonth = utcStartOfThisMonth;
+  const startOfLastMonth = utcStartOfLastMonth;
 
-  // Last 6 months range
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-
-  // Last 7 days
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const zonedNow = toZonedTime(new Date(), STORE_TIMEZONE);
+  const sixMonthsAgo = getAnalyticsBoundaries(
+    new Date(zonedNow.getFullYear(), zonedNow.getMonth() - 5, 1),
+  ).utcStartOfThisMonth;
+  const sevenDaysAgo = getAnalyticsBoundaries().utcRolling7Days;
 
   const [
     totalOrders,
@@ -224,8 +227,8 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
       {
         $group: {
           _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" },
+            year: { $year: { date: "$createdAt", timezone: STORE_TIMEZONE } },
+            month: { $month: { date: "$createdAt", timezone: STORE_TIMEZONE } },
           },
           revenue: {
             $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
@@ -315,7 +318,7 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
     { revenue: number; orders: number }
   >();
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(zonedNow.getFullYear(), zonedNow.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
     monthlyRevenueMap.set(key, { revenue: 0, orders: 0 });
   }
@@ -339,7 +342,7 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
   // ── Build daily orders chart (last 7 days, fill gaps) ─────────────────────
   const dailyMap = new Map<number, { orders: number; revenue: number }>();
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const d = new Date(zonedNow.getTime() - i * 24 * 60 * 60 * 1000);
     dailyMap.set(d.getDay(), { orders: 0, revenue: 0 });
   }
   for (const pt of dailyOrdersAgg) {

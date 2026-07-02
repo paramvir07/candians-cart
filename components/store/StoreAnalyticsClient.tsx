@@ -82,8 +82,7 @@ function KpiCard({
   icon: React.ElementType;
   bg: string;
 }) {
-  const isPositive = growth === undefined || growth >= 0;
-  const TIcon = isPositive ? TrendingUp : TrendingDown;
+  const showGrowth = growth !== undefined && growth > 0;
   return (
     <div className={`${bg} border border-gray-100 rounded-2xl p-4 sm:p-5`}>
       <div className="flex items-start justify-between mb-3">
@@ -98,17 +97,13 @@ function KpiCard({
         {value}
       </p>
       <div className="flex items-center gap-1">
-        {growth !== undefined && (
-          <TIcon
-            className={`w-3 h-3 shrink-0 ${isPositive ? "text-emerald-500" : "text-red-400"}`}
-          />
+        {showGrowth && (
+          <TrendingUp className="w-3 h-3 shrink-0 text-emerald-500" />
         )}
         <p
-          className={`text-xs font-medium ${growth !== undefined ? (isPositive ? "text-emerald-600" : "text-red-500") : "text-gray-400"}`}
+          className={`text-xs font-medium ${showGrowth ? "text-emerald-600" : "text-gray-400"}`}
         >
-          {growth !== undefined
-            ? `${growth > 0 ? "+" : ""}${growth}% vs last month`
-            : sub}
+          {showGrowth ? `+${growth}% vs last month` : sub}
         </p>
       </div>
     </div>

@@ -8,6 +8,7 @@ import Customer from "@/db/models/customer/customer.model";
 import Store from "@/db/models/store/store.model";
 import mongoose from "mongoose";
 import { getUserSession } from "../auth/getUserSession.actions";
+import { getAnalyticsBoundaries } from "@/lib/timezone";
 
 // ─── Interfaces ────────────────────────────────────────────────────────────────
 
@@ -79,9 +80,9 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
   const storeId = (storeDoc as any)._id as mongoose.Types.ObjectId;
   const storeIdStr = storeId.toString();
 
-  const now = new Date();
-  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const { utcStartOfThisMonth, utcStartOfLastMonth } = getAnalyticsBoundaries();
+  const startOfThisMonth = utcStartOfThisMonth;
+  const startOfLastMonth = utcStartOfLastMonth;
 
   const [
     totalProducts,

@@ -2,7 +2,6 @@ import { StoreDashboardStats } from "@/actions/store/getStoreDashboard.actions";
 import {
   TrendingUp,
   TrendingDown,
-  Package,
   ShoppingCart,
   DollarSign,
   Users,
@@ -90,7 +89,6 @@ export default function StoreDashStatCards({
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       {cards.map((card) => {
         const Icon = card.icon;
-        const isPositive = card.growth >= 0;
 
         const inner = (
           <>
@@ -111,20 +109,14 @@ export default function StoreDashStatCards({
               {card.value}
             </p>
 
-            <div className="flex items-center gap-1">
-              {isPositive ? (
+            {card.growth > 0 && (
+              <div className="flex items-center gap-1">
                 <TrendingUp className="w-3 h-3 text-emerald-500 shrink-0" />
-              ) : (
-                <TrendingDown className="w-3 h-3 text-red-400 shrink-0" />
-              )}
-              <p
-                className={`text-xs font-medium leading-tight ${
-                  isPositive ? "text-emerald-600" : "text-red-500"
-                }`}
-              >
-                {card.sub}
-              </p>
-            </div>
+                <p className="text-xs font-medium leading-tight text-emerald-600">
+                  {card.sub}
+                </p>
+              </div>
+            )}
           </>
         );
 
