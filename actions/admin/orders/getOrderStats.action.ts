@@ -3,6 +3,8 @@
 import { dbConnect } from "@/db/dbConnect";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import mongoose from "mongoose";
+import { startOfDay, startOfMonth } from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 
 export interface OrderStats {
   dailyOrders: number;
@@ -10,6 +12,8 @@ export interface OrderStats {
   totalOrders: number;
   totalRevenue: number; // cartTotal sum in cents
 }
+
+const VANCOUVER_TZ = "America/Vancouver";
 
 /**
  * Compute order stats.
@@ -24,18 +28,31 @@ export async function getOrderStats(
   const match: Record<string, any> = {};
   if (storeId) match.storeId = new mongoose.Types.ObjectId(storeId);
 
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const now = new Date(); // Current time (evaluates as UTC on Vercel)
+
+  // 1. Shift current time to Vancouver time
+  const vancouverNow = toZonedTime(now, VANCOUVER_TZ);
+
+  // 2. Find the start of the day and month IN Vancouver
+  const vancouverStartOfDay = startOfDay(vancouverNow);
+  const vancouverStartOfMonth = startOfMonth(vancouverNow);
+
+  // 3. Shift those boundaries back to real UTC Date objects for MongoDB
+  const utcStartOfDay = fromZonedTime(vancouverStartOfDay, VANCOUVER_TZ);
+  const utcStartOfMonth = fromZonedTime(vancouverStartOfMonth, VANCOUVER_TZ);
 
   const [dailyOrders, monthlyOrders, totalOrders, revenueAgg] =
     await Promise.all([
-      OrderModel.countDocuments({ ...match, createdAt: { $gte: startOfDay } }),
       OrderModel.countDocuments({
         ...match,
-        createdAt: { $gte: startOfMonth },
+        createdAt: { $gte: utcStartOfDay },
+      }),
+      OrderModel.countDocuments({
+        ...match,
+        createdAt: { $gte: utcStartOfMonth },
       }),
       OrderModel.countDocuments(match),
+
       OrderModel.aggregate([
         { $match: match },
         {
