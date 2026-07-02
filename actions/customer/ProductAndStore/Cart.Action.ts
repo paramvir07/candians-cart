@@ -696,7 +696,7 @@ const CheckUserReferral = async (referralCodeId: string, perReferAmount: number)
       return { success: false, message: "Referral code is expired or has reached its maximum uses" };
     }
 
-    const ReferralValue = perReferAmount;
+    const ReferralValue = Math.round(perReferAmount*100);
     if (typeof ReferralValue !== "number" || !Number.isFinite(ReferralValue) || ReferralValue <= 0) {
       return { success: false, message: "Invalid referral value" };
     }
@@ -720,6 +720,7 @@ const CheckUserReferral = async (referralCodeId: string, perReferAmount: number)
     );
 
     await session.commitTransaction();
+    await revalidateCustomerCache();
     return { success: true, message: "Referral topup created" };
   } catch (error) {
     if (session.inTransaction()) {
