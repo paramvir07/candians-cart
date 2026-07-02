@@ -1,7 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  TrendingUp,
-  TrendingDown,
   ShoppingCart,
   DollarSign,
   Users,
@@ -10,7 +8,6 @@ import {
   Sparkles,
   BarChart3,
   ArrowUp,
-  ArrowDown,
 } from "lucide-react";
 import { fmt } from "@/lib/fomatPrice";
 import type { OverviewStats } from "@/actions/admin/analytics/analytics.action";
@@ -27,20 +24,11 @@ function fmtShort(cents: number) {
 // ─── MoM pill — compact, never overflows ───────────────────────────────────────
 
 function MoMPill({ pct }: { pct: number }) {
-  const up = pct >= 0;
+  if (pct <= 0) return null;
+
   return (
-    <span
-      className={`inline-flex items-center gap-0.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-md shrink-0 ${
-        up ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"
-      }`}
-    >
-      {up ? (
-        <ArrowUp className="w-2.5 h-2.5" />
-      ) : (
-        <ArrowDown className="w-2.5 h-2.5" />
-      )}
-      {pct > 0 ? "+" : ""}
-      {pct}%
+    <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold px-1.5 py-0.5 rounded-md shrink-0 bg-emerald-100 text-emerald-700">
+      <ArrowUp className="w-2.5 h-2.5" />+{pct}%
     </span>
   );
 }

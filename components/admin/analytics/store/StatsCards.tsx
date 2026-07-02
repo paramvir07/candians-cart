@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   Store,
-  Package,
   ShoppingCart,
   DollarSign,
   TrendingUp,
@@ -44,9 +43,9 @@ export default function StatCards({ stats }: StatCardsProps) {
     {
       title: "Platform Profit",
       value: formatCents(stats.platformProfit + stats.platformFee),
-      sub: `${stats.profitGrowthPercent >= 0 ? "+" : ""}${stats.profitGrowthPercent}% from last month`,
+      sub: `+${stats.profitGrowthPercent}% from last month`,
       growth: stats.profitGrowthPercent,
-      note: `Platform Profit (${formatCents(stats.platformProfit)}) + Platform Fee (${formatCents(stats.platformFee)})`, // <-- UPDATED
+      note: `Platform Profit (${formatCents(stats.platformProfit)}) + Platform Fee (${formatCents(stats.platformFee)})`,
       href: "/admin/analytics",
       icon: TrendingUp,
       iconColor: "text-emerald-600",
@@ -58,7 +57,7 @@ export default function StatCards({ stats }: StatCardsProps) {
     {
       title: "Total Orders",
       value: stats.totalOrders.toLocaleString(),
-      sub: `${stats.orderGrowthPercent >= 0 ? "+" : ""}${stats.orderGrowthPercent}% from last month`,
+      sub: `+${stats.orderGrowthPercent}% from last month`,
       growth: stats.orderGrowthPercent,
       href: "/admin/orders",
       icon: ShoppingCart,
@@ -71,7 +70,7 @@ export default function StatCards({ stats }: StatCardsProps) {
     {
       title: "Total Revenue",
       value: formatCents(stats.totalRevenue),
-      sub: `${stats.revenueGrowthPercent >= 0 ? "+" : ""}${stats.revenueGrowthPercent}% from last month`,
+      sub: `+${stats.revenueGrowthPercent}% from last month`,
       growth: stats.revenueGrowthPercent,
       href: "/admin/analytics",
       icon: DollarSign,
@@ -87,8 +86,9 @@ export default function StatCards({ stats }: StatCardsProps) {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       {cards.map((card) => {
         const Icon = card.icon;
-        const isPositive = card.growth >= 0;
-        const TrendIcon = isPositive ? TrendingUp : TrendingDown;
+        
+        // Hide trends entirely if growth drops below zero
+        const showTrend = card.growth >= 0;
 
         const CardContent = (
           <div
@@ -125,18 +125,19 @@ export default function StatCards({ stats }: StatCardsProps) {
               {card.value}
             </p>
 
-            <div className="flex items-center gap-1 relative">
-              <TrendIcon
-                className={`w-3 h-3 shrink-0 ${isPositive ? "text-emerald-500" : "text-red-400"}`}
-              />
-              <p
-                className={`text-xs font-medium leading-tight ${
-                  isPositive ? "text-emerald-600" : "text-red-500"
-                }`}
-              >
-                {card.sub}
-              </p>
-            </div>
+            {/* Conditionally render trend line info ONLY when positive/neutral */}
+            {showTrend ? (
+              <div className="flex items-center gap-1 relative">
+                <TrendingUp className="w-3 h-3 shrink-0 text-emerald-500" />
+                <p className="text-xs font-medium leading-tight text-emerald-600">
+                  {card.sub}
+                </p>
+              </div>
+            ) : (
+              // Empty structure layout fallback matching layout heights
+              <div className="h-4" />
+            )}
+            
             {card.note && (
               <p className="text-[10px] text-gray-400 mt-1.5 leading-tight relative">
                 *{card.note}

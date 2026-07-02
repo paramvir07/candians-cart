@@ -6,6 +6,8 @@ import productsModel from "@/db/models/store/products.model";
 import Customer from "@/db/models/customer/customer.model";
 import Store from "@/db/models/store/store.model";
 import storePayoutsModel from "@/db/models/admin/storePayouts.model";
+import { getAnalyticsBoundaries } from "@/lib/timezone";
+import { toZonedTime } from "date-fns-tz";
 
 const MONTHS = [
   "Jan",
@@ -77,9 +79,10 @@ interface PayoutAggResult {
 
 export async function getOverviewStats(): Promise<OverviewStats> {
   await dbConnect();
+  const { utcStartOfThisMonth, utcStartOfLastMonth } = getAnalyticsBoundaries();
 
-  const thisMonthStart = startOfMonth(0);
-  const lastMonthStart = startOfMonth(1);
+  const thisMonthStart = utcStartOfThisMonth;
+  const lastMonthStart = utcStartOfLastMonth;
   const lastMonthEnd = new Date(thisMonthStart.getTime() - 1);
 
   const [
@@ -427,16 +430,24 @@ export interface RevenueTrendPoint {
   orders: number;
 }
 
+const STORE_TIMEZONE = "America/Vancouver";
+
 export async function getRevenueTrend(): Promise<RevenueTrendPoint[]> {
   await dbConnect();
-  const now = new Date();
-  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  const { utcStartOfThisMonth } = getAnalyticsBoundaries();
+  const zonedNow = toZonedTime(utcStartOfThisMonth, STORE_TIMEZONE);
+  const twelveMonthsAgo = getAnalyticsBoundaries(
+    new Date(zonedNow.getFullYear(), zonedNow.getMonth() - 11, 1),
+  ).utcStartOfThisMonth;
 
   const data = await OrderModel.aggregate([
     { $match: { status: "completed", createdAt: { $gte: twelveMonthsAgo } } },
     {
       $group: {
-        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+        _id: {
+          year: { $year: { date: "$createdAt", timezone: STORE_TIMEZONE } },
+          month: { $month: { date: "$createdAt", timezone: STORE_TIMEZONE } },
+        },
         revenue: { $sum: "$cartTotal" },
         orders: { $sum: 1 },
       },
@@ -444,6 +455,7 @@ export async function getRevenueTrend(): Promise<RevenueTrendPoint[]> {
     { $sort: { "_id.year": 1, "_id.month": 1 } },
   ]);
 
+  const now = zonedNow;
   const map = new Map<string, { revenue: number; orders: number }>();
   for (let i = 11; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -479,8 +491,11 @@ export interface ProfitTrendPoint {
 
 export async function getProfitTrend(): Promise<ProfitTrendPoint[]> {
   await dbConnect();
-  const now = new Date();
-  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  const { utcStartOfThisMonth } = getAnalyticsBoundaries();
+  const zonedNow = toZonedTime(utcStartOfThisMonth, STORE_TIMEZONE);
+  const twelveMonthsAgo = getAnalyticsBoundaries(
+    new Date(zonedNow.getFullYear(), zonedNow.getMonth() - 11, 1),
+  ).utcStartOfThisMonth;
 
   const data = await OrderModel.aggregate([
     { $match: { status: "completed", createdAt: { $gte: twelveMonthsAgo } } },
@@ -496,7 +511,7 @@ export async function getProfitTrend(): Promise<ProfitTrendPoint[]> {
 
   const map = new Map<string, { profit: number; orders: number }>();
   for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(zonedNow.getFullYear(), zonedNow.getMonth() - i, 1);
     map.set(`${d.getFullYear()}-${d.getMonth() + 1}`, {
       profit: 0,
       orders: 0,
