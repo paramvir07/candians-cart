@@ -14,6 +14,8 @@ export const walletTopUpAction = async (
   customerId: string,
   paymentMode: "cash" | "card" | "gift",
   value: number,
+  cashReceived:number,
+  cashDue:number,
   userRole: "admin" | "cashier",
 ): Promise<{
   success: boolean;
@@ -30,6 +32,8 @@ export const walletTopUpAction = async (
       customerId,
       paymentMode,
       value,
+      cashReceived,
+      cashDue,
     });
 
     if (!result.success) {
@@ -68,6 +72,8 @@ export const walletTopUpAction = async (
             userRole,
             customerId: data.customerId,
             paymentMode: data.paymentMode,
+            cashPaid: data.paymentMode === "cash" ? data.cashReceived : 0,
+            cashDue: data.paymentMode === "cash" ?  data.cashDue : 0,
             value: data.value,
           },
         ],
