@@ -22,6 +22,7 @@ import CustomerAdvertisements from "@/components/customer/shared/CustomerAdverti
 import PromotionBanner from "@/components/promotions/PromotionsBanner";
 import { getPromoStats } from "@/actions/promotions/getPromoStats.action";
 import { getReferral } from "@/actions/customer/ReferralAction";
+import { AddressRequiredDialog } from "../shared/AddressRequiredDialog";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -81,6 +82,7 @@ export default async function ProfileServer() {
   ];
 
   const QuickActions = () => (
+    
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden">
       <div className="px-5 pt-5 pb-3">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
@@ -120,81 +122,90 @@ export default async function ProfileServer() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <>
+      {!customerData.address && <AddressRequiredDialog />}
+      <div className="min-h-screen bg-background">
+        <Navbar />
 
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex items-center gap-3 py-4 lg:py-6">
-          <Button
-            asChild
-            variant="ghost"
-            size="icon"
-            className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
-          >
-            <Link href="/customer">
-              <ChevronLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-base font-bold tracking-tight leading-none">
-              My Profile
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
-              Manage your account and preferences
-            </p>
-          </div>
-        </div>
-
-        <div className="pb-20 max-w-lg mx-auto lg:max-w-none">
-          {/* ── Mobile ── */}
-          <div className="flex flex-col gap-4 lg:hidden">
-            <ProfileHero customer={customerData} referralCode={referralCodeData.data}/>
-
-            <div className="mx-auto w-full max-w-[360px] sm:max-w-[420px]">
-              <PromotionBanner initialStats={promoStats} variant="card" />
+        <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="flex items-center gap-3 py-4 lg:py-6">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="rounded-full w-9 h-9 text-muted-foreground hover:text-foreground"
+            >
+              <Link href="/customer">
+                <ChevronLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <div>
+              <h1 className="text-base font-bold tracking-tight leading-none">
+                My Profile
+              </h1>
+              <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+                Manage your account and preferences
+              </p>
             </div>
-
-            <CustomerAdvertisements />
-
-            <ProfileStats
-              customer={customerData}
-              OrderCount={orderCount ?? 0}
-            />
-
-            <ProfileContact customer={customerData} />
-            <ProfileStore store={customerData.associatedStoreId} />
-            <QuickActions />
-            <LogoutButton variant="card" />
           </div>
 
-          {/* ── Desktop ── */}
-          <div className="hidden lg:grid grid-cols-[1fr_340px] gap-6 items-start">
-            {/* Left col */}
-            <div className="flex flex-col gap-4">
-              <ProfileHero customer={customerData} referralCode={referralCodeData.data} />
+          <div className="pb-20 max-w-lg mx-auto lg:max-w-none">
+            {/* ── Mobile ── */}
+            <div className="flex flex-col gap-4 lg:hidden">
+              <ProfileHero
+                customer={customerData}
+                referralCode={referralCodeData.data}
+              />
 
-              <div className="mx-auto w-full max-w-[420px]">
+              <div className="mx-auto w-full max-w-[360px] sm:max-w-[420px]">
                 <PromotionBanner initialStats={promoStats} variant="card" />
               </div>
 
               <CustomerAdvertisements />
-              <ProfileStore store={customerData.associatedStoreId} />
-            </div>
 
-            {/* Right col */}
-            <div className="flex flex-col gap-4">
               <ProfileStats
                 customer={customerData}
                 OrderCount={orderCount ?? 0}
               />
+
               <ProfileContact customer={customerData} />
+              <ProfileStore store={customerData.associatedStoreId} />
               <QuickActions />
               <LogoutButton variant="card" />
+            </div>
+
+            {/* ── Desktop ── */}
+            <div className="hidden lg:grid grid-cols-[1fr_340px] gap-6 items-start">
+              {/* Left col */}
+              <div className="flex flex-col gap-4">
+                <ProfileHero
+                  customer={customerData}
+                  referralCode={referralCodeData.data}
+                />
+
+                <div className="mx-auto w-full max-w-[420px]">
+                  <PromotionBanner initialStats={promoStats} variant="card" />
+                </div>
+
+                <CustomerAdvertisements />
+                <ProfileStore store={customerData.associatedStoreId} />
+              </div>
+
+              {/* Right col */}
+              <div className="flex flex-col gap-4">
+                <ProfileStats
+                  customer={customerData}
+                  OrderCount={orderCount ?? 0}
+                />
+                <ProfileContact customer={customerData} />
+                <QuickActions />
+                <LogoutButton variant="card" />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

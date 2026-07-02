@@ -23,7 +23,6 @@ import { IStore, ITimeRange } from "@/db/models/store/store.model";
 import { editStoreProfile } from "@/actions/store/EditStore.action";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { AddressAutocomplete, ParsedAddress } from "@/components/shared/AddressAutocomplete";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -86,23 +85,6 @@ function IconInput({
     <div className="relative group">
       <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors z-10 pointer-events-none" />
       <Input
-        {...props}
-        className={`pl-10 h-11 rounded-xl border-border/60 bg-background focus-visible:ring-1 focus-visible:ring-primary ${props.className ?? ""}`}
-      />
-    </div>
-  );
-}
-
-function IconAddressAutocomplete({
-  icon: Icon,
-  ...props
-}: { icon: React.ElementType } & React.ComponentProps<
-  typeof AddressAutocomplete
->) {
-  return (
-    <div className="relative group">
-      <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors z-10 pointer-events-none" />
-      <AddressAutocomplete
         {...props}
         className={`pl-10 h-11 rounded-xl border-border/60 bg-background focus-visible:ring-1 focus-visible:ring-primary ${props.className ?? ""}`}
       />
@@ -299,13 +281,6 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFields((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleAddressSelect = (parsed: ParsedAddress) => {
-    setFields((prev) => ({
-      ...prev,
-      address: parsed.formattedAddress || parsed.streetAddress || prev.address,
-    }));
   };
 
   const isDirty = useMemo(() => {
@@ -533,10 +508,11 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
 
               <div>
                 <FieldLabel>Address</FieldLabel>
-                <IconAddressAutocomplete
+                <IconInput
                   icon={MapPin}
-                  defaultValue={fields.address}
-                  onSelect={handleAddressSelect}
+                  name="address"
+                  value={fields.address}
+                  onChange={handleChange}
                   placeholder="123 Main Street"
                 />
               </div>

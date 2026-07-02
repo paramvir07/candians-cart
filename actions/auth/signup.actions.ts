@@ -17,6 +17,23 @@ import { formDataToObject } from "@/zod/validation/form";
 import mongoose from "mongoose";
 import { getUserSession } from "./getUserSession.actions";
 
+const getAuthErrorMessage = (error: unknown) => {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+
+    if (
+      message.includes("email") &&
+      (message.includes("exist") || message.includes("already"))
+    ) {
+      return "An account with this email already exists.";
+    }
+
+    return error.message;
+  }
+
+  return "Something went wrong while creating account";
+};
+
 export const signupAction = async (
   userRole: UserRole,
   prevState: IFormActionResponse,
@@ -325,7 +342,7 @@ export const signupAction = async (
     console.log("Error while creating new account: ", error);
     return {
       success: false,
-      message: "Something went wrong while creating account",
+      message: getAuthErrorMessage(error),
     };
   }
 };
