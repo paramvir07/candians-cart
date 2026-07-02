@@ -10,7 +10,7 @@ import {
   AddressAutocomplete,
   ParsedAddress,
 } from "@/components/shared/AddressAutocomplete";
-import { editUserProfile } from "@/actions/customer/userEdit.action";
+import { updateAddressAction } from "@/actions/customer/updateAddress.action";
 
 const UNIT_ADDRESS_SEPARATOR = "-";
 
@@ -52,60 +52,49 @@ export function AddressRequiredDialog() {
     setAddressData({ address: "", city: "", province: "", postalCode: "" });
   };
 
-  const handleSave = () => {
-    if (!isComplete) {
-      toast.error("Please search and select your address from the dropdown.");
-      return;
+const handleSave = () => {
+  if (!isComplete) {
+    toast.error("Please search and select your address from the dropdown.");
+    return;
+  }
+
+  const fd = new FormData();
+  fd.set("address", composedAddress);
+  fd.set("city", addressData.city);
+  fd.set("province", addressData.province);
+  fd.set("postalCode", addressData.postalCode);
+
+  startTransition(async () => {
+    const result = await updateAddressAction(undefined, fd);
+    if (result.success) {
+      toast.success("Address added successfully! You can now continue shopping.");
+      window.location.reload();
+    } else {
+      toast.error(result.message);
     }
-
-    const fd = new FormData();
-    fd.set("address", composedAddress);
-    fd.set("city", addressData.city);
-    fd.set("province", addressData.province);
-    fd.set("postalCode", addressData.postalCode);
-
-    startTransition(async () => {
-      const result = await editUserProfile(undefined as any, fd);
-      if (result.success) {
-        toast.success("Address saved! Welcome to Canadian's Cart.");
-        // Hard reload so the page re-fetches with the new address
-        window.location.reload();
-      } else {
-        toast.error(
-          result.message ?? "Failed to save address. Please try again.",
-        );
-      }
-    });
-  };
+  });
+};
 
   return (
-    // Full-screen overlay — no close button, no backdrop click dismiss
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-      <div className="w-full max-w-md bg-card rounded-3xl border border-border/60 shadow-2xl overflow-hidden">
+    // Full-screen overlay — intentionally no close button or backdrop dismiss
+    <div className="fixed inset-0 z-[999] flex items-start justify-center bg-black/60 backdrop-blur-sm px-4 py-6 sm:py-10 overflow-y-auto">
+      <div className="w-full max-w-md bg-card rounded-3xl border border-border/60 shadow-2xl overflow-hidden my-auto">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-border/40">
-          <div className="flex items-center gap-3 mb-1">
+        <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-border/40">
+          <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <MapPin className="h-4.5 w-4.5 text-primary" />
+              <MapPin className="h-4 w-4 text-primary" />
             </div>
-            <h2 className="text-base font-bold text-foreground">
-              Set your delivery address
+            <h2 className="text-base font-bold text-foreground leading-snug">
+              Set your address
             </h2>
           </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            We need your address before you can shop. Search below and pick your
-            exact address from the list — city, province, and postal code will
-            fill in automatically.
-          </p>
-          <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-2">
-            ⚠ We currently only deliver within British Columbia, Canada.
-          </p>
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 space-y-3">
-          {/* Apt/Unit + Street Address */}
-          <div className="grid grid-cols-[9rem_minmax(0,1fr)] gap-3">
+        <div className="px-5 sm:px-6 py-5 space-y-3">
+          {/* Apt/Unit + Street — stacked on mobile, side-by-side on sm+ */}
+          <div className="flex flex-col sm:grid sm:grid-cols-[8rem_minmax(0,1fr)] gap-3">
             <div>
               <label className="block text-[11px] text-muted-foreground mb-1.5">
                 Apt / Unit{" "}
@@ -122,22 +111,25 @@ export function AddressRequiredDialog() {
             </div>
             <div>
               <label className="block text-[11px] text-muted-foreground mb-1.5">
-                Street Address — search &amp; pick from list
+                Street Address{" "}
+                <span className="text-muted-foreground/60">
+                  — search &amp; pick from list
+                </span>
               </label>
               <AddressAutocomplete
                 defaultValue={addressData.address}
                 allowedProvince={CUSTOMER_PROVINCE}
                 onSelect={handleSelect}
                 onClear={handleClear}
-                placeholder="e.g. 2750 Fuller Street"
+                placeholder="e.g. 123 Main St"
                 className="h-11 rounded-xl border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
                 required
               />
             </div>
           </div>
 
-          {/* City / Province / Postal — read-only, auto-filled */}
-          <div className="grid grid-cols-3 gap-3">
+          {/* City / Province / Postal — read-only */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <div>
               <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
                 City
@@ -147,7 +139,9 @@ export function AddressRequiredDialog() {
                 tabIndex={-1}
                 value={addressData.city}
                 placeholder="City"
-                className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed"
+                className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
+  focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
+  focus:ring-0 focus:ring-offset-0 focus:border-border/40"
               />
             </div>
             <div>
@@ -159,7 +153,9 @@ export function AddressRequiredDialog() {
                 tabIndex={-1}
                 value={addressData.province}
                 placeholder="Province"
-                className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed"
+                className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
+  focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
+  focus:ring-0 focus:ring-offset-0 focus:border-border/40"
               />
             </div>
             <div>
@@ -170,26 +166,32 @@ export function AddressRequiredDialog() {
                 readOnly
                 tabIndex={-1}
                 value={addressData.postalCode}
-                placeholder="V__ ___ "
-                className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm uppercase text-muted-foreground cursor-not-allowed font-mono"
+                placeholder="V__ ___"
+                className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
+  focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
+  focus:ring-0 focus:ring-offset-0 focus:border-border/40"
               />
             </div>
           </div>
 
-          {/* Composed address preview */}
-          {composedAddress && (
-            <p className="text-[11px] text-muted-foreground px-1">
-              Saving as:{" "}
-              <span className="font-semibold text-foreground font-mono">
-                {composedAddress}, {addressData.city}, {addressData.province}{" "}
-                {addressData.postalCode}
-              </span>
-            </p>
-          )}
+          {/* Preview */}
+          <div className="min-h-[32px] px-0.5">
+            {composedAddress && (
+              <p className="text-[11px] text-muted-foreground break-words leading-snug">
+                Saving as:{" "}
+                <span className="font-semibold text-foreground font-mono">
+                  {composedAddress}
+                  {addressData.city ? `, ${addressData.city}` : ""}
+                  {addressData.province ? `, ${addressData.province}` : ""}
+                  {addressData.postalCode ? ` ${addressData.postalCode}` : ""}
+                </span>
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 pb-6">
+        <div className="px-5 sm:px-6 pb-5 sm:pb-6">
           <button
             type="button"
             onClick={handleSave}

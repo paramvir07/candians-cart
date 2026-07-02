@@ -27,6 +27,7 @@ import {
   AddressAutocomplete,
   ParsedAddress,
 } from "../shared/AddressAutocomplete";
+import { HEARD_ABOUT_US_OPTIONS } from "@/lib/customer/heardAboutUs";
 
 const initialState = { success: false, message: "" };
 
@@ -42,6 +43,7 @@ function formatAddressWithUnit(streetAddress: string, unit: string) {
   return `${cleanUnit}${UNIT_ADDRESS_SEPARATOR}${cleanStreetAddress}`;
 }
 
+
 type SignupFormProps = {
   userRole: UserRole;
   stores?: StoreDocument[];
@@ -55,14 +57,6 @@ export function SignupForm({
   className,
   heardParam = "",
 }: SignupFormProps) {
-  const heardAboutUsOptions = [
-    { label: "Instagram", value: "instagram" },
-    { label: "TikTok", value: "tiktok" },
-    { label: "Facebook", value: "facebook" },
-    { label: "Friend or Family", value: "friend_or_family" },
-    { label: "In-store", value: "store" },
-    { label: "Google Search", value: "google" },
-  ];
 
   const [budget] = useAtom(budgetAtom);
   const [storeId] = useAtom(storeIdAtom);
@@ -75,19 +69,25 @@ export function SignupForm({
 
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+
   const [state, formAction, isPending] = useActionState(
     signupAction.bind(null, userRole),
     initialState,
   );
 
-  // Auto-filled from Google Places — never typed by the user
   const [addressData, setAddressData] = useState<{
     address: string;
     aptUnit: string;
     city: string;
     province: string;
     postalCode: string;
-  }>({ address: "", aptUnit: "", city: "", province: "", postalCode: "" });
+  }>({
+    address: "",
+    aptUnit: "",
+    city: "",
+    province: "",
+    postalCode: "",
+  });
 
   const composedAddress = formatAddressWithUnit(
     addressData.address,
@@ -125,7 +125,7 @@ export function SignupForm({
         toast.error(state.message);
       }
     }
-  }, [state]);
+  }, [state, customer, router]);
 
   const heading = store
     ? "Register a new store"
@@ -150,9 +150,11 @@ export function SignupForm({
         <div className="h-12 flex items-center justify-left mb-6">
           <Logo variant="icon" href="/" />
         </div>
+
         <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
           {heading}
         </h1>
+
         <p className="text-sm text-muted-foreground">{subheading}</p>
       </div>
 
@@ -165,52 +167,83 @@ export function SignupForm({
             toast.error("Please select your address from the dropdown.");
           }
         }}
-        className="flex flex-col gap-3"
+        className="flex flex-col gap-3.5"
       >
         {/* Name */}
-        <Input
-          id="name"
-          type="text"
-          name="name"
-          placeholder={store ? "Store Name" : "Full Name"}
-          required
-          className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-        />
+        <div>
+          <label
+            htmlFor="name"
+            className="block text-[11px] text-muted-foreground mb-1.5"
+          >
+            {store ? "Store name" : "Full name"}
+          </label>
+
+          <Input
+            id="name"
+            type="text"
+            name="name"
+            placeholder={
+              store ? "e.g. Canadian's Cart Surrey" : "e.g. John Smith"
+            }
+            required
+            className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+          />
+        </div>
 
         {/* Email */}
-        <Input
-          id="email"
-          type="email"
-          name="email"
-          placeholder="Email"
-          required
-          className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-        />
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-[11px] text-muted-foreground mb-1.5"
+          >
+            Email address
+          </label>
+
+          <Input
+            id="email"
+            type="email"
+            name="email"
+            placeholder="e.g. john@example.com"
+            required
+            className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+          />
+        </div>
 
         {/* Password */}
-        <div className="relative">
-          <Input
-            id="password"
-            name="password"
-            pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}"
-            type={showPassword ? "text" : "password"}
-            placeholder="Password (e.g. John@123)"
-            required
-            className="h-12 rounded-xl border-border bg-background px-4 pr-11 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-          />
-          <Button
-            variant="ghost"
-            type="button"
-            size="icon"
-            onClick={() => setShowPassword((p) => !p)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors h-auto w-auto p-0"
+        <div>
+          <label
+            htmlFor="password"
+            className="block text-[11px] text-muted-foreground mb-1.5"
           >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </Button>
+            Password
+          </label>
+
+          <div className="relative">
+            <Input
+              id="password"
+              name="password"
+              pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}"
+              type={showPassword ? "text" : "password"}
+              placeholder="e.g. John@123"
+              required
+              className="h-12 rounded-xl border-border bg-background px-4 pr-11 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+            />
+
+            <Button
+              variant="ghost"
+              type="button"
+              size="icon"
+              onClick={() => setShowPassword((p) => !p)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors h-auto w-auto p-0"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </Button>
+          </div>
+
+          <p className="text-[11px] text-muted-foreground mt-1.5 px-0.5">
+            Min. 8 characters with uppercase, number & special character.
+          </p>
         </div>
-        <p className="text-[11px] text-muted-foreground -mt-1 px-1">
-          Min. 8 characters with uppercase, number & special character.
-        </p>
 
         {/* Address */}
         {!admin && (
@@ -218,31 +251,53 @@ export function SignupForm({
             {customer ? (
               <>
                 <div className="grid gap-3 sm:grid-cols-[9.5rem_minmax(0,1fr)]">
-                  <Input
-                    id="aptUnit"
-                    type="text"
-                    value={addressData.aptUnit}
-                    onChange={(e) =>
-                      setAddressData((prev) => ({
-                        ...prev,
-                        aptUnit: e.target.value,
-                      }))
-                    }
-                    placeholder="Apt / Unit"
-                    autoComplete="address-line2"
-                    className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-                  />
+                  <div>
+                    <label
+                      htmlFor="aptUnit"
+                      className="block text-[11px] text-muted-foreground mb-1.5"
+                    >
+                      Apt / Unit{" "}
+                      <span className="text-muted-foreground/50">
+                        (optional)
+                      </span>
+                    </label>
 
-                  <AddressAutocomplete
-                    defaultValue={addressData.address}
-                    allowedProvince={CUSTOMER_PROVINCE}
-                    onSelect={handleAddressSelect}
-                    onClear={handleAddressClear}
-                    placeholder="Street address (e.g. 123 Main St)"
-                    className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-                    required
-                  />
+                    <Input
+                      id="aptUnit"
+                      type="text"
+                      value={addressData.aptUnit}
+                      onChange={(e) =>
+                        setAddressData((prev) => ({
+                          ...prev,
+                          aptUnit: e.target.value,
+                        }))
+                      }
+                      placeholder="e.g. 305"
+                      autoComplete="address-line2"
+                      className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] text-muted-foreground mb-1.5">
+                      Street address{" "}
+                      <span className="text-muted-foreground/60">
+                        — search &amp; pick from list
+                      </span>
+                    </label>
+
+                    <AddressAutocomplete
+                      defaultValue={addressData.address}
+                      allowedProvince={CUSTOMER_PROVINCE}
+                      onSelect={handleAddressSelect}
+                      onClear={handleAddressClear}
+                      placeholder="e.g. 123 Main St"
+                      className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+                      required
+                    />
+                  </div>
                 </div>
+
                 {/* Hidden inputs carry values to the server action */}
                 <input type="hidden" name="address" value={composedAddress} />
                 <input type="hidden" name="city" value={addressData.city} />
@@ -258,110 +313,169 @@ export function SignupForm({
                 />
               </>
             ) : (
-              <Input
-                id="address"
-                type="text"
-                name="address"
-                placeholder={
-                  store
-                    ? "Full Store Address"
-                    : "Address (e.g. 308-123 Main St)"
-                }
-                required
-                className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-              />
+              <div>
+                <label
+                  htmlFor="address"
+                  className="block text-[11px] text-muted-foreground mb-1.5"
+                >
+                  {store ? "Store address" : "Address"}
+                </label>
+
+                <Input
+                  id="address"
+                  type="text"
+                  name="address"
+                  placeholder={
+                    store ? "e.g. 123 Main St, Surrey" : "e.g. 308-123 Main St"
+                  }
+                  required
+                  className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+                />
+              </div>
             )}
           </>
         )}
 
-        {/* Read-only city / province / postal — auto-filled from Google */}
+        {/* Read-only city / province / postal */}
         {customer && (
-          <div className="grid grid-cols-3 gap-3">
-            <Input
-              readOnly
-              tabIndex={-1}
-              value={addressData.city}
-              placeholder="City"
-              className="h-12 rounded-xl border-border bg-secondary/30 px-4 text-sm text-muted-foreground cursor-not-allowed"
-            />
-            <Input
-              readOnly
-              tabIndex={-1}
-              value={addressData.province}
-              placeholder="Province"
-              className="h-12 rounded-xl border-border bg-secondary/30 px-4 text-sm text-muted-foreground cursor-not-allowed"
-            />
-            <Input
-              readOnly
-              tabIndex={-1}
-              value={addressData.postalCode}
-              placeholder="Postal Code"
-              className="h-12 rounded-xl border-border bg-secondary/30 px-4 text-sm uppercase text-muted-foreground cursor-not-allowed"
-            />
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div>
+              <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
+                City
+              </label>
+
+              <Input
+                readOnly
+                tabIndex={-1}
+                value={addressData.city}
+                placeholder="City"
+                className="h-12 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
+                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
+                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
+                Province
+              </label>
+
+              <Input
+                readOnly
+                tabIndex={-1}
+                value={addressData.province}
+                placeholder="Province"
+                className="h-12 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
+                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
+                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
+                Postal Code
+              </label>
+
+              <Input
+                readOnly
+                tabIndex={-1}
+                value={addressData.postalCode}
+                placeholder="V__ ___"
+                className="h-12 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm uppercase text-muted-foreground cursor-not-allowed truncate
+                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
+                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+              />
+            </div>
           </div>
         )}
 
+        {/* Heard about us */}
         {customer && (
           <>
             {heardParam ? (
               <input type="hidden" name="heardAboutUs" value={heardParam} />
             ) : (
-              <select
-                id="heardAboutUs"
-                name="heardAboutUs"
-                required
-                defaultValue=""
-                className="h-12 rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-              >
-                <option value="" disabled>
-                  Where did you hear about us?
-                </option>
-                {heardAboutUsOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+              <div>
+                <label
+                  htmlFor="heardAboutUs"
+                  className="block text-[11px] text-muted-foreground mb-1.5"
+                >
+                  How did you hear about us?
+                </label>
+
+                <select
+                  id="heardAboutUs"
+                  name="heardAboutUs"
+                  required
+                  defaultValue=""
+                  className="h-12 w-full rounded-xl border border-border bg-background px-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="" disabled>
+                    Select an option
                   </option>
-                ))}
-              </select>
+
+                  {HEARD_ABOUT_US_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
           </>
         )}
 
         {/* Mobile */}
         {!admin && !customer && (
-          <Input
-            id="mobile"
-            name="mobile"
-            type="tel"
-            placeholder="Mobile Number (10 digits)"
-            required={store || cashier}
-            maxLength={14}
-            className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-            onChange={(e) => {
-              const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-              let formatted = digits;
-              if (digits.length >= 7) {
-                formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-              } else if (digits.length >= 4) {
-                formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-              } else if (digits.length >= 1) {
-                formatted = `(${digits}`;
-              }
-              e.target.value = formatted;
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Backspace") {
-                const input = e.currentTarget;
-                const pos = input.selectionStart ?? 0;
-                if ([")", " ", "-"].includes(input.value[pos - 1])) {
-                  e.preventDefault();
-                  input.value =
-                    input.value.slice(0, pos - 1) + input.value.slice(pos);
-                  input.dispatchEvent(new Event("input", { bubbles: true }));
+          <div>
+            <label
+              htmlFor="mobile"
+              className="block text-[11px] text-muted-foreground mb-1.5"
+            >
+              Mobile number
+            </label>
+
+            <Input
+              id="mobile"
+              name="mobile"
+              type="tel"
+              placeholder="e.g. (604) 123-4567"
+              required={store || cashier}
+              maxLength={14}
+              className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                let formatted = digits;
+
+                if (digits.length >= 7) {
+                  formatted = `(${digits.slice(0, 3)}) ${digits.slice(
+                    3,
+                    6,
+                  )}-${digits.slice(6)}`;
+                } else if (digits.length >= 4) {
+                  formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+                } else if (digits.length >= 1) {
+                  formatted = `(${digits}`;
                 }
-              }
-            }}
-            pattern="\(\d{3}\) \d{3}-\d{4}"
-          />
+
+                e.target.value = formatted;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Backspace") {
+                  const input = e.currentTarget;
+                  const pos = input.selectionStart ?? 0;
+
+                  if ([")", " ", "-"].includes(input.value[pos - 1])) {
+                    e.preventDefault();
+                    input.value =
+                      input.value.slice(0, pos - 1) + input.value.slice(pos);
+                    input.dispatchEvent(new Event("input", { bubbles: true }));
+                  }
+                }
+              }}
+              pattern="\(\d{3}\) \d{3}-\d{4}"
+            />
+          </div>
         )}
 
         {/* Cashier store picker */}
@@ -382,6 +496,7 @@ export function SignupForm({
               value={budget ?? ""}
               required
             />
+
             <Input
               id="referralCode"
               type="hidden"
@@ -391,6 +506,7 @@ export function SignupForm({
             />
           </>
         )}
+
         {(customer || cashier) && (
           <Input
             id="associatedStore"
@@ -444,9 +560,11 @@ export function SignupForm({
             className="object-cover"
             priority
           />
+
           <div className="absolute inset-0 bg-black/40" />
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black to-transparent" />
         </div>
+
         <div className="relative z-10 -mt-45 flex-1 bg-background rounded-t-3xl px-6 pt-8 pb-12 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
           {formContent}
         </div>

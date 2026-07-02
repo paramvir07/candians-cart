@@ -1,3 +1,4 @@
+// app/customer/page.tsx
 import { Metadata } from "next";
 import { Suspense } from "react";
 import Navbar from "@/components/customer/landing/Navbar";
@@ -10,6 +11,7 @@ import { PromotionBannerSkeleton } from "@/components/skeletons/PromotionBannerS
 import { DrawPromoCardSkeleton } from "@/components/skeletons/DrawpromoSkeleton";
 import { DrawPromoCardLoader } from "@/components/promotions/DrawpromocardLoader";
 import { PromotionBannerLoader } from "@/components/promotions/PromotionbannerLoader";
+import { AddressCheckLoader } from "@/components/customer/shared/AddressCheckLoader";
 
 export const metadata: Metadata = {
   description:
@@ -19,8 +21,9 @@ export const metadata: Metadata = {
 export default async function CustomerPage() {
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
-      {/* Non-closable dialog if address is missing */}
-      {!address && <AddressRequiredDialog />}
+      <Suspense fallback={null}>
+        <AddressCheckLoader />
+      </Suspense>
 
       <Navbar />
       <Suspense fallback={<HeroBannerSkeleton />}>

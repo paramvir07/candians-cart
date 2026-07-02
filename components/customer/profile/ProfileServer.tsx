@@ -1,3 +1,4 @@
+// components/customer/profile/ProfileServer.tsx
 import { getCustomerAndStoreDataAction } from "@/actions/customer/User.action";
 import Navbar from "@/components/customer/landing/Navbar";
 import ProfileHero from "@/components/customer/profile/ProfileHero";
@@ -22,7 +23,6 @@ import CustomerAdvertisements from "@/components/customer/shared/CustomerAdverti
 import PromotionBanner from "@/components/promotions/PromotionsBanner";
 import { getPromoStats } from "@/actions/promotions/getPromoStats.action";
 import { getReferral } from "@/actions/customer/ReferralAction";
-import { AddressRequiredDialog } from "../shared/AddressRequiredDialog";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -82,7 +82,6 @@ export default async function ProfileServer() {
   ];
 
   const QuickActions = () => (
-    
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden">
       <div className="px-5 pt-5 pb-3">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
@@ -123,7 +122,6 @@ export default async function ProfileServer() {
 
   return (
     <>
-      {!customerData.address && <AddressRequiredDialog />}
       <div className="min-h-screen bg-background">
         <Navbar />
 
@@ -157,18 +155,14 @@ export default async function ProfileServer() {
                 customer={customerData}
                 referralCode={referralCodeData.data}
               />
-
               <div className="mx-auto w-full max-w-[360px] sm:max-w-[420px]">
                 <PromotionBanner initialStats={promoStats} variant="card" />
               </div>
-
               <CustomerAdvertisements />
-
               <ProfileStats
                 customer={customerData}
                 OrderCount={orderCount ?? 0}
               />
-
               <ProfileContact customer={customerData} />
               <ProfileStore store={customerData.associatedStoreId} />
               <QuickActions />
@@ -183,11 +177,9 @@ export default async function ProfileServer() {
                   customer={customerData}
                   referralCode={referralCodeData.data}
                 />
-
                 <div className="mx-auto w-full max-w-[420px]">
                   <PromotionBanner initialStats={promoStats} variant="card" />
                 </div>
-
                 <CustomerAdvertisements />
                 <ProfileStore store={customerData.associatedStoreId} />
               </div>

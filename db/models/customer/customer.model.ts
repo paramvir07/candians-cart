@@ -50,6 +50,7 @@ const customerSchema = new Schema<ICustomer>(
     mobile: {
       type: String,
       unique: true,
+      sparse: true,
       trim: true,
     },
     address: {

@@ -16,6 +16,7 @@ import { zodErrorResponse } from "@/zod/validation/error";
 import { formDataToObject } from "@/zod/validation/form";
 import mongoose from "mongoose";
 import { getUserSession } from "./getUserSession.actions";
+import { ObjectId } from "mongodb";
 
 const getAuthErrorMessage = (error: unknown) => {
   if (error instanceof Error) {
@@ -187,16 +188,27 @@ export const signupAction = async (
       } catch (err) {
         await session.abortTransaction();
 
-        // Roll back the auth user too
         try {
-          await auth.api.removeUser({
-            body: { userId: newCustomerUser.user.id },
+          const { db } = await import("@/lib/auth/auth");
+
+          const authUserObjectId = new ObjectId(newCustomerUser.user.id);
+
+          await db.collection("user").deleteOne({
+            _id: authUserObjectId,
           });
+
+         await db.collection("account").deleteMany({
+            userId: authUserObjectId,
+          });
+
+          await db.collection("session").deleteMany({
+            userId: authUserObjectId,
+          });
+
         } catch (deleteErr) {
           console.error("Failed to delete orphan auth user:", deleteErr);
         }
 
-        console.log("Customer Signup Transaction failed, rolling back:", err);
         return {
           success: false,
           message:
