@@ -5,7 +5,7 @@ import { AnimatedEmptyCart } from "./emptyCartAnimation";
 
 export const EmptyCart = ({ customerId }: { customerId?: string }) => {
   return (
-    <div className={`min-h-screen ${!customerId ? "bg-[#F7F6F3]" : ""}`}>
+    <div className={`min-h-screen ${!customerId ? "bg-background" : ""}`}>
       {!customerId && <Navbar />}
 
       <div className="px-5 pt-6 max-w-md mx-auto">
