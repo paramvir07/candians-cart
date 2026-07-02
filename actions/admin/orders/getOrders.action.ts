@@ -3,6 +3,7 @@
 import { dbConnect } from "@/db/dbConnect";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import mongoose from "mongoose";
+import { getVancouverDayBoundsUTC } from "@/lib/timezone";
 
 export interface AdminOrder {
   orderId: string;
@@ -83,11 +84,9 @@ function mapDoc(o: any): AdminOrder {
 }
 
 function buildDateMatch(dateRange: DateRange): Record<string, any> {
-  // Treat the YYYY-MM-DD strings as Vancouver-local midnight boundaries.
-  // Constructing with explicit time avoids UTC-shift surprises at the edges.
-  const fromDate = new Date(`${dateRange.from}T00:00:00-08:00`);
-  const toDate   = new Date(`${dateRange.to}T23:59:59.999-08:00`);
-  return { createdAt: { $gte: fromDate, $lte: toDate } };
+  const { start } = getVancouverDayBoundsUTC(new Date(`${dateRange.from}T00:00:00`));
+  const { end } = getVancouverDayBoundsUTC(new Date(`${dateRange.to}T00:00:00`));
+  return { createdAt: { $gte: start, $lte: end } };
 }
 
 export async function getOrdersPaginated(
