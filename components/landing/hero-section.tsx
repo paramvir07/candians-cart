@@ -3,11 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Logo from "../shared/Logo";
-import PromotionBanner from "../promotions/PromotionsBanner";
-import { PromoStats } from "@/types/promotions/promo.types";
 import { motion } from "framer-motion";
-import DrawPromoCard from "../promotions/DrawPromoCard";
-import { DrawStats } from "@/types/promotions/draw";
+import type { ReactNode } from "react";
 
 const TABS = [
   { icon: "🛒", label: "Order Online" },
@@ -114,15 +111,10 @@ const SAVINGS_ITEMS = [
 
 interface HeroSectionProps {
   isLoggedIn: boolean;
-  initialPromoStats: PromoStats;
-  initialDrawStats: DrawStats;
+  promoSlot: ReactNode;
 }
 
-export default function HeroSection({
-  isLoggedIn,
-  initialPromoStats,
-  initialDrawStats,
-}: HeroSectionProps) {
+export default function HeroSection({ isLoggedIn, promoSlot }: HeroSectionProps) {
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
@@ -324,10 +316,7 @@ export default function HeroSection({
           }}
           className="mx-auto mb-6 w-full max-w-[min(92vw,760px)] sm:mt-7 lg:mt-8"
         >
-          <div className="flex flex-col gap-3">
-            <DrawPromoCard initialStats={initialDrawStats} />
-            <PromotionBanner initialStats={initialPromoStats} variant="card" />
-          </div>
+          {promoSlot}
         </motion.div>
 
         {/* ── TAB STRIP ── */}
