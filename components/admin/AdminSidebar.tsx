@@ -17,6 +17,7 @@ import {
   Users2,
   X,
   Store,
+  BadgeDollarSign,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
@@ -34,14 +35,14 @@ const NAV_GROUPS = [
     items: [
       { href: "/admin", label: "Dashboard", icon: HomeIcon, exact: true },
       { href: "/admin/analytics", label: "Analytics", icon: BarChart },
-      { href: "/admin/categories", label: "Categories", icon: List },
     ],
   },
   {
     label: "Management",
     items: [
-      { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
       { href: "/admin/products", label: "Products", icon: Package },
+      { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+      { href: "/admin/categories", label: "Sales", icon: BadgeDollarSign },
       { href: "/admin/customers", label: "Customers", icon: Handshake },
       { href: "/admin/requests", label: "Requests", icon: Users2 },
       { href: "/admin/stores", label: "Stores", icon: Store },

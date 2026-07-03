@@ -1,14 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Customer } from "@/types/customer/customer";
-import {
-  Edit,
-  QrCode,
-  ShieldCheck,
-  MapPin,
-  CalendarDays,
-  X,
-} from "lucide-react";
+import { Edit, QrCode, MapPin, CalendarDays, X } from "lucide-react";
 import Link from "next/link";
 import {
   Dialog,
@@ -20,24 +13,52 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import QrCodeClient from "./QrCodeClient";
 import { getMemberSince } from "@/lib/memberSince";
 import ShareButton from "@/components/shared/share/ShareButton";
+import { IReferralCode } from "@/db/models/admin/referralCode.model";
+import logoIcon from "@/app/icon.jpg";
+import { QRCodeSVG } from "qrcode.react";
 
 type Props = {
   customer: Pick<
     Customer,
-    "_id" | "name" | "email" | "address" | "city" | "province" | "createdAt"
+    | "_id"
+    | "name"
+    | "email"
+    | "aptUnit"
+    | "address"
+    | "city"
+    | "province"
+    | "postalCode"
+    | "createdAt"
   >;
+  referralCode: IReferralCode | null;
 };
 
-export default function ProfileHero({ customer }: Props) {
+export default function ProfileHero({ customer, referralCode }: Props) {
   const initials = customer.name
     .split(" ")
     .map((w) => w[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const streetAddress = customer.address?.trim();
+  const aptUnit = customer.aptUnit?.trim();
+
+  const streetAddressWithUnit =
+    aptUnit && streetAddress
+      ? `${aptUnit}-${streetAddress}`
+      : streetAddress || "";
+
+  const formattedAddress = [
+    streetAddressWithUnit,
+    customer.city,
+    customer.province,
+    customer.postalCode,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <div className="rounded-3xl border border-border/60 bg-card overflow-hidden shadow-sm">
@@ -79,10 +100,10 @@ export default function ProfileHero({ customer }: Props) {
             <span className="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 rounded-full ring-2 ring-card" />
           </div>
 
-          <div className="mb-1 flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold px-3 py-1.5 rounded-full">
+          {/* <div className="mb-1 flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold px-3 py-1.5 rounded-full">
             <ShieldCheck className="h-3 w-3" />
             Verified Member
-          </div>
+          </div> */}
         </div>
 
         {/* Name + meta */}
@@ -93,9 +114,11 @@ export default function ProfileHero({ customer }: Props) {
           <p className="text-sm text-muted-foreground">{customer.email}</p>
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3 text-primary shrink-0" />
-              {customer.city}, {customer.province}
+              <span className="truncate">
+                {formattedAddress || "Address not set"}
+              </span>
             </span>
             <span className="w-1 h-1 rounded-full bg-border" />
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -119,53 +142,68 @@ export default function ProfileHero({ customer }: Props) {
             </DialogTrigger>
 
             <DialogOverlay className="bg-black/50 backdrop-blur-sm" />
-            <DialogContent className="sm:max-w-[320px] rounded-3xl border-0 p-0 overflow-hidden shadow-2xl bg-card">
-              <div
-                className="relative px-6 pt-6 pb-4 border-b border-border/60"
-                style={{
-                  background:
-                    "linear-gradient(135deg, oklch(0.9669 0.0287 158.0617) 0%, oklch(1 0 0) 100%)",
-                }}
-              >
+
+            <DialogContent className="sm:max-w-[360px] overflow-hidden rounded-3xl border border-primary/20 bg-background p-0 shadow-2xl">
+              <div className="relative bg-gradient-to-br from-primary/15 via-background to-muted px-6 py-6 text-center">
                 <DialogClose asChild>
-                  <button className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-all">
+                  <button className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground transition-all hover:bg-primary/10 hover:text-foreground">
                     <X className="h-4 w-4" />
                   </button>
                 </DialogClose>
-                <DialogHeader className="text-center">
-                  <DialogTitle className="text-base font-bold">
+
+                <DialogHeader className="space-y-2 text-center">
+                  <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
                     Customer QR Code
                   </DialogTitle>
-                  <DialogDescription className="text-xs text-muted-foreground mt-1">
-                    Scan to quickly access your profile.
+
+                  <DialogDescription className="text-sm text-muted-foreground">
+                    Scan to quickly access this customer profile.
                   </DialogDescription>
                 </DialogHeader>
               </div>
 
-              <div className="px-6 py-5 space-y-4">
-                <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 px-3.5 py-3">
-                  <Avatar className="h-9 w-9 ring-1 ring-border rounded-full shrink-0">
+              <div className="flex flex-col items-center gap-5 px-6 pb-6 pt-5">
+                <div className="flex w-full items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3">
+                  <Avatar className="h-10 w-10 shrink-0 rounded-full ring-1 ring-border">
                     <AvatarImage
-                      src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(customer.name)}&backgroundColor=b6e3f4,c0aede`}
+                      src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(
+                        customer.name,
+                      )}&backgroundColor=b6e3f4,c0aede`}
                       className="rounded-full"
                     />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold rounded-full">
+
+                    <AvatarFallback className="rounded-full bg-primary text-xs font-bold text-primary-foreground">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
+
                   <div className="min-w-0">
-                    <p className="font-bold text-sm truncate leading-tight">
+                    <p className="truncate text-sm font-bold leading-tight text-foreground">
                       {customer.name}
                     </p>
-                    <p className="text-[10px] text-primary font-bold mt-0.5 tabular-nums">
+
+                    <p className="mt-0.5 text-[11px] font-bold tabular-nums text-primary">
                       #{customer._id.toString().slice(-6).toUpperCase()}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex justify-center">
-                  <div className="relative rounded-2xl bg-white p-4 shadow-sm border border-border/40">
-                    <QrCodeClient id={customer._id.toString()} />
+                <div className="rounded-[1.5rem] border border-primary/20 bg-card p-3 shadow-sm">
+                  <div className="rounded-2xl bg-white p-3">
+                    <QRCodeSVG
+                      value={customer._id.toString()}
+                      size={220}
+                      fgColor="#07553f"
+                      bgColor="#ffffff"
+                      level="H"
+                      marginSize={0}
+                      imageSettings={{
+                        src: logoIcon.src,
+                        height: 44,
+                        width: 44,
+                        excavate: true,
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -173,18 +211,19 @@ export default function ProfileHero({ customer }: Props) {
           </Dialog>
 
           {/* FIX: Button asChild with Link inside — no nested interactive elements */}
-          <Button
-            asChild
-            className="flex-1 h-10 rounded-full text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all"
+          <Link
+            href="/customer/profile/edit"
+            className={buttonVariants({
+              className:
+                "flex-1 h-10 rounded-full! text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all",
+            })}
           >
-            <Link href="/customer/profile/edit">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Profile
-            </Link>
-          </Button>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Profile
+          </Link>
 
           <div className="shrink-0">
-            <ShareButton />
+            <ShareButton code={referralCode?.code} />
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { getUser } from "./User.action";
 import { revalidatePath } from "next/cache";
 import { Types } from "mongoose";
 import productsModel from "@/db/models/store/products.model";
+import { ReloadCartpusher } from "../pusher/pusherAction";
 
 type PlainSubsidyItem = {
   _id: Types.ObjectId;
@@ -149,6 +150,7 @@ export const AddSubsidyItem = async (
     );
 
     revalidatePath("/customer/cart");
+    await ReloadCartpusher();
     return { success: true, message: "Subsidy Item Added Successfully" };
   } catch (error) {
     console.log(error);
@@ -189,6 +191,7 @@ export const IncrementSubsidyItem = async (
       { $set: { subsidyItems: distributed } },
     );
 
+    await ReloadCartpusher();
     revalidatePath("/customer/cart");
     return { success: true };
   } catch (err) {
@@ -257,6 +260,7 @@ export const DecrementSubsidyItem = async (
       );
     }
 
+    await ReloadCartpusher();
     revalidatePath("/customer/cart");
     return { success: true };
   } catch (err) {
@@ -290,6 +294,7 @@ export const RemoveSubsidyItem = async (
     if (remaining.length === 0 && cart.items.length === 0 && cart.miscItems.length === 0) {
       await CartModel.findOneAndDelete({ customerId: user._id });
       revalidatePath("/customer/cart");
+      await ReloadCartpusher();
       return { success: true };
     }
 
@@ -300,6 +305,7 @@ export const RemoveSubsidyItem = async (
       { $set: { subsidyItems: distributed } },
     );
 
+    await ReloadCartpusher();
     revalidatePath("/customer/cart");
     return { success: true };
   } catch (err) {
@@ -350,7 +356,8 @@ export const updateCartSubsidy = async (
       { customerId: user._id },
       { $set: { cartSubsidy: Math.round(subsidy) } },
     );
-
+    
+    
     revalidatePath("/customer/cart");
     return { success: true, message: "Subsidy Updated" };
   } catch (err) {
@@ -436,6 +443,7 @@ export const movetoSubsidy = async (
       { $set: { items: cart.items, subsidyItems: distributed } },
     );
 
+    await ReloadCartpusher();
     revalidatePath("/customer/cart");
     return { success: true, message: "Item moved successfully" };
   } catch (err) {
@@ -512,6 +520,7 @@ export const AddToSubsidyCart = async (
       { upsert: true },
     );
 
+    await ReloadCartpusher();
     revalidatePath("/customer/cart");
     return { success: true, message: "Added to subsidy cart" };
   } catch (error) {
@@ -579,6 +588,7 @@ export const movebacktoCart = async (
       { $set: { items: cart.items, subsidyItems: distributed } },
     );
 
+    await ReloadCartpusher();
     revalidatePath("/customer/cart");
     return { success: true, message: "Item moved back to cart" };
   } catch (err) {
@@ -627,6 +637,7 @@ export const UpdateSubsidyItemQuantity = async (
       { $set: { subsidyItems: distributed } },
     );
 
+    await ReloadCartpusher();
     revalidatePath("/customer/cart");
     return { success: true };
   } catch (err) {

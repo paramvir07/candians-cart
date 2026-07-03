@@ -1,4 +1,3 @@
-import Navbar from "@/components/customer/landing/Navbar";
 import { ShoppingCart, Lock } from "lucide-react";
 import Link from "next/link";
 
@@ -20,7 +19,6 @@ const steps = [
 export function NotEligibleState() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Navbar />
 
       <div className="flex flex-1 flex-col items-center justify-center px-4 py-20">
         <div className="w-full max-w-[360px]">

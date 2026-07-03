@@ -10,10 +10,8 @@ import {
   Package,
   Receipt,
   CreditCard,
-  BadgePercent,
   Plus,
 } from "lucide-react";
-import Image from "next/image";
 import { getUser } from "@/actions/customer/User.action";
 import { TopUpDialog } from "@/components/customer/wallet/TopupDialog";
 import ProgressBarCart, {
@@ -25,24 +23,22 @@ import Navbar from "@/components/customer/landing/Navbar";
 import CheckoutActions from "./CheckOutActions";
 import { SubsidyItemsSection } from "@/components/customer/products/SubsidyItemsSection";
 import { IMiscCartItem, ISubsidyItems } from "@/db/models/customer/cart.model";
-import { AddtoSubsidyBtn } from "@/components/customer/products/CartActionBtns";
-import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
 import { getFibBracketFrom21 } from "@/lib/FibBracket";
-import { RemoveButton } from "@/components/customer/products/RemoveButton";
-import { QuantityControl } from "@/components/customer/products/QuantityControls";
 import { cn } from "@/lib/utils";
 import { MiscItemsSection } from "@/components/cashier/MiscItemSection";
 import { UPCScannerCart } from "@/components/cashier/UPCScannerCart";
 import ClearCartDialog from "./ClearCartDialog";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { ScrollableItemsList } from "@/components/customer/products/ScrollableItemsList";
+import { CartItemRow } from "./CartItemRow";
+import CartReloadListener from "@/actions/pusher/pusherCartClient";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
-const calcLine = (item: ICartItem|ISubsidyItems) => {
+const calcLine = (item: ICartItem | ISubsidyItems) => {
   const base = item.productId.price * item.quantity;
   const markup = Math.round(base * (item.productId.markup / 100));
-  // console.log(item.productId.name+" : ",markup)
   const markupPercentage = item.productId.markup;
   const afterMarkup = base + markup;
   const tax = item.productId.tax;
@@ -70,6 +66,8 @@ const calcLine = (item: ICartItem|ISubsidyItems) => {
   };
 };
 
+const PINNED_LAST_IDS = ["6a2f51207f6cc4d79650b794", "6a2f51897f6cc4d79650b796"];
+
 const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const isCashier = !!customerId;
 
@@ -81,11 +79,28 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   const giftWalletBalance = UserData?.giftWalletBalance ?? 0;
   const UserStoreId = UserData?.associatedStoreId?.toString() ?? "";
   const rawItems = (CartItems?.items as ICartItem[] | null) ?? [];
-  const nonSubsidised = rawItems
-    .filter((i) => !i.productId.subsidised)
-    .reverse();
-  const subsidised = rawItems.filter((i) => i.productId.subsidised).reverse();
-  const items = [...nonSubsidised, ...subsidised];
+
+  const nonSubsidisedRest: ICartItem[] = [];
+  const nonSubsidisedPinned: ICartItem[] = [];
+  const subsidised: ICartItem[] = [];
+
+  for (let i = rawItems.length - 1; i >= 0; i--) {
+    const item = rawItems[i];
+    if (item.productId.subsidised) {
+      subsidised.push(item);
+    } else if (PINNED_LAST_IDS.includes(item.productId._id?.toString())) {
+      nonSubsidisedPinned.push(item);
+    } else {
+      nonSubsidisedRest.push(item);
+    }
+  }
+
+  const items = [
+    ...nonSubsidisedRest,
+    ...nonSubsidisedPinned,
+    ...subsidised,
+  ];
+
   const subItems = (CartItems?.subItems as ISubsidyItems[]) ?? [];
   const MiscItems = (CartItems?.miscItems as IMiscCartItem[]) ?? [];
   const subItemProductIds = subItems.map((s) => s.productId._id.toString());
@@ -96,34 +111,35 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   )
     return (
       <>
-          {customerId && (
-            <div className="w-full flex items-center gap-2 px-4 xl:px-8 pt-5 xl:pt-8">
-              <div className="flex-1">
-                <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
-              </div>
-              <Link href={`/cashier/customer/${customerId}/new-product`}>
-                <Button size="sm" className="gap-1.5">
-                  <Plus className="h-4 w-4" />
-                  Add Product
-                </Button>
-              </Link>
+        {customerId && (
+          <div className="w-full flex items-center gap-2 px-4 xl:px-8 pt-5 xl:pt-8">
+            <div className="flex-1">
+              <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
             </div>
-          )}
+            <Link href={`/cashier/customer/${customerId}/new-product`}>
+              <Button size="sm" className="gap-1.5">
+                <Plus className="h-4 w-4" />
+                Add Product
+              </Button>
+            </Link>
+          </div>
+        )}
         <EmptyCart customerId={customerId} />
       </>
     );
 
-  const itemTotals = items.reduce(
-    (acc, item) => {
-      const { afterMarkup, gst, pst, totalTax, disposable, lineTotal, markup } =
-        calcLine(item);
-      acc.subtotal += afterMarkup;
-      acc.gst += gst;
-      acc.pst += pst;
-      acc.totalTax += totalTax;
-      acc.disposable += disposable;
-      acc.total += lineTotal;
-      acc.totalMarkup += markup;
+  // Compute calcLine ONCE per item, reuse everywhere (reduce + both renders).
+  const itemCalcs = items.map((item) => ({ item, calc: calcLine(item) }));
+
+  const itemTotals = itemCalcs.reduce(
+    (acc, { calc }) => {
+      acc.subtotal += calc.afterMarkup;
+      acc.gst += calc.gst;
+      acc.pst += calc.pst;
+      acc.totalTax += calc.totalTax;
+      acc.disposable += calc.disposable;
+      acc.total += calc.lineTotal;
+      acc.totalMarkup += calc.markup;
       return acc;
     },
     {
@@ -136,34 +152,26 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
       totalMarkup: 0,
     },
   );
-  const nonSubsidisedMarkup = items.reduce((acc, item) => {
-    if (item.productId.subsidised) return acc;
-    return acc + calcLine(item).markup;
-  }, 0);
 
-  // console.log("Total Markup : ",nonSubsidisedMarkup)
+  let nonSubsidisedMarkup = 0;
+  const progressTotal = { total: 0, totalMarkup: 0, productCount: 0 };
+
+  for (const { item, calc } of itemCalcs) {
+    if (item.productId.subsidised) continue;
+    nonSubsidisedMarkup += calc.markup;
+    progressTotal.total += calc.afterMarkup;
+    progressTotal.totalMarkup += calc.markupPercentage;
+    progressTotal.productCount += 1;
+  }
+
   let newSubisdyCalc = 0;
-  // console.log("Subsidy given:", (nonSubsidisedMarkup * 0.6)/100);
-
-  const progressTotal = items.reduce(
-    (acc, item) => {
-      if (item.productId.subsidised) return acc;
-      const { markupPercentage, afterMarkup } = calcLine(item);
-      return {
-        total: acc.total + afterMarkup,
-        totalMarkup: acc.totalMarkup + markupPercentage,
-        productCount: acc.productCount + 1,
-      };
-    },
-    { total: 0, totalMarkup: 0, productCount: 0 },
-  );
 
   const totalInDollars = progressTotal.total / 100;
   const { prev, current, mid } = getFibBracketFrom21(totalInDollars);
   const avgMarkup = progressTotal.totalMarkup / progressTotal.productCount;
 
-  const UserSubsidyPercentage = (UserData?.subsidy ?? 55)/100;
-  
+  const UserSubsidyPercentage = (UserData?.subsidy ?? 55) / 100;
+
   if (prev >= 21) {
     newSubisdyCalc = nonSubsidisedMarkup * UserSubsidyPercentage;
   }
@@ -171,26 +179,23 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     if (prev >= 21 && totalInDollars >= prev && totalInDollars < mid!)
       return avgMarkup;
     else if (mid && totalInDollars >= mid && totalInDollars <= current)
-      return avgMarkup; // If we're above the mid point, we can still give the higher markup as a subsidy, but it won't be reflected in the progress bar markup percentage
+      return avgMarkup;
     return null;
   })();
-  CartItems;
 
-  const calculateTotalMarkup = (item: ICartItem) => {
-    if (activeMarkup === null || item.productId.subsidised) return null;
-    return Math.round(
-      item.productId.price * item.quantity * (activeMarkup / 100),
-    );
-  };
-
-  const totalActiveMarkup = items.reduce(
-    (acc, item) => acc + (calculateTotalMarkup(item) ?? 0),
-    0,
-  );
+  let totalActiveMarkup = 0;
+  if (activeMarkup !== null) {
+    for (const { item } of itemCalcs) {
+      if (item.productId.subsidised) continue;
+      totalActiveMarkup += Math.round(
+        item.productId.price * item.quantity * (activeMarkup / 100),
+      );
+    }
+  }
 
   const subsidyTotals = subItems.reduce(
     (acc, item) => {
-      const {markup} = calcLine(item);
+      const { markup } = calcLine(item);
       const disposableFee = (item.productId.disposableFee ?? 0) * item.quantity;
       const fullPriceWithDisposable = item.TotalPrice * item.quantity;
       const priceForTax = fullPriceWithDisposable - disposableFee;
@@ -247,8 +252,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
 
   const miscTotals = calcMiscTotal(MiscItems);
 
-  // console.log(miscTotals)
-
   const PlatformFee = 50;
 
   const totals = {
@@ -265,12 +268,11 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     ),
     totalMarkup: itemTotals.totalMarkup + subsidyTotals.totalMarkup,
   };
-  
-  // console.log("Total markup : ",totals)
+
   const showGST = totals.gst > 0;
   const showPST = totals.pst > 0;
-  const active = activeMarkup ?? 0;
 
+  const active = activeMarkup ?? 0;
   const markupBase = (() => {
     if (mid && totalInDollars >= mid && totalInDollars <= current)
       return mid * 100;
@@ -280,18 +282,23 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   })();
 
   const MarkupSub = markupBase * (active / 100);
-  const subsidyOnOrder = Math.floor(MarkupSub * 0.6); // Subsidy is 60% of the calculated markup based on the active fib bracket
+  void MarkupSub; // retained from original calc chain (subsidyOnOrder was computed but unused downstream)
+
   const TotalSubsidy = Number(
     ((newSubisdyCalc + giftWalletBalance) / 100).toFixed(2),
   );
+
+  const isCovered =
+    newSubisdyCalc + (UserData?.giftWalletBalance ?? 0) >=
+    subsidyTotals.disposable;
 
   // ── Sub-components ──────────────────────────────────────────────
 
   const TaxRows = () => (
     <>
       <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Platform Fee</span>
-          <span className="font-medium tabular-nums">CA${fmt(PlatformFee)}</span>
+        <span className="text-muted-foreground">Platform Fee</span>
+        <span className="font-medium tabular-nums">CA${fmt(PlatformFee)}</span>
       </div>
       {showGST && (
         <div className="flex justify-between text-sm">
@@ -316,8 +323,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
     </>
   );
 
-
-  const isCovered = (newSubisdyCalc+(UserData?.giftWalletBalance?? 0))>=subsidyTotals.disposable;
   const DisposableRow = () => (
     <>
       {itemTotals.disposable > 0 && (
@@ -333,15 +338,17 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           <span className="text-muted-foreground flex items-center gap-1.5 flex-wrap">
             Disposable fee
             {isCovered && (
-            <Badge
-              variant="secondary"
-              className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400"
-            >
-              covered
-            </Badge>
+              <Badge
+                variant="secondary"
+                className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400"
+              >
+                covered
+              </Badge>
             )}
           </span>
-          <span className={`font-medium tabular-nums text-emerald-600 ${isCovered && 'line-through'}`}>
+          <span
+            className={`font-medium tabular-nums text-emerald-600 ${isCovered && "line-through"}`}
+          >
             CA${fmt(subsidyTotals.disposable)}
           </span>
         </div>
@@ -485,25 +492,22 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           <div className="flex-1">
             <UPCScannerCart customerId={customerId} storeId={UserStoreId} />
           </div>
-              <Link href={`/cashier/customer/${customerId}/new-product`}>
-                <Button size="sm" className="gap-1.5">
-                  <Plus className="h-4 w-4" />
-                  Add Product
-                </Button>
-              </Link>
+          <Link href={`/cashier/customer/${customerId}/new-product`}>
+            <Button size="sm" className="gap-1.5">
+              <Plus className="h-4 w-4" />
+              Add Product
+            </Button>
+          </Link>
         </div>
       )}
-
+      <CartReloadListener />
+      {/* ── MOBILE / TABLET LAYOUT ── */}
       <div
         className="xl:hidden flex flex-col"
         style={{ minHeight: "calc(100dvh - 0px)" }}
       >
-        {/* Scrollable content area */}
         <div className="flex-1 overflow-y-auto px-4 pt-5 pb-4 space-y-4">
-          {/* Progress */}
-          <div
-            className={`border-border/60 shadow-none`}
-          >
+          <div className="border-border/60 shadow-none">
             <div className={`${isCashier && "hidden"}`}>
               <ProgressBarCart
                 total={progressTotal.total}
@@ -521,7 +525,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </div>
           </div>
 
-          {/* Cart items */}
           <section>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -535,118 +538,25 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               </span>
             </div>
 
-            {/* Scrollable items list */}
-            <div  className="data-cart-scroll max-h-[460px] overflow-y-auto rounded-xl space-y-2 pr-0.5">
-              {items.map((item: ICartItem) => {
-                const { afterMarkup } = calcLine(item);
-                const markup = item.productId.markup;
-                const hasImage = item.productId.images?.[0]?.url;
-                const isMeasuredInWeight = item.productId.isMeasuredInWeight;
-                return (
-                  <div
-                    key={item.productId._id.toString()}
-                    data-cart-item
-                    className="flex gap-3 bg-card rounded-xl border border-border/60 p-3"
-                  >
-                    <div className="relative h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-secondary">
-                      {hasImage ? (
-                        <>
-                          <Image
-                            src={item.productId.images?.[0]?.url ?? ""}
-                            alt={item.productId.name}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
-                          />
-                        </>
-                      ) : (
-                        <CategoryIllustration
-                          category={item.productId.category}
-                          className="w-full h-full"
-                        />
-                      )}
-                      {/* Margin tier dot — always shown regardless of image */}
-                        {!item.productId.subsidised && (
-                            <span
-                              className={`absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-black leading-none tracking-wide ${
-                                markup >= 100
-                                  ? "bg-red-500 text-white"
-                                  : markup >= 50
-                                  ? "bg-amber-400 text-amber-950"
-                                  : "bg-emerald-500 text-white"
-                              }`}
-                            >
-                              {markup >= 100 ? "HIGH" : markup >= 50 ? "MED" : "LOW"}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col gap-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <div>
-                            <p className="text-sm font-semibold text-foreground leading-tight line-clamp-2 flex gap-2 items-center">
-                              {item.productId.name}
-                              
-                              {isMeasuredInWeight &&
-                                `/${item.productId.UOM?.toLowerCase()}`}
-                              {item.productId?.PriceDrop ? (
-                                <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm w-fit">
-                                  <BadgePercent
-                                    className="h-2.5 w-2.5 shrink-0 "
-                                    strokeWidth={2}
-                                  />
-                                  PRICE DROP
-                                </div>
-                              ) : (
-                                ""
-                              )}
-                            </p>
-
-                            <p className="text-xs font-semibold text-muted-foreground"></p>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                            {item.productId.category}
-                          </p>
-                        </div>
-                        <p className="text-sm font-bold tabular-nums text-primary shrink-0">
-                          CA${fmt(afterMarkup)}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <RemoveButton
-                            productId={item.productId._id.toString()}
-                            customerId={customerId}
-                            variant="mobile"
-                          />
-                          {item.productId.subsidised && (
-                            <AddtoSubsidyBtn
-                              ProductId={item.productId._id.toString()}
-                              customerId={customerId}
-                            />
-                          )}
-                        </div>
-
-                        <QuantityControl
-                          productId={item.productId._id.toString()}
-                          customerId={customerId}
-                          initialQuantity={item.quantity}
-                          variant="mobile"
-                          isMeasuredInWeight={item.productId.isMeasuredInWeight}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <ScrollableItemsList
+              maxHeight="460px"
+              className="rounded-xl space-y-2 pr-3"
+            >
+              {itemCalcs.map(({ item, calc }) => (
+                <CartItemRow
+                  key={item.productId._id.toString()}
+                  item={item}
+                  afterMarkup={calc.afterMarkup}
+                  customerId={customerId}
+                  variant="mobile"
+                />
+              ))}
+            </ScrollableItemsList>
           </section>
 
-          {/* Subsidy items */}
           <SubsidyItemsSection subItems={subItems} customerId={customerId} />
           <MiscItemsSection miscItems={MiscItems} customerId={customerId} />
 
-          {/* Wallets */}
           <section>
             <div className="flex items-center gap-2 mb-3">
               <CreditCard className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -657,7 +567,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             <WalletSection />
           </section>
 
-          {/* Bill summary */}
           <Card className="border-border/60 shadow-none overflow-hidden">
             <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50">
               <div className="flex items-center gap-2">
@@ -673,7 +582,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           </Card>
         </div>
 
-        {/* Mobile/Tablet CTA — sticky above footer */}
         {customerId && (
           <div className="sticky bottom-0 shrink-0 border-t border-border bg-background/95 backdrop-blur-md px-4 pt-3.5 pb-6 z-10">
             <div
@@ -687,7 +595,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                   CA${fmt(totals.total)}
                 </p>
               </div>
-
               <div className="shrink-0">
                 <CheckoutActions
                   customerId={customerId}
@@ -696,7 +603,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 />
               </div>
             </div>
-
             <div className="flex items-center justify-center gap-1.5">
               <Shield className="h-3 w-3 text-muted-foreground/50 shrink-0" />
               <p className="text-[11px] text-muted-foreground/60">
@@ -707,13 +613,9 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
         )}
       </div>
 
-      {/* ════════════════════════════════════════
-          DESKTOP LAYOUT  (≥ lg / ≥ 1024px)
-          Only triggers on true desktop screens
-      ════════════════════════════════════════ */}
+      {/* ── DESKTOP LAYOUT (≥ xl / ≥ 1280px) ── */}
       <div className="hidden xl:block">
         <div className="max-w-5xl mx-auto px-6 lg:px-8 py-8">
-          {/* Progress bar */}
           <div className="mb-6 border-border/60 shadow-none">
             <div className={`${isCashier && "hidden"}`}>
               <ProgressBarCart
@@ -734,11 +636,8 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </div>
           </div>
 
-          {/* 2-col layout */}
           <div className="flex gap-6 items-start">
-            {/* Left col */}
             <div className="flex-1 min-w-0 space-y-5">
-              {/* Items card */}
               <Card className="border-border/60 shadow-none overflow-hidden">
                 <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50 sticky top-0 z-10">
                   <div className="flex items-center justify-between">
@@ -754,145 +653,25 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                   </div>
                 </CardHeader>
 
-                {/* Scrollable items */}
-                <div  className="data-cart-scroll max-h-[420px] overflow-y-auto divide-y divide-border/50">
-                  {items.map((item: ICartItem) => {
-                    const { afterMarkup } = calcLine(item);
-                    const markup = item.productId.markup;
-                    const hasImage = item.productId.images?.[0]?.url;
-                    const isMeasuredInWeight =
-                      item.productId.isMeasuredInWeight;
-                    return (
-                      <div
-                        key={item.productId._id.toString()}
-                        data-cart-item
-                        className="flex items-center gap-4 px-5 py-3.5 hover:bg-accent/20 transition-colors group"
-                      >
-                        <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-secondary">
-                          {hasImage ? (
-                            <Image
-                              src={item.productId.images?.[0]?.url ?? ""}
-                              alt={item.productId.name}
-                              width={56}
-                              height={56}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <CategoryIllustration
-                              category={item.productId.category}
-                              className="w-full h-full"
-                            />
-                          )}
-                           {!item.productId.subsidised && (
-                            <span
-                              className={`absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-black leading-none tracking-wide ${
-                                markup >= 100
-                                  ? "bg-red-500 text-white"
-                                  : markup >= 50
-                                  ? "bg-amber-400 text-amber-950"
-                                  : "bg-emerald-500 text-white"
-                              }`}
-                            >
-                              {markup >= 100 ? "HIGH" : markup >= 50 ? "MED" : "LOW"}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <p className="text-sm font-semibold text-foreground truncate">
-                              {item.productId.name}
-                            </p>
-                            {item.productId.subsidised && (
-                              <span className="shrink-0">
-                                <AddtoSubsidyBtn
-                                  ProductId={item.productId._id.toString()}
-                                  customerId={customerId}
-                                />
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                            {item.productId.category}
-                          </p>
-                        </div> */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 min-w-0">
-                            {" "}
-                            {/* changed items-center to items-start */}
-                            <p className="text-sm font-semibold text-foreground truncate flex-1 min-w-0">
-                              
-                              {item.productId.name}
-                              {isMeasuredInWeight &&
-                                `/${item.productId.UOM?.toLowerCase()}`}
-                            </p>
-
-                            <p className="text-xs font-semibold text-muted-foreground">
-                              {item.productId?.PriceDrop ? (
-                                <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-400/90 px-2 py-0.5 text-[9px] font-bold leading-none text-amber-950 shadow-md shadow-amber-900/30 backdrop-blur-sm">
-                                  <BadgePercent
-                                    className="h-2.5 w-2.5 shrink-0 "
-                                    strokeWidth={2}
-                                  />
-                                  PRICE DROP
-                                </div>
-                              ) : (
-                                ""
-                              )}
-                            </p>
-                            {item.productId.subsidised && (
-                              <span className="shrink-0">
-                                <AddtoSubsidyBtn
-                                  ProductId={item.productId._id.toString()}
-                                  customerId={customerId}
-                                />
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                            {item.productId.category}
-                          </p>
-                        </div>
-
-                        <div className="shrink-0">
-                          <QuantityControl
-                            productId={item.productId._id.toString()}
-                            customerId={customerId}
-                            initialQuantity={item.quantity}
-                            variant="desktop"
-                            isMeasuredInWeight={
-                              item.productId.isMeasuredInWeight
-                            }
-                          />
-                        </div>
-
-                        <div className="w-24 text-right shrink-0">
-                          <p className="text-sm font-bold tabular-nums text-primary">
-                            CA${fmt(afterMarkup)}
-                          </p>
-                        </div>
-
-                        <div className="shrink-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
-                          <RemoveButton
-                            productId={item.productId._id.toString()}
-                            customerId={customerId}
-                            variant="desktop"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <ScrollableItemsList
+                  maxHeight="420px"
+                  className="divide-y divide-border/50"
+                >
+                  {itemCalcs.map(({ item, calc }) => (
+                    <CartItemRow
+                      key={item.productId._id.toString()}
+                      item={item}
+                      afterMarkup={calc.afterMarkup}
+                      customerId={customerId}
+                      variant="desktop"
+                    />
+                  ))}
+                </ScrollableItemsList>
               </Card>
 
-              {/* Subsidy items */}
-              <SubsidyItemsSection
-                subItems={subItems}
-                customerId={customerId}
-              />
+              <SubsidyItemsSection subItems={subItems} customerId={customerId} />
               <MiscItemsSection miscItems={MiscItems} customerId={customerId} />
 
-              {/* Wallets */}
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <CreditCard className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -904,7 +683,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               </section>
             </div>
 
-            {/* Right col — sticky summary */}
             <div className="w-72 shrink-0 sticky top-6 space-y-3">
               <Card className="border-border/60 shadow-sm overflow-hidden">
                 <CardHeader className="px-5 py-3.5 bg-muted/30 border-b border-border/50">
@@ -920,10 +698,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                 </CardContent>
                 {customerId && (
                   <div className="px-5 pb-5 space-y-3 border-t border-border/50 pt-4">
-                    <CheckoutActions
-                      customerId={customerId}
-                      TotalCart={totals}
-                    />
+                    <CheckoutActions customerId={customerId} TotalCart={totals} />
                     <div className="flex items-center justify-center gap-1.5">
                       <Shield className="h-3 w-3 text-muted-foreground/40 shrink-0" />
                       <p className="text-[11px] text-muted-foreground/50">

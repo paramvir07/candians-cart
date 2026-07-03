@@ -7,7 +7,6 @@ import {
   RefreshCw,
   Package,
   ShoppingBag,
-  ShoppingCartIcon,
   Wallet,
   Menu,
   X,
@@ -17,6 +16,7 @@ import {
   ChevronDown,
   Gift,
   HeartHandshake,
+  ShoppingCartIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import LogoutButton from "../shared/LogoutButton";
@@ -227,16 +227,16 @@ function SidebarContent({
                 onClick={(event) => handleNav(event, "/cashier")}
               />
               <NavItem
+                href="/cashier/customer/orders"
+                label="Customer Orders"
+                icon={ShoppingCartIcon}
+                onClick={(event) => handleNav(event, "/cashier/customer/orders")}
+              />
+              <NavItem
                 href="/cashier/subsidy-list"
                 label="Subsidy List"
                 icon={List}
                 onClick={(event) => handleNav(event, "/cashier/subsidy-list")}
-              />
-              <NavItem
-                href="/cashier/misc-items"
-                label="Misc Items"
-                icon={ShoppingBasket}
-                onClick={(event) => handleNav(event, "/cashier/misc-items")}
               />
             </div>
           </div>
@@ -248,7 +248,7 @@ function SidebarContent({
                 Current Customer
               </p>
 
-{/* Customer identity chip — collapsible */}
+              {/* Customer identity chip — collapsible */}
               <Collapsible open={customerOpen} onOpenChange={setCustomerOpen}>
                 <CollapsibleTrigger asChild>
                   <button
@@ -274,7 +274,7 @@ function SidebarContent({
                     <ChevronDown
                       className={cn(
                         "w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-300",
-                        customerOpen && "rotate-180"
+                        customerOpen && "rotate-180",
                       )}
                     />
                   </button>
@@ -286,39 +286,50 @@ function SidebarContent({
                       <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
                         <HeartHandshake className="w-3.5 h-3.5 text-amber-600" />
                       </div>
-                      <span className="text-xs text-muted-foreground flex-1">Subsidy</span>
+                      <span className="text-xs text-muted-foreground flex-1">
+                        Subsidy
+                      </span>
                       <span className="text-xs font-semibold text-foreground tabular-nums">
-                        CA${((SubsidyVal ?? 0)).toFixed(2)}
+                        CA${(SubsidyVal ?? 0).toFixed(2)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2.5 px-3 py-2.5">
                       <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Wallet className="w-3.5 h-3.5 text-primary" />
                       </div>
-                      <span className="text-xs text-muted-foreground flex-1">Wallet</span>
+                      <span className="text-xs text-muted-foreground flex-1">
+                        Wallet
+                      </span>
                       <span className="text-xs font-semibold text-foreground tabular-nums">
-                        CA${((customerData?.walletBalance ?? 0) / 100).toFixed(2)}
+                        CA$
+                        {((customerData?.walletBalance ?? 0) / 100).toFixed(2)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2.5 px-3 py-2.5">
                       <div className="w-6 h-6 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0">
                         <Gift className="w-3.5 h-3.5 text-violet-500" />
                       </div>
-                      <span className="text-xs text-muted-foreground flex-1">Gift Wallet</span>
+                      <span className="text-xs text-muted-foreground flex-1">
+                        Gift Wallet
+                      </span>
                       <span className="text-xs font-semibold text-foreground tabular-nums">
-                        CA${((customerData?.giftWalletBalance ?? 0) / 100).toFixed(2)}
+                        CA$
+                        {((customerData?.giftWalletBalance ?? 0) / 100).toFixed(
+                          2,
+                        )}
                       </span>
                     </div>
                     <div className="flex items-center gap-2.5 px-3 py-2.5">
                       <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
                         <ShoppingCartIcon className="w-3.5 h-3.5 text-blue-500" />
                       </div>
-                      <span className="text-xs text-muted-foreground flex-1">Cart</span>
+                      <span className="text-xs text-muted-foreground flex-1">
+                        Cart
+                      </span>
                       <span className="text-xs font-semibold text-foreground tabular-nums">
                         {customerData?.CartCount ?? 0} items
                       </span>
                     </div>
-                    
                   </div>
                 </CollapsibleContent>
               </Collapsible>

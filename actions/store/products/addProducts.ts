@@ -12,6 +12,7 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import Store from "@/db/models/store/store.model";
 import { zodErrorResponse } from "@/zod/validation/error";
 import ProductInvoice from "@/db/models/store/invoice.model";
+import { triggerImageGeneration } from "@/actions/inngestActions/generateImage";
 
 interface ActionResponse {
   success: boolean;
@@ -150,6 +151,7 @@ export async function createProduct(
       dbPayload.InvoiceId = normalizedInvoiceId;
     }
 
+    let createdProductId :string | undefined;
     const mongoSession = await mongoose.startSession();
 
     try {
@@ -173,6 +175,7 @@ export async function createProduct(
           throw new Error("Failed to create product");
         }
 
+        createdProductId = newProduct._id.toString();
         /**
          * Invoice logic:
          * If InvoiceId exists, add newly created product into invoice products.
@@ -222,6 +225,9 @@ export async function createProduct(
       revalidatePath(`/admin/store/${recievedStoreId}/products`);
     }
 
+    if (createdProductId && dbPayload.images?.[0]) {
+      await triggerImageGeneration(createdProductId, dbPayload.images[0],storeId);
+    }    
     return {
       success: true,
       message: "Product created successfully",

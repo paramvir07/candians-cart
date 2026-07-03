@@ -1,11 +1,12 @@
 "use server"
 import { ReferralAcceptedEmail } from "@/components/EmailTemplates/ReferralAcceptEmail";
+import { ReferralRequestEmail } from "@/components/EmailTemplates/ReferralRequestEmail";
 import { dbConnect } from "@/db/dbConnect";
 import ReferralCode from "@/db/models/admin/referralCode.model";
 import Customer from "@/db/models/customer/customer.model";
 import ReferralRequest from "@/db/models/customer/ReferralRequest.model";
 import { sendEmail } from "@/lib/auth/email";
-import { getReferralShareMessageTwilio } from "@/lib/shareMessage";
+import { getReferralRequestMessage, getReferralShareMessageTwilio, getReferralUrl } from "@/lib/shareMessage";
 import { sendSMS } from "@/lib/twilio/twilio";
 import { revalidatePath } from "next/cache";
 
@@ -59,44 +60,91 @@ export const GetAlreadySentProfiles = async (Data: ReferralRequestData) => {
     }
 }
 
-export const SendReferralRequest = async (Data: ReferralRequestData, memberId: string) => {
-    if (!memberId || !Data) return { success: false, message: "Partial Data sent" }
-    const normalizeCanadianPhone = (raw: string) => {
-      const digits = raw.replace(/\D/g, "");
-      return `+1${digits.startsWith("1") ? digits.slice(1) : digits}`;
-    };
-    try {
-        await dbConnect();
-        const existing = await ReferralRequest.findOne({
-            phoneNumber: Data.phoneNumber.replace(/[\s\-().]/g, ""),
-            customerId: memberId
-        })
+export const SendReferralRequest = async (data: ReferralRequestData, memberId: string) => {
+  if (!memberId || !data) {
+    return { success: false, message: "Partial Data sent" };
+  }
 
-        if (existing) {
-            if (existing.accepted === null || existing.accepted === true) {
-                return { success: true, message: "already_sent" }
-            }
-            await ReferralRequest.findByIdAndUpdate(existing._id, {
-                accepted: null,
-                name: Data.name,
-                email: Data.email ?? "",
-            })
-            return { success: true, message: "sent" }
-        }
+  const normalizeCanadianPhone = (raw: string) => {
+    const digits = raw.replace(/\D/g, "");
+    return `+1${digits.startsWith("1") ? digits.slice(1) : digits}`;
+  };
 
-        await ReferralRequest.create({
-            name: Data.name,
-            email: Data.email ?? "",
-            phoneNumber: normalizeCanadianPhone(Data.phoneNumber),
-            customerId: memberId,
-            accepted: null
-        })
-        return { success: true, message: "sent" }
-    } catch (err) {
-        console.log(err)
-        return { success: false, message: "Error sending Request" };
+  try {
+    await dbConnect();
+
+    const phoneNumber = normalizeCanadianPhone(data.phoneNumber);
+    const email = data.email ?? "";
+
+    const existing = await ReferralRequest.findOne({
+      phoneNumber,
+      customerId: memberId,
+    });
+
+    if (existing) {
+      if (existing.accepted === null || existing.accepted === true) {
+        return { success: true, message: "already_sent" };
+      }
+
+      await ReferralRequest.findByIdAndUpdate(existing._id, {
+        accepted: null,
+        name: data.name,
+        email,
+      });
+
+      return { success: true, message: "sent" };
     }
-}
+
+    const member = await Customer.findById(memberId).select(
+      "name email mobile"
+    );
+
+    await ReferralRequest.create({
+      name: data.name,
+      email,
+      phoneNumber,
+      customerId: memberId,
+      accepted: null,
+    });
+
+    const firstName = data.name.trim().split(/\s+/)[0];
+
+    const notifications: Promise<unknown>[] = [];
+
+    if (member?.mobile) {
+      notifications.push(
+        sendSMS(
+          member.mobile,
+          getReferralRequestMessage(firstName)
+        )
+      );
+    }
+
+    if (member?.email) {
+      notifications.push(
+        sendEmail({
+          to: member.email,
+          subject: `${data.name} requested a referral invite 🎫`,
+          react: ReferralRequestEmail({
+            recipientName: member.name,
+            requesterName: data.name,
+            manageRequestsUrl: "https://canadianscart.ca/customer/referrals/requests",
+          }),
+        })
+      );
+    }
+
+    await Promise.all(notifications);
+
+    return { success: true, message: "sent" };
+  } catch (err) {
+    console.error(err);
+    return {
+      success: false,
+      message: "Error sending request",
+    };
+  }
+};
 
 export const getAlreadySentMemberIds = async (phoneNumber: string) => {
     try {
@@ -168,22 +216,23 @@ export const getPendingReferralRequests = async (customerId: string) => {
   }
 };
 
-export const respondToReferralRequest = async (
-  requestId: string,
-  accept: boolean
-) => {
+export const respondToReferralRequest = async ( requestId: string, accept: boolean ) => {
   if (!requestId) return { success: false, message: "Missing request ID" };
 
   try {
     await dbConnect();
 
-    await ReferralRequest.findByIdAndUpdate(requestId, { accepted: accept });
+    const request = await ReferralRequest.findByIdAndUpdate(
+      requestId,
+      { accepted: accept },
+      { new: true }
+    ).lean();
+
+    if (!request) return { success: false, message: "Request not found" };
+
     revalidatePath("/customer/referrals/requests");
 
     if (!accept) return { success: true };
-
-    const request = await ReferralRequest.findById(requestId).lean();
-    if (!request) return { success: false, message: "Request not found" };
 
     const [customer, [referralCode]] = await Promise.all([
       Customer.findById(request.customerId).lean(),
@@ -194,12 +243,11 @@ export const respondToReferralRequest = async (
     if (!referralCode) return { success: false, message: "Referral code not found" };
 
     const code      = referralCode.code;
-    const signUpUrl = `https://www.canadianscart.ca/customer/sign-up?referralCode=${code}&heard=refer`;
+    const signUpUrl = getReferralUrl(code);
+    const firstName = request.name.trim().split(/\s+/)[0];
 
-    const splitName = request.name.split(" ")
-    
     await Promise.all([
-      sendSMS(request.phoneNumber, getReferralShareMessageTwilio(code,splitName[0])),
+      sendSMS(request.phoneNumber, getReferralShareMessageTwilio(code, firstName)),
       sendEmail({
         to: request.email,
         subject: `${customer.name} accepted your referral request 🎉`,

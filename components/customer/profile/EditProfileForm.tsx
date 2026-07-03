@@ -23,6 +23,7 @@ import {
   Phone,
   Building2,
   Map,
+  Hash,
   Check,
   ChevronLeft,
   Clock,
@@ -30,19 +31,29 @@ import {
   ShieldCheck,
   X,
   Loader2,
-  Hash,
 } from "lucide-react";
 import { Customer } from "@/types/customer/customer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CUSTOMER_CITIES, CUSTOMER_PROVINCES } from "@/lib/customer/location";
+import { CUSTOMER_PROVINCE } from "@/lib/customer/location";
 import { authClient } from "@/lib/auth/auth-client";
 import { cn } from "@/lib/utils";
 import { sendPhoneOTPAction } from "@/actions/auth/verifiyPhone.actions";
+import {
+  AddressAutocomplete,
+  ParsedAddress,
+} from "@/components/shared/AddressAutocomplete";
 
 type FormUserData = Pick<
   Customer,
-  "name" | "email" | "address" | "city" | "province" | "postalCode" | "mobile"
+  | "name"
+  | "email"
+  | "aptUnit"
+  | "address"
+  | "city"
+  | "province"
+  | "postalCode"
+  | "mobile"
 >;
 type EditableFields = Omit<FormUserData, "email"> & {
   mobile: string;
@@ -86,33 +97,58 @@ function IconInput({
     </div>
   );
 }
-function IconSelect({
+
+// Wraps AddressAutocomplete to match the IconInput visual style
+function IconAddressAutocomplete({
   icon: Icon,
   error,
-  children,
   ...props
 }: {
   icon: React.ElementType;
   error?: string;
-  children: React.ReactNode;
-} & React.ComponentProps<"select">) {
+} & React.ComponentProps<typeof AddressAutocomplete>) {
   return (
     <div>
       <div className="relative group">
         <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors z-10 pointer-events-none" />
-        <select
+        <AddressAutocomplete
           {...props}
-          className={`w-full pl-10 pr-3 h-11 rounded-xl border border-border/60 bg-card text-sm focus:outline-none focus:ring-1 focus:ring-primary ${props.className ?? ""}`}
-        >
-          {children}
-        </select>
+          className={`pl-10 h-11 rounded-xl border-border/60 bg-card focus-visible:ring-1 focus-visible:ring-primary ${props.className ?? ""}`}
+        />
       </div>
       {error && <p className="text-xs text-destructive mt-1.5">{error}</p>}
     </div>
   );
 }
 
-// Phone OTP Modal
+// Read-only field that looks like IconInput but is clearly auto-filled
+function IconReadOnly({
+  icon: Icon,
+  value,
+  placeholder,
+  className,
+}: {
+  icon: React.ElementType;
+  value: string;
+  placeholder: string;
+  className?: string;
+}) {
+  return (
+    <div className="relative">
+      <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/30 pointer-events-none" />
+      <Input
+        readOnly
+        tabIndex={-1}
+        value={value}
+        placeholder={placeholder}
+        className={`pl-10 h-11 rounded-xl border-border/40 bg-secondary/30 text-muted-foreground cursor-not-allowed ${className ?? ""}`}
+      />
+    </div>
+  );
+}
+
+// ─── Phone OTP Modal ──────────────────────────────────────────────────────────
+
 function PhoneVerifyModal({
   newPhone,
   e164Phone,
@@ -372,7 +408,8 @@ function PhoneVerifyModal({
   );
 }
 
-// Main Form
+// ─── Main Form ────────────────────────────────────────────────────────────────
+
 export default function EditProfileForm({ user }: { user: FormUserData }) {
   const [state, formAction] = useActionState(editUserProfile, initialState);
   const [isPending, startTransition] = useTransition();
@@ -393,10 +430,8 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
     return digits;
   };
 
-  // mobile from customer model may be E.164 (+16041234567) — format it for display
   const formatStoredMobile = (val: string) => {
     if (!val) return "";
-    // If E.164, strip +1 then format
     if (val.startsWith("+1")) return formatMobile(val.slice(2));
     return formatMobile(val);
   };
@@ -404,6 +439,7 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
   const trimmed: FormUserData = {
     name: user.name.trim(),
     email: user.email.trim(),
+    aptUnit: (user.aptUnit ?? "").trim(),
     address: user.address.trim(),
     city: user.city.trim(),
     province: user.province.trim(),
@@ -411,13 +447,14 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
     mobile: (user.mobile ?? "").trim(),
   };
 
+  const [aptUnit, setAptUnit] = useState(trimmed.aptUnit ?? "");
+
   const [fields, setFields] = useState<EditableFields>({
     name: trimmed.name,
     address: trimmed.address,
     city: trimmed.city,
-    province: trimmed.province || "BC",
+    province: trimmed.province || CUSTOMER_PROVINCE,
     postalCode: trimmed.postalCode,
-    // Format stored mobile (E.164 or display format) for the input
     mobile: formatStoredMobile(trimmed.mobile ?? ""),
   });
 
@@ -428,11 +465,8 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
         setFields((prev) => ({ ...prev, mobile: formatMobile(value) }));
         return;
       }
-      if (name === "postalCode") {
-        const clean = value.replace(/\s/g, "").toUpperCase().slice(0, 6);
-        const formatted =
-          clean.length > 3 ? `${clean.slice(0, 3)} ${clean.slice(3)}` : clean;
-        setFields((prev) => ({ ...prev, postalCode: formatted }));
+      if (name === "aptUnit") {
+        setAptUnit(value);
         return;
       }
       setFields((prev) => ({ ...prev, [name]: value }));
@@ -440,10 +474,33 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
     [],
   );
 
+  const handleAddressSelect = useCallback((parsed: ParsedAddress) => {
+    setFields((prev) => ({
+      ...prev,
+      address: parsed.streetAddress || prev.address,
+      city: parsed.city || prev.city,
+      province:
+        parsed.province === CUSTOMER_PROVINCE ? parsed.province : prev.province,
+      postalCode: parsed.postalCode || prev.postalCode,
+    }));
+  }, []);
+
+  const handleAddressClear = useCallback(() => {
+    setFields((prev) => ({
+      ...prev,
+      address: "",
+      city: "",
+      province: "",
+      postalCode: "",
+    }));
+  }, []);
+
   const mobileChanged =
     fields.mobile.trim() !== formatStoredMobile(trimmed.mobile ?? "");
+
   const hasChanges =
     fields.name.trim() !== trimmed.name ||
+    aptUnit.trim() !== (trimmed.aptUnit ?? "") ||
     fields.address.trim() !== trimmed.address ||
     fields.city.trim() !== trimmed.city ||
     fields.province.trim() !== trimmed.province ||
@@ -468,6 +525,8 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
       (Object.keys(fields) as (keyof EditableFields)[]).forEach((key) => {
         fd.set(key, (fields[key] ?? "").trim());
       });
+      fd.set("aptUnit", aptUnit.trim());
+      fd.set("address", fields.address.trim());
 
       if (mobileChanged) {
         const digits = fields.mobile.replace(/\D/g, "");
@@ -483,7 +542,7 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
       }
       startTransition(() => formAction(fd));
     },
-    [fields, hasChanges, mobileChanged, formAction],
+    [fields, hasChanges, mobileChanged, aptUnit, formAction],
   );
 
   const handlePhoneVerified = useCallback(() => {
@@ -499,10 +558,17 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
     .slice(0, 2);
   const previewName = fields.name.trim() || trimmed.name;
   const previewMobile = fields.mobile.trim() || "—";
-  // UPDATE previewAddress to include postal code:
+  const streetAddress = fields.address.trim();
+  const cleanAptUnit = aptUnit.trim();
+
+  const streetAddressWithUnit =
+    cleanAptUnit && streetAddress
+      ? `${cleanAptUnit}-${streetAddress}`
+      : streetAddress;
+
   const previewAddress =
     [
-      fields.address.trim(),
+      streetAddressWithUnit,
       fields.city.trim(),
       fields.province.trim(),
       fields.postalCode.trim(),
@@ -510,7 +576,6 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
       .filter(Boolean)
       .join(", ") || "—";
 
-  // Shared form fields JSX
   const personalFields = (
     <div className="space-y-4">
       <SectionLabel>Personal Info</SectionLabel>
@@ -550,78 +615,72 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
     </div>
   );
 
-  const addressFields = (
-    <div className="space-y-4">
-      <SectionLabel>Address</SectionLabel>
+const addressFields = (
+  <div className="space-y-4">
+    <SectionLabel>Address</SectionLabel>
+
+    <div>
+      <FieldLabel>Street Address</FieldLabel>
+      <IconAddressAutocomplete
+        icon={MapPin}
+        defaultValue={fields.address}
+        allowedProvince={CUSTOMER_PROVINCE}
+        onSelect={handleAddressSelect}
+        onClear={handleAddressClear}
+        placeholder="e.g. 6453 Imperial Street"
+        error={state?.errors?.address?.[0]}
+      />
+      <input type="hidden" name="address" value={fields.address.trim()} />
+    </div>
+
+    <div>
+      <FieldLabel>
+        Apt / Unit / Suite{" "}
+        <span className="text-muted-foreground/50">(optional)</span>
+      </FieldLabel>
+      <Input
+        id="aptUnit"
+        name="aptUnit"
+        type="text"
+        value={aptUnit}
+        onChange={handleChange}
+        placeholder="e.g. 308"
+        autoComplete="address-line2"
+        maxLength={30}
+        className="h-11 rounded-xl border-border/60 bg-card text-sm focus-visible:ring-1 focus-visible:ring-primary"
+      />
+    </div>
+
+    <div className="grid grid-cols-3 gap-3">
       <div>
-        <FieldLabel>Street Address</FieldLabel>
-        <IconInput
-          icon={MapPin}
-          name="address"
-          type="text"
-          value={fields.address}
-          onChange={handleChange}
-          required
-          placeholder="e.g. 123 Main St"
-          error={state?.errors?.address?.[0]}
+        <FieldLabel>City</FieldLabel>
+        <IconReadOnly icon={Building2} value={fields.city} placeholder="City" />
+        <input type="hidden" name="city" value={fields.city} />
+      </div>
+
+      <div>
+        <FieldLabel>Province</FieldLabel>
+        <IconReadOnly
+          icon={Map}
+          value={fields.province}
+          placeholder="Province"
         />
+        <input type="hidden" name="province" value={fields.province} />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <FieldLabel>City</FieldLabel>
-          <IconSelect
-            icon={Building2}
-            name="city"
-            value={fields.city}
-            onChange={handleChange}
-            required
-            error={state?.errors?.city?.[0]}
-          >
-            <option value="" disabled>
-              Select City
-            </option>
-            {CUSTOMER_CITIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </IconSelect>
-        </div>
-        <div>
-          <FieldLabel>Province</FieldLabel>
-          <IconSelect
-            icon={Map}
-            name="province"
-            value={fields.province}
-            onChange={handleChange}
-            required
-            error={state?.errors?.province?.[0]}
-          >
-            {CUSTOMER_PROVINCES.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </IconSelect>
-        </div>
-      </div>
+
       <div>
         <FieldLabel>Postal Code</FieldLabel>
-        <IconInput
+        <IconReadOnly
           icon={Hash}
-          name="postalCode"
-          type="text"
           value={fields.postalCode}
-          onChange={handleChange}
-          required
-          placeholder="e.g. V2S 3K1"
-          maxLength={7}
-          className="uppercase font-mono placeholder:normal-case placeholder:tracking-normal"
-          error={state?.errors?.postalCode?.[0]}
+          placeholder="Postal Code"
+          className="uppercase font-mono"
         />
+        <input type="hidden" name="postalCode" value={fields.postalCode} />
       </div>
     </div>
-  );
+  </div>
+);
 
   const accountFields = (
     <div>
@@ -731,6 +790,10 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
               </div>
               <div className="px-5 py-6 flex flex-col items-center text-center gap-3">
                 <Avatar className="h-20 w-20 rounded-3xl border-2 border-border/40">
+                  <AvatarImage
+                    src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(trimmed.name)}`}
+                    className="rounded-full"
+                  />
                   <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold rounded-3xl">
                     {initials}
                   </AvatarFallback>
@@ -763,7 +826,11 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
           <div className="sm:hidden flex flex-col gap-4">
             <div className="flex items-center gap-4 px-1">
               <Avatar className="h-14 w-14 rounded-2xl border border-border/60 shrink-0">
-                <AvatarFallback className="bg-primary/10 text-primary font-bold rounded-2xl">
+              <AvatarImage
+                    src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(trimmed.name)}`}
+                    className="rounded-full"
+                  />
+              <AvatarFallback className="bg-primary/10 text-primary font-bold rounded-2xl">
                   {initials}
                 </AvatarFallback>
               </Avatar>

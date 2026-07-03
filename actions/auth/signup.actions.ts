@@ -16,6 +16,24 @@ import { zodErrorResponse } from "@/zod/validation/error";
 import { formDataToObject } from "@/zod/validation/form";
 import mongoose from "mongoose";
 import { getUserSession } from "./getUserSession.actions";
+import { ObjectId } from "mongodb";
+
+const getAuthErrorMessage = (error: unknown) => {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+
+    if (
+      message.includes("email") &&
+      (message.includes("exist") || message.includes("already"))
+    ) {
+      return "An account with this email already exists.";
+    }
+
+    return error.message;
+  }
+
+  return "Something went wrong while creating account";
+};
 
 export const signupAction = async (
   userRole: UserRole,
@@ -26,7 +44,7 @@ export const signupAction = async (
     const rawData = formDataToObject(formData);
 
     if (userRole === "customer") {
-      const result = CustomerSchema.safeParse(rawData);
+      const result = await CustomerSchema.safeParseAsync(rawData);
 
       if (!result.success) {
         const errorMessage = zodErrorResponse(result);
@@ -134,6 +152,7 @@ export const signupAction = async (
               userId: newCustomerUser.user.id,
               name: data.name,
               email: data.email,
+              aptUnit: data.aptUnit,
               address: data.address,
               city: data.city,
               province: data.province,
@@ -170,16 +189,27 @@ export const signupAction = async (
       } catch (err) {
         await session.abortTransaction();
 
-        // Roll back the auth user too
         try {
-          await auth.api.removeUser({
-            body: { userId: newCustomerUser.user.id },
+          const { db } = await import("@/lib/auth/auth");
+
+          const authUserObjectId = new ObjectId(newCustomerUser.user.id);
+
+          await db.collection("user").deleteOne({
+            _id: authUserObjectId,
           });
+
+         await db.collection("account").deleteMany({
+            userId: authUserObjectId,
+          });
+
+          await db.collection("session").deleteMany({
+            userId: authUserObjectId,
+          });
+
         } catch (deleteErr) {
           console.error("Failed to delete orphan auth user:", deleteErr);
         }
 
-        console.log("Customer Signup Transaction failed, rolling back:", err);
         return {
           success: false,
           message:
@@ -325,7 +355,7 @@ export const signupAction = async (
     console.log("Error while creating new account: ", error);
     return {
       success: false,
-      message: "Something went wrong while creating account",
+      message: getAuthErrorMessage(error),
     };
   }
 };

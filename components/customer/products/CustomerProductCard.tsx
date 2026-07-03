@@ -321,7 +321,6 @@ export const CustomerProductCard = forwardRef<
     normalizedInputQty !== null &&
     normalizedInputQty !== quantity;
 
-  // Calculate subsidy strictly based on markup for ALL products (no boolean check needed)
   const subsidyConfig = getSubsidyConfig(product.markup ?? 0);
 
   return (
@@ -337,7 +336,7 @@ export const CustomerProductCard = forwardRef<
 
       <div
         onClick={() => setDialogOpen(true)}
-        className="group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className="group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 bg-white"
         style={{ aspectRatio: "2/3" }}
       >
         <div className="absolute inset-0 h-full w-full">
@@ -409,6 +408,16 @@ export const CustomerProductCard = forwardRef<
               {subsidyConfig.label}
             </div>
           )}
+          <div
+            className="absolute right-4 top-8 z-10"
+            style={{ bottom: "6.5rem" }}
+          >
+            <img
+              src="https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo-abb.png"
+              alt="Candian's Cart"
+              className="h-6 w-6 rounded-full object-contain drop-shadow-md"
+            />
+          </div>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 z-10">

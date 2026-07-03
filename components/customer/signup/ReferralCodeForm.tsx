@@ -1,5 +1,6 @@
 "use client";
 
+import NextLink from "next/link";
 import { ChevronRight, KeyRound } from "lucide-react";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
@@ -38,20 +39,20 @@ export function ReferralCodeForm({
   }, [initialReferralCode]);
 
   useEffect(() => {
-    if (state.message) {
-      if (state.success && state.referralCode) {
-        toast.success(state.message);
-        setReferralCode(state.referralCode);
-        setStep("location");
-      } else {
-        toast.error(state.message);
-      }
+    if (!state.message) return;
+
+    if (state.success && state.referralCode) {
+      toast.success(state.message);
+      setReferralCode(state.referralCode);
+      setStep("location");
+    } else {
+      toast.error(state.message);
     }
   }, [state, setReferralCode, setStep]);
 
-  const charCount = value.length;
   const maxLength = 12;
   const minLength = 8;
+  const charCount = value.length;
   const isReady = charCount >= minLength;
 
   return (
@@ -59,7 +60,7 @@ export function ReferralCodeForm({
       <form action={formAction} className="space-y-4">
         <div className="space-y-2">
           <div className="relative group">
-            <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors duration-200 z-10" />
+            <KeyRound className="absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors duration-200 group-focus-within:text-primary" />
 
             <Input
               id="code"
@@ -69,12 +70,12 @@ export function ReferralCodeForm({
               minLength={minLength}
               maxLength={maxLength}
               value={value}
-              onChange={(e) => setValue(e.target.value.toUpperCase())}
-              className="pl-10 pr-14 h-11 rounded-xl text-sm tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:normal-case placeholder:text-muted-foreground font-mono border-border focus-visible:ring-1 focus-visible:ring-primary transition-all"
+              onChange={(e) => setValue(e.target.value.trim().toUpperCase())}
+              className="h-11 rounded-xl border-border pl-10 pr-14 font-mono text-sm uppercase tracking-[0.2em] transition-all placeholder:font-sans placeholder:normal-case placeholder:tracking-normal placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
             />
 
             <div
-              className={`absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono tabular-nums transition-colors ${
+              className={`absolute right-3.5 top-1/2 -translate-y-1/2 font-mono text-xs tabular-nums transition-colors ${
                 charCount === 0
                   ? "text-muted-foreground/40"
                   : isReady
@@ -105,23 +106,27 @@ export function ReferralCodeForm({
         <Button
           type="submit"
           disabled={isPending || !isReady}
-          className="w-full h-11 rounded-full font-semibold shadow-md shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-50"
+          className="h-11 w-full rounded-full font-semibold shadow-md shadow-primary/20 transition-all duration-150 hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
         >
           {isPending ? (
             <span className="flex items-center gap-2">
-              <Spinner className="h-4 w-4" /> Validating…
+              <Spinner className="h-4 w-4" />
+              Validating…
             </span>
           ) : (
-            <div className="flex items-center gap-2">
-              Continue <ChevronRight />
-            </div>
+            <span className="flex items-center gap-2">
+              Continue <ChevronRight className="h-4 w-4" />
+            </span>
           )}
         </Button>
       </form>
 
-      <p className="text-xs text-muted-foreground text-center">
-        Need a code? Ask an existing Canadian&apos;s Cart family member to share
-        theirs.
+      <p className="text-center text-xs text-muted-foreground">
+        Need a referral code?{" "}
+        <NextLink href="/referrals" className="text-primary font-semibold underline underline-offset-2">
+          Request one here
+        </NextLink>{" "}
+        from an existing customer.
       </p>
     </div>
   );

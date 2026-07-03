@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import logoIcon from "@/app/icon.jpg";
 import {
   Copy,
   Check,
   Share2,
-  Mail,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -16,6 +16,8 @@ import {
   Gift,
   Repeat2,
   Users,
+  QrCode,
+  X,
 } from "lucide-react";
 import {
   Collapsible,
@@ -33,7 +35,6 @@ import { setReferralInvites } from "@/actions/customer/ReferralAction";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -46,6 +47,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
 import { getReferralShareMessage, getReferralUrl } from "@/lib/shareMessage";
+import { QRCodeSVG } from "qrcode.react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -74,7 +76,7 @@ export interface ReferralDocument {
 
 export interface UserDataProps {
   name: string;
-  perReferAmount:number,
+  perReferAmount: number;
   placedFirstOrder: boolean;
   referralCodeEnabled: boolean;
   myreferralCodeId?: string | null;
@@ -84,7 +86,7 @@ export interface UserDataProps {
 interface ReferralPageClientProps {
   referralData: ReferralDocument;
   userData: UserDataProps;
-  ReqCount:number;
+  ReqCount: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -105,7 +107,7 @@ function monthLabel(iso: string): string {
 }
 
 function groupByMonth(
-  usedBy: ReferralUsedBy[]
+  usedBy: ReferralUsedBy[],
 ): { label: string; items: ReferralUsedBy[] }[] {
   const map = new Map<string, ReferralUsedBy[]>();
   for (const u of usedBy) {
@@ -118,7 +120,270 @@ function groupByMonth(
     .map(([label, items]) => ({ label, items }));
 }
 
+// ─── Share apps config ────────────────────────────────────────────────────────
 
+interface AppConfig {
+  label: string;
+  bg: string;
+  icon: React.ReactNode;
+  href: (url: string, message: string) => string;
+}
+
+const SHARE_APPS: AppConfig[] = [
+  {
+    label: "WhatsApp",
+    bg: "#25D366",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.561 4.14 1.535 5.877L.057 23.887l6.197-1.455A11.937 11.937 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.937 0-3.748-.5-5.325-1.373l-.38-.224-3.938.924.966-3.834-.245-.396A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
+      </svg>
+    ),
+    href: (_url, message) =>
+      `https://wa.me/?text=${encodeURIComponent(message)}`,
+  },
+  {
+    label: "X",
+    bg: "#000000",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      </svg>
+    ),
+    href: (_url, message) =>
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`,
+  },
+  {
+    label: "Email",
+    bg: "#007AFF",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        strokeWidth="2"
+      >
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg>
+    ),
+    href: (_url, message) =>
+      `mailto:?subject=${encodeURIComponent(
+        "Join Candian's Cart",
+      )}&body=${encodeURIComponent(message)}`,
+  },
+  {
+    label: "Messages",
+    bg: "#34C759",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        strokeWidth="2"
+      >
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+    href: (_url, message) => `sms:?body=${encodeURIComponent(message)}`,
+  },
+];
+
+// ─── Share Sheet Dialog ───────────────────────────────────────────────────────
+// Shown only on desktop as fallback when navigator.share is unavailable
+
+function ShareSheetDialog({
+  open,
+  onClose,
+  code,
+}: {
+  open: boolean;
+  onClose: () => void;
+  code: string;
+}) {
+  const url = getReferralUrl(code);
+  const shareMessage = getReferralShareMessage(code);
+  const [urlCopied, setUrlCopied] = useState(false);
+
+  async function copyUrl() {
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+    setUrlCopied(true);
+    setTimeout(() => setUrlCopied(false), 2000);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="w-full max-w-sm rounded-2xl border border-border bg-background p-0 overflow-hidden gap-0">
+        <DialogHeader className="flex flex-row items-center justify-between px-5 pt-5 pb-3 space-y-0">
+          <button
+            onClick={onClose}
+            className="-ml-1 p-1 text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <DialogTitle className="text-sm font-semibold text-foreground">
+            Share via
+          </DialogTitle>
+          <div className="w-7" />
+        </DialogHeader>
+
+        <div className="px-5 pb-8 flex flex-col gap-5">
+          <div className="flex justify-around">
+            {SHARE_APPS.map((app) => (
+              <a
+                key={app.label}
+                href={app.href(url, shareMessage)}
+                target="_blank"
+                rel="noreferrer"
+                className="group flex flex-col items-center gap-1.5"
+              >
+                <span
+                  className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110 active:scale-95"
+                  style={{ background: app.bg }}
+                >
+                  {app.icon}
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  {app.label}
+                </span>
+              </a>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2">
+            <span className="flex-1 truncate font-mono text-xs text-muted-foreground">
+              {url}
+            </span>
+            <Button
+              size="sm"
+              variant={urlCopied ? "outline" : "default"}
+              className={
+                urlCopied
+                  ? "shrink-0 rounded-lg border-primary/40 text-xs text-primary hover:bg-transparent"
+                  : "shrink-0 rounded-lg text-xs"
+              }
+              onClick={copyUrl}
+            >
+              {urlCopied ? (
+                <span className="flex items-center gap-1">
+                  <Check size={11} /> Copied
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <Copy size={11} /> Copy
+                </span>
+              )}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── QR Dialog ────────────────────────────────────────────────────────────────
+
+function QRDialog({
+  open,
+  onClose,
+  code,
+}: {
+  open: boolean;
+  onClose: () => void;
+  code: string;
+}) {
+  const url = getReferralUrl(code);
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent
+        className="
+          w-[92vw] max-w-sm
+          rounded-[1.75rem]
+          border border-primary/20
+          bg-card
+          p-0
+          overflow-hidden
+          shadow-2xl
+        "
+      >
+        <div className="relative px-5 pt-5 pb-6">
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
+          {/* Header */}
+          <div className="mb-5 pr-8 text-center">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
+              <QrCode className="h-5 w-5 text-primary" />
+            </div>
+
+            <DialogHeader className="space-y-1">
+              <DialogTitle
+                className="text-lg font-black tracking-tight text-foreground"
+                style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+              >
+                Scan to join
+              </DialogTitle>
+            </DialogHeader>
+
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              Scan this QR code to join with your friend’s referral. After your
+              first eligible order, your friend will receive their reward.
+            </p>
+          </div>
+
+          {/* QR Card */}
+          <div className="mx-auto flex w-fit flex-col items-center">
+            <div className="rounded-[1.5rem] border border-primary/20 bg-card p-3 shadow-sm">
+              <div className="rounded-2xl bg-white p-3">
+                <QRCodeSVG
+                  value={url}
+                  size={220}
+                  fgColor="#07553f"
+                  bgColor="#ffffff"
+                  level="H"
+                  marginSize={0}
+                  imageSettings={{
+                    src: logoIcon.src,
+                    height: 44,
+                    width: 44,
+                    excavate: true,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-full border border-primary/20 bg-primary/10 px-4 py-2">
+              <p className="font-mono text-xs font-bold tracking-wider text-primary">
+                {code}
+              </p>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // ─── Earnings Hero ────────────────────────────────────────────────────────────
 
@@ -133,7 +398,7 @@ function EarningsHero({
   uses: number;
   maxUses: number;
   code: string;
-  perReferAmount:number;
+  perReferAmount: number;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -162,7 +427,6 @@ function EarningsHero({
             "linear-gradient(135deg, oklch(0.6271 0.1699 149.2138) 0%, oklch(0.4104 0.1066 149.9393) 100%)",
         }}
       >
-        {/* Decorative circles */}
         <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10 pointer-events-none" />
         <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-white/[0.08] pointer-events-none" />
         <div className="absolute top-4 right-20 w-10 h-10 rounded-full bg-white/10 pointer-events-none" />
@@ -197,7 +461,7 @@ function EarningsHero({
               className="text-base font-bold text-white"
               style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
             >
-              {uses}
+              {uses}/{maxUses}
             </p>
           </div>
           <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
@@ -248,60 +512,62 @@ function EarningsHero({
   );
 }
 
-// ─── Share row ────────────────────────────────────────────────────────────────
+// ─── Share Row ────────────────────────────────────────────────────────────────
 
 function ShareRow({ code }: { code: string }) {
-  const msg = getReferralShareMessage(code);
-  const url = getReferralUrl(code);
-  const [linkCopied, setLinkCopied] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
 
-  function copyLink() {
-    navigator.clipboard.writeText(msg).catch(() => {});
-    setLinkCopied(true);
-    setTimeout(() => setLinkCopied(false), 1800);
+  const url = getReferralUrl(code);
+  const shareMessage = getReferralShareMessage(code);
+
+  async function handleShare() {
+    if (
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function"
+    ) {
+      try {
+        await navigator.share({
+          title: "Candian's Cart",
+          text: shareMessage,
+          url,
+        });
+        return;
+      } catch {
+        // user cancelled or native share failed — fall through
+      }
+    }
+    setSheetOpen(true);
   }
 
-  const btns = [
-    {
-      label: linkCopied ? "Copied" : "Link",
-      icon: linkCopied ? <Check size={13} /> : <Share2 size={13} />,
-      fn: copyLink,
-    },
-    {
-      label: "WhatsApp",
-      icon: (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.122 1.535 5.857L.057 23.215a.75.75 0 00.916.948l5.453-1.43A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.713 9.713 0 01-4.96-1.357l-.355-.212-3.683.966.983-3.588-.232-.369A9.722 9.722 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z" />
-        </svg>
-      ),
-      fn: () =>
-        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank"),
-    },
-    {
-      label: "Email",
-      icon: <Mail size={13} />,
-      fn: () => {
-        window.location.href = `mailto:?subject=${encodeURIComponent(
-          "Join Canadian Cart"
-        )}&body=${encodeURIComponent(msg)}`;
-      },
-    },
-  ];
-
   return (
-    <div className="flex gap-2">
-      {btns.map(({ label, icon, fn }) => (
+    <>
+      <div className="flex gap-2">
         <button
-          key={label}
-          onClick={fn}
+          onClick={handleShare}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-xs font-semibold text-muted-foreground bg-background transition-all active:scale-95 hover:bg-primary/5 hover:border-primary/40 hover:text-primary"
         >
-          {icon}
-          {label}
+          <Share2 size={13} />
+          Share
         </button>
-      ))}
-    </div>
+
+        <button
+          onClick={() => setQrOpen(true)}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-xs font-semibold text-muted-foreground bg-background transition-all active:scale-95 hover:bg-primary/5 hover:border-primary/40 hover:text-primary"
+        >
+          <QrCode size={13} />
+          QR Code
+        </button>
+      </div>
+
+      <ShareSheetDialog
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        code={code}
+      />
+
+      <QRDialog open={qrOpen} onClose={() => setQrOpen(false)} code={code} />
+    </>
   );
 }
 
@@ -465,7 +731,13 @@ function UsageStats({
 
 // ─── Ghost Row ────────────────────────────────────────────────────────────────
 
-function GhostRow({ style,ReferAmount }: { style?: React.CSSProperties,ReferAmount:number }) {
+function GhostRow({
+  style,
+  ReferAmount,
+}: {
+  style?: React.CSSProperties;
+  ReferAmount: number;
+}) {
   return (
     <div className="flex items-center gap-3 py-3 px-2 -mx-2" style={style}>
       <div className="h-10 w-10 shrink-0 rounded-full bg-muted/60 border-2 border-dashed border-border/60" />
@@ -489,7 +761,7 @@ function UsedByList({
 }: {
   usedBy: ReferralUsedBy[];
   maxUses: number;
-  perReferAmount:number;
+  perReferAmount: number;
 }) {
   const months = groupByMonth(usedBy);
   const [page, setPage] = useState(0);
@@ -500,7 +772,6 @@ function UsedByList({
     year: "numeric",
   });
 
-  // Empty state — all ghosts
   if (usedBy.length === 0) {
     return (
       <div>
@@ -510,16 +781,14 @@ function UsedByList({
             key={i}
             style={{
               borderTop:
-                i > 0
-                  ? "1px solid hsl(var(--border) / 0.5)"
-                  : undefined,
+                i > 0 ? "1px solid hsl(var(--border) / 0.5)" : undefined,
             }}
           />
         ))}
         {remainingSlots > 5 && (
           <p className="text-[10px] text-center text-muted-foreground/50 pt-3">
-            +{remainingSlots - 5} more open spots · CA${remainingSlots * perReferAmount}{" "}
-            left to earn
+            +{remainingSlots - 5} more open spots · CA$
+            {remainingSlots * perReferAmount} left to earn
           </p>
         )}
       </div>
@@ -535,7 +804,6 @@ function UsedByList({
   return (
     <TooltipProvider delayDuration={0}>
       <div>
-        {/* Month nav */}
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => setPage((p) => p - 1)}
@@ -575,7 +843,6 @@ function UsedByList({
           </button>
         </div>
 
-        {/* Pagination dots */}
         {months.length > 1 && (
           <div className="flex justify-center gap-1.5 mb-4">
             {months.map((_, i) => (
@@ -596,7 +863,6 @@ function UsedByList({
           </div>
         )}
 
-        {/* Rows */}
         <div className="flex flex-col">
           {current.items.map((u, i) => (
             <div
@@ -604,9 +870,7 @@ function UsedByList({
               className="flex items-center gap-3 py-3 px-2 -mx-2 rounded-xl transition-colors hover:bg-muted/40"
               style={{
                 borderTop:
-                  i > 0
-                    ? "1px solid hsl(var(--border) / 0.5)"
-                    : undefined,
+                  i > 0 ? "1px solid hsl(var(--border) / 0.5)" : undefined,
               }}
             >
               <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20 rounded-full">
@@ -655,11 +919,10 @@ function UsedByList({
             </div>
           ))}
 
-          {/* Ghost slots for current month */}
           {ghostsForMonth > 0 &&
             Array.from({ length: ghostsForMonth }).map((_, i) => (
               <GhostRow
-              ReferAmount={perReferAmount}
+                ReferAmount={perReferAmount}
                 key={`ghost-${i}`}
                 style={{ borderTop: "1px solid hsl(var(--border) / 0.5)" }}
               />
@@ -676,7 +939,13 @@ const PROMPTED_KEY = "referral_invite_prompted";
 
 // ─── Referral Invite Modal ────────────────────────────────────────────────────
 
-export function ReferralInviteModal({ initial,perReferAmount }: { initial: boolean,perReferAmount:number }) {
+export function ReferralInviteModal({
+  initial,
+  perReferAmount,
+}: {
+  initial: boolean;
+  perReferAmount: number;
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -691,7 +960,7 @@ export function ReferralInviteModal({ initial,perReferAmount }: { initial: boole
     await setReferralInvites(enabled);
     localStorage.setItem(PROMPTED_KEY, "1");
     setLoading(false);
-    setOpen(false);
+    setTimeout(() => setOpen(false), 0);
   }
 
   return (
@@ -714,34 +983,32 @@ export function ReferralInviteModal({ initial,perReferAmount }: { initial: boole
             >
               Let referrals find you
             </DialogTitle>
-
-            <DialogDescription className="text-sm leading-6">
-              Instead of sharing your referral code yourself, users can send
-              <span className="font-medium text-foreground">
-                {" "}
-                you referral requests
-              </span>
-              . Review each request and choose whether to accept it.
-            </DialogDescription>
           </DialogHeader>
+
+          <p className="text-sm leading-6 text-muted-foreground text-center mt-2">
+            Instead of sharing your referral code yourself, users can send
+            <span className="font-medium text-foreground">
+              {" "}
+              you referral requests
+            </span>
+            . Review each request and choose whether to accept it.
+          </p>
 
           <div className="mt-6 space-y-3 rounded-2xl border bg-muted/30 p-4">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
               <p className="text-sm">
-                You stay in control : accept or decline every request.
+                You stay in control — accept or decline every request.
               </p>
             </div>
-
             <div className="flex items-center gap-3">
               <Gift className="h-4 w-4 text-primary shrink-0" />
               <p className="text-sm">
                 Earn the same{" "}
-                <span className="font-semibold">CA${perReferAmount}</span> reward for every
-                successful referral.
+                <span className="font-semibold">CA${perReferAmount}</span>{" "}
+                reward for every successful referral.
               </p>
             </div>
-
             <div className="flex items-center gap-3">
               <Repeat2 className="h-4 w-4 text-primary shrink-0" />
               <p className="text-sm">
@@ -759,7 +1026,6 @@ export function ReferralInviteModal({ initial,perReferAmount }: { initial: boole
             >
               Maybe later
             </Button>
-
             <Button
               disabled={loading}
               onClick={() => handle(true)}
@@ -810,7 +1076,6 @@ export function ReferralSettingsToggle({ initial }: { initial: boolean }) {
         sideOffset={8}
         className="w-64 p-0 rounded-2xl border-border/60 shadow-xl overflow-hidden"
       >
-        {/* Header */}
         <div className="px-4 py-3 border-b border-border/60">
           <p
             className="text-xs font-black text-foreground"
@@ -820,7 +1085,6 @@ export function ReferralSettingsToggle({ initial }: { initial: boolean }) {
           </p>
         </div>
 
-        {/* Toggle row */}
         <div className="px-4 py-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
@@ -832,7 +1096,6 @@ export function ReferralSettingsToggle({ initial }: { initial: boolean }) {
                 your code manually.
               </p>
             </div>
-
             <Switch
               checked={enabled}
               onCheckedChange={toggle}
@@ -842,7 +1105,6 @@ export function ReferralSettingsToggle({ initial }: { initial: boolean }) {
             />
           </div>
 
-          {/* Status label */}
           <p
             className="mt-3 text-[10px] font-semibold"
             style={{
@@ -870,7 +1132,10 @@ export function ReferralPageClient({
 
   return (
     <div className="min-h-screen w-full bg-background">
-      <ReferralInviteModal initial={userData.recieveReferralInvites} perReferAmount={userData.perReferAmount} />
+      <ReferralInviteModal
+        initial={userData.recieveReferralInvites}
+        perReferAmount={userData.perReferAmount}
+      />
       <div
         className="relative mx-auto w-full px-4 pb-16 pt-8 sm:px-6 sm:pt-12"
         style={{ maxWidth: "520px" }}
@@ -892,17 +1157,18 @@ export function ReferralPageClient({
               <ReferralSettingsToggle
                 initial={userData.recieveReferralInvites}
               />
-              <Link href={"/customer/referrals/requests"} className="relative inline-flex">
+              <Link
+                href="/customer/referrals/requests"
+                className="relative inline-flex"
+              >
                 <Button
                   variant="outline"
                   size="icon"
                   className="h-8 w-8 rounded-xl border-border hover:border-primary/40 hover:bg-muted/40"
-                  aria-label="Referral settings"
+                  aria-label="Referral requests"
                 >
                   <Users size={15} className="text-muted-foreground" />
                 </Button>
-
-                {/* badge */}
                 {ReqCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
                     {ReqCount > 9 ? "9+" : ReqCount}
@@ -915,8 +1181,8 @@ export function ReferralPageClient({
             className="text-sm leading-relaxed text-muted-foreground"
             style={{ maxWidth: "380px" }}
           >
-            Earn CA${userData.perReferAmount} in gift credit for every friend who joins and places their
-            first order over CA$21.
+            Earn CA${userData.perReferAmount} in gift credit for every friend
+            who joins and places their first order over CA$21.
           </p>
         </div>
 

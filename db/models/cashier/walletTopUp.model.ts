@@ -5,6 +5,8 @@ export interface IWalletTopUp {
   userId: string;
   userRole: "admin" | "cashier";
   value: number; // in  cents
+  cashPaid:number;
+  cashDue:number;
   paymentMode: "cash" | "card" | "gift" | "referral"
 }
 
@@ -28,6 +30,18 @@ const walletTopUpSchema = new Schema<IWalletTopUp>(
     value: {
       type: Number, // in cents
       required: true,
+    },
+    cashPaid: {
+      type: Number,
+      required: true,
+      default:0,
+      min:0
+    },
+    cashDue:{
+      type: Number,
+      required: true,
+      default:0,
+      min:0
     },
     paymentMode: {
       type: String,

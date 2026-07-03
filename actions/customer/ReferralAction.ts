@@ -2,20 +2,20 @@
 
 import { dbConnect } from "@/db/dbConnect"
 import ReferralCode from "@/db/models/admin/referralCode.model";
-import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 import Customer from "@/db/models/customer/customer.model";
 import { getUserSession } from "../auth/getUserSession.actions";
+import { ReferralHistory } from "@/db/models/cashier/ReferralHistory.model";
 
-export const getReferral = async (referralId:string) =>{
-    try{
-        await dbConnect();
-        const referral = await ReferralCode.findById(referralId);
-        if(!referral) return {success:false,message:"Error fetching Referral",data:null}
-        return {success:true,message:"Referral Code Found",data:referral}
-    }catch(err){
-        console.log(err)
-        return {success:false,message:"Error fetching Referral",data:null}
-    }
+export const getReferral = async (referralId: string) => {
+  try {
+    await dbConnect();
+    const referral = await ReferralCode.findById(referralId);
+    if (!referral) return { success: false, message: "Error fetching Referral", data: null }
+    return { success: true, message: "Referral Code Found", data: referral }
+  } catch (err) {
+    console.log(err)
+    return { success: false, message: "Error fetching Referral", data: null }
+  }
 }
 
 export const getReferralUsed = async (referralId: string, customerId: string) => {
@@ -24,7 +24,7 @@ export const getReferralUsed = async (referralId: string, customerId: string) =>
 
     const [UsedBy, ReferralTopUps] = await Promise.all([
       Customer.find({ referralCodeId: referralId }).lean(),
-      WalletTopUp.find({ customerId: customerId, paymentMode: "referral" }).lean(),
+      ReferralHistory.find({ customerId }).lean(),
     ]);
 
     const totalEarned = ReferralTopUps.reduce((sum, t) => sum + (t.value ?? 0), 0);
@@ -33,7 +33,7 @@ export const getReferralUsed = async (referralId: string, customerId: string) =>
       success: true,
       data: {
         usedBy: UsedBy,
-        totalEarned, 
+        totalEarned,
       },
     };
   } catch (err) {
@@ -41,7 +41,6 @@ export const getReferralUsed = async (referralId: string, customerId: string) =>
     return { success: false, data: null };
   }
 };
-
 
 export async function setReferralInvites(enabled: boolean) {
   const session = await getUserSession();

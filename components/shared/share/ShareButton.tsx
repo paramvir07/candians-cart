@@ -1,22 +1,47 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Share2, QrCode, X } from "lucide-react";
+import { useState } from "react";
+import { Share2, QrCode, X, ChevronLeft, Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
+import { getReferralShareMessage, getReferralUrl } from "@/lib/shareMessage";
+import logoIcon from "@/app/icon.jpg";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const DEFAULT_URL = "https://www.canadianscart.ca";
 
-const getShareMessage = (
-  url: string,
-) => `🛒 FREE Milk, Atta & Ghee just for shopping groceries?! YES!
-Candian's Cart (CC) is NOW launching at Sunfarm Produce, Abbotsford BC! 🎉
+function getDefaultShareMessage(): string {
+  const url = 'www.canadianscart.ca/customer/signup?referralCode=WELCOMETOCC&heard=friend_or_family'
 
-🎁 Win a $500 Grocery Gift Card — One lucky member will take it home!
+  return `🛒 Candian's Cart (CC) is now live at Sunfarm Produce, Abbotsford, BC!
 
-📲 Sign Up TODAY with referral code: WELCOMETOCC
+🎁 Join & you could win a $500 grocery gift card
 
-📍 3670 Town Line Rd #108, Abbotsford, BC`;
+✨ Perks:
+• Free groceries like milk, atta & ghee on sign-up offers
+• Exclusive launch rewards for new members
+
+📲 Use referral code: ${'WELCOMETOCC'}
+
+📍 Location: 3670 Town Line Rd #108, Abbotsford, BC
+
+🔗 Sign up here: ${url}
+
+━━━━━━━━━━━━━━
+📢 Follow us for updates
+📸 Instagram: https://www.instagram.com/canadianscart
+📘 Facebook: https://www.facebook.com/canadianscart
+🎥 TikTok: https://vt.tiktok.com/ZSxjaYrjL/`;
+}
+
+// ─── Share app configs ────────────────────────────────────────────────────────
 
 interface AppConfig {
   label: string;
@@ -67,7 +92,7 @@ const APPS: AppConfig[] = [
     ),
     href: (_url, message) =>
       `mailto:?subject=${encodeURIComponent(
-        "Canadians Cart Grocery Giveaway",
+        "Candian's Cart Grocery Giveaway"
       )}&body=${encodeURIComponent(message)}`,
   },
   {
@@ -89,61 +114,224 @@ const APPS: AppConfig[] = [
   },
 ];
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 type ModalView = "picker" | "qr" | "share";
 
 interface ShareButtonProps {
   link?: string;
+  code?: string;
 }
 
-export default function ShareButton({ link }: ShareButtonProps) {
-  const url = link ?? DEFAULT_URL;
-  const shareMessage = getShareMessage(url);
+// ─── URL copy strip ───────────────────────────────────────────────────────────
 
-  const [open, setOpen] = useState(false);
-  const [view, setView] = useState<ModalView>("picker");
+function UrlCopyStrip({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
 
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setIsMobile(!!navigator.share);
-  }, []);
-
-  const openModal = (v: ModalView) => {
-    setView(v);
-    setOpen(true);
-  };
-
-  const closeModal = () => {
-    setOpen(false);
-
-    setTimeout(() => setView("picker"), 200);
-  };
-
-  const handleShare = async () => {
-    openModal("picker");
-  };
-
-  const handleNativeOrCustomShare = async () => {
-    if (isMobile) {
-      try {
-        await navigator.share({
-          title: "Canadians Cart Grocery Giveaway",
-          text: shareMessage,
-          url,
-        });
-      } catch {
-        setView("share");
-      }
-    } else {
-      setView("share");
+  async function copyUrl() {
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
     }
-  };
-
-  const copyLink = async () => {
-    await navigator.clipboard.writeText(shareMessage);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2">
+      <span className="flex-1 truncate font-mono text-xs text-muted-foreground w-0">
+        {url}
+      </span>
+      <Button
+        size="sm"
+        variant={copied ? "outline" : "default"}
+        className={
+          copied
+            ? "rounded-lg border-green-400 text-xs text-green-700 hover:bg-transparent"
+            : "rounded-lg bg-green-600 text-xs text-white hover:bg-green-700"
+        }
+        onClick={copyUrl}
+      >
+        {copied ? (
+          <span className="flex items-center gap-1">
+            <Check size={11} /> Copied
+          </span>
+        ) : (
+          <span className="flex items-center gap-1">
+            <Copy size={11} /> Copy
+          </span>
+        )}
+      </Button>
+    </div>
+  );
+}
+
+// ─── Picker view ──────────────────────────────────────────────────────────────
+
+function PickerView({
+  onQr,
+  onShare,
+}: {
+  onQr: () => void;
+  onShare: () => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-3 pt-2 pb-2">
+      <button
+        onClick={onQr}
+        className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-muted/40 p-5 transition-all hover:bg-muted/70 active:scale-95"
+      >
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-600">
+          <QrCode className="h-7 w-7" />
+        </span>
+        <span className="text-sm font-medium text-foreground">QR Code</span>
+        <span className="text-center text-xs leading-relaxed text-muted-foreground">
+          My <span className="font-bold">Referral QR code</span>
+        </span>
+      </button>
+
+      <button
+        onClick={onShare}
+        className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-muted/40 p-5 transition-all hover:bg-muted/70 active:scale-95"
+      >
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-600">
+          <Share2 className="h-7 w-7" />
+        </span>
+        <span className="text-sm font-medium text-foreground">Share Link</span>
+        <span className="text-center text-xs leading-relaxed text-muted-foreground">
+          Send <span className="font-bold">Referral</span> via app or copy
+          message
+        </span>
+      </button>
+    </div>
+  );
+}
+
+// ─── QR view ─────────────────────────────────────────────────────────────────
+
+function QrView({ url }: { url: string }) {
+  return (
+    <div className="flex flex-col items-center gap-5 pt-2 pb-2">
+      <div className="rounded-[1.5rem] border border-primary/20 bg-card p-3 shadow-sm">
+        <div className="rounded-2xl bg-white p-3">
+          <QRCodeSVG
+            value={url}
+            size={220}
+            fgColor="#07553f"
+            bgColor="#ffffff"
+            level="H"
+            marginSize={0}
+            imageSettings={{
+              src: logoIcon.src,
+              height: 44,
+              width: 44,
+              excavate: true,
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1 text-center">
+        <p className="text-sm font-semibold text-foreground">
+          Scan with your camera
+        </p>
+        <p className="max-w-[240px] text-xs leading-relaxed text-muted-foreground">
+          Point your phone camera at the code to open the referral link
+          instantly.
+        </p>
+      </div>
+
+      <div className="w-full">
+        <UrlCopyStrip url={url} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Share sheet view ─────────────────────────────────────────────────────────
+
+function ShareSheetView({
+  url,
+  shareMessage,
+}: {
+  url: string;
+  shareMessage: string;
+}) {
+  return (
+    <div className="flex flex-col gap-5 pt-2 pb-2">
+      <div className="flex justify-around">
+        {APPS.map((app) => (
+          <a
+            key={app.label}
+            href={app.href(url, shareMessage)}
+            target="_blank"
+            rel="noreferrer"
+            className="group flex flex-col items-center gap-1.5"
+          >
+            <span
+              className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110 active:scale-95"
+              style={{ background: app.bg }}
+            >
+              {app.icon}
+            </span>
+            <span className="text-[11px] text-muted-foreground">
+              {app.label}
+            </span>
+          </a>
+        ))}
+      </div>
+      <UrlCopyStrip url={url} />
+    </div>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+export default function ShareButton({ link, code }: ShareButtonProps) {
+  const url = link ?? DEFAULT_URL;
+
+  const shareMessage = code
+    ? getReferralShareMessage(code)
+    : getDefaultShareMessage();
+
+  const shareUrl = code ? getReferralUrl(code) : 'www.canadianscart.ca/customer/signup?referralCode=WELCOMETOCC&heard=friend_or_family';
+  const [open, setOpen] = useState(false);
+  const [view, setView] = useState<ModalView>("picker");
+
+
+  function handleClose() {
+    setOpen(false);
+    setTimeout(() => setView("picker"), 200);
+  }
+
+async function handleShareClick() {
+  if (typeof navigator !== "undefined" && navigator.share) {
+    try {
+      await navigator.share({
+        title: "Candian's Cart",
+        text: shareMessage,
+        url:shareUrl,
+      });
+      return;
+    } catch {
+   
+    }
+    return;
+  }
+
+  setView("share");
+}
+
+  const titles: Record<ModalView, string> = {
+    picker: "Share",
+    qr: "Referral Link",
+    share: "Share via",
   };
 
   return (
@@ -152,180 +340,57 @@ export default function ShareButton({ link }: ShareButtonProps) {
         size="icon"
         variant="outline"
         className="rounded-xl border-green-500 text-green-600 hover:bg-green-50"
-        onClick={handleShare}
+        onClick={() => setOpen(true)}
         aria-label="Share"
       >
         <Share2 className="h-4 w-4" />
       </Button>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm pb-[calc(env(safe-area-inset-bottom)+4rem)] sm:items-center sm:pb-0"
-          onClick={closeModal}
+      <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
+        <DialogContent
+          className="w-full max-w-sm rounded-2xl border border-border bg-background p-0 overflow-hidden gap-0
+            sm:rounded-2xl
+            max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:top-auto max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-t-3xl max-sm:rounded-b-none max-sm:max-w-full"
         >
-          <div
-            className="w-full overflow-hidden rounded-t-3xl border border-border bg-background shadow-2xl sm:max-w-sm sm:rounded-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 pb-3 pt-5">
-              <button
-                onClick={
-                  view !== "picker" ? () => setView("picker") : closeModal
-                }
-                className="-ml-1 p-1 text-muted-foreground transition-colors hover:text-foreground"
-                aria-label={view !== "picker" ? "Back" : "Close"}
-              >
-                {view !== "picker" ? (
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M19 12H5M12 5l-7 7 7 7" />
-                  </svg>
-                ) : (
-                  <X className="h-5 w-5" />
-                )}
-              </button>
+          {/* Header */}
+          <DialogHeader className="flex flex-row items-center justify-between px-5 pt-5 pb-3 space-y-0">
+            {/* Back / close */}
+            <button
+              onClick={
+                view !== "picker" ? () => setView("picker") : handleClose
+              }
+              className="-ml-1 p-1 text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={view !== "picker" ? "Back" : "Close"}
+            >
+              {view !== "picker" ? (
+                <ChevronLeft className="h-5 w-5" />
+              ) : (
+                <X className="h-5 w-5" />
+              )}
+            </button>
 
-              <p className="text-sm font-semibold text-foreground">
-                {view === "picker" && "Share"}
-                {view === "qr" && "QR Code"}
-                {view === "share" && "Share via"}
-              </p>
+            <DialogTitle className="text-lg font-bold text-foreground">
+              {titles[view]}
+            </DialogTitle>
 
-              <div className="w-7" />
-            </div>
+            <div className="w-7" />
+          </DialogHeader>
 
-            {/* Picker view */}
+          {/* Body */}
+          <div className="px-5 pb-8">
             {view === "picker" && (
-              <div className="grid grid-cols-2 gap-3 px-5 pb-8 pt-2">
-                <button
-                  onClick={() => setView("qr")}
-                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-muted/40 p-5 transition-all hover:bg-muted/70 active:scale-95"
-                >
-                  <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-600">
-                    <QrCode className="h-7 w-7" />
-                  </span>
-
-                  <span className="text-sm font-medium text-foreground">
-                    QR Code
-                  </span>
-
-                  <span className="text-center text-xs leading-relaxed text-muted-foreground">
-                    Scan to open on another device
-                  </span>
-                </button>
-
-                <button
-                  onClick={handleNativeOrCustomShare}
-                  className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-muted/40 p-5 transition-all hover:bg-muted/70 active:scale-95"
-                >
-                  <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-600">
-                    <Share2 className="h-7 w-7" />
-                  </span>
-
-                  <span className="text-sm font-medium text-foreground">
-                    Share Link
-                  </span>
-
-                  <span className="text-center text-xs leading-relaxed text-muted-foreground">
-                    Send via apps or copy message
-                  </span>
-                </button>
-              </div>
+              <PickerView
+                onQr={() => setView("qr")}
+                onShare={handleShareClick}
+              />
             )}
-
-            {/* QR Code view */}
-            {view === "qr" && (
-              <div className="flex flex-col items-center gap-5 px-5 pb-8 pt-2">
-                <div className="rounded-2xl border border-border bg-white p-5 shadow-inner">
-                  <QRCodeSVG value={url} size={200} />
-                </div>
-
-                <div className="space-y-1 text-center">
-                  <p className="text-sm font-medium text-foreground">
-                    Scan with your camera
-                  </p>
-
-                  <p className="max-w-[220px] text-xs leading-relaxed text-muted-foreground">
-                    Point your phone camera at the code to open the link
-                    instantly
-                  </p>
-                </div>
-
-                <div className="flex w-full items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2">
-                  <span className="flex-1 truncate font-mono text-xs text-muted-foreground">
-                    {url}
-                  </span>
-
-                  <Button
-                    size="sm"
-                    className={
-                      copied
-                        ? "rounded-lg border border-green-400 bg-green-100 text-xs text-green-700 hover:bg-green-100"
-                        : "rounded-lg bg-green-600 text-xs text-white hover:bg-green-700"
-                    }
-                    onClick={copyLink}
-                  >
-                    {copied ? "Copied!" : "Copy"}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Custom share sheet */}
+            {view === "qr" && <QrView url={shareUrl} />}
             {view === "share" && (
-              <div className="flex flex-col gap-5 px-5 pb-8 pt-2">
-                <div className="flex justify-around">
-                  {APPS.map((app) => (
-                    <a
-                      key={app.label}
-                      href={app.href(url, shareMessage)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group flex flex-col items-center gap-1.5"
-                    >
-                      <span
-                        className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110"
-                        style={{ background: app.bg }}
-                      >
-                        {app.icon}
-                      </span>
-
-                      <span className="text-[11px] text-muted-foreground">
-                        {app.label}
-                      </span>
-                    </a>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2">
-                  <span className="flex-1 truncate font-mono text-xs text-muted-foreground">
-                    {url}
-                  </span>
-
-                  <Button
-                    size="sm"
-                    className={
-                      copied
-                        ? "rounded-lg border border-green-400 bg-green-100 text-xs text-green-700 hover:bg-green-100"
-                        : "rounded-lg bg-green-600 text-xs text-white hover:bg-green-700"
-                    }
-                    onClick={copyLink}
-                  >
-                    {copied ? "Copied!" : "Copy"}
-                  </Button>
-                </div>
-              </div>
+              <ShareSheetView url={url} shareMessage={shareMessage} />
             )}
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

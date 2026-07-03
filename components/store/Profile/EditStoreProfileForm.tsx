@@ -27,7 +27,9 @@ import { Button } from "@/components/ui/button";
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 function minsToTime(mins: number): string {
-  const h = Math.floor(mins / 60).toString().padStart(2, "0");
+  const h = Math.floor(mins / 60)
+    .toString()
+    .padStart(2, "0");
   const m = (mins % 60).toString().padStart(2, "0");
   return `${h}:${m}`;
 }
@@ -38,13 +40,13 @@ function timeToMins(time: string): number {
 }
 
 const DAYS = [
-  { key: "mon", label: "Monday",    short: "Mon" },
-  { key: "tue", label: "Tuesday",   short: "Tue" },
+  { key: "mon", label: "Monday", short: "Mon" },
+  { key: "tue", label: "Tuesday", short: "Tue" },
   { key: "wed", label: "Wednesday", short: "Wed" },
-  { key: "thu", label: "Thursday",  short: "Thu" },
-  { key: "fri", label: "Friday",    short: "Fri" },
-  { key: "sat", label: "Saturday",  short: "Sat" },
-  { key: "sun", label: "Sunday",    short: "Sun" },
+  { key: "thu", label: "Thursday", short: "Thu" },
+  { key: "fri", label: "Friday", short: "Fri" },
+  { key: "sat", label: "Saturday", short: "Sat" },
+  { key: "sun", label: "Sunday", short: "Sun" },
 ] as const;
 
 type DayKey = (typeof DAYS)[number]["key"];
@@ -196,7 +198,9 @@ function HoursSummary({
               >
                 <span
                   className={
-                    r ? "text-foreground font-medium" : "text-muted-foreground/35"
+                    r
+                      ? "text-foreground font-medium"
+                      : "text-muted-foreground/35"
                   }
                 >
                   {day.short}
@@ -264,7 +268,7 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
         result[d.key] = arr && arr.length > 0 ? arr[0] : null;
       }
       return result;
-    })()
+    })(),
   );
 
   const [fields, setFields] = useState({ ...initialRef.current });
@@ -307,11 +311,22 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
     const trimmedAddress = fields.address.trim();
     const trimmedMobile = fields.mobile.trim();
 
-    if (!trimmedName) { toast.error("Store name cannot be empty."); return; }
-    if (!trimmedAddress) { toast.error("Address cannot be empty."); return; }
-    if (!trimmedMobile) { toast.error("Phone number cannot be empty."); return; }
+    if (!trimmedName) {
+      toast.error("Store name cannot be empty.");
+      return;
+    }
+    if (!trimmedAddress) {
+      toast.error("Address cannot be empty.");
+      return;
+    }
+    if (!trimmedMobile) {
+      toast.error("Phone number cannot be empty.");
+      return;
+    }
     if (!/^\d{10}$/.test(trimmedMobile)) {
-      toast.error("Phone number must be exactly 10 digits (no spaces or letters).");
+      toast.error(
+        "Phone number must be exactly 10 digits (no spaces or letters).",
+      );
       return;
     }
     if (isDisabled) return;
@@ -328,7 +343,11 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
       try {
         const result = await editStoreProfile(payload);
         if (result.success) {
-          initialRef.current = { name: trimmedName, address: trimmedAddress, mobile: trimmedMobile };
+          initialRef.current = {
+            name: trimmedName,
+            address: trimmedAddress,
+            mobile: trimmedMobile,
+          };
           initialHoursRef.current = { ...hours };
           setSaveVersion((v) => v + 1);
           toast.success(result.message ?? "Store updated successfully");
@@ -349,7 +368,7 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
         .join("")
         .toUpperCase()
         .slice(0, 2),
-    [fields.name]
+    [fields.name],
   );
 
   const openDaysCount = DAYS.filter((d) => hours[d.key] !== null).length;
@@ -522,8 +541,8 @@ export default function EditStorePage({ Data }: { Data: IStore }) {
                   {isPending
                     ? "Saving changes…"
                     : isDirty
-                    ? "You have unsaved changes"
-                    : "No changes made"}
+                      ? "You have unsaved changes"
+                      : "No changes made"}
                 </span>
               </div>
               <SaveButton

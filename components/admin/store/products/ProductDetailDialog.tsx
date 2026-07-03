@@ -97,6 +97,13 @@ export const ProductDetailDialog = ({
           </button>
 
           {hasImage ? (
+
+            <>
+              <img
+              src={`https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo-abb.png`}
+              alt="Logo"
+              className="absolute bottom-2 right-5 w-8 h-8 object-contain z-20"
+            />            
             <Image
               src={product.images[0].url}
               alt={product.name}
@@ -104,6 +111,7 @@ export const ProductDetailDialog = ({
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 672px"
             />
+            </>
           ) : (
             <CategoryIllustration
               category={product.category}

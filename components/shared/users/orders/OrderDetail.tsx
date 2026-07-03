@@ -40,11 +40,31 @@ export default function OrderDetail({
   const subsidyProducts = (order.subsidyItems ?? []).filter((item: any) => item.productId != null);
   const miscProducts = order.miscItems ?? [];
 
-  const allProducts = [
+  const rawItems = [
     ...normalProducts.map((item: any) => ({ ...item, __type: "normal" })),
     ...subsidyProducts.map((item: any) => ({ ...item, __type: "subsidy" })),
     ...miscProducts.map((item: any) => ({ ...item, __type: "misc" })),
   ];
+
+  const PINNED_LAST_IDS = ["6a2f51207f6cc4d79650b794", "6a2f51897f6cc4d79650b796"];
+
+  const isPinned = (item: any) =>
+    PINNED_LAST_IDS.includes(item.productId?._id?.toString());
+
+  const nonSubsidisedAll = rawItems
+    .filter((i: any) => !i.productId?.subsidised)
+    .reverse();
+
+  const nonSubsidisedPinned = nonSubsidisedAll.filter(isPinned);
+  const nonSubsidisedRest = nonSubsidisedAll.filter((i: any) => !isPinned(i));
+
+  const nonSubsidised = [...nonSubsidisedRest, ...nonSubsidisedPinned];
+
+  const subsidised = rawItems
+    .filter((i: any) => i.productId?.subsidised)
+    .reverse();
+
+  const allProducts = [...nonSubsidised, ...subsidised];
   const PlatformFee = 50;
   const subtotal = cartTotal - totalGST - totalPST - totalFee - PlatformFee;
 

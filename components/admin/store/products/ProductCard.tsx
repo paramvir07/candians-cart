@@ -36,6 +36,7 @@ import {
   availableProduct,
   featuredProduct,
 } from "@/actions/common/FeaturedProduct.action";
+import Logo from "@/components/shared/Logo";
 
 export type ProductCardRole = "admin" | "store" | "customer";
 
@@ -170,7 +171,7 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
         <button
           type="button"
           onClick={() => setDialogOpen(true)}
-          className="relative aspect-4/3 bg-muted overflow-hidden w-full shrink-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="relative aspect-4/3 bg-white overflow-hidden w-full shrink-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={`View details for ${product.name}`}
         >
           {!product.stock && (
@@ -226,14 +227,21 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
           </div>
 
           {hasImage ? (
-            <Image
-              src={product.images[0].url}
-              alt={product.name}
-              fill
-              onError={() => setImgError(true)}
-              className="object-contain group-hover:scale-105 transition-transform duration-500"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            <>
+             <img
+              src={`https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo-abb.png`}
+              alt="Logo"
+              className="absolute bottom-2 right-5 w-8 h-8 object-contain z-20"
             />
+          <Image
+            src={product.images[0].url}
+            alt={product.name}
+            fill
+            onError={() => setImgError(true)}
+            className="object-contain group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+            </>
           ) : (
             <CategoryIllustration
               category={product.category}

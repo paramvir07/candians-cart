@@ -134,6 +134,11 @@ export function TopUpDialog({
     }
   };
 
+  let cashDue:number;
+  if (amount && cashReceived !== null && changeDue !== null) {
+    cashDue  = Math.round(Math.round(changeDue * 100) / 5) * 5 / 100;
+    // console.log("Cash Due : ", cashDue);
+  }
   const handleCheckout = async () => {
     if (!amount) return;
     if (!cashReceivedIsValid) {
@@ -148,6 +153,8 @@ export function TopUpDialog({
           customerId,
           "gift",
           Math.round(amount * 100),
+          Math.round((cashReceived ?? 0) * 100),
+          Math.round((cashDue ?? 0) * 100),
           "admin",
         );
         if (response.success) {
@@ -162,6 +169,8 @@ export function TopUpDialog({
           customerId,
           paymentMode,
           Math.round(amount * 100),
+          Math.round((cashReceived ?? 0) * 100),
+          Math.round((cashDue ?? 0) * 100),
           "cashier",
         );
         if (response.success) {

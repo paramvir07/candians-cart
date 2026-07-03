@@ -5,10 +5,12 @@ export interface ICategorySaleDetail {
   productName: string;
   sales: number;
   date: string; // UTC ISO string
+  isMeasuredInWeight: boolean;
 }
 
 export interface ICategorySales {
   category: ProductCategory;
   totalSales: number;
   details: ICategorySaleDetail[];
+  isMeasuredInWeight: boolean;
 }

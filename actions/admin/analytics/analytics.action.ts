@@ -6,6 +6,8 @@ import productsModel from "@/db/models/store/products.model";
 import Customer from "@/db/models/customer/customer.model";
 import Store from "@/db/models/store/store.model";
 import storePayoutsModel from "@/db/models/admin/storePayouts.model";
+import { getAnalyticsBoundaries } from "@/lib/timezone";
+import { toZonedTime } from "date-fns-tz";
 
 const MONTHS = [
   "Jan",
@@ -75,11 +77,27 @@ interface PayoutAggResult {
   platformCommision: number;
 }
 
+interface AllOrderStatsResult {
+  totalCartTotal: number;
+  totalSubsidy: number;
+  totalSubsidyUsed: number;
+  totalOrders: number;
+  platformProfit: number;
+}
+
+interface MonthlyRevAggResult {
+  totalCartTotal: number;
+  totalSubsidy: number;
+  totalSubsidyUsed: number;
+  profit: number;
+}
+
 export async function getOverviewStats(): Promise<OverviewStats> {
   await dbConnect();
+  const { utcStartOfThisMonth, utcStartOfLastMonth } = getAnalyticsBoundaries();
 
-  const thisMonthStart = startOfMonth(0);
-  const lastMonthStart = startOfMonth(1);
+  const thisMonthStart = utcStartOfThisMonth;
+  const lastMonthStart = utcStartOfLastMonth;
   const lastMonthEnd = new Date(thisMonthStart.getTime() - 1);
 
   const [
@@ -96,16 +114,19 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     totalProducts,
     subsidyAgg,
     payoutAgg,
+    // Maintained trailing promises from original execution flow
+    thisMonthPlatformProfitAgg,
+    lastMonthPlatformProfitAgg,
   ] = await Promise.all([
-    // Total revenue (all-time, completed orders) = cartTotal + subsidy
-    OrderModel.aggregate([
+    // Total revenue metrics (all-time, completed orders)
+    OrderModel.aggregate<AllOrderStatsResult>([
       { $match: { status: "completed" } },
       {
         $group: {
           _id: null,
-          totalRevenue: {
-            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
-          },
+          totalCartTotal: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
           totalOrders: { $sum: 1 },
           platformProfit: { $sum: "$platformProfit" },
         },
@@ -114,20 +135,22 @@ export async function getOverviewStats(): Promise<OverviewStats> {
 
     OrderModel.countDocuments({ status: "pending" }),
 
-    OrderModel.aggregate([
+    // This Month revenue metrics
+    OrderModel.aggregate<MonthlyRevAggResult>([
       { $match: { status: "completed", createdAt: { $gte: thisMonthStart } } },
       {
         $group: {
           _id: null,
-          total: {
-            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
-          },
+          totalCartTotal: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
           profit: { $sum: "$platformProfit" },
         },
       },
     ]),
 
-    OrderModel.aggregate([
+    // Last Month revenue metrics
+    OrderModel.aggregate<MonthlyRevAggResult>([
       {
         $match: {
           status: "completed",
@@ -137,9 +160,9 @@ export async function getOverviewStats(): Promise<OverviewStats> {
       {
         $group: {
           _id: null,
-          total: {
-            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
-          },
+          totalCartTotal: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
           profit: { $sum: "$platformProfit" },
         },
       },
@@ -163,7 +186,6 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     Store.countDocuments(),
     productsModel.countDocuments(),
 
-    // Subsidy Given logic updated to grab straight from the `subsidy` field
     OrderModel.aggregate([
       { $match: { status: "completed" } },
       { $group: { _id: null, total: { $sum: "$subsidy" } } },
@@ -192,17 +214,39 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     ]),
   ]);
 
-  const totalRevenue = allOrderStats[0]?.totalRevenue ?? 0;
-  const completedOrders = allOrderStats[0]?.totalOrders ?? 0;
-  const platformProfit = allOrderStats[0]?.platformProfit ?? 0;
-  const totalOrders = completedOrders + pendingOrders;
+  // ── All-Time Revenue Flow ──
+  const rawAllStats = allOrderStats[0];
+  const allTimeCustomerPaid = rawAllStats?.totalCartTotal ?? 0;
+  const allTimeSubsidy = rawAllStats?.totalSubsidy ?? 0;
+  const allTimeSubsidyUsed = rawAllStats?.totalSubsidyUsed ?? 0;
+  
+  const allTimePaidAfterSubsidy = allTimeCustomerPaid - (allTimeSubsidy - allTimeSubsidyUsed);
+  const totalRevenue = allTimePaidAfterSubsidy + allTimeSubsidy;
 
+  const completedOrders = rawAllStats?.totalOrders ?? 0;
+  const platformProfit = rawAllStats?.platformProfit ?? 0;
+  const totalOrders = completedOrders + pendingOrders;
   const platformFee = totalOrders * 50;
 
-  const revenueThisMonth = thisMonthRevAgg[0]?.total ?? 0;
-  const revenueLastMonth = lastMonthRevAgg[0]?.total ?? 0;
-  const profitThisMonth = thisMonthRevAgg[0]?.profit ?? 0;
-  const profitLastMonth = lastMonthRevAgg[0]?.profit ?? 0;
+  // ── This Month Revenue Flow ──
+  const rawThisMonth = thisMonthRevAgg[0];
+  const thisMonthCustomerPaid = rawThisMonth?.totalCartTotal ?? 0;
+  const thisMonthSubsidy = rawThisMonth?.totalSubsidy ?? 0;
+  const thisMonthSubsidyUsed = rawThisMonth?.totalSubsidyUsed ?? 0;
+  
+  const thisMonthPaidAfterSubsidy = thisMonthCustomerPaid - (thisMonthSubsidy - thisMonthSubsidyUsed);
+  const revenueThisMonth = thisMonthPaidAfterSubsidy + thisMonthSubsidy;
+  const profitThisMonth = rawThisMonth?.profit ?? 0;
+
+  // ── Last Month Revenue Flow ──
+  const rawLastMonth = lastMonthRevAgg[0];
+  const lastMonthCustomerPaid = rawLastMonth?.totalCartTotal ?? 0;
+  const lastMonthSubsidy = rawLastMonth?.totalSubsidy ?? 0;
+  const lastMonthSubsidyUsed = rawLastMonth?.totalSubsidyUsed ?? 0;
+  
+  const lastMonthPaidAfterSubsidy = lastMonthCustomerPaid - (lastMonthSubsidy - lastMonthSubsidyUsed);
+  const revenueLastMonth = lastMonthPaidAfterSubsidy + lastMonthSubsidy;
+  const profitLastMonth = rawLastMonth?.profit ?? 0;
 
   return {
     platformProfit,
@@ -427,16 +471,24 @@ export interface RevenueTrendPoint {
   orders: number;
 }
 
+const STORE_TIMEZONE = "America/Vancouver";
+
 export async function getRevenueTrend(): Promise<RevenueTrendPoint[]> {
   await dbConnect();
-  const now = new Date();
-  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  const { utcStartOfThisMonth } = getAnalyticsBoundaries();
+  const zonedNow = toZonedTime(utcStartOfThisMonth, STORE_TIMEZONE);
+  const twelveMonthsAgo = getAnalyticsBoundaries(
+    new Date(zonedNow.getFullYear(), zonedNow.getMonth() - 11, 1),
+  ).utcStartOfThisMonth;
 
   const data = await OrderModel.aggregate([
     { $match: { status: "completed", createdAt: { $gte: twelveMonthsAgo } } },
     {
       $group: {
-        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+        _id: {
+          year: { $year: { date: "$createdAt", timezone: STORE_TIMEZONE } },
+          month: { $month: { date: "$createdAt", timezone: STORE_TIMEZONE } },
+        },
         revenue: { $sum: "$cartTotal" },
         orders: { $sum: 1 },
       },
@@ -444,6 +496,7 @@ export async function getRevenueTrend(): Promise<RevenueTrendPoint[]> {
     { $sort: { "_id.year": 1, "_id.month": 1 } },
   ]);
 
+  const now = zonedNow;
   const map = new Map<string, { revenue: number; orders: number }>();
   for (let i = 11; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -479,8 +532,11 @@ export interface ProfitTrendPoint {
 
 export async function getProfitTrend(): Promise<ProfitTrendPoint[]> {
   await dbConnect();
-  const now = new Date();
-  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  const { utcStartOfThisMonth } = getAnalyticsBoundaries();
+  const zonedNow = toZonedTime(utcStartOfThisMonth, STORE_TIMEZONE);
+  const twelveMonthsAgo = getAnalyticsBoundaries(
+    new Date(zonedNow.getFullYear(), zonedNow.getMonth() - 11, 1),
+  ).utcStartOfThisMonth;
 
   const data = await OrderModel.aggregate([
     { $match: { status: "completed", createdAt: { $gte: twelveMonthsAgo } } },
@@ -496,7 +552,7 @@ export async function getProfitTrend(): Promise<ProfitTrendPoint[]> {
 
   const map = new Map<string, { profit: number; orders: number }>();
   for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(zonedNow.getFullYear(), zonedNow.getMonth() - i, 1);
     map.set(`${d.getFullYear()}-${d.getMonth() + 1}`, {
       profit: 0,
       orders: 0,

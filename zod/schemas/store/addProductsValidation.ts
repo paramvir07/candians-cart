@@ -14,12 +14,21 @@ export const InvoiceFormSchema = z.object({
   }),
 });
 
+const titleCase = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+    
 export const BaseProductFormSchema = z.object({
   name: z
     .string()
     .trim()
     .min(3, "Product name must be at least 3 characters long")
-    .max(100, "Product name must be less than 100 characters long"),
+    .max(100, "Product name must be less than 100 characters long")
+    .transform(titleCase),
 
   description: z.string().trim(),
 

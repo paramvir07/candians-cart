@@ -18,8 +18,9 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import "@/db/models/customer/MiscItem.model";
 import ReferralCode from "@/db/models/admin/referralCode.model";
-import { Cashier } from "@/db/models/cashier/cashier.model";
-import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
+import { revalidateCustomerCache } from "@/actions/cache/user.cache";
+import { ReferralHistory } from "@/db/models/cashier/ReferralHistory.model";
+import { ReloadCartpusher } from "@/actions/pusher/pusherAction";
 
 export const AddtoCart = async (
   ItemId: string,
@@ -70,6 +71,7 @@ export const AddtoCart = async (
       });
     }
     await existingCart.save();
+    await ReloadCartpusher();
     revalidatePath("/customer/cart")
     revalidatePath(`/cashier/customer/${user._id}/cart`)
 
@@ -194,6 +196,7 @@ export const UpdateItemQuantity = async (
 
   await cart.save();
 
+  await ReloadCartpusher();
   revalidatePath("/customer/cart");
 
   return { success: true, message: "Cart quantity updated" };
@@ -231,7 +234,6 @@ export const IncrementItem = async (
   }
 
   await cart.save();
-
   revalidatePath("/customer/cart");
 };
 
@@ -304,6 +306,7 @@ export const RemoveItem = async (
   ) {
     await CartModel.findOneAndDelete({ customerId: user._id });
   }
+  await ReloadCartpusher();
   revalidatePath("/customer/cart");
 };
 
@@ -396,21 +399,6 @@ export const PlaceOrder = async ({
     const cashierId = receivedCustomerId ? authSession.user.id : undefined;
     const walletPayment = paymentMode === "wallet";
 
-    // const pendingOrder = await OrderModel.findOne({
-    //   userId: customerId,
-    //   status: "pending",
-    // }).session(session);
-
-    // if (pendingOrder) {
-    //   await session.abortTransaction();
-    //   return {
-    //     success: false,
-    //     message: receivedCustomerId
-    //       ? "This customer already has a pending order. Complete or cancel it first to continue."
-    //       : "You already have a pending order. Complete or cancel it first to continue.",
-    //   };
-    // }
-
     const User = await Customer.findById(customerId).session(session);
     if (!User) {
       await session.abortTransaction();
@@ -431,7 +419,6 @@ export const PlaceOrder = async ({
     const SubItems = customerCart.subsidyItems;
     const MiscItems = customerCart.miscItems;
 
-    // console.log(MiscItems)
     let baseTotal = 0;
     let TotalUsedSubsidy = 0;
 
@@ -465,33 +452,33 @@ export const PlaceOrder = async ({
       };
     });
 
-  const subsidyItems = SubItems.map((item) => {
-    const product = item.productId as unknown as IProduct;
-    const disposableFee = (product.disposableFee ?? 0) * item.quantity;
-    const fullPriceWithDisposable = item.TotalPrice * item.quantity;
-    const priceForTax = fullPriceWithDisposable - disposableFee;
-    
-    const afterSubsidy = Math.max(fullPriceWithDisposable - item.subsidy, 0);
-    const tax = product.tax;
+    const subsidyItems = SubItems.map((item) => {
+      const product = item.productId as unknown as IProduct;
+      const disposableFee = (product.disposableFee ?? 0) * item.quantity;
+      const fullPriceWithDisposable = item.TotalPrice * item.quantity;
+      const priceForTax = fullPriceWithDisposable - disposableFee;
 
-    const gst =
-      tax === 0.05 || tax === 0.12 ? Math.round(priceForTax * 0.05) : 0;
-    const pst =
-      tax === 0.07 || tax === 0.12 ? Math.round(priceForTax * 0.07) : 0;
+      const afterSubsidy = Math.max(fullPriceWithDisposable - item.subsidy, 0);
+      const tax = product.tax;
 
-    baseTotal += product.price * item.quantity;
-    TotalUsedSubsidy += item.subsidy;
+      const gst =
+        tax === 0.05 || tax === 0.12 ? Math.round(priceForTax * 0.05) : 0;
+      const pst =
+        tax === 0.07 || tax === 0.12 ? Math.round(priceForTax * 0.07) : 0;
 
-    return {
-      productId: new Types.ObjectId(product._id),
-      quantity: item.quantity,
-      markup: product.markup,
-      tax,
-      disposableFee,
-      subsidy: item.subsidy,
-      total: Math.round(afterSubsidy + gst + pst),
-    };
-  });
+      baseTotal += product.price * item.quantity;
+      TotalUsedSubsidy += item.subsidy;
+
+      return {
+        productId: new Types.ObjectId(product._id),
+        quantity: item.quantity,
+        markup: product.markup,
+        tax,
+        disposableFee,
+        subsidy: item.subsidy,
+        total: Math.round(afterSubsidy + gst + pst),
+      };
+    });
 
     const miscItems = MiscItems.map((item) => {
       const populated = item.itemId as unknown as {
@@ -523,19 +510,17 @@ export const PlaceOrder = async ({
       };
     }
     const TotalMarkupAfterSubsidy = TotalCart.totalMarkup - customerCart.cartSubsidy;
-    const StoreProfit = Math.floor(TotalMarkupAfterSubsidy*0.50);
-    const PlatformProfit = TotalMarkupAfterSubsidy-StoreProfit;
+    const StoreProfit = Math.floor(TotalMarkupAfterSubsidy * 0.50);
+    const PlatformProfit = TotalMarkupAfterSubsidy - StoreProfit;
 
-
-    const ProfitFields ={
+    const ProfitFields = {
       TotalMarkupAfterSubsidy,
-      StoreProfit:StoreProfit,
-      PlatformProfit:PlatformProfit
+      StoreProfit: StoreProfit,
+      PlatformProfit: PlatformProfit
     }
 
     const PlatformFee = 50;
-    // console.log(ProfitFields)
-    
+
     const OrderData = {
       products,
       subsidyItems,
@@ -551,15 +536,11 @@ export const PlaceOrder = async ({
       userId: User._id,
       storeId: User.associatedStoreId,
       storeProfit: ProfitFields.StoreProfit,
-      platformProfit: ProfitFields.PlatformProfit+PlatformFee,
+      platformProfit: ProfitFields.PlatformProfit + PlatformFee,
       paymentMode,
       status: receivedCustomerId ? "completed" : "pending",
       ...(receivedCustomerId && { cashierId }),
     };
-
-    // console.log(OrderData)
-
-  
 
     if (walletPayment) {
       const updated = await Customer.findOneAndUpdate(
@@ -589,15 +570,18 @@ export const PlaceOrder = async ({
         return { success: false, message: "Error while setting Gift Wallet Amount " };
       }
     }
-    
+
     await OrderModel.create([OrderData], { session });
     await CartModel.deleteOne({ customerId: User._id }, { session });
 
     await session.commitTransaction();
-    await EnableUserReferralFlag(OrderData.subsidy,User._id.toString(),User.name,User.referralCodeId.toString())
+    await EnableUserReferralFlag(OrderData.subsidy, User._id.toString(), User.name, User.referralCodeId.toString())
+    await ReloadCartpusher();
     return { success: true, message: "Order Placed Successfully" };
   } catch (error) {
-    await session.abortTransaction();
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     console.error("Error while placing order:", error);
     return { success: false, error: "Something went wrong" };
   } finally {
@@ -609,7 +593,7 @@ const EnableUserReferralFlag = async (
   orderSubsidy: number,
   customerId: string,
   customerName: string,
-  userReferralCodeId:string
+  userReferralCodeId: string
 ) => {
   if (!customerId || !orderSubsidy)
     return { success: false, message: "Invalid customerId or subsidy amount" };
@@ -617,13 +601,13 @@ const EnableUserReferralFlag = async (
     await dbConnect();
 
     if (orderSubsidy <= 0)
-      return { success: true, message: "No subsidy used, referral flags not enabled" };
+      return { success: true, message: "No subsidy made, referral flags not enabled" };
 
     const CustomerData = await Customer.findOneAndUpdate(
       { _id: customerId, placedFirstOrder: false, referralCodeEnabled: false },
-      { $set: { referralCodeEnabled: true, placedFirstOrder: true, perReferAmount:5 } },
-      { returnDocument: 'before' },
-    ).select("_id").lean();
+      { $set: { referralCodeEnabled: true, placedFirstOrder: true, perReferAmount: 5 } },
+      { returnDocument: 'after' },
+    ).select("_id perReferAmount").lean();
 
     if (!CustomerData)
       return { success: true, message: "Referral flags already enabled or customer not found" };
@@ -632,10 +616,11 @@ const EnableUserReferralFlag = async (
       GenerateReferralCode(customerId, customerName).catch((err) =>
         console.error("GenerateReferralCode failed:", err)
       ),
-      CheckUserReferral(userReferralCodeId,CustomerData.perReferAmount).catch((err) =>
+      CheckUserReferral(userReferralCodeId, CustomerData.perReferAmount).catch((err) =>
         console.error("CheckUserReferral failed:", err)
       ),
     ]);
+    await revalidateCustomerCache();
     return { success: true, message: "Referral flags enabled successfully" };
   } catch (err) {
     console.log(err);
@@ -661,7 +646,7 @@ export const GenerateReferralCode = async (customerId: string, customerName: str
         type: "customer",
         isActive: true,
         uses: 0,
-        maxUses:10,
+        maxUses: 10,
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
       await Customer.findOneAndUpdate(
@@ -675,35 +660,32 @@ export const GenerateReferralCode = async (customerId: string, customerName: str
 
   for (const code of candidates) {
     const result = await tryCreate(code);
+    await revalidateCustomerCache();
     if (result) return { success: true, code: result };
   }
 
   for (let i = 0; i < 10; i++) {
     const code = namePart + Math.random().toString(36).slice(2, 8).toUpperCase();
     const result = await tryCreate(code);
+    await revalidateCustomerCache();
     if (result) return { success: true, code: result };
   }
 
   return { success: false, message: "Could not generate a unique referral code after all attempts" };
 };
 
-const CheckUserReferral = async (referralCodeId: string,perReferAmount:number) => {
+const CheckUserReferral = async (referralCodeId: string, perReferAmount: number) => {
   if (!referralCodeId) return { success: false, message: "No referral Code Id passed" };
 
   await dbConnect();
   const session = await mongoose.startSession();
 
   try {
-    const UserSession = await getUserSession();
-
-    const [referral, cashier] = await Promise.all([
-      ReferralCode.findById(referralCodeId).lean(),
-      Cashier.findOne({ userId: UserSession.user.id }).select("_id").lean(),
-    ]);
+    const referral = await ReferralCode.findById(referralCodeId).lean();
 
     if (!referral) return { success: false, message: "Referral not found" };
     if (referral.type === "admin") return { success: false, message: "Referral belongs to admin account" };
-    if (!cashier) return { success: false, message: "Failed to get cashierId" };
+    if (!referral.customerId) return { success: false, message: "Referral code has no associated customer" };
 
     const maxUsesReached = referral.maxUses != null && referral.uses >= referral.maxUses;
     const isExpired = referral.expiresAt != null && Date.now() >= referral.expiresAt.getTime();
@@ -711,24 +693,36 @@ const CheckUserReferral = async (referralCodeId: string,perReferAmount:number) =
       return { success: false, message: "Referral code is expired or has reached its maximum uses" };
     }
 
-    const ReferralValue = perReferAmount;
-    const customerId = referral.customerId;
+    const ReferralValue = Math.round(perReferAmount * 100);
+    if (typeof ReferralValue !== "number" || !Number.isFinite(ReferralValue) || ReferralValue <= 0) {
+      return { success: false, message: "Invalid referral value" };
+    }
+
+    const customerId = referral.customerId.toString();
 
     session.startTransaction();
-
-    await Promise.all([
-      WalletTopUp.create(
-        [{ customerId, userId: cashier._id.toString(), userRole: "cashier", value: ReferralValue, paymentMode: "referral" }],
-        { session },
-      ),
-      Customer.findByIdAndUpdate(customerId, { $inc: { walletBalance: ReferralValue } }, { session, runValidators: true }),
-      ReferralCode.findByIdAndUpdate(referralCodeId, { $inc: { uses: 1 } }, { session }),
-    ]);
+    await ReferralHistory.create(
+      [{ customerId, value: ReferralValue }],
+      { session },
+    );
+    await Customer.findByIdAndUpdate(
+      customerId,
+      { $inc: { giftWalletBalance: ReferralValue } },
+      { session, runValidators: true },
+    );
+    await ReferralCode.findByIdAndUpdate(
+      referralCodeId,
+      { $inc: { uses: 1 } },
+      { session },
+    );
 
     await session.commitTransaction();
+    await revalidateCustomerCache();
     return { success: true, message: "Referral topup created" };
   } catch (error) {
-    await session.abortTransaction();
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     console.error(error);
     return { success: false, message: "Error on CheckUserReferral" };
   } finally {
@@ -850,7 +844,8 @@ export const ClearCart = async (customerId?: string) => {
  
     revalidatePath("/customer/cart");
     if (customerId) revalidatePath(`/cashier/customer/${customerId}/cart`);
- 
+    
+    await ReloadCartpusher();
     return { success: true, message: "Cart cleared successfully" };
   } catch (err) {
     console.log(err);

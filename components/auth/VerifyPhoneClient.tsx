@@ -125,9 +125,10 @@ const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setOtp(["", "", "", "", "", ""]);
         otpRefs.current[0]?.focus();
       } else {
-        toast.success("Phone verified! Welcome to Candian's Cart 🎉");
-        router.push("/customer");
-        router.refresh();
+        toast.success("Phone verified! Welcome to Candian's Cart");
+        // Give revalidation time to complete, then hard navigate
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        window.location.href = "/customer";
       }
     });
   };

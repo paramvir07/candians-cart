@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Banknote, Wallet, Store, User } from "lucide-react";
+import { Banknote, Wallet, Store, User, CreditCard } from "lucide-react";
 import Link from "next/link";
+import { type DateRange } from "react-day-picker";
 import {
   Pagination,
   PaginationContent,
@@ -15,11 +16,24 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
+import {
   getCashActivitiesPaginated,
   getCashSummary,
   type CashActivity,
   type CashSummary,
+  type PaymentModeFilter,
 } from "@/actions/common/getCashActivities.action";
+import { getStores } from "@/actions/store/getStores.actions";
+import { StoreDocument } from "@/types/store/store";
+import { getVancouverDayBoundsUTC } from "@/lib/timezone";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -41,6 +55,19 @@ function formatDate(date: Date) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+// Converts a raw calendar DateRange (browser-local Y/M/D) into the
+// correct Vancouver-day UTC bounds for querying Mongo.
+function toVancouverBounds(range: DateRange | undefined): {
+  start?: Date;
+  end?: Date;
+} {
+  if (!range?.from) return {};
+  const start = getVancouverDayBoundsUTC(range.from).start;
+  // If the user only picked a single day (no `to` yet), treat it as a one-day range.
+  const end = getVancouverDayBoundsUTC(range.to ?? range.from).end;
+  return { start, end };
 }
 
 // ─── Skeletons ─────────────────────────────────────────────────────────────────
@@ -66,9 +93,7 @@ const SummarySkeleton = () => (
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
 interface CashCollectionListProps {
-  /** Pass storeId to scope to one store. Omit for all stores (admin global). */
   storeId?: string;
-  /** "admin" → show store column + store links. "store" → hide store column. */
   role?: "admin" | "store";
 }
 
@@ -85,19 +110,65 @@ export function CashCollectionList({
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const isAllStores = !storeId;
+  // ── Filters ──
+  const [selectedStoreId, setSelectedStoreId] = useState<string>(
+    storeId || "all",
+  );
+  const [stores, setStores] = useState<StoreDocument[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [paymentType, setPaymentType] = useState<PaymentModeFilter>("all");
 
-  // Load summary once
+  const isAdmin = role === "admin";
+  const effectiveStoreId = isAdmin
+    ? selectedStoreId === "all"
+      ? undefined
+      : selectedStoreId
+    : storeId;
+  const isAllStores = !effectiveStoreId;
+
+  // Vancouver-correct UTC bounds derived from the raw picker selection.
+  // Recomputed only when the picker actually changes.
+  const { start: rangeStart, end: rangeEnd } = toVancouverBounds(dateRange);
+
+  // Load store list once, admin only
   useEffect(() => {
-    getCashSummary(storeId).then(setSummary).catch(console.error);
-  }, [storeId]);
+    if (!isAdmin) return;
+    getStores()
+      .then((res) => {
+        if (res.success && res.data) setStores(res.data);
+      })
+      .catch(console.error);
+  }, [isAdmin]);
 
-  // Load activities
+  const selectedStoreName =
+    selectedStoreId === "all"
+      ? "All Stores (Global)"
+      : stores.find((s) => s._id.toString() === selectedStoreId)?.name ||
+        "Select a store";
+
+  // Load summary — re-runs whenever a filter changes
+  useEffect(() => {
+    getCashSummary(effectiveStoreId, paymentType, rangeStart, rangeEnd)
+      .then(setSummary)
+      .catch(console.error);
+    // rangeStart/rangeEnd are Date objects recreated each render, so key off
+    // the picker's own from/to instead to avoid an infinite effect loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveStoreId, paymentType, dateRange?.from, dateRange?.to]);
+
+  // Load activities — re-runs whenever a filter or the page changes
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       setIsLoading(true);
-      const res = await getCashActivitiesPaginated(storeId, currentPage, 8);
+      const res = await getCashActivitiesPaginated(
+        effectiveStoreId,
+        currentPage,
+        8,
+        paymentType,
+        rangeStart,
+        rangeEnd,
+      );
       if (!mounted) return;
       if (res.success) {
         setActivities(res.data);
@@ -112,7 +183,30 @@ export function CashCollectionList({
     return () => {
       mounted = false;
     };
-  }, [storeId, currentPage]);
+    // Same reasoning as above — key off the picker's raw from/to.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    effectiveStoreId,
+    paymentType,
+    dateRange?.from,
+    dateRange?.to,
+    currentPage,
+  ]);
+
+  const handleStoreChange = (newStoreId: string) => {
+    setSelectedStoreId(newStoreId);
+    setCurrentPage(1);
+  };
+
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+    setCurrentPage(1);
+  };
+
+  const handlePaymentTypeChange = (value: string) => {
+    setPaymentType(value as PaymentModeFilter);
+    setCurrentPage(1);
+  };
 
   const getPageNumbers = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
@@ -141,8 +235,64 @@ export function CashCollectionList({
     return pages;
   };
 
+  const topUpLabel =
+    paymentType === "cash"
+      ? "Cash Top-Ups"
+      : paymentType === "card"
+        ? "Card Top-Ups"
+        : "Top-Ups";
+
   return (
     <div className="space-y-5">
+      {/* ── Filters ─────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row flex-wrap gap-4 items-end">
+        {isAdmin && (
+          <div className="space-y-2.5 w-full sm:w-64">
+            <Label className="text-sm font-medium">Select Store</Label>
+            <Select value={selectedStoreId} onValueChange={handleStoreChange}>
+              <SelectTrigger className="h-10 w-full">
+                <SelectValue placeholder="Select Store">
+                  {selectedStoreName}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Stores (Global)</SelectItem>
+                {stores.map((store) => (
+                  <SelectItem
+                    key={store._id.toString()}
+                    value={store._id.toString()}
+                  >
+                    {store.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        <div className="space-y-2.5 w-full sm:w-45">
+          <Label className="text-sm font-medium">Payment Type</Label>
+          <Select value={paymentType} onValueChange={handlePaymentTypeChange}>
+            <SelectTrigger className="h-10 w-full">
+              <SelectValue placeholder="Payment type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="cash">Cash</SelectItem>
+              <SelectItem value="card">Card</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2.5 w-full sm:w-auto">
+          <Label className="text-sm font-medium">Date Range</Label>
+          <DatePickerWithRange
+            date={dateRange}
+            setDate={handleDateRangeChange}
+          />
+        </div>
+      </div>
+
       {/* ── Summary cards ──────────────────────────────────────────────────── */}
       {summary ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl">
@@ -155,7 +305,7 @@ export function CashCollectionList({
               icon: Banknote,
             },
             {
-              label: "Cash Top-Ups",
+              label: topUpLabel,
               value: summary.totalCashTopUps.toLocaleString(),
               bg: "bg-blue-50/60",
               border: "border-blue-100",
@@ -269,6 +419,11 @@ export function CashCollectionList({
                             : "bg-blue-100 text-blue-700"
                         }`}
                       >
+                        {a.paymentMode === "card" ? (
+                          <CreditCard className="w-3 h-3" />
+                        ) : (
+                          <Banknote className="w-3 h-3" />
+                        )}
                         {a.label}
                       </span>
                     </td>
@@ -373,8 +528,7 @@ export function CashCollectionList({
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage < totalPages && !isLoading)
-                        setCurrentPage((p) => p - 1);
-                      setCurrentPage((p) => p + 1);
+                        setCurrentPage((p) => p + 1);
                     }}
                     className={
                       currentPage === totalPages || isLoading
