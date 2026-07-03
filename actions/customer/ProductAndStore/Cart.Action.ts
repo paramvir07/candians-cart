@@ -20,6 +20,7 @@ import "@/db/models/customer/MiscItem.model";
 import ReferralCode from "@/db/models/admin/referralCode.model";
 import { revalidateCustomerCache } from "@/actions/cache/user.cache";
 import { ReferralHistory } from "@/db/models/cashier/ReferralHistory.model";
+import { ReloadCartpusher } from "@/actions/pusher/pusherAction";
 
 export const AddtoCart = async (
   ItemId: string,
@@ -70,6 +71,7 @@ export const AddtoCart = async (
       });
     }
     await existingCart.save();
+    await ReloadCartpusher();
     revalidatePath("/customer/cart")
     revalidatePath(`/cashier/customer/${user._id}/cart`)
 
@@ -194,6 +196,7 @@ export const UpdateItemQuantity = async (
 
   await cart.save();
 
+  await ReloadCartpusher();
   revalidatePath("/customer/cart");
 
   return { success: true, message: "Cart quantity updated" };
@@ -231,7 +234,6 @@ export const IncrementItem = async (
   }
 
   await cart.save();
-
   revalidatePath("/customer/cart");
 };
 
@@ -304,6 +306,7 @@ export const RemoveItem = async (
   ) {
     await CartModel.findOneAndDelete({ customerId: user._id });
   }
+  await ReloadCartpusher();
   revalidatePath("/customer/cart");
 };
 
@@ -573,6 +576,7 @@ export const PlaceOrder = async ({
 
     await session.commitTransaction();
     await EnableUserReferralFlag(OrderData.subsidy, User._id.toString(), User.name, User.referralCodeId.toString())
+    await ReloadCartpusher();
     return { success: true, message: "Order Placed Successfully" };
   } catch (error) {
     if (session.inTransaction()) {
@@ -840,7 +844,8 @@ export const ClearCart = async (customerId?: string) => {
  
     revalidatePath("/customer/cart");
     if (customerId) revalidatePath(`/cashier/customer/${customerId}/cart`);
- 
+    
+    await ReloadCartpusher();
     return { success: true, message: "Cart cleared successfully" };
   } catch (err) {
     console.log(err);
