@@ -9,11 +9,14 @@ import { zodErrorResponse } from "@/zod/validation/error";
 import mongoose from "mongoose";
 import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 import { revalidatePath } from "next/cache";
+import { ReloadCartpusher } from "../pusher/pusherAction";
 
 export const walletTopUpAction = async (
   customerId: string,
   paymentMode: "cash" | "card" | "gift",
   value: number,
+  cashReceived:number,
+  cashDue:number,
   userRole: "admin" | "cashier",
 ): Promise<{
   success: boolean;
@@ -30,6 +33,8 @@ export const walletTopUpAction = async (
       customerId,
       paymentMode,
       value,
+      cashReceived,
+      cashDue,
     });
 
     if (!result.success) {
@@ -68,6 +73,8 @@ export const walletTopUpAction = async (
             userRole,
             customerId: data.customerId,
             paymentMode: data.paymentMode,
+            cashPaid: data.paymentMode === "cash" ? data.cashReceived : 0,
+            cashDue: data.paymentMode === "cash" ?  data.cashDue : 0,
             value: data.value,
           },
         ],
@@ -85,6 +92,7 @@ export const walletTopUpAction = async (
         throw new Error("Customer not found");
       }
     });
+    await ReloadCartpusher();
     revalidatePath(`/cashier/customer/${userData.user.id}/wallet`)
     return { success: true, message: "Wallet topped up successfully!!" };
   } catch (error) {

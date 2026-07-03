@@ -24,8 +24,6 @@ import {
   Eye,
   Calendar,
   CalendarDays,
-  CheckCircle2,
-  Clock,
   DollarSign,
   Package,
   ArrowUpRight,
@@ -46,6 +44,7 @@ import OrderDetail from "@/components/shared/users/orders/OrderDetail";
 import { format } from "date-fns";
 import { type DateRange as DayPickerDateRange } from "react-day-picker";
 import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
+import { getVancouverTodayString, STORE_TIMEZONE } from "@/lib/timezone";
 
 // ─── useDebounce ────────────────────────────────────────────────────────────────
 
@@ -72,23 +71,23 @@ const PERIOD_OPTIONS: { label: string; value: PeriodPreset }[] = [
 
 /** Convert a preset to a concrete DateRange (null = no filter). */
 function presetToRange(preset: PeriodPreset): DateRange | null {
-  const today = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local
+  const today = getVancouverTodayString();
   if (preset === "all" || preset === "custom") return null;
   if (preset === "today") return { from: today, to: today };
+
   if (preset === "week") {
-    const d = new Date();
-    d.setDate(d.getDate() - 6);
-    return { from: d.toLocaleDateString("en-CA"), to: today };
+    const sevenDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
+    const from = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Vancouver",
+    }).format(sevenDaysAgo);
+    return { from, to: today };
   }
+
   if (preset === "month") {
-    const d = new Date();
-    return {
-      from: new Date(d.getFullYear(), d.getMonth(), 1).toLocaleDateString(
-        "en-CA",
-      ),
-      to: today,
-    };
+    const [year, month] = today.split("-");
+    return { from: `${year}-${month}-01`, to: today };
   }
+
   return null;
 }
 
@@ -128,11 +127,18 @@ function formatCents(cents: number) {
 }
 
 function formatDate(date: Date) {
-  return new Date(date).toLocaleDateString("en-CA", {
+  return new Date(date).toLocaleString("en-CA", {
+    timeZone: STORE_TIMEZONE,
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
+}
+
+function getProfitForRole(order: AdminOrder, role: "admin" | "store") {
+  return role === "admin" ? order.platformProfit : order.storeProfit;
 }
 
 // ─── Stat Card ─────────────────────────────────────────────────────────────────
@@ -524,7 +530,7 @@ export function OrdersList({
             />
           </>
         ) : (
-          Array.from({ length: 6 }).map((_, i) => <StatSkeleton key={i} />)
+          Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
         )}
       </div>
 
@@ -607,6 +613,9 @@ export function OrdersList({
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Amount
+                </th>
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  {role === "admin" ? "Platform Profit" : "Store Profit"}
                 </th>
                 <th className="px-4 py-3 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Actions
@@ -698,6 +707,11 @@ export function OrdersList({
                         {formatCents(order.amount)}
                       </span>
                     </td>
+                    <td className="px-4 py-3.5">
+                      <span className="text-sm font-semibold text-foreground tabular-nums">
+                        {formatCents(getProfitForRole(order, role))}
+                      </span>
+                    </td>
                     <td className="px-4 py-3.5 text-right">
                       <Button
                         variant="ghost"
@@ -774,7 +788,7 @@ export function OrdersList({
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage < totalPages && !isLoading)
-                        setCurrentPage((p) => p + 1);
+                        setCurrentPage((p) => p - 1);
                     }}
                     className={
                       currentPage === totalPages || isLoading

@@ -15,7 +15,6 @@ export const getCategorySales = cache(
     try {
       await dbConnect();
 
-      // Dynamically build the match stage
       const matchStage: Record<string, any> = {
         status: "completed",
         createdAt: {
@@ -24,7 +23,6 @@ export const getCategorySales = cache(
         },
       };
 
-      // Only filter by storeId if it's NOT "all"
       if (storeId !== "all") {
         if (!mongoose.Types.ObjectId.isValid(storeId)) {
           throw new Error("Invalid store ID provided.");
@@ -33,9 +31,7 @@ export const getCategorySales = cache(
       }
 
       const aggregationPipeline: PipelineStage[] = [
-        // 1. Match orders based on date, status, and optionally storeId
         { $match: matchStage },
-        // 2. Combine standard products and subsidy items into a single array
         {
           $project: {
             createdAt: 1,
@@ -47,18 +43,15 @@ export const getCategorySales = cache(
             },
           },
         },
-        // 3. Unwind the combined items array
         { $unwind: "$allItems" },
-        // 4. Join with the Products collection
         {
           $lookup: {
-            from: "products", 
+            from: "products",
             localField: "allItems.productId",
             foreignField: "_id",
             as: "productDoc",
           },
         },
-        // 5. Unwind the product document array
         { $unwind: "$productDoc" },
         // 6. First Grouping: Group by Product ID
         {
@@ -70,6 +63,8 @@ export const getCategorySales = cache(
             },
             productSalesQuantity: { $sum: "$allItems.quantity" },
             latestSaleDate: { $max: "$createdAt" },
+            // carry the flag through — $first is fine since it's constant per product
+            isMeasuredInWeight: { $first: "$productDoc.isMeasuredInWeight" },
           },
         },
         // 7. Second Grouping: Group by Category
@@ -77,12 +72,16 @@ export const getCategorySales = cache(
           $group: {
             _id: "$_id.category",
             totalCategorySales: { $sum: "$productSalesQuantity" },
+            // true if ANY product in this category is weight-measured
+            // (Mongo compares booleans as false < true, so $max works here)
+            categoryIsMeasuredInWeight: { $max: "$isMeasuredInWeight" },
             details: {
               $push: {
                 productId: "$_id.productId",
                 productName: "$_id.productName",
                 sales: "$productSalesQuantity",
                 date: "$latestSaleDate",
+                isMeasuredInWeight: "$isMeasuredInWeight",
               },
             },
           },
@@ -93,10 +92,12 @@ export const getCategorySales = cache(
             _id: 0,
             category: "$_id",
             totalSales: "$totalCategorySales",
+            isMeasuredInWeight: {
+              $ifNull: ["$categoryIsMeasuredInWeight", false],
+            },
             details: 1,
           },
         },
-        // 9. Sort categories by highest sales volume
         { $sort: { totalSales: -1 } },
       ];
 
@@ -106,15 +107,16 @@ export const getCategorySales = cache(
         (categoryGroup) => ({
           category: categoryGroup.category,
           totalSales: categoryGroup.totalSales,
+          isMeasuredInWeight: !!categoryGroup.isMeasuredInWeight,
           details: categoryGroup.details.map((detail: Record<string, any>) => ({
             productId: detail.productId.toString(),
             productName: detail.productName,
             sales: detail.sales,
             date: new Date(detail.date).toISOString(),
+            isMeasuredInWeight: !!detail.isMeasuredInWeight,
           })),
         }),
       );
-
       return serializedData;
     } catch (error) {
       console.error("[CATEGORY_SALES_AGGREGATION_ERROR]:", error);

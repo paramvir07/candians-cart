@@ -3,17 +3,20 @@
 import { dbConnect } from "@/db/dbConnect";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import mongoose from "mongoose";
-import { startOfDay, startOfMonth } from "date-fns";
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
+import { getAnalyticsBoundaries } from "@/lib/timezone";
 
 export interface OrderStats {
   dailyOrders: number;
   monthlyOrders: number;
   totalOrders: number;
-  totalRevenue: number; // cartTotal sum in cents
+  totalRevenue: number; // calculated revenue sum in cents
 }
 
-const VANCOUVER_TZ = "America/Vancouver";
+interface RevenueAggResult {
+  totalCartTotal: number;
+  totalSubsidy: number;
+  totalSubsidyUsed: number;
+}
 
 /**
  * Compute order stats.
@@ -25,21 +28,11 @@ export async function getOrderStats(
 ): Promise<OrderStats> {
   await dbConnect();
 
-  const match: Record<string, any> = {};
+  // Strongly type the match object to eliminate explicit 'any' types
+  const match: { storeId?: mongoose.Types.ObjectId } = {};
   if (storeId) match.storeId = new mongoose.Types.ObjectId(storeId);
 
-  const now = new Date(); // Current time (evaluates as UTC on Vercel)
-
-  // 1. Shift current time to Vancouver time
-  const vancouverNow = toZonedTime(now, VANCOUVER_TZ);
-
-  // 2. Find the start of the day and month IN Vancouver
-  const vancouverStartOfDay = startOfDay(vancouverNow);
-  const vancouverStartOfMonth = startOfMonth(vancouverNow);
-
-  // 3. Shift those boundaries back to real UTC Date objects for MongoDB
-  const utcStartOfDay = fromZonedTime(vancouverStartOfDay, VANCOUVER_TZ);
-  const utcStartOfMonth = fromZonedTime(vancouverStartOfMonth, VANCOUVER_TZ);
+  const { utcStartOfDay, utcStartOfMonth } = getAnalyticsBoundaries();
 
   const [dailyOrders, monthlyOrders, totalOrders, revenueAgg] =
     await Promise.all([
@@ -53,25 +46,34 @@ export async function getOrderStats(
       }),
       OrderModel.countDocuments(match),
 
-      OrderModel.aggregate([
+      // Extract only flat raw sum metrics from the database layer
+      OrderModel.aggregate<RevenueAggResult>([
         { $match: match },
         {
           $group: {
             _id: null,
-            total: {
-              $sum: {
-                $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }],
-              },
-            },
+            totalCartTotal: { $sum: "$cartTotal" },
+            totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+            totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
           },
         },
       ]),
     ]);
 
+  // Extract raw sums with clean zero-fallback operators
+  const rawRevenueStats = revenueAgg[0];
+  const totalCustomerPaid = rawRevenueStats?.totalCartTotal ?? 0;
+  const totalSubsidy = rawRevenueStats?.totalSubsidy ?? 0;
+  const totalSubsidyUsed = rawRevenueStats?.totalSubsidyUsed ?? 0;
+
+  // Execute your deliberate application-level calculations explicitly
+  const paidAfterSubsidy = totalCustomerPaid - (totalSubsidy - totalSubsidyUsed);
+  const totalRevenue = paidAfterSubsidy + totalSubsidy;
+
   return {
     dailyOrders,
     monthlyOrders,
     totalOrders,
-    totalRevenue: revenueAgg[0]?.total ?? 0,
+    totalRevenue,
   };
 }

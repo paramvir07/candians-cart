@@ -3,6 +3,7 @@
 import { dbConnect } from "@/db/dbConnect";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import mongoose from "mongoose";
+import { getVancouverDayBoundsUTC } from "@/lib/timezone";
 
 export interface AdminOrder {
   orderId: string;
@@ -15,11 +16,13 @@ export interface AdminOrder {
   status: "pending" | "completed";
   paymentMode: "wallet" | "cash" | "card" | "pending";
   createdAt: Date;
+  platformProfit: number;
+  storeProfit: number;
 }
 
 export interface DateRange {
   from: string; // "YYYY-MM-DD"
-  to: string;   // "YYYY-MM-DD"
+  to: string; // "YYYY-MM-DD"
 }
 
 export interface GetOrdersResult {
@@ -62,6 +65,8 @@ function buildLookupStages() {
         status: 1,
         paymentMode: 1,
         createdAt: 1,
+        storeProfit: 1,
+        platformProfit: 1,
       },
     },
   ];
@@ -79,15 +84,19 @@ function mapDoc(o: any): AdminOrder {
     status: o.status,
     paymentMode: o.paymentMode,
     createdAt: o.createdAt,
+    platformProfit: o.platformProfit ?? 0,
+    storeProfit: o.storeProfit ?? 0,
   };
 }
 
 function buildDateMatch(dateRange: DateRange): Record<string, any> {
-  // Treat the YYYY-MM-DD strings as Vancouver-local midnight boundaries.
-  // Constructing with explicit time avoids UTC-shift surprises at the edges.
-  const fromDate = new Date(`${dateRange.from}T00:00:00-08:00`);
-  const toDate   = new Date(`${dateRange.to}T23:59:59.999-08:00`);
-  return { createdAt: { $gte: fromDate, $lte: toDate } };
+  const { start } = getVancouverDayBoundsUTC(
+    new Date(`${dateRange.from}T00:00:00`),
+  );
+  const { end } = getVancouverDayBoundsUTC(
+    new Date(`${dateRange.to}T00:00:00`),
+  );
+  return { createdAt: { $gte: start, $lte: end } };
 }
 
 export async function getOrdersPaginated(

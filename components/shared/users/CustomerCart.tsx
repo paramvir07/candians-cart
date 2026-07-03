@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ScrollableItemsList } from "@/components/customer/products/ScrollableItemsList";
 import { CartItemRow } from "./CartItemRow";
+import CartReloadListener from "@/actions/pusher/pusherCartClient";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 
@@ -499,7 +500,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           </Link>
         </div>
       )}
-
+      <CartReloadListener />
       {/* ── MOBILE / TABLET LAYOUT ── */}
       <div
         className="xl:hidden flex flex-col"

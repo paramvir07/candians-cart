@@ -826,7 +826,11 @@ const addressFields = (
           <div className="sm:hidden flex flex-col gap-4">
             <div className="flex items-center gap-4 px-1">
               <Avatar className="h-14 w-14 rounded-2xl border border-border/60 shrink-0">
-                <AvatarFallback className="bg-primary/10 text-primary font-bold rounded-2xl">
+              <AvatarImage
+                    src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(trimmed.name)}`}
+                    className="rounded-full"
+                  />
+              <AvatarFallback className="bg-primary/10 text-primary font-bold rounded-2xl">
                   {initials}
                 </AvatarFallback>
               </Avatar>

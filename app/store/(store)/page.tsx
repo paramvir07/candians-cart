@@ -1,6 +1,5 @@
 import { getRecentCashActivities } from "@/actions/common/getCashActivities.action";
 import { getStoreDashboardData } from "@/actions/store/getStoreDashboard.actions";
-import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
 import CashActivityWidget from "@/components/shared/cash-collection/CashActivityWidget";
 import StoreDashRecentOrders from "@/components/store/dashboard/StoreDashRecentOrders";
 import StoreDashRecentPayouts from "@/components/store/dashboard/StoreDashRecentPayouts";

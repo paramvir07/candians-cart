@@ -2,12 +2,15 @@
 
 import { dbConnect } from "@/db/dbConnect";
 import OrderModel from "@/db/models/customer/Orders.Model";
-import storePayoutsModel from "@/db/models/admin/storePayouts.model";
 import productsModel from "@/db/models/store/products.model";
 import Customer from "@/db/models/customer/customer.model";
 import Store from "@/db/models/store/store.model";
 import mongoose from "mongoose";
 import { getUserSession } from "../auth/getUserSession.actions";
+import { getAnalyticsBoundaries } from "@/lib/timezone";
+import { toZonedTime } from "date-fns-tz";
+
+const STORE_TIMEZONE = "America/Vancouver";
 
 // ─── Interfaces ────────────────────────────────────────────────────────────────
 
@@ -71,27 +74,81 @@ export interface StoreAnalyticsData {
   topProducts: TopProduct[];
 }
 
+// ─── Database Pipeline Output Typings ──────────────────────────────────────────
+
+interface FlatRevenueSumMetrics {
+  totalCartTotal: number;
+  totalSubsidy: number;
+  totalSubsidyUsed: number;
+}
+
+interface AvgOrderMetrics {
+  avgCartTotal: number;
+  avgSubsidy: number;
+  avgSubsidyUsed: number;
+}
+
+interface MonthlyRevenueAggRow {
+  _id: {
+    year: number;
+    month: number;
+  };
+  totalCartTotal: number;
+  totalSubsidy: number;
+  totalSubsidyUsed: number;
+  orders: number;
+}
+
+interface DailyOrdersAggRow {
+  _id: number;
+  orders: number;
+  revenue: number;
+}
+
+interface SubsidyGivenRow {
+  total: number;
+}
+
+interface CategoryAggRow {
+  _id: string | null;
+  count: number;
+}
+
+interface PaymentMethodAggRow {
+  _id: string;
+  count: number;
+}
+
+interface TopProductsAggRow {
+  name?: string;
+  totalQuantity: number;
+  totalRevenue: number;
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function growthPct(current: number, previous: number): number {
   if (previous === 0) return current > 0 ? 100 : 0;
   return Math.round(((current - previous) / previous) * 100 * 10) / 10;
+}
+
+/**
+ * Reuses the identical standard mathematical logic flow for computing revenue metrics
+ * from isolated, raw aggregated parameters outside of MongoDB.
+ */
+function calculateRevenueFromMetrics(metrics: FlatRevenueSumMetrics | undefined): number {
+  const customerPaid = metrics?.totalCartTotal ?? 0;
+  const subsidy = metrics?.totalSubsidy ?? 0;
+  const subsidyUsed = metrics?.totalSubsidyUsed ?? 0;
+
+  const paidAfterSubsidy = customerPaid - (subsidy - subsidyUsed);
+  return paidAfterSubsidy + subsidy;
 }
 
 // ─── Action ────────────────────────────────────────────────────────────────────
@@ -105,17 +162,17 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
     .lean();
   if (!storeDoc) throw new Error("Store not found");
 
-  const storeId = (storeDoc as any)._id as mongoose.Types.ObjectId;
+  const storeId = storeDoc._id as mongoose.Types.ObjectId;
 
-  const now = new Date();
-  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const { utcStartOfThisMonth, utcStartOfLastMonth } = getAnalyticsBoundaries();
+  const startOfThisMonth = utcStartOfThisMonth;
+  const startOfLastMonth = utcStartOfLastMonth;
 
-  // Last 6 months range
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-
-  // Last 7 days
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const zonedNow = toZonedTime(new Date(), STORE_TIMEZONE);
+  const sixMonthsAgo = getAnalyticsBoundaries(
+    new Date(zonedNow.getFullYear(), zonedNow.getMonth() - 5, 1),
+  ).utcStartOfThisMonth;
+  const sevenDaysAgo = getAnalyticsBoundaries().utcRolling7Days;
 
   const [
     totalOrders,
@@ -156,29 +213,34 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
     productsModel.countDocuments({ storeId, stock: true }),
     productsModel.countDocuments({ storeId, subsidised: true }),
 
-    // Avg order value
-    OrderModel.aggregate([
+    // Average Order Raw Accumulators
+    OrderModel.aggregate<AvgOrderMetrics>([
       { $match: { storeId, status: "completed" } },
       {
         $group: {
           _id: null,
-          avg: { $avg: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] } },
+          avgCartTotal: { $avg: "$cartTotal" },
+          avgSubsidy: { $avg: { $ifNull: ["$subsidy", 0] } },
+          avgSubsidyUsed: { $avg: { $ifNull: ["$subsidyUsed", 0] } },
         },
       },
     ]),
 
-    OrderModel.aggregate([
+    // All-time Revenue Raw Metrics
+    OrderModel.aggregate<FlatRevenueSumMetrics>([
       { $match: { storeId, status: "completed" } },
       {
         $group: {
           _id: null,
-          total: {
-            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
-          },
+          totalCartTotal: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
         },
       },
     ]),
-    OrderModel.aggregate([
+
+    // This Month Revenue Raw Metrics
+    OrderModel.aggregate<FlatRevenueSumMetrics>([
       {
         $match: {
           storeId,
@@ -189,13 +251,15 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
       {
         $group: {
           _id: null,
-          total: {
-            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
-          },
+          totalCartTotal: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
         },
       },
     ]),
-    OrderModel.aggregate([
+
+    // Last Month Revenue Raw Metrics
+    OrderModel.aggregate<FlatRevenueSumMetrics>([
       {
         $match: {
           storeId,
@@ -206,14 +270,15 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
       {
         $group: {
           _id: null,
-          total: {
-            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
-          },
+          totalCartTotal: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
         },
       },
     ]),
 
-    OrderModel.aggregate([
+    // Last 6 months trend historical raw mapping rows
+    OrderModel.aggregate<MonthlyRevenueAggRow>([
       {
         $match: {
           storeId,
@@ -224,12 +289,12 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
       {
         $group: {
           _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" },
+            year: { $year: { date: "$createdAt", timezone: STORE_TIMEZONE } },
+            month: { $month: { date: "$createdAt", timezone: STORE_TIMEZONE } },
           },
-          revenue: {
-            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
-          },
+          totalCartTotal: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
           orders: { $sum: 1 },
         },
       },
@@ -237,7 +302,7 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
     ]),
 
     // Daily orders last 7 days
-    OrderModel.aggregate([
+    OrderModel.aggregate<DailyOrdersAggRow>([
       { $match: { storeId, createdAt: { $gte: sevenDaysAgo } } },
       {
         $group: {
@@ -252,7 +317,7 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
     ]),
 
     // Subsidy Given
-    OrderModel.aggregate([
+    OrderModel.aggregate<SubsidyGivenRow>([
       { $match: { storeId } },
       {
         $group: {
@@ -263,7 +328,7 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
     ]),
 
     // Category breakdown from products
-    productsModel.aggregate([
+    productsModel.aggregate<CategoryAggRow>([
       { $match: { storeId } },
       { $group: { _id: "$category", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
@@ -271,14 +336,14 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
     ]),
 
     // Payment method breakdown
-    OrderModel.aggregate([
+    OrderModel.aggregate<PaymentMethodAggRow>([
       { $match: { storeId } },
       { $group: { _id: "$paymentMode", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
     ]),
 
     // Top 5 products by quantity sold
-    OrderModel.aggregate([
+    OrderModel.aggregate<TopProductsAggRow>([
       { $match: { storeId } },
       { $unwind: "$products" },
       {
@@ -301,6 +366,7 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
       { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
       {
         $project: {
+          _id: 0,
           name: "$product.name",
           totalQuantity: 1,
           totalRevenue: 1,
@@ -309,26 +375,40 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
     ]),
   ]);
 
-  // ── Build monthly revenue chart (last 6 months, fill gaps) ────────────────
-  const monthlyRevenueMap = new Map<
-    string,
-    { revenue: number; orders: number }
-  >();
+  // ── Compute Application Layer KPIs ───────────────────────────────────────────
+  const totalRevenue = calculateRevenueFromMetrics(totalRevenueAgg[0]);
+  const revenueThisMonth = calculateRevenueFromMetrics(revenueThisMonthAgg[0]);
+  const revenueLastMonth = calculateRevenueFromMetrics(revenueLastMonthAgg[0]);
+
+  // Process Average Order Value Outside DB Context
+  const rawAvgMetrics = avgOrderAgg[0];
+  const avgCartTotal = rawAvgMetrics?.avgCartTotal ?? 0;
+  const avgSubsidy = rawAvgMetrics?.avgSubsidy ?? 0;
+  const avgSubsidyUsed = rawAvgMetrics?.avgSubsidyUsed ?? 0;
+  const avgOrderValue = Math.round(avgCartTotal - (avgSubsidy - avgSubsidyUsed) + avgSubsidy);
+
+  // ── Build monthly revenue chart (last 6 months, fill gaps) ───────────────────
+  const monthlyRevenueMap = new Map<string, { revenue: number; orders: number }>();
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(zonedNow.getFullYear(), zonedNow.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
     monthlyRevenueMap.set(key, { revenue: 0, orders: 0 });
   }
+
   for (const pt of monthlyRevenueAgg) {
     const key = `${pt._id.year}-${pt._id.month}`;
     if (monthlyRevenueMap.has(key)) {
-      monthlyRevenueMap.set(key, { revenue: pt.revenue, orders: pt.orders });
+      const calculatedMonthlyRevenue = calculateRevenueFromMetrics({
+        totalCartTotal: pt.totalCartTotal,
+        totalSubsidy: pt.totalSubsidy,
+        totalSubsidyUsed: pt.totalSubsidyUsed,
+      });
+      monthlyRevenueMap.set(key, { revenue: calculatedMonthlyRevenue, orders: pt.orders });
     }
   }
-  const monthlyRevenue: RevenueDataPoint[] = Array.from(
-    monthlyRevenueMap.entries(),
-  ).map(([key, val]) => {
-    const [year, month] = key.split("-").map(Number);
+
+  const monthlyRevenue: RevenueDataPoint[] = Array.from(monthlyRevenueMap.entries()).map(([key, val]) => {
+    const [, month] = key.split("-").map(Number);
     return {
       month: MONTHS[month - 1],
       revenue: val.revenue,
@@ -336,66 +416,55 @@ export async function getStoreAnalytics(): Promise<StoreAnalyticsData> {
     };
   });
 
-  // ── Build daily orders chart (last 7 days, fill gaps) ─────────────────────
+  // ── Build daily orders chart (last 7 days, fill gaps) ───────────────────────
   const dailyMap = new Map<number, { orders: number; revenue: number }>();
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const d = new Date(zonedNow.getTime() - i * 24 * 60 * 60 * 1000);
     dailyMap.set(d.getDay(), { orders: 0, revenue: 0 });
   }
+
   for (const pt of dailyOrdersAgg) {
-    // MongoDB $dayOfWeek: 1=Sun … 7=Sat
     const jsDay = (pt._id - 1) % 7;
     dailyMap.set(jsDay, { orders: pt.orders, revenue: pt.revenue });
   }
-  const dailyOrders: DailyOrderPoint[] = Array.from(dailyMap.entries()).map(
-    ([day, val]) => ({
-      day: DAYS[day],
-      orders: val.orders,
-      revenue: val.revenue,
-    }),
-  );
 
-  // ── Category breakdown ─────────────────────────────────────────────────────
-  const totalProductsForPct =
-    categoryAgg.reduce((s: number, c: any) => s + c.count, 0) || 1;
-  const categoryBreakdown: CategoryBreakdown[] = categoryAgg.map((c: any) => ({
+  const dailyOrders: DailyOrderPoint[] = Array.from(dailyMap.entries()).map(([day, val]) => ({
+    day: DAYS[day],
+    orders: val.orders,
+    revenue: val.revenue,
+  }));
+
+  // ── Category breakdown ───────────────────────────────────────────────────────
+  const totalProductsForPct = categoryAgg.reduce((s, c) => s + c.count, 0) || 1;
+  const categoryBreakdown: CategoryBreakdown[] = categoryAgg.map((c) => ({
     category: c._id ?? "Other",
     count: c.count,
     percentage: Math.round((c.count / totalProductsForPct) * 100),
   }));
 
-  // ── Top products ───────────────────────────────────────────────────────────
-  const topProducts: TopProduct[] = topProductsAgg.map((p: any) => ({
+  // ── Top products ─────────────────────────────────────────────────────────────
+  const topProducts: TopProduct[] = topProductsAgg.map((p) => ({
     name: p.name ?? "Unknown Product",
     totalQuantity: p.totalQuantity,
     totalRevenue: p.totalRevenue ?? 0,
   }));
 
   return {
-    totalRevenue: totalRevenueAgg[0]?.total ?? 0,
-    revenueThisMonth: revenueThisMonthAgg[0]?.total ?? 0,
-    revenueLastMonth: revenueLastMonthAgg[0]?.total ?? 0,
-    revenueGrowth: growthPct(
-      revenueThisMonthAgg[0]?.total ?? 0,
-      revenueLastMonthAgg[0]?.total ?? 0,
-    ),
-
+    totalRevenue,
+    revenueThisMonth,
+    revenueLastMonth,
+    revenueGrowth: growthPct(revenueThisMonth, revenueLastMonth),
     totalSubsidyGiven: subsidyAgg[0]?.total ?? 0,
-
     totalOrders,
     ordersThisMonth,
     ordersLastMonth,
     ordersGrowth: growthPct(ordersThisMonth, ordersLastMonth),
-
     totalCustomers,
     newCustomersThisMonth,
-
     totalProducts,
     inStockProducts,
     subsidisedProducts,
-
-    avgOrderValue: avgOrderAgg[0]?.avg ?? 0,
-
+    avgOrderValue,
     monthlyRevenue,
     dailyOrders,
     categoryBreakdown,

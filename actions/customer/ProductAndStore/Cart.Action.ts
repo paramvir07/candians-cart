@@ -18,9 +18,9 @@ import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import OrderModel from "@/db/models/customer/Orders.Model";
 import "@/db/models/customer/MiscItem.model";
 import ReferralCode from "@/db/models/admin/referralCode.model";
-import { Cashier } from "@/db/models/cashier/cashier.model";
-import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 import { revalidateCustomerCache } from "@/actions/cache/user.cache";
+import { ReferralHistory } from "@/db/models/cashier/ReferralHistory.model";
+import { ReloadCartpusher } from "@/actions/pusher/pusherAction";
 
 export const AddtoCart = async (
   ItemId: string,
@@ -71,6 +71,7 @@ export const AddtoCart = async (
       });
     }
     await existingCart.save();
+    await ReloadCartpusher();
     revalidatePath("/customer/cart")
     revalidatePath(`/cashier/customer/${user._id}/cart`)
 
@@ -195,6 +196,7 @@ export const UpdateItemQuantity = async (
 
   await cart.save();
 
+  await ReloadCartpusher();
   revalidatePath("/customer/cart");
 
   return { success: true, message: "Cart quantity updated" };
@@ -232,7 +234,6 @@ export const IncrementItem = async (
   }
 
   await cart.save();
-
   revalidatePath("/customer/cart");
 };
 
@@ -305,6 +306,7 @@ export const RemoveItem = async (
   ) {
     await CartModel.findOneAndDelete({ customerId: user._id });
   }
+  await ReloadCartpusher();
   revalidatePath("/customer/cart");
 };
 
@@ -574,6 +576,7 @@ export const PlaceOrder = async ({
 
     await session.commitTransaction();
     await EnableUserReferralFlag(OrderData.subsidy, User._id.toString(), User.name, User.referralCodeId.toString())
+    await ReloadCartpusher();
     return { success: true, message: "Order Placed Successfully" };
   } catch (error) {
     if (session.inTransaction()) {
@@ -678,17 +681,11 @@ const CheckUserReferral = async (referralCodeId: string, perReferAmount: number)
   const session = await mongoose.startSession();
 
   try {
-    const UserSession = await getUserSession();
-
-    const [referral, cashier] = await Promise.all([
-      ReferralCode.findById(referralCodeId).lean(),
-      Cashier.findOne({ userId: UserSession.user.id }).select("_id").lean(),
-    ]);
+    const referral = await ReferralCode.findById(referralCodeId).lean();
 
     if (!referral) return { success: false, message: "Referral not found" };
     if (referral.type === "admin") return { success: false, message: "Referral belongs to admin account" };
     if (!referral.customerId) return { success: false, message: "Referral code has no associated customer" };
-    if (!cashier) return { success: false, message: "Failed to get cashierId" };
 
     const maxUsesReached = referral.maxUses != null && referral.uses >= referral.maxUses;
     const isExpired = referral.expiresAt != null && Date.now() >= referral.expiresAt.getTime();
@@ -696,7 +693,7 @@ const CheckUserReferral = async (referralCodeId: string, perReferAmount: number)
       return { success: false, message: "Referral code is expired or has reached its maximum uses" };
     }
 
-    const ReferralValue = Math.round(perReferAmount*100);
+    const ReferralValue = Math.round(perReferAmount * 100);
     if (typeof ReferralValue !== "number" || !Number.isFinite(ReferralValue) || ReferralValue <= 0) {
       return { success: false, message: "Invalid referral value" };
     }
@@ -704,13 +701,13 @@ const CheckUserReferral = async (referralCodeId: string, perReferAmount: number)
     const customerId = referral.customerId.toString();
 
     session.startTransaction();
-    await WalletTopUp.create(
-      [{ customerId, userId: cashier._id.toString(), userRole: "cashier", value: ReferralValue, paymentMode: "referral" }],
+    await ReferralHistory.create(
+      [{ customerId, value: ReferralValue }],
       { session },
     );
     await Customer.findByIdAndUpdate(
       customerId,
-      { $inc: { walletBalance: ReferralValue } },
+      { $inc: { giftWalletBalance: ReferralValue } },
       { session, runValidators: true },
     );
     await ReferralCode.findByIdAndUpdate(
@@ -847,7 +844,8 @@ export const ClearCart = async (customerId?: string) => {
  
     revalidatePath("/customer/cart");
     if (customerId) revalidatePath(`/cashier/customer/${customerId}/cart`);
- 
+    
+    await ReloadCartpusher();
     return { success: true, message: "Cart cleared successfully" };
   } catch (err) {
     console.log(err);

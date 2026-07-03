@@ -195,3 +195,20 @@ export function getAnalyticsBoundaries(baseDate = new Date()) {
     utcStartOfLastMonth: fromZonedTime(zonedStartOfLastMonth, STORE_TIMEZONE),
   };
 }
+
+/**
+ * Returns today's calendar date in Vancouver time as "YYYY-MM-DD",
+ * regardless of the timezone the calling browser/server is in.
+ *
+ * Use this instead of `new Date().toLocaleDateString("en-CA")` anywhere
+ * you need "today" as a date string for filters/pickers — that pattern
+ * silently uses the caller's local timezone instead of Vancouver's.
+ */
+export function getVancouverTodayString(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: STORE_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}

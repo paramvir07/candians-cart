@@ -8,6 +8,7 @@ import {
   TrendingUp,
   TrendingDown,
   ArrowRight,
+  HelpCircle,
 } from "lucide-react";
 import type { DashboardStats } from "@/actions/admin/analytics/store/allStoresData.action";
 
@@ -83,21 +84,24 @@ export default function StatCards({ stats }: StatCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-stretch">
       {cards.map((card) => {
         const Icon = card.icon;
-        
+
         // Hide trends entirely if growth drops below zero
         const showTrend = card.growth >= 0;
 
         const CardContent = (
           <div
-            className={`relative bg-linear-to-br ${card.gradientFrom} to-white border ${card.border} rounded-2xl p-4 sm:p-5 overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99] ${card.href ? "cursor-pointer" : ""}`}
+            className={`relative h-full flex flex-col bg-linear-to-br ${card.gradientFrom} to-white border ${card.border} rounded-2xl p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99] ${card.href ? "cursor-pointer" : ""}`}
           >
-            {/* Decorative blob */}
-            <div
-              className={`absolute -top-5 -right-5 w-24 h-24 rounded-full ${card.dot} opacity-20 blur-sm`}
-            />
+            {/* Decorative blob — clipped to the card's own rounded corners,
+        isolated from the rest of the card so it doesn't clip the tooltip */}
+            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+              <div
+                className={`absolute -top-5 -right-5 w-24 h-24 rounded-full ${card.dot} opacity-20 blur-sm`}
+              />
+            </div>
 
             {/* Hover arrow (only if clickable) */}
             {card.href && (
@@ -109,9 +113,25 @@ export default function StatCards({ stats }: StatCardsProps) {
             )}
 
             <div className="flex items-start justify-between gap-2 mb-3 relative pr-8">
-              <p className="text-xs sm:text-sm font-medium text-gray-500 leading-snug">
-                {card.title}
-              </p>
+              <div className="flex items-center gap-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 leading-snug">
+                  {card.title}
+                </p>
+
+                {card.note && (
+                  <span className="relative group/tip shrink-0">
+                    <HelpCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400 hover:text-gray-600 transition-colors" />
+                    <span
+                      role="tooltip"
+                      className="pointer-events-none absolute z-20 left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-[180px] sm:max-w-[220px] rounded-lg bg-gray-900 text-white text-[10px] sm:text-[11px] leading-snug px-2.5 py-1.5 opacity-0 scale-95 origin-bottom transition-all duration-150 group-hover/tip:opacity-100 group-hover/tip:scale-100"
+                    >
+                      {card.note}
+                      <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                    </span>
+                  </span>
+                )}
+              </div>
+
               <div
                 className={`${card.iconBg} p-1.5 sm:p-2 rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-105`}
               >
@@ -125,33 +145,33 @@ export default function StatCards({ stats }: StatCardsProps) {
               {card.value}
             </p>
 
-            {/* Conditionally render trend line info ONLY when positive/neutral */}
-            {showTrend ? (
-              <div className="flex items-center gap-1 relative">
-                <TrendingUp className="w-3 h-3 shrink-0 text-emerald-500" />
-                <p className="text-xs font-medium leading-tight text-emerald-600">
-                  {card.sub}
-                </p>
-              </div>
-            ) : (
-              // Empty structure layout fallback matching layout heights
-              <div className="h-4" />
-            )}
-            
-            {card.note && (
-              <p className="text-[10px] text-gray-400 mt-1.5 leading-tight relative">
-                *{card.note}
-              </p>
-            )}
+            <div className="mt-auto relative">
+              {showTrend ? (
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3 shrink-0 text-emerald-500" />
+                  <p className="text-xs font-medium leading-tight text-emerald-600">
+                    {card.sub}
+                  </p>
+                </div>
+              ) : (
+                <div className="h-4" />
+              )}
+            </div>
           </div>
         );
 
         return card.href ? (
-          <Link key={card.title} href={card.href} className="group block">
+          <Link
+            key={card.title}
+            href={card.href}
+            className="group block h-full"
+          >
             {CardContent}
           </Link>
         ) : (
-          <div key={card.title}>{CardContent}</div>
+          <div key={card.title} className="h-full">
+            {CardContent}
+          </div>
         );
       })}
     </div>

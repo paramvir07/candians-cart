@@ -8,6 +8,7 @@ import Customer from "@/db/models/customer/customer.model";
 import Store from "@/db/models/store/store.model";
 import mongoose from "mongoose";
 import { getUserSession } from "../auth/getUserSession.actions";
+import { getAnalyticsBoundaries } from "@/lib/timezone";
 
 // ─── Interfaces ────────────────────────────────────────────────────────────────
 
@@ -49,9 +50,38 @@ export interface StoreDashboardData {
   recentPayouts: StoreRecentPayout[];
 }
 
+// ─── Database Aggregation Interfaces ──────────────────────────────────────────
+
+interface FlatRevenueMetrics {
+  totalCartTotal: number;
+  totalSubsidy: number;
+  totalSubsidyUsed: number;
+}
+
+interface StoreProfitMetrics {
+  total: number;
+}
+
+interface RawRecentOrderDoc {
+  _id: mongoose.Types.ObjectId;
+  customerName?: string;
+  amount?: number;
+  status: "pending" | "completed";
+  paymentMode: "wallet" | "cash" | "card" | "pending";
+  createdAt: Date;
+}
+
+interface RawRecentPayoutDoc {
+  _id: mongoose.Types.ObjectId;
+  startDate: Date;
+  endDate: Date;
+  storePayout?: number;
+  status: "pending" | "paid";
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function growthPercent(current: number, previous: number) {
+function growthPercent(current: number, previous: number): number {
   if (previous === 0) return current > 0 ? 100 : 0;
   return Math.round(((current - previous) / previous) * 100 * 10) / 10;
 }
@@ -63,12 +93,26 @@ function formatWeekLabel(start: Date, end: Date): string {
   return `${s.replace(",", "")}–${eDay}`;
 }
 
+/**
+ * Computes financial revenue based on raw database fields using the flow:
+ * Paid After Subsidy = Total Customer Paid - (Subsidy - Subsidy Used)
+ * Revenue = Paid After Subsidy + Subsidy
+ */
+function calculateRevenueFromMetrics(metrics: FlatRevenueMetrics | undefined): number {
+  const customerPaid = metrics?.totalCartTotal ?? 0;
+  const subsidy = metrics?.totalSubsidy ?? 0;
+  const subsidyUsed = metrics?.totalSubsidyUsed ?? 0;
+
+  const paidAfterSubsidy = customerPaid - (subsidy - subsidyUsed);
+  return paidAfterSubsidy + subsidy;
+}
+
 // ─── Action ────────────────────────────────────────────────────────────────────
 
 export async function getStoreDashboardData(): Promise<StoreDashboardData> {
   await dbConnect();
 
-  // Resolve the store that belongs to the logged-in user
+  // Resolve the store that belongs to the logged-in user securely
   const session = await getUserSession();
   const storeDoc = await Store.findOne({ userId: session.user.id })
     .select("_id")
@@ -76,12 +120,12 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
 
   if (!storeDoc) throw new Error("Store not found for this user");
 
-  const storeId = (storeDoc as any)._id as mongoose.Types.ObjectId;
+  const storeId = storeDoc._id as mongoose.Types.ObjectId;
   const storeIdStr = storeId.toString();
 
-  const now = new Date();
-  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const { utcStartOfThisMonth, utcStartOfLastMonth } = getAnalyticsBoundaries();
+  const startOfThisMonth = utcStartOfThisMonth;
+  const startOfLastMonth = utcStartOfLastMonth;
 
   const [
     totalProducts,
@@ -130,21 +174,21 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
       createdAt: { $gte: startOfThisMonth },
     }),
 
-    // Total revenue (cartTotal + subsidy) from completed orders — all-time
-    OrderModel.aggregate([
+    // Flat raw sum metrics for All-Time Revenue
+    OrderModel.aggregate<FlatRevenueMetrics>([
       { $match: { storeId, status: "completed" } },
       {
         $group: {
           _id: null,
-          total: {
-            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
-          },
+          totalCartTotal: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
         },
       },
     ]),
 
-    // Total revenue this month
-    OrderModel.aggregate([
+    // Flat raw sum metrics for This Month Revenue
+    OrderModel.aggregate<FlatRevenueMetrics>([
       {
         $match: {
           storeId,
@@ -155,15 +199,15 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
       {
         $group: {
           _id: null,
-          total: {
-            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
-          },
+          totalCartTotal: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
         },
       },
     ]),
 
-    // Total revenue last month
-    OrderModel.aggregate([
+    // Flat raw sum metrics for Last Month Revenue
+    OrderModel.aggregate<FlatRevenueMetrics>([
       {
         $match: {
           storeId,
@@ -174,15 +218,15 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
       {
         $group: {
           _id: null,
-          total: {
-            $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] },
-          },
+          totalCartTotal: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
         },
       },
     ]),
 
     // Store profit all-time
-    OrderModel.aggregate([
+    OrderModel.aggregate<StoreProfitMetrics>([
       { $match: { storeId, status: "completed" } },
       {
         $group: {
@@ -193,7 +237,7 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
     ]),
 
     // Store profit this month
-    OrderModel.aggregate([
+    OrderModel.aggregate<StoreProfitMetrics>([
       {
         $match: {
           storeId,
@@ -210,7 +254,7 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
     ]),
 
     // Store profit last month
-    OrderModel.aggregate([
+    OrderModel.aggregate<StoreProfitMetrics>([
       {
         $match: {
           storeId,
@@ -227,7 +271,7 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
     ]),
 
     // Recent orders — join customer name
-    OrderModel.aggregate([
+    OrderModel.aggregate<RawRecentOrderDoc>([
       { $match: { storeId } },
       { $sort: { createdAt: -1 } },
       { $limit: 10 },
@@ -257,29 +301,31 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
       .find({ storeId })
       .sort({ createdAt: -1 })
       .limit(10)
-      .lean(),
+      .lean<RawRecentPayoutDoc[]>(),
   ]);
+
+  // Execute explicit sequential calculations on raw totals
+  const totalRevenue = calculateRevenueFromMetrics(revenueAllTimeAgg[0]);
+  const revenueThisMonth = calculateRevenueFromMetrics(revenueThisMonthAgg[0]);
+  const revenueLastMonth = calculateRevenueFromMetrics(revenueLastMonthAgg[0]);
 
   const stats: StoreDashboardStats = {
     totalProducts,
     productGrowthPercent: growthPercent(productsThisMonth, productsLastMonth),
     totalOrders,
     orderGrowthPercent: growthPercent(ordersThisMonth, ordersLastMonth),
-    totalRevenue: revenueAllTimeAgg[0]?.total ?? 0,
-    revenueGrowthPercent: growthPercent(
-      revenueThisMonthAgg[0]?.total ?? 0,
-      revenueLastMonthAgg[0]?.total ?? 0,
-    ),
-    totalStoreProfit: storeProfitAllTimeAgg[0]?.total ?? 0, // ← new
+    totalRevenue,
+    revenueGrowthPercent: growthPercent(revenueThisMonth, revenueLastMonth),
+    totalStoreProfit: storeProfitAllTimeAgg[0]?.total ?? 0,
     storeProfitGrowthPercent: growthPercent(
       storeProfitThisMonthAgg[0]?.total ?? 0,
       storeProfitLastMonthAgg[0]?.total ?? 0,
-    ), // ← new
+    ),
     storeUsers,
     newUsersRecently: newUsersThisMonth,
   };
 
-  const recentOrders: StoreRecentOrder[] = recentOrdersDocs.map((o: any) => ({
+  const recentOrders: StoreRecentOrder[] = recentOrdersDocs.map((o) => ({
     orderId: o._id.toString(),
     customerName: o.customerName ?? "Unknown Customer",
     amount: o.amount ?? 0,
@@ -288,7 +334,7 @@ export async function getStoreDashboardData(): Promise<StoreDashboardData> {
     createdAt: o.createdAt,
   }));
 
-  const recentPayouts: StoreRecentPayout[] = recentPayoutDocs.map((p: any) => ({
+  const recentPayouts: StoreRecentPayout[] = recentPayoutDocs.map((p) => ({
     payoutId: p._id.toString(),
     weekLabel: formatWeekLabel(p.startDate, p.endDate),
     amount: p.storePayout ?? 0,
