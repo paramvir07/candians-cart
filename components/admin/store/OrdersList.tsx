@@ -44,7 +44,7 @@ import OrderDetail from "@/components/shared/users/orders/OrderDetail";
 import { format } from "date-fns";
 import { type DateRange as DayPickerDateRange } from "react-day-picker";
 import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
-import { getVancouverTodayString } from "@/lib/timezone";
+import { getVancouverTodayString, STORE_TIMEZONE } from "@/lib/timezone";
 
 // ─── useDebounce ────────────────────────────────────────────────────────────────
 
@@ -127,10 +127,13 @@ function formatCents(cents: number) {
 }
 
 function formatDate(date: Date) {
-  return new Date(date).toLocaleDateString("en-CA", {
+  return new Date(date).toLocaleString("en-CA", {
+    timeZone: STORE_TIMEZONE,
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 

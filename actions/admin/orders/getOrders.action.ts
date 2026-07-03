@@ -73,7 +73,6 @@ function buildLookupStages() {
 }
 
 function mapDoc(o: any): AdminOrder {
-  console.log("Order Store Profit: ", o.storeProfit);
   return {
     orderId: o._id.toString(),
     orderRef: `LPO/${o._id.toString().slice(-6).toUpperCase()}`,

@@ -102,7 +102,6 @@ export const getCategorySales = cache(
       ];
 
       const rawResults = await OrderModel.aggregate(aggregationPipeline);
-      console.dir(rawResults, { depth: null });
 
       const serializedData: ICategorySales[] = rawResults.map(
         (categoryGroup) => ({

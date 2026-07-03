@@ -7,11 +7,13 @@ import OrderModel from "@/db/models/customer/Orders.Model";
 import mongoose from "mongoose";
 
 export type CashActivityType = "order" | "wallet_topup";
+export type PaymentModeFilter = "all" | "cash" | "card";
 
 export interface CashActivity {
   id: string;
   type: CashActivityType;
   label: string;
+  paymentMode: "cash" | "card";
   customerName: string;
   cashierName: string;
   storeName: string;
@@ -39,6 +41,7 @@ export interface CashSummary {
 interface DBQueryResult {
   _id: mongoose.Types.ObjectId;
   amount: number;
+  paymentMode?: "cash" | "card";
   customerName?: string;
   cashierName?: string;
   storeName?: string;
@@ -46,12 +49,12 @@ interface DBQueryResult {
   createdAt: Date;
 }
 
-// Strictly typed query criteria to eliminate 'any'
 interface CashFilterQuery {
-  paymentMode: string;
+  paymentMode?: string;
   status?: string;
   storeId?: mongoose.Types.ObjectId;
   userId?: { $in: string[] };
+  createdAt?: { $gte?: Date; $lte?: Date };
 }
 
 async function getCashierIdsForStore(
@@ -59,6 +62,18 @@ async function getCashierIdsForStore(
 ): Promise<string[]> {
   const cashiers = await Cashier.find({ storeId }).select("_id").lean();
   return (cashiers as any[]).map((c) => c._id.toString());
+}
+
+// Builds the { $gte, $lte } clause, only if a bound was actually supplied.
+function buildDateClause(
+  startDate?: Date,
+  endDate?: Date,
+): { createdAt?: { $gte?: Date; $lte?: Date } } {
+  if (!startDate && !endDate) return {};
+  const createdAt: { $gte?: Date; $lte?: Date } = {};
+  if (startDate) createdAt.$gte = startDate;
+  if (endDate) createdAt.$lte = endDate;
+  return { createdAt };
 }
 
 const orderLookups = [
@@ -93,6 +108,7 @@ const orderLookups = [
     $project: {
       _id: 1,
       amount: "$cartTotal",
+      paymentMode: 1,
       customerName: "$customer.name",
       cashierName: "$cashier.name",
       storeName: "$store.name",
@@ -135,6 +151,7 @@ const topupLookups = [
     $project: {
       _id: 1,
       amount: "$value",
+      paymentMode: 1,
       customerName: "$customer.name",
       cashierName: "$cashier.name",
       storeName: "$store.name",
@@ -145,10 +162,12 @@ const topupLookups = [
 ];
 
 function mapOrder(o: DBQueryResult): CashActivity {
+  const paymentMode = o.paymentMode === "card" ? "card" : "cash";
   return {
     id: o._id.toString(),
     type: "order",
-    label: "Cash Order",
+    label: paymentMode === "card" ? "Card Order" : "Cash Order",
+    paymentMode,
     customerName: o.customerName ?? "Unknown",
     cashierName: o.cashierName ?? "—",
     storeName: o.storeName ?? "Unknown Store",
@@ -159,10 +178,12 @@ function mapOrder(o: DBQueryResult): CashActivity {
 }
 
 function mapTopUp(t: DBQueryResult): CashActivity {
+  const paymentMode = t.paymentMode === "card" ? "card" : "cash";
   return {
     id: t._id.toString(),
     type: "wallet_topup",
-    label: "Cash Top-Up",
+    label: paymentMode === "card" ? "Card Top-Up" : "Cash Top-Up",
+    paymentMode,
     customerName: t.customerName ?? "Unknown",
     cashierName: t.cashierName ?? "—",
     storeName: t.storeName ?? "Unknown Store",
@@ -185,17 +206,20 @@ function mergeAndSort(
 
 export async function getCashSummary(
   storeId?: string | null,
+  paymentMode: PaymentModeFilter = "all",
+  startDate?: Date,
+  endDate?: Date,
 ): Promise<CashSummary> {
   await dbConnect();
   const sid = storeId ? new mongoose.Types.ObjectId(storeId) : null;
+  const dateClause = buildDateClause(startDate, endDate);
 
-  const orderMatch: CashFilterQuery = {
-    paymentMode: "cash",
-    status: "completed",
-  };
+  const orderMatch: CashFilterQuery = { status: "completed", ...dateClause };
   if (sid) orderMatch.storeId = sid;
+  if (paymentMode !== "all") orderMatch.paymentMode = paymentMode;
 
-  const topupMatch: CashFilterQuery = { paymentMode: "cash" };
+  const topupMatch: CashFilterQuery = { ...dateClause };
+  if (paymentMode !== "all") topupMatch.paymentMode = paymentMode;
   if (sid) {
     const cashierIds = await getCashierIdsForStore(sid);
     topupMatch.userId = { $in: cashierIds };
@@ -218,23 +242,23 @@ export async function getCashSummary(
     ]),
   ]);
 
-  const cashOrderAmount = orderAgg[0]?.total ?? 0;
-  const cashOrderCount = orderAgg[0]?.count ?? 0;
-  const cashTopUpAmount = topupAgg[0]?.total ?? 0;
-  const cashTopUpCount = topupAgg[0]?.count ?? 0;
+  const orderAmount = orderAgg[0]?.total ?? 0;
+  const orderCount = orderAgg[0]?.count ?? 0;
+  const topUpAmount = topupAgg[0]?.total ?? 0;
+  const topUpCount = topupAgg[0]?.count ?? 0;
 
   return {
-    totalCashOrders: cashOrderCount,
-    totalCashOrderAmount: cashOrderAmount,
-    totalCashTopUps: cashTopUpCount,
-    totalCashTopUpAmount: cashTopUpAmount,
-    totalCashCollected: cashOrderAmount + cashTopUpAmount,
+    totalCashOrders: orderCount,
+    totalCashOrderAmount: orderAmount,
+    totalCashTopUps: topUpCount,
+    totalCashTopUpAmount: topUpAmount,
+    totalCashCollected: orderAmount + topUpAmount,
   };
 }
 
 /**
  * Fetches the most recent cash activities across all or specific stores.
- * Required for the dashboard widget.
+ * Required for the dashboard widget. Unfiltered by design — always cash, no date bounds.
  */
 export async function getRecentCashActivities(
   storeId?: string | null,
@@ -281,18 +305,24 @@ export async function getCashActivitiesPaginated(
   storeId: string | null | undefined,
   page = 1,
   limit = 8,
+  paymentMode: PaymentModeFilter = "all",
+  startDate?: Date,
+  endDate?: Date,
 ): Promise<CashActivityResult> {
   try {
     await dbConnect();
     const sid = storeId ? new mongoose.Types.ObjectId(storeId) : null;
+    const dateClause = buildDateClause(startDate, endDate);
 
     const orderMatch: CashFilterQuery = {
-      paymentMode: "cash",
       status: "completed",
+      ...dateClause,
     };
     if (sid) orderMatch.storeId = sid;
+    if (paymentMode !== "all") orderMatch.paymentMode = paymentMode;
 
-    const topupMatch: CashFilterQuery = { paymentMode: "cash" };
+    const topupMatch: CashFilterQuery = { ...dateClause };
+    if (paymentMode !== "all") topupMatch.paymentMode = paymentMode;
     if (sid) {
       const cashierIds = await getCashierIdsForStore(sid);
       topupMatch.userId = { $in: cashierIds };
