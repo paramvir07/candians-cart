@@ -79,11 +79,11 @@ export default function ProductStatCards({ stats }: ProductStatCardsProps) {
       <StatCard
         label="Sold Today"
         value={stats.soldToday.toLocaleString()}
-        sub="Items sold today"
+        sub="Unique products sold today"
         icon={TrendingUp}
         bg="bg-emerald-50/60"
         border="border-emerald-100"
-        tooltipText="Calculated by total items & volumetric weight (e.g., 2 bananas + 3 apples = 5 products). For loose bulk items sold by weight, every 0.53 lb of snacks/namkeen is counted as 1 item."
+        tooltipText="Counts each distinct product sold today, regardless of quantity (e.g., 2 bananas + 3 apples = 2 products, not 5)."
       />
       <StatCard
         label="Sold Weekly"

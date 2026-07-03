@@ -69,6 +69,11 @@ const formatToPST = (utcDateString: string) => {
     .replace(/\//g, "-");
 };
 
+const formatSales = (sales: number, isMeasuredByWeight?: boolean) => {
+  const n = Number(sales);
+  return isMeasuredByWeight ? n.toFixed(2) : Math.round(n).toString();
+};
+
 export default function CategorySalesTableClient({
   initialData,
   initialStoreId,
@@ -253,7 +258,9 @@ export default function CategorySalesTableClient({
               data.map((row) => (
                 <TableRow key={row.category}>
                   <TableCell className="font-medium">{row.category}</TableCell>
-                  <TableCell>{Number(row.totalSales).toFixed(2)}</TableCell>
+                  <TableCell>
+                    {formatSales(row.totalSales, row.isMeasuredInWeight)}
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="outline"
@@ -303,7 +310,9 @@ export default function CategorySalesTableClient({
                     (detail: ICategorySaleDetail) => (
                       <TableRow key={detail.productId}>
                         <TableCell>{detail.productName}</TableCell>
-                        <TableCell>{Number(detail.sales).toFixed(2)}</TableCell>
+                        <TableCell>
+                          {formatSales(detail.sales, detail.isMeasuredInWeight)}
+                        </TableCell>
                         <TableCell>{formatToPST(detail.date)}</TableCell>
                       </TableRow>
                     ),

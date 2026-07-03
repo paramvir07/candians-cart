@@ -43,7 +43,6 @@ export async function getProductStats(
   const orderMatch: StatFilterQuery = {};
   if (storeId) orderMatch.storeId = new mongoose.Types.ObjectId(storeId);
 
-  // 1. Fetch exactly the boundaries you need from your central timezone utility
   const { utcStartOfDay, utcRolling7Days } = getAnalyticsBoundaries();
 
   const [
@@ -58,7 +57,8 @@ export async function getProductStats(
     productsModel.countDocuments({ ...match, stock: true }),
     productsModel.countDocuments({ ...match, subsidised: true }),
 
-    // Sold today
+    // Sold today — count UNIQUE products sold, not total quantity.
+    // e.g. 2 bananas + 3 apples = 2 (not 5).
     OrderModel.aggregate<AggregationResult>([
       { $match: { ...orderMatch, createdAt: { $gte: utcStartOfDay } } },
       {
@@ -72,15 +72,22 @@ export async function getProductStats(
         },
       },
       { $unwind: "$combinedItems" },
+      // Stage 1: collapse to distinct productIds
+      {
+        $group: {
+          _id: "$combinedItems.productId",
+        },
+      },
+      // Stage 2: count how many distinct products that is
       {
         $group: {
           _id: null,
-          total: { $sum: { $ceil: "$combinedItems.quantity" } },
+          total: { $sum: 1 },
         },
       },
     ]),
 
-    // Sold weekly (Rolling 7 days)
+    // Sold weekly (Rolling 7 days) — unchanged, still total quantity
     OrderModel.aggregate<AggregationResult>([
       { $match: { ...orderMatch, createdAt: { $gte: utcRolling7Days } } },
       {
@@ -102,7 +109,7 @@ export async function getProductStats(
       },
     ]),
 
-    // Total Sold
+    // Total Sold — unchanged, still total quantity
     OrderModel.aggregate<AggregationResult>([
       { $match: orderMatch },
       {
