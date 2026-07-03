@@ -18,6 +18,7 @@ import ShareButton from "@/components/shared/share/ShareButton";
 import { IReferralCode } from "@/db/models/admin/referralCode.model";
 import logoIcon from "@/app/icon.jpg";
 import { QRCodeSVG } from "qrcode.react";
+import EmailVerificationBadge from "./EmailVerificationBadge";
 
 type Props = {
   customer: Pick<
@@ -25,6 +26,7 @@ type Props = {
     | "_id"
     | "name"
     | "email"
+    | "emailVerified"
     | "aptUnit"
     | "address"
     | "city"
@@ -112,6 +114,13 @@ export default function ProfileHero({ customer, referralCode }: Props) {
             {customer.name}
           </h1>
           <p className="text-sm text-muted-foreground">{customer.email}</p>
+
+          <div className="mt-1.5">
+            <EmailVerificationBadge
+              email={customer.email}
+              verified={customer.emailVerified}
+            />
+          </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-1">
             <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">

@@ -2,51 +2,43 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Loader2,
-  Mail,
-  ChevronLeft,
-  ShieldCheck,
-} from "lucide-react";
+import { Loader2, Mail, ChevronLeft, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { authClient } from "@/lib/auth/auth-client";
+import { toast } from "sonner";
+import { changeEmailAction } from "@/actions/auth/changeEmail.action";
 
 export default function ChangeEmailForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!email.includes("@")) {
-      setError("Enter a valid email.");
+      toast.error("Enter a valid email.");
       return;
     }
 
     setLoading(true);
-    setError("");
 
-    const { error } = await authClient.changeEmail({
-      newEmail: email,
-    });
+    const result = await changeEmailAction(email);
 
     setLoading(false);
 
-    if (error) {
-      setError(error.message ?? "Something went wrong.");
+    if (!result.success) {
+      toast.error(result.message);
     } else {
       setSuccess(true);
     }
   }
 
-  const routerFunc = () =>{
-    router.push("/customer/profile")
-    router.refresh()
-  }
+  const routerFunc = () => {
+    router.push("/customer/profile");
+    router.refresh();
+  };
 
   if (success) {
     return (
@@ -59,8 +51,9 @@ export default function ChangeEmailForm() {
             Check your email
           </h1>
           <p className="text-sm text-muted-foreground">
-            We sent a confirmation link to <span className="font-semibold">{email}</span>.
-            You must confirm it to complete the change.
+            We sent a confirmation link to{" "}
+            <span className="font-semibold">{email}</span>. You must confirm it
+            to complete the change.
           </p>
           <Button
             className="w-full h-11 rounded-full text-sm font-bold shadow-lg shadow-primary/20"
@@ -91,7 +84,6 @@ export default function ChangeEmailForm() {
         <div className="w-full max-w-md">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="rounded-3xl border border-border/60 bg-card shadow-sm overflow-hidden">
-              
               {/* Header strip */}
               <div className="px-5 sm:px-6 py-4 border-b border-border/60 flex items-center gap-3 bg-secondary/40">
                 <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -125,15 +117,11 @@ export default function ChangeEmailForm() {
               </div>
             </div>
 
-            {error && (
-              <p className="text-xs text-red-500 font-medium px-1">{error}</p>
-            )}
-
             {/* Notice */}
             <div className="rounded-2xl border border-border/60 bg-secondary/30 px-4 py-3">
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                📩 A confirmation link will be sent to your new email. The change
-                will not apply until it is verified.
+                📩 A confirmation link will be sent to your new email. The
+                change will not apply until it is verified.
               </p>
             </div>
 

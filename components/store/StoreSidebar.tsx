@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BadgeDollarSign,
   Banknote,
   BarChart,
   HandCoins,

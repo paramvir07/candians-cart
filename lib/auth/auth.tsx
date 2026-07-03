@@ -3,16 +3,16 @@ import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
-import { phoneNumber } from "better-auth/plugins"; // ADD
+import { phoneNumber } from "better-auth/plugins";
 import { ac, roles } from "./roles";
 import { sendEmail } from "./email";
 import { VerifyEmail } from "@/components/EmailTemplates/VerifyEmail";
-import { ForgotPasswordEmail } from "@/components/EmailTemplates/ForgotPasswordEmail";
-import { ChangeEmailConfirmationEmail } from "@/components/EmailTemplates/ChangeEmailConfirmation";
 import { sendSMS } from "../twilio/twilio";
 import Customer from "@/db/models/customer/customer.model";
 import { dbConnect } from "@/db/dbConnect";
 import { revalidateCustomerCache } from "@/actions/cache/user.cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import Store from "@/db/models/store/store.model";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const client = new MongoClient(MONGODB_URI as string);
@@ -40,22 +40,6 @@ export const auth = betterAuth({
     },
     changeEmail: {
       enabled: true,
-      sendChangeEmailConfirmation: async ({ newEmail, user, url }) => {
-        const u = new URL(url);
-        u.searchParams.set("callbackURL", "/email-verified?type=confirmation");
-        await sendEmail({
-          to: user.email,
-          subject: "Verify email change",
-          react: (
-            <ChangeEmailConfirmationEmail
-              username={user.name}
-              confirmUrl={u.toString()}
-              newEmail={newEmail}
-              appName="Candian's Cart"
-            />
-          ),
-        });
-      },
     },
   },
   emailAndPassword: {
@@ -64,26 +48,32 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     sendOnSignIn: true,
-    sendVerificationEmail: async ({ user, url }) => {
+    sendVerificationEmail: async ({ user, url, token }) => {
+      let targetEmail = user.email;
+      try {
+        const payload = JSON.parse(
+          Buffer.from(token.split(".")[1], "base64url").toString(),
+        );
+        if (payload.email) targetEmail = payload.email;
+      } catch (err) {
+        console.error("[sendVerificationEmail] failed to decode token:", err);
+      }
+
+      const isEmailChange = targetEmail !== user.email;
+
       const u = new URL(url);
-      const token = u.searchParams.get("token");
-      let requestType = "verify";
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          requestType = payload.requestType ?? "verify";
-        } catch (err) {
-          console.error("[emailVerification] failed to decode token:", err);
-        }
-      }
-      if (requestType === "change-email-verification") {
-        u.searchParams.set("callbackURL", "/api/auth/email-change");
-      } else {
-        u.searchParams.set("callbackURL", "/email-updated");
-      }
+      u.searchParams.set(
+        "callbackURL",
+        isEmailChange
+          ? "/email-verified?type=change"
+          : "/email-verified?type=signup",
+      );
+
       await sendEmail({
-        to: user.email,
-        subject: "Verify your email address",
+        to: targetEmail,
+        subject: isEmailChange
+          ? "Confirm your new email address"
+          : "Verify your email address",
         react: (
           <VerifyEmail
             username={user.name}
@@ -92,6 +82,29 @@ export const auth = betterAuth({
           />
         ),
       });
+    },
+    afterEmailVerification: async (user) => {
+      const role = (user as any).role as string | undefined;
+      try {
+        await dbConnect();
+        if (role === "customer") {
+          await Customer.updateOne(
+            { userId: user.id },
+            { $set: { email: user.email } },
+          );
+          revalidateTag("customer", "max");
+          revalidateTag("customer-and-store", "max");
+        }
+        if (role === "store") {
+          await Store.updateOne(
+            { userId: user.id },
+            { $set: { email: user.email } },
+          );
+        }
+        if (role) revalidatePath(`/${role}/profile`);
+      } catch (err) {
+        console.error("[afterEmailVerification] sync failed:", err);
+      }
     },
   },
   plugins: [
@@ -138,5 +151,4 @@ export const auth = betterAuth({
   ],
 });
 
-// at the bottom of auth.tsx
 export { db };

@@ -15,8 +15,6 @@ type UserDoc = {
 export async function sendForgotPasswordOTPAction(
   phoneNumber: string,
 ): Promise<{ success: boolean; message: string }> {
-
-
   try {
     const user = await db.collection<UserDoc>("user").findOne({
       phoneNumber,
@@ -35,7 +33,10 @@ export async function sendForgotPasswordOTPAction(
     return { success: true, message: "Verification code sent!" };
   } catch (error) {
     console.error("[sendForgotPasswordOTPAction]", error);
-    return { success: false, message: "Failed to send code. Please try again." };
+    return {
+      success: false,
+      message: "Failed to send code. Please try again.",
+    };
   }
 }
 
@@ -65,7 +66,10 @@ export async function verifyForgotPasswordOTPAction(
     );
 
     if (!response.ok) {
-      return { success: false, message: "Invalid or expired code. Please try again." };
+      return {
+        success: false,
+        message: "Invalid or expired code. Please try again.",
+      };
     }
 
     // Generate a short-lived reset token (10 minutes)
@@ -81,7 +85,10 @@ export async function verifyForgotPasswordOTPAction(
     return { success: true, message: "OTP verified!", resetToken };
   } catch (error) {
     console.error("[verifyForgotPasswordOTPAction]", error);
-    return { success: false, message: "Something went wrong. Please try again." };
+    return {
+      success: false,
+      message: "Something went wrong. Please try again.",
+    };
   }
 }
 
@@ -90,28 +97,33 @@ export async function resetPasswordWithPhoneAction(
   resetToken: string,
   newPassword: string,
 ): Promise<{ success: boolean; message: string }> {
-    const parsedPassword = passwordSchema.safeParse(newPassword);
+  const parsedPassword = passwordSchema.safeParse(newPassword);
 
-    if (!parsedPassword.success) {
-      return {
-        success: false,
-        message:
-          parsedPassword.error.issues[0]?.message ??
-          "Password does not meet the requirements.",
-      };
-    }
+  if (!parsedPassword.success) {
+    return {
+      success: false,
+      message:
+        parsedPassword.error.issues[0]?.message ??
+        "Password does not meet the requirements.",
+    };
+  }
   try {
-    const record = await db.collection<{
-      token: string;
-      userId: string;
-      expiresAt: Date;
-    }>("phone_password_reset").findOne({
-      token: resetToken,
-      expiresAt: { $gt: new Date() },
-    });
+    const record = await db
+      .collection<{
+        token: string;
+        userId: string;
+        expiresAt: Date;
+      }>("phone_password_reset")
+      .findOne({
+        token: resetToken,
+        expiresAt: { $gt: new Date() },
+      });
 
     if (!record) {
-      return { success: false, message: "Session expired. Please start again." };
+      return {
+        success: false,
+        message: "Session expired. Please start again.",
+      };
     }
 
     // Use Better Auth's internal context to hash the password
@@ -119,17 +131,27 @@ export async function resetPasswordWithPhoneAction(
     const hashedPassword = await ctx.password.hash(parsedPassword.data);
 
     // Update the password in the account collection directly
-    await db.collection("account").updateOne(
-      { userId: record.userId, providerId: "credential" },
-      { $set: { password: hashedPassword } },
-    );
+    await db
+      .collection("account")
+      .updateOne(
+        { userId: record.userId, providerId: "credential" },
+        { $set: { password: hashedPassword } },
+      );
+
+    // Revoke every existing session for this user
+    await db.collection("session").deleteMany({ userId: record.userId });
 
     // Clean up used token
-    await db.collection("phone_password_reset").deleteOne({ token: resetToken });
+    await db
+      .collection("phone_password_reset")
+      .deleteOne({ token: resetToken });
 
     return { success: true, message: "Password updated successfully!" };
   } catch (error) {
     console.error("[resetPasswordWithPhoneAction]", error);
-    return { success: false, message: "Something went wrong. Please try again." };
+    return {
+      success: false,
+      message: "Something went wrong. Please try again.",
+    };
   }
 }

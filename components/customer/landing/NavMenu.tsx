@@ -10,13 +10,12 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   User,
-  Users,
-  CreditCard,
   HelpCircle,
   LogOut,
   ChartSpline,
   PackageOpen,
   HandCoins,
+  ShoppingBag,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { logoutAction } from "@/actions/auth/login-logout.actions";
@@ -73,7 +72,7 @@ export function NavAvatarMenu({ name, initials }: NavAvatarMenuProps) {
           onClick={() => router.push("/customer/orders")}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer text-sm font-medium text-foreground hover:bg-secondary focus:bg-secondary"
         >
-          <Users size={15} className="text-muted-foreground shrink-0" />
+          <ShoppingBag size={15} className="text-muted-foreground shrink-0" />
           Orders
         </DropdownMenuItem>
 

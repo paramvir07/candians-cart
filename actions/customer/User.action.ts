@@ -196,7 +196,17 @@ export const GetUserfromSession = async (sessionId: string | null) => {
 export const getCustomerAndStoreDataAction = async () => {
   try {
     const session = await getUserSession();
-    return getCachedCustomerAndStore(session.user.id);
+    const result = await getCachedCustomerAndStore(session.user.id);
+
+    if (!result.success) return result;
+
+    return {
+      ...result,
+      customerData: {
+        ...result.customerData,
+        emailVerified: session.user.emailVerified,
+      },
+    };
   } catch (error) {
     console.log(`Unable to find customer and store data: ${error}`);
     return {
