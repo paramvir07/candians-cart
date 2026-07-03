@@ -45,6 +45,12 @@ export interface DashboardData {
   recentPayoutReceipts: RecentPayoutReceipt[];
 }
 
+interface RevenueAggregationResult {
+  totalCustomerPaid: number;
+  totalSubsidy: number;
+  totalSubsidyUsed: number;
+}
+
 export async function allStoreDataAction(): Promise<DashboardData> {
   await dbConnect();
   const { utcStartOfThisMonth, utcStartOfLastMonth } = getAnalyticsBoundaries();
@@ -202,16 +208,27 @@ export async function allStoreDataAction(): Promise<DashboardData> {
   const platformFee = totalOrders * 50;
 
   // All-time total revenue = sum of totalCustomerPaid across all payouts
-  const totalRevenueAgg = await OrderModel.aggregate([
-    { $match: { status: "completed" } },
-    {
-      $group: {
-        _id: null,
-        total: { $sum: { $add: ["$cartTotal", { $ifNull: ["$subsidy", 0] }] } },
+  const [revenueMetrics] = await OrderModel.aggregate<RevenueAggregationResult>(
+    [
+      { $match: { status: "completed" } },
+      {
+        $group: {
+          _id: null,
+          totalCustomerPaid: { $sum: "$cartTotal" },
+          totalSubsidy: { $sum: { $ifNull: ["$subsidy", 0] } },
+          totalSubsidyUsed: { $sum: { $ifNull: ["$subsidyUsed", 0] } },
+        },
       },
-    },
-  ]);
-  const totalRevenue: number = totalRevenueAgg[0]?.total ?? 0;
+    ],
+  );
+
+  const totalCustomerPaid = revenueMetrics?.totalCustomerPaid ?? 0;
+  const totalSubsidy = revenueMetrics?.totalSubsidy ?? 0;
+  const totalSubsidyUsed = revenueMetrics?.totalSubsidyUsed ?? 0;
+
+  const paidAfterSubsidy =
+    totalCustomerPaid - (totalSubsidy - totalSubsidyUsed);
+  const totalRevenue: number = paidAfterSubsidy + totalSubsidy;
 
   // const allTimeCartTotal: number = totalRevenueAgg[0]?.totalCartOnly ?? 0;
   // const allTimeSubsidy: number = totalRevenueAgg[0]?.totalSubsidyOnly ?? 0;
