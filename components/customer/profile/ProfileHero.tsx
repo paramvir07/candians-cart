@@ -118,7 +118,7 @@ export default function ProfileHero({ customer, referralCode }: Props) {
           <div className="mt-1.5">
             <EmailVerificationBadge
               email={customer.email}
-              verified={customer.emailVerified}
+              verified={customer.emailVerified ?? false}
             />
           </div>
 
