@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, BarChart2, User, ScanLine, PackageCheck } from "lucide-react";
+import { Home, BarChart2, User, PackageCheck, HandCoins } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
 const navItems = [
   { label: "Home", href: "/customer", icon: Home, exact: true },
   { label: "Budget Packs", href: "/customer/budget-packs", icon: PackageCheck },
-  { label: "Scan", href: "/customer/search?scan=1", icon: ScanLine },
+  // { label: "Scan", href: "/customer/search?scan=1", icon: ScanLine },
+  { label: "Refer & Earn", href: "/customer/referrals", icon: HandCoins },
   { label: "Analytics", href: "/customer/analytics", icon: BarChart2 },
   { label: "Profile", href: "/customer/profile", icon: User },
 ];

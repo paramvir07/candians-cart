@@ -8,6 +8,7 @@ export interface ICustomer {
   name: string;
   email: string;
   address: string;
+  aptUnit?: string;
   mobile?: string;
   city: string;
   province: string;
@@ -56,6 +57,11 @@ const customerSchema = new Schema<ICustomer>(
     address: {
       type: String,
       required: true,
+    },
+    aptUnit: {
+      type: String,
+      trim: true,
+      maxlength: 30,
     },
     city: {
       type: String,

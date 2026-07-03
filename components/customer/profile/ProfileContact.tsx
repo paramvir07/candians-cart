@@ -9,14 +9,20 @@ import {
   User,
   ChevronDown,
   ContactRound,
-  Hash,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = {
   customer: Pick<
     Customer,
-    "name" | "email" | "address" | "city" | "province" | "postalCode" | "mobile"
+    | "name"
+    | "email"
+    | "aptUnit"
+    | "address"
+    | "city"
+    | "province"
+    | "postalCode"
+    | "mobile"
   >;
 };
 
@@ -61,13 +67,27 @@ export default function ProfileContact({ customer }: Props) {
 
   const [open, setOpen] = useState(false);
 
+  const streetAddress = customer.address?.trim();
+  const aptUnit = customer.aptUnit?.trim();
+
+  const streetAddressWithUnit =
+    aptUnit && streetAddress
+      ? `${aptUnit}-${streetAddress}`
+      : streetAddress || "";
+
+  const formattedAddress =
+    [streetAddressWithUnit, customer.city?.trim(), customer.province?.trim()]
+      .filter(Boolean)
+      .join(", ") +
+    (customer.postalCode ? ` ${customer.postalCode.trim()}` : "");
+
   const rows: { icon: React.ElementType; label: string; value: string }[] = [
     { icon: User, label: "Full Name", value: customer.name },
     { icon: Mail, label: "Email Address", value: customer.email },
     {
       icon: MapPin,
       label: "Home Address",
-      value: `${customer.address}, ${customer.city}, ${customer.province}${customer.postalCode ? ` ${customer.postalCode}` : ""}`,
+      value: formattedAddress || "Not set",
     },
     {
       icon: Phone,

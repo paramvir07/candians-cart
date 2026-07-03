@@ -269,20 +269,20 @@ export function ProductDetailDialog({
         >
           {hasImage ? (
             <>
-            <div className="absolute right-10 bottom-5 z-50">
-              <img
-                src="https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo-abb.png"
-                alt="Canadian's Cart"
-                className="h-8 w-8 rounded-full object-contain drop-shadow-md"
+              <div className="absolute right-10 bottom-5 z-50">
+                <img
+                  src="https://ik.imagekit.io/h7w5h0hou/Candian's-Cart-Logo-abb.png"
+                  alt="Candian's Cart"
+                  className="h-8 w-8 rounded-full object-contain drop-shadow-md"
+                />
+              </div>
+              <Image
+                src={product.images[0].url}
+                alt={product.name}
+                fill
+                className="object-contain"
+                sizes="512px"
               />
-            </div>            
-            <Image
-              src={product.images[0].url}
-              alt={product.name}
-              fill
-              className="object-contain"
-              sizes="512px"
-            />
             </>
           ) : (
             <CategoryIllustration

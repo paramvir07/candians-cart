@@ -40,7 +40,7 @@ const faqItems: FAQItem[] = [
     icon: <UserPlus size={16} strokeWidth={1.75} />,
     question: "How does the referral program work?",
     answer:
-      "Canadian's Cart is invite-only. To join, fill in your name, phone number, and email, then browse members and send your request to one of them. If they accept, a referral code is sent automatically to your phone and email, which you use to sign up.",
+      "Candian's Cart is invite-only. To join, fill in your name, phone number, and email, then browse members and send your request to one of them. If they accept, a referral code is sent automatically to your phone and email, which you use to sign up.",
     tag: "Referrals",
   },
   {
@@ -48,7 +48,7 @@ const faqItems: FAQItem[] = [
     icon: <Gift size={16} strokeWidth={1.75} />,
     question: "What does the person who refers me get?",
     answer:
-          "When someone shares their referral code with you and you sign up using it, they receive a reward added to their account. It's C$5 during this initial launch phase of the referral feature, and will drop to C$2 once that phase ends. This rewards existing members who help grow the community.",
+      "When someone shares their referral code with you and you sign up using it, they receive a reward added to their account. It's C$5 during this initial launch phase of the referral feature, and will drop to C$2 once that phase ends. This rewards existing members who help grow the community.",
     tag: "Referrals",
   },
   {
@@ -390,7 +390,6 @@ export default function FAQsSection() {
                 </div>
               );
             })}
-
           </div>
         </div>
       </div>

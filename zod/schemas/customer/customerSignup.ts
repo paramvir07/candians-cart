@@ -3,11 +3,63 @@ import { CUSTOMER_PROVINCE } from "@/lib/customer/location";
 import { validateBCAddress } from "@/lib/google/addressValidation";
 import { z } from "zod";
 
+export const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/^\S+$/, "Password cannot contain spaces")
+  .regex(/[a-z]/, "Must contain at least one lowercase letter")
+  .regex(/[A-Z]/, "Must contain at least one uppercase letter")
+  .regex(/[0-9]/, "Must contain at least one number")
+  .regex(/[^a-zA-Z0-9\s]/, "Must contain at least one special character");
+
+export const getPasswordChecks = (password: string) => [
+  {
+    label: "At least 8 characters",
+    valid: password.length >= 8,
+  },
+  {
+    label: "No spaces",
+    valid: password.length > 0 && !/\s/.test(password),
+  },
+  {
+    label: "One lowercase letter",
+    valid: /[a-z]/.test(password),
+  },
+  {
+    label: "One uppercase letter",
+    valid: /[A-Z]/.test(password),
+  },
+  {
+    label: "One number",
+    valid: /[0-9]/.test(password),
+  },
+  {
+    label: "One special character",
+    valid: /[^a-zA-Z0-9\s]/.test(password),
+  },
+];
+
 export const toTitleCase = (value: string) =>
   value
     .trim()
     .toLowerCase()
     .replace(/\b\w/g, (char) => char.toUpperCase());
+
+export const aptUnitSchema = z
+  .string()
+  .trim()
+  .max(30, "Apt / Unit must be 30 characters or less")
+  .regex(
+    /^[a-zA-Z0-9\s#\-\/.]+$/,
+    "Apt / Unit can only contain letters, numbers, spaces, #, -, /, or .",
+  )
+  .optional()
+  .or(z.literal(""))
+  .transform((v) => {
+    if (!v) return "";
+
+    return v.trim().replace(/\s+/g, " ");
+  });
 
 const baseCustomerObject = z.object({
   name: z.string().trim().min(1, "Name is Required").transform(toTitleCase),
@@ -16,13 +68,9 @@ const baseCustomerObject = z.object({
     .email("Invalid email address")
     .transform((v) => v.trim().toLowerCase()),
 
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[a-z]/, "Must contain at least one lowercase letter")
-    .regex(/[A-Z]/, "Must contain at least one uppercase letter")
-    .regex(/[0-9]/, "Must contain at least one number")
-    .regex(/[^a-zA-Z0-9]/, "Must contain at least one special character"),
+  password: passwordSchema,
+
+  aptUnit: aptUnitSchema,
 
   address: z
     .string()
@@ -35,7 +83,6 @@ const baseCustomerObject = z.object({
     message: "We currently only deliver within British Columbia",
   }),
 
-  // BC postal codes always start with V
   postalCode: z
     .string()
     .trim()
@@ -93,6 +140,7 @@ export const editProfileSchema = withAddressValidation(
   baseCustomerObject.pick({
     name: true,
     address: true,
+    aptUnit: true,
     city: true,
     province: true,
     postalCode: true,

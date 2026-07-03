@@ -46,7 +46,14 @@ import {
 
 type FormUserData = Pick<
   Customer,
-  "name" | "email" | "address" | "city" | "province" | "postalCode" | "mobile"
+  | "name"
+  | "email"
+  | "aptUnit"
+  | "address"
+  | "city"
+  | "province"
+  | "postalCode"
+  | "mobile"
 >;
 type EditableFields = Omit<FormUserData, "email"> & {
   mobile: string;
@@ -55,32 +62,6 @@ type EditableFields = Omit<FormUserData, "email"> & {
 
 const initialState: ProfileState = { message: null, errors: {} };
 type PhoneVerifyStep = "idle" | "sending" | "otp" | "verifying";
-
-const UNIT_ADDRESS_SEPARATOR = "-";
-
-function splitUnitFromStreetAddress(address: string) {
-  const trimmed = address.trim();
-  const match = trimmed.match(/^([A-Za-z0-9][A-Za-z0-9\s-]{0,15})-(\d.*)$/);
-
-  if (!match) {
-    return { unit: "", streetAddress: trimmed };
-  }
-
-  return {
-    unit: match[1].trim(),
-    streetAddress: match[2].trim(),
-  };
-}
-
-function formatAddressWithUnit(streetAddress: string, unit: string) {
-  const cleanStreetAddress = streetAddress.trim();
-  const cleanUnit = unit.trim();
-
-  if (!cleanUnit) return cleanStreetAddress;
-  if (!cleanStreetAddress) return cleanUnit;
-
-  return `${cleanUnit}${UNIT_ADDRESS_SEPARATOR}${cleanStreetAddress}`;
-}
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -458,6 +439,7 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
   const trimmed: FormUserData = {
     name: user.name.trim(),
     email: user.email.trim(),
+    aptUnit: (user.aptUnit ?? "").trim(),
     address: user.address.trim(),
     city: user.city.trim(),
     province: user.province.trim(),
@@ -465,11 +447,11 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
     mobile: (user.mobile ?? "").trim(),
   };
 
-  const initialAddress = splitUnitFromStreetAddress(trimmed.address);
-  const [aptUnit, setAptUnit] = useState(initialAddress.unit);
+  const [aptUnit, setAptUnit] = useState(trimmed.aptUnit ?? "");
+
   const [fields, setFields] = useState<EditableFields>({
     name: trimmed.name,
-    address: initialAddress.streetAddress,
+    address: trimmed.address,
     city: trimmed.city,
     province: trimmed.province || CUSTOMER_PROVINCE,
     postalCode: trimmed.postalCode,
@@ -515,11 +497,11 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
 
   const mobileChanged =
     fields.mobile.trim() !== formatStoredMobile(trimmed.mobile ?? "");
-  const composedAddress = formatAddressWithUnit(fields.address, aptUnit);
 
   const hasChanges =
     fields.name.trim() !== trimmed.name ||
-    composedAddress.trim() !== trimmed.address ||
+    aptUnit.trim() !== (trimmed.aptUnit ?? "") ||
+    fields.address.trim() !== trimmed.address ||
     fields.city.trim() !== trimmed.city ||
     fields.province.trim() !== trimmed.province ||
     fields.postalCode.trim() !== trimmed.postalCode ||
@@ -543,7 +525,8 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
       (Object.keys(fields) as (keyof EditableFields)[]).forEach((key) => {
         fd.set(key, (fields[key] ?? "").trim());
       });
-      fd.set("address", composedAddress.trim());
+      fd.set("aptUnit", aptUnit.trim());
+      fd.set("address", fields.address.trim());
 
       if (mobileChanged) {
         const digits = fields.mobile.replace(/\D/g, "");
@@ -559,7 +542,7 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
       }
       startTransition(() => formAction(fd));
     },
-    [fields, hasChanges, mobileChanged, composedAddress, formAction],
+    [fields, hasChanges, mobileChanged, aptUnit, formAction],
   );
 
   const handlePhoneVerified = useCallback(() => {
@@ -575,9 +558,17 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
     .slice(0, 2);
   const previewName = fields.name.trim() || trimmed.name;
   const previewMobile = fields.mobile.trim() || "—";
+  const streetAddress = fields.address.trim();
+  const cleanAptUnit = aptUnit.trim();
+
+  const streetAddressWithUnit =
+    cleanAptUnit && streetAddress
+      ? `${cleanAptUnit}-${streetAddress}`
+      : streetAddress;
+
   const previewAddress =
     [
-      composedAddress.trim(),
+      streetAddressWithUnit,
       fields.city.trim(),
       fields.province.trim(),
       fields.postalCode.trim(),
@@ -624,75 +615,72 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
     </div>
   );
 
-  const addressFields = (
-    <div className="space-y-4">
-      <SectionLabel>Address</SectionLabel>
-      <div className="grid gap-3 sm:grid-cols-[9.5rem_minmax(0,1fr)]">
-        <div>
-          <FieldLabel>
-            Apt / Unit{" "}
-            <span className="text-muted-foreground/50">(optional)</span>
-          </FieldLabel>
-          <Input
-            id="aptUnit"
-            name="aptUnit"
-            type="text"
-            value={aptUnit}
-            onChange={handleChange}
-            placeholder="e.g. 308"
-            autoComplete="address-line2"
-            className="h-11 rounded-xl border-border/60 bg-card text-sm focus-visible:ring-1 focus-visible:ring-primary"
-          />
-        </div>
+const addressFields = (
+  <div className="space-y-4">
+    <SectionLabel>Address</SectionLabel>
 
-        <div>
-          <FieldLabel>Street Address</FieldLabel>
-          <IconAddressAutocomplete
-            icon={MapPin}
-            defaultValue={fields.address}
-            allowedProvince={CUSTOMER_PROVINCE}
-            onSelect={handleAddressSelect}
-            onClear={handleAddressClear}
-            placeholder="e.g. 123 Main St"
-            error={state?.errors?.address?.[0]}
-          />
-        </div>
+    <div>
+      <FieldLabel>Street Address</FieldLabel>
+      <IconAddressAutocomplete
+        icon={MapPin}
+        defaultValue={fields.address}
+        allowedProvince={CUSTOMER_PROVINCE}
+        onSelect={handleAddressSelect}
+        onClear={handleAddressClear}
+        placeholder="e.g. 6453 Imperial Street"
+        error={state?.errors?.address?.[0]}
+      />
+      <input type="hidden" name="address" value={fields.address.trim()} />
+    </div>
 
-        {/* Submit a single Canadian-format address, e.g. 308-123 Main St */}
-        <input type="hidden" name="address" value={composedAddress} />
+    <div>
+      <FieldLabel>
+        Apt / Unit / Suite{" "}
+        <span className="text-muted-foreground/50">(optional)</span>
+      </FieldLabel>
+      <Input
+        id="aptUnit"
+        name="aptUnit"
+        type="text"
+        value={aptUnit}
+        onChange={handleChange}
+        placeholder="e.g. 308"
+        autoComplete="address-line2"
+        maxLength={30}
+        className="h-11 rounded-xl border-border/60 bg-card text-sm focus-visible:ring-1 focus-visible:ring-primary"
+      />
+    </div>
+
+    <div className="grid grid-cols-3 gap-3">
+      <div>
+        <FieldLabel>City</FieldLabel>
+        <IconReadOnly icon={Building2} value={fields.city} placeholder="City" />
+        <input type="hidden" name="city" value={fields.city} />
       </div>
-      <div className="grid grid-cols-3 gap-3">
-        <div>
-          <FieldLabel>City</FieldLabel>
-          <IconReadOnly
-            icon={Building2}
-            value={fields.city}
-            placeholder="City"
-          />
-          <input type="hidden" name="city" value={fields.city} />
-        </div>
-        <div>
-          <FieldLabel>Province</FieldLabel>
-          <IconReadOnly
-            icon={Map}
-            value={fields.province}
-            placeholder="Province"
-          />
-          <input type="hidden" name="province" value={fields.province} />
-        </div>
-        <div>
-          <FieldLabel>Postal Code</FieldLabel>
-          <IconReadOnly
-            icon={Hash}
-            value={fields.postalCode}
-            placeholder="Postal Code"
-            className="uppercase font-mono"
-          />
-          <input type="hidden" name="postalCode" value={fields.postalCode} />
-        </div>
+
+      <div>
+        <FieldLabel>Province</FieldLabel>
+        <IconReadOnly
+          icon={Map}
+          value={fields.province}
+          placeholder="Province"
+        />
+        <input type="hidden" name="province" value={fields.province} />
+      </div>
+
+      <div>
+        <FieldLabel>Postal Code</FieldLabel>
+        <IconReadOnly
+          icon={Hash}
+          value={fields.postalCode}
+          placeholder="Postal Code"
+          className="uppercase font-mono"
+        />
+        <input type="hidden" name="postalCode" value={fields.postalCode} />
       </div>
     </div>
-  );
+  </div>
+);
 
   const accountFields = (
     <div>

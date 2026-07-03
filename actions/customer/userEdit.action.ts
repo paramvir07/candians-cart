@@ -1,10 +1,8 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
 import { editProfileSchema } from "@/zod/schemas/customer/customerSignup";
 import { getUserSession } from "../auth/getUserSession.actions";
 import { dbConnect } from "@/db/dbConnect";
-
 import mongoose from "mongoose";
 import Customer, { ICustomer } from "@/db/models/customer/customer.model";
 import { zodErrorResponse } from "@/zod/validation/error";
@@ -45,7 +43,7 @@ export async function editUserProfile(
   }
 
   // postalCode added, mobile removed (handled by phone OTP verification)
-  const { name, address, city, province, postalCode } = result.data;
+  const { name, aptUnit, address, city, province, postalCode } = result.data;
 
   try {
     await dbConnect();
@@ -62,11 +60,11 @@ export async function editUserProfile(
 
       const updatePayload: Partial<ICustomer> = {
         name,
+        aptUnit,
         address,
         city,
         province,
-        postalCode, // now included
-        // mobile intentionally omitted — updated via phone OTP verification
+        postalCode,
       };
 
       await Customer.updateOne(

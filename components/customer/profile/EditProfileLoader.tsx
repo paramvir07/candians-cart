@@ -19,6 +19,7 @@ export async function EditProfileLoader() {
   const mergedUserData = {
     name: customerProfile.name || "",
     email: customerProfile.email || "",
+    aptUnit: customerProfile.aptUnit || "",
     address: customerProfile.address || "",
     city: customerProfile.city || "",
     province: customerProfile.province || "",

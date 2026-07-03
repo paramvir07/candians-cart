@@ -31,19 +31,6 @@ import { HEARD_ABOUT_US_OPTIONS } from "@/lib/customer/heardAboutUs";
 
 const initialState = { success: false, message: "" };
 
-const UNIT_ADDRESS_SEPARATOR = "-";
-
-function formatAddressWithUnit(streetAddress: string, unit: string) {
-  const cleanStreetAddress = streetAddress.trim();
-  const cleanUnit = unit.trim();
-
-  if (!cleanUnit) return cleanStreetAddress;
-  if (!cleanStreetAddress) return cleanUnit;
-
-  return `${cleanUnit}${UNIT_ADDRESS_SEPARATOR}${cleanStreetAddress}`;
-}
-
-
 type SignupFormProps = {
   userRole: UserRole;
   stores?: StoreDocument[];
@@ -57,7 +44,6 @@ export function SignupForm({
   className,
   heardParam = "",
 }: SignupFormProps) {
-
   const [budget] = useAtom(budgetAtom);
   const [storeId] = useAtom(storeIdAtom);
   const [referralCode] = useAtom(referralCodeAtom);
@@ -88,11 +74,6 @@ export function SignupForm({
     province: "",
     postalCode: "",
   });
-
-  const composedAddress = formatAddressWithUnit(
-    addressData.address,
-    addressData.aptUnit,
-  );
 
   const handleAddressSelect = (parsed: ParsedAddress) => {
     setAddressData((prev) => ({
@@ -183,7 +164,7 @@ export function SignupForm({
             type="text"
             name="name"
             placeholder={
-              store ? "e.g. Canadian's Cart Surrey" : "e.g. John Smith"
+              store ? "e.g. Candian's Cart Surrey" : "e.g. John Smith"
             }
             required
             className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
@@ -222,7 +203,7 @@ export function SignupForm({
             <Input
               id="password"
               name="password"
-              pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}"
+              pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s])(?=\S+$).{8,}"
               type={showPassword ? "text" : "password"}
               placeholder="e.g. John@123"
               required
@@ -250,34 +231,7 @@ export function SignupForm({
           <>
             {customer ? (
               <>
-                <div className="grid gap-3 sm:grid-cols-[9.5rem_minmax(0,1fr)]">
-                  <div>
-                    <label
-                      htmlFor="aptUnit"
-                      className="block text-[11px] text-muted-foreground mb-1.5"
-                    >
-                      Apt / Unit{" "}
-                      <span className="text-muted-foreground/50">
-                        (optional)
-                      </span>
-                    </label>
-
-                    <Input
-                      id="aptUnit"
-                      type="text"
-                      value={addressData.aptUnit}
-                      onChange={(e) =>
-                        setAddressData((prev) => ({
-                          ...prev,
-                          aptUnit: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g. 305"
-                      autoComplete="address-line2"
-                      className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-                    />
-                  </div>
-
+                <div className="space-y-3">
                   <div>
                     <label className="block text-[11px] text-muted-foreground mb-1.5">
                       Street address{" "}
@@ -296,10 +250,47 @@ export function SignupForm({
                       required
                     />
                   </div>
+
+                  <div>
+                    <label
+                      htmlFor="aptUnit"
+                      className="block text-[11px] text-muted-foreground mb-1.5"
+                    >
+                      Apt / Unit / Suite{" "}
+                      <span className="text-muted-foreground/50">
+                        (optional)
+                      </span>
+                    </label>
+
+                    <Input
+                      id="aptUnit"
+                      type="text"
+                      value={addressData.aptUnit}
+                      onChange={(e) =>
+                        setAddressData((prev) => ({
+                          ...prev,
+                          aptUnit: e.target.value,
+                        }))
+                      }
+                      placeholder="e.g. 305"
+                      maxLength={30}
+                      autoComplete="address-line2"
+                      className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+                    />
+                  </div>
                 </div>
 
                 {/* Hidden inputs carry values to the server action */}
-                <input type="hidden" name="address" value={composedAddress} />
+                <input
+                  type="hidden"
+                  name="aptUnit"
+                  value={addressData.aptUnit.trim()}
+                />
+                <input
+                  type="hidden"
+                  name="address"
+                  value={addressData.address.trim()}
+                />
                 <input type="hidden" name="city" value={addressData.city} />
                 <input
                   type="hidden"

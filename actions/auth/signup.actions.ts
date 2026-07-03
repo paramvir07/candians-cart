@@ -152,6 +152,7 @@ export const signupAction = async (
               userId: newCustomerUser.user.id,
               name: data.name,
               email: data.email,
+              aptUnit: data.aptUnit,
               address: data.address,
               city: data.city,
               province: data.province,

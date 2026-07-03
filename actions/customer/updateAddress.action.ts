@@ -5,8 +5,11 @@ import Customer from "@/db/models/customer/customer.model";
 import { getUserSession } from "@/actions/auth/getUserSession.actions";
 import { CUSTOMER_PROVINCE } from "@/lib/customer/location";
 import { z } from "zod";
+import { aptUnitSchema } from "@/zod/schemas/customer/customerSignup";
+import { revalidateCustomerCache } from "../cache/user.cache";
 
 const addressSchema = z.object({
+  aptUnit: aptUnitSchema,
   address: z
     .string()
     .trim()
@@ -32,6 +35,7 @@ export async function updateAddressAction(
 ): Promise<{ success: boolean; message: string }> {
   try {
     const raw = {
+      aptUnit: formData.get("aptUnit"),
       address: formData.get("address"),
       city: formData.get("city"),
       province: formData.get("province"),
@@ -51,6 +55,7 @@ export async function updateAddressAction(
       { userId: session.user.id },
       {
         $set: {
+          aptUnit: result.data.aptUnit,
           address: result.data.address,
           city: result.data.city,
           province: result.data.province,
@@ -62,6 +67,7 @@ export async function updateAddressAction(
 
     if (!updated) return { success: false, message: "Customer not found" };
 
+    await revalidateCustomerCache();
     return { success: true, message: "Address saved successfully" };
   } catch (err) {
     console.error("updateAddressAction error:", err);

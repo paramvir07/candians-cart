@@ -12,27 +12,17 @@ import {
 } from "@/components/shared/AddressAutocomplete";
 import { updateAddressAction } from "@/actions/customer/updateAddress.action";
 
-const UNIT_ADDRESS_SEPARATOR = "-";
-
-function formatAddressWithUnit(street: string, unit: string) {
-  const s = street.trim();
-  const u = unit.trim();
-  if (!u) return s;
-  if (!s) return u;
-  return `${u}${UNIT_ADDRESS_SEPARATOR}${s}`;
-}
-
 export function AddressRequiredDialog() {
   const [isPending, startTransition] = useTransition();
+
   const [addressData, setAddressData] = useState({
+    aptUnit: "",
     address: "",
     city: "",
     province: "",
     postalCode: "",
   });
-  const [aptUnit, setAptUnit] = useState("");
 
-  const composedAddress = formatAddressWithUnit(addressData.address, aptUnit);
   const isComplete =
     !!addressData.address &&
     !!addressData.city &&
@@ -40,43 +30,54 @@ export function AddressRequiredDialog() {
     !!addressData.postalCode;
 
   const handleSelect = (parsed: ParsedAddress) => {
-    setAddressData({
+    setAddressData((prev) => ({
+      ...prev,
       address: parsed.streetAddress || "",
       city: parsed.city || "",
       province: parsed.province === CUSTOMER_PROVINCE ? parsed.province : "",
       postalCode: parsed.postalCode || "",
-    });
+    }));
   };
 
   const handleClear = () => {
-    setAddressData({ address: "", city: "", province: "", postalCode: "" });
+    setAddressData((prev) => ({
+      ...prev,
+      address: "",
+      city: "",
+      province: "",
+      postalCode: "",
+    }));
   };
 
-const handleSave = () => {
-  if (!isComplete) {
-    toast.error("Please search and select your address from the dropdown.");
-    return;
-  }
-
-  const fd = new FormData();
-  fd.set("address", composedAddress);
-  fd.set("city", addressData.city);
-  fd.set("province", addressData.province);
-  fd.set("postalCode", addressData.postalCode);
-
-  startTransition(async () => {
-    const result = await updateAddressAction(undefined, fd);
-    if (result.success) {
-      toast.success("Address added successfully! You can now continue shopping.");
-      window.location.reload();
-    } else {
-      toast.error(result.message);
+  const handleSave = () => {
+    if (!isComplete) {
+      toast.error("Please search and select your address from the dropdown.");
+      return;
     }
-  });
-};
+
+    const fd = new FormData();
+
+    fd.set("aptUnit", addressData.aptUnit.trim());
+    fd.set("address", addressData.address.trim());
+    fd.set("city", addressData.city);
+    fd.set("province", addressData.province);
+    fd.set("postalCode", addressData.postalCode);
+
+    startTransition(async () => {
+      const result = await updateAddressAction(undefined, fd);
+
+      if (result.success) {
+        toast.success(
+          "Address added successfully! You can now continue shopping.",
+        );
+        window.location.reload();
+      } else {
+        toast.error(result.message);
+      }
+    });
+  };
 
   return (
-    // Full-screen overlay — intentionally no close button or backdrop dismiss
     <div className="fixed inset-0 z-[999] flex items-start justify-center bg-black/60 backdrop-blur-sm px-4 py-6 sm:py-10 overflow-y-auto">
       <div className="w-full max-w-md bg-card rounded-3xl border border-border/60 shadow-2xl overflow-hidden my-auto">
         {/* Header */}
@@ -93,39 +94,47 @@ const handleSave = () => {
 
         {/* Body */}
         <div className="px-5 sm:px-6 py-5 space-y-3">
-          {/* Apt/Unit + Street — stacked on mobile, side-by-side on sm+ */}
-          <div className="flex flex-col sm:grid sm:grid-cols-[8rem_minmax(0,1fr)] gap-3">
-            <div>
-              <label className="block text-[11px] text-muted-foreground mb-1.5">
-                Apt / Unit{" "}
-                <span className="text-muted-foreground/50">(optional)</span>
-              </label>
-              <Input
-                type="text"
-                value={aptUnit}
-                onChange={(e) => setAptUnit(e.target.value)}
-                placeholder="e.g. 305"
-                maxLength={10}
-                className="h-11 rounded-xl border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] text-muted-foreground mb-1.5">
-                Street Address{" "}
-                <span className="text-muted-foreground/60">
-                  — search &amp; pick from list
-                </span>
-              </label>
-              <AddressAutocomplete
-                defaultValue={addressData.address}
-                allowedProvince={CUSTOMER_PROVINCE}
-                onSelect={handleSelect}
-                onClear={handleClear}
-                placeholder="e.g. 123 Main St"
-                className="h-11 rounded-xl border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
-                required
-              />
-            </div>
+          {/* Street Address */}
+          <div>
+            <label className="block text-[11px] text-muted-foreground mb-1.5">
+              Street Address{" "}
+              <span className="text-muted-foreground/60">
+                — search &amp; pick from list
+              </span>
+            </label>
+
+            <AddressAutocomplete
+              defaultValue={addressData.address}
+              allowedProvince={CUSTOMER_PROVINCE}
+              onSelect={handleSelect}
+              onClear={handleClear}
+              placeholder="e.g. 123 Main St"
+              className="h-11 rounded-xl border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+              required
+            />
+          </div>
+
+          {/* Apt / Unit */}
+          <div>
+            <label className="block text-[11px] text-muted-foreground mb-1.5">
+              Apt / Unit / Suite{" "}
+              <span className="text-muted-foreground/50">(optional)</span>
+            </label>
+
+            <Input
+              type="text"
+              value={addressData.aptUnit}
+              onChange={(e) =>
+                setAddressData((prev) => ({
+                  ...prev,
+                  aptUnit: e.target.value,
+                }))
+              }
+              placeholder="e.g. 308"
+              maxLength={30}
+              autoComplete="address-line2"
+              className="h-11 rounded-xl border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
+            />
           </div>
 
           {/* City / Province / Postal — read-only */}
@@ -140,10 +149,11 @@ const handleSave = () => {
                 value={addressData.city}
                 placeholder="City"
                 className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
-  focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
-  focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
+                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
               />
             </div>
+
             <div>
               <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
                 Province
@@ -154,10 +164,11 @@ const handleSave = () => {
                 value={addressData.province}
                 placeholder="Province"
                 className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
-  focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
-  focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
+                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
               />
             </div>
+
             <div>
               <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
                 Postal Code
@@ -168,19 +179,22 @@ const handleSave = () => {
                 value={addressData.postalCode}
                 placeholder="V__ ___"
                 className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
-  focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
-  focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
+                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
               />
             </div>
           </div>
 
           {/* Preview */}
           <div className="min-h-[32px] px-0.5">
-            {composedAddress && (
+            {addressData.address && (
               <p className="text-[11px] text-muted-foreground break-words leading-snug">
                 Saving as:{" "}
                 <span className="font-semibold text-foreground font-mono">
-                  {composedAddress}
+                  {addressData.address}
+                  {addressData.aptUnit
+                    ? `, Apt/Unit ${addressData.aptUnit.trim()}`
+                    : ""}
                   {addressData.city ? `, ${addressData.city}` : ""}
                   {addressData.province ? `, ${addressData.province}` : ""}
                   {addressData.postalCode ? ` ${addressData.postalCode}` : ""}

@@ -60,20 +60,6 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    revokeSessionsOnPasswordReset: true,
-    sendResetPassword: async ({ user, url }) => {
-      await sendEmail({
-        to: user.email,
-        subject: "Reset your Candian's Cart account password",
-        react: (
-          <ForgotPasswordEmail
-            username={user.name}
-            resetUrl={url}
-            appName="Candian's Cart"
-          />
-        ),
-      });
-    },
   },
   emailVerification: {
     sendOnSignUp: true,

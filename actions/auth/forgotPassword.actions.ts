@@ -1,6 +1,7 @@
 "use server";
 
 import { auth, db } from "@/lib/auth/auth";
+import { passwordSchema } from "@/zod/schemas/customer/customerSignup";
 import crypto from "crypto";
 
 type UserDoc = {
@@ -14,6 +15,8 @@ type UserDoc = {
 export async function sendForgotPasswordOTPAction(
   phoneNumber: string,
 ): Promise<{ success: boolean; message: string }> {
+
+
   try {
     const user = await db.collection<UserDoc>("user").findOne({
       phoneNumber,
@@ -87,6 +90,16 @@ export async function resetPasswordWithPhoneAction(
   resetToken: string,
   newPassword: string,
 ): Promise<{ success: boolean; message: string }> {
+    const parsedPassword = passwordSchema.safeParse(newPassword);
+
+    if (!parsedPassword.success) {
+      return {
+        success: false,
+        message:
+          parsedPassword.error.issues[0]?.message ??
+          "Password does not meet the requirements.",
+      };
+    }
   try {
     const record = await db.collection<{
       token: string;
@@ -103,7 +116,7 @@ export async function resetPasswordWithPhoneAction(
 
     // Use Better Auth's internal context to hash the password
     const ctx = await auth.$context;
-    const hashedPassword = await ctx.password.hash(newPassword);
+    const hashedPassword = await ctx.password.hash(parsedPassword.data);
 
     // Update the password in the account collection directly
     await db.collection("account").updateOne(
