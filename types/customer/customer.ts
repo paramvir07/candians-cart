@@ -6,7 +6,7 @@ export type Customer = ICustomer & {
   createdAt: Date;
   updatedAt: Date;
   __v: number;
-  emailVerified: boolean;
+  emailVerified?: boolean;
   referralCode?: string;
   storeName?: string;
 };
