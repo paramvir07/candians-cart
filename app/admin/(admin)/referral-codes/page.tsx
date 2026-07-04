@@ -16,7 +16,11 @@ const page = async () => {
           </div>
           <ReferralCodeDialogForm usage="create" data={null} />
         </div>
-        <ReferralCodes data={data} />
+        <ReferralCodes
+          data={data}
+          totalPages={result.totalPages ?? 1}
+          currentPage={result.currentPage ?? 1}
+        />
       </div>
     </>
   );

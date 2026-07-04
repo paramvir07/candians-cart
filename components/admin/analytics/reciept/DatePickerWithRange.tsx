@@ -1,6 +1,6 @@
 "use client";
 
-
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { type DateRange } from "react-day-picker";
@@ -16,8 +16,20 @@ interface DatePickerProps {
 }
 
 export function DatePickerWithRange({ date, setDate }: DatePickerProps) {
+  // Fewer calendar months on narrow screens so the popover never
+  // exceeds the viewport width.
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 640px)");
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
   return (
-    <Field className="mx-auto w-60">
+    <Field className="w-full">
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -25,27 +37,33 @@ export function DatePickerWithRange({ date, setDate }: DatePickerProps) {
             id="date-picker-range"
             className="justify-start px-2.5 font-normal w-full"
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {date?.from ? (
-              date.to ? (
-                <>
-                  {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
-                </>
+            <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+            <span className="truncate">
+              {date?.from ? (
+                date.to ? (
+                  <>
+                    {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
+                  </>
+                ) : (
+                  format(date.from, "LLL dd, y")
+                )
               ) : (
-                format(date.from, "LLL dd, y")
-              )
-            ) : (
-              <span>Pick a date</span>
-            )}
+                "Pick a date"
+              )}
+            </span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent
+          className="w-auto max-w-[calc(100vw-2rem)] p-0 overflow-x-auto"
+          align="start"
+          collisionPadding={16}
+        >
           <Calendar
             mode="range"
             defaultMonth={date?.from}
             selected={date}
             onSelect={setDate}
-            numberOfMonths={2}
+            numberOfMonths={isMobile ? 1 : 2}
           />
         </PopoverContent>
       </Popover>

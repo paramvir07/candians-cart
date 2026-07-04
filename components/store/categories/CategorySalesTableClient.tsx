@@ -1,15 +1,7 @@
 "use client";
 
 import React, { useState, useTransition, useCallback } from "react";
-import {
-  format,
-  subDays,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  endOfDay,
-} from "date-fns";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { type DateRange } from "react-day-picker";
 import {
   ICategorySales,
@@ -90,7 +82,6 @@ export default function CategorySalesTableClient({
     useState<ICategorySales | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Helper to get dates so we can reuse it for both filter changes and store changes
   const getDatesForFilter = useCallback(
     (type: string, range?: DateRange): { start: Date; end: Date } | null => {
       const today = new Date();
@@ -161,8 +152,8 @@ export default function CategorySalesTableClient({
 
   return (
     <div className="space-y-4">
-      {/* Filters Section */}
-      <div className="flex flex-col sm:flex-row gap-4 items-end">
+      {/* Filters Section Layout Fixed for Mobile Stacking */}
+      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
         {/* Admin Store Selector Dropdown */}
         {isAdmin && stores.length > 0 && (
           <div className="space-y-2.5 w-full sm:w-64">
@@ -192,7 +183,7 @@ export default function CategorySalesTableClient({
           {isAdmin && <Label className="text-sm font-medium">Timeframe</Label>}
           <Select value={filterType} onValueChange={handleFilterChange}>
             <SelectTrigger className="h-10">
-              <SelectValue placeholder="Select timeframe" />
+              <SelectValue placeholder="Select Time Period" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="today">Today</SelectItem>
@@ -204,10 +195,8 @@ export default function CategorySalesTableClient({
         </div>
 
         {filterType === "custom" && (
-          <div className="space-y-2.5">
-            {isAdmin && (
-              <Label className="text-sm font-medium">Custom Range</Label>
-            )}
+          <div className="space-y-2.5 w-full sm:w-auto">
+            <Label className="text-sm font-medium">Custom Range</Label>
             <DatePickerWithRange
               date={dateRange}
               setDate={handleDateRangeChange}
@@ -216,14 +205,13 @@ export default function CategorySalesTableClient({
         )}
 
         {isPending && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground pb-2 ml-2">
-            <Spinner className="w-4 h-4" />
-            <span>Updating...</span>
+          <div className="flex items-center justify-start h-10 pl-2 self-start sm:self-center">
+            <Spinner />
           </div>
         )}
       </div>
 
-      {/* Data Table */}
+      {/* Analytics Data Table */}
       <div className="rounded-md border relative mt-4">
         <Table>
           <TableHeader>
