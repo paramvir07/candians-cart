@@ -221,7 +221,7 @@ export function CashCollectionList({
     return pages;
   };
 
-  const columnCount = isAllStores ? 8 : 7;
+  const columnCount = isAllStores ? 7 : 6;
 
   return (
     <div className="space-y-5">
@@ -331,9 +331,6 @@ export function CashCollectionList({
           <table className="w-full text-sm min-w-[780px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/30">
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Type
-                </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Customer
                 </th>
@@ -377,14 +374,6 @@ export function CashCollectionList({
                     key={`${a.id}`}
                     className="hover:bg-gray-50/50 transition-colors"
                   >
-                    {/* Type badge */}
-                    <td className="px-5 py-3.5">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                        <Banknote className="w-3 h-3" />
-                        {a.label}
-                      </span>
-                    </td>
-
                     {/* Customer */}
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-1.5">
