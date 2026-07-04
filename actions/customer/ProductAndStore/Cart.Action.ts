@@ -72,7 +72,7 @@ export const AddtoCart = async (
       });
     }
     await existingCart.save();
-    await ReloadCartpusher();
+    await ReloadCartpusher("Item added to cart successfully!");
     revalidatePath("/customer/cart")
     revalidatePath(`/cashier/customer/${user._id}/cart`)
 
@@ -307,7 +307,7 @@ export const RemoveItem = async (
   ) {
     await CartModel.findOneAndDelete({ customerId: user._id });
   }
-  await ReloadCartpusher();
+  await ReloadCartpusher("Item removed from cart successfully!!");
   revalidatePath("/customer/cart");
 };
 
@@ -577,7 +577,7 @@ export const PlaceOrder = async ({
 
     await session.commitTransaction();
     await EnableUserReferralFlag(OrderData.subsidy, User._id.toString(), User.name, User.referralCodeId.toString())
-    await ReloadCartpusher();
+    await ReloadCartpusher("Order Placed Successfully");
     return { success: true, message: "Order Placed Successfully" };
   } catch (error) {
     if (session.inTransaction()) {
@@ -853,7 +853,7 @@ export const ClearCart = async (customerId?: string) => {
     revalidatePath("/customer/cart");
     if (customerId) revalidatePath(`/cashier/customer/${customerId}/cart`);
     
-    await ReloadCartpusher();
+    await ReloadCartpusher("Cart cleared successfully!!");
     return { success: true, message: "Cart cleared successfully" };
   } catch (err) {
     console.log(err);

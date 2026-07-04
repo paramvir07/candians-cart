@@ -92,7 +92,7 @@ export const walletTopUpAction = async (
         throw new Error("Customer not found");
       }
     });
-    await ReloadCartpusher();
+    await ReloadCartpusher("Wallet topped up successfully!!");
     revalidatePath(`/cashier/customer/${userData.user.id}/wallet`)
     return { success: true, message: "Wallet topped up successfully!!" };
   } catch (error) {

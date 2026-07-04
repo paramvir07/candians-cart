@@ -2,7 +2,7 @@
 
 import { pusherServer } from "@/lib/pusher/pusher"
 
-export async function ReloadCartpusher() {
-  const res = await pusherServer.trigger("cart-channel", "cart-reload", {});
-  return { success: true };
+export async function ReloadCartpusher(message?: string) {
+  await pusherServer.trigger("cart-channel", "cart-reload", { message });
+  return { success: true, message };
 }
