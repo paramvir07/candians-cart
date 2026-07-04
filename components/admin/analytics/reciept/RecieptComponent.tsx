@@ -439,7 +439,7 @@ export default function RecieptComponent({
                                 Total Profit Margin
                               </span>
                               <span className="font-bold">
-                                {fmt(r.grossMargin + r.totalSubsidy)}
+                                {fmt(r.storeProfit + r.platformProfit + r.totalSubsidy)}
                               </span>
                             </div>
                             <Separator className="my-2" />
