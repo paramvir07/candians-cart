@@ -2,9 +2,9 @@
 
 import { dbConnect } from "@/db/dbConnect"
 import ReferralCode from "@/db/models/admin/referralCode.model";
+import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 import Customer from "@/db/models/customer/customer.model";
 import { getUserSession } from "../auth/getUserSession.actions";
-import { ReferralHistory } from "@/db/models/cashier/ReferralHistory.model";
 
 export const getReferral = async (referralId: string) => {
   try {
@@ -24,7 +24,7 @@ export const getReferralUsed = async (referralId: string, customerId: string) =>
 
     const [UsedBy, ReferralTopUps] = await Promise.all([
       Customer.find({ referralCodeId: referralId }).lean(),
-      ReferralHistory.find({ customerId }).lean(),
+      WalletTopUp.find({ customerId: customerId, paymentMode: "referral" }).lean(),
     ]);
 
     const totalEarned = ReferralTopUps.reduce((sum, t) => sum + (t.value ?? 0), 0);

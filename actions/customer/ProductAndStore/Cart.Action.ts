@@ -19,8 +19,9 @@ import OrderModel from "@/db/models/customer/Orders.Model";
 import "@/db/models/customer/MiscItem.model";
 import ReferralCode from "@/db/models/admin/referralCode.model";
 import { revalidateCustomerCache } from "@/actions/cache/user.cache";
-import { ReferralHistory } from "@/db/models/cashier/ReferralHistory.model";
 import { ReloadCartpusher } from "@/actions/pusher/pusherAction";
+import { Cashier } from "@/db/models/cashier/cashier.model";
+import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 
 export const AddtoCart = async (
   ItemId: string,
@@ -681,11 +682,17 @@ const CheckUserReferral = async (referralCodeId: string, perReferAmount: number)
   const session = await mongoose.startSession();
 
   try {
-    const referral = await ReferralCode.findById(referralCodeId).lean();
+    const UserSession = await getUserSession();
+
+    const [referral, cashier] = await Promise.all([
+      ReferralCode.findById(referralCodeId).lean(),
+      Cashier.findOne({ userId: UserSession.user.id }).select("_id").lean(),
+    ]);
 
     if (!referral) return { success: false, message: "Referral not found" };
     if (referral.type === "admin") return { success: false, message: "Referral belongs to admin account" };
     if (!referral.customerId) return { success: false, message: "Referral code has no associated customer" };
+    if (!cashier) return { success: false, message: "Failed to get cashierId" };
 
     const maxUsesReached = referral.maxUses != null && referral.uses >= referral.maxUses;
     const isExpired = referral.expiresAt != null && Date.now() >= referral.expiresAt.getTime();
@@ -701,13 +708,14 @@ const CheckUserReferral = async (referralCodeId: string, perReferAmount: number)
     const customerId = referral.customerId.toString();
 
     session.startTransaction();
-    await ReferralHistory.create(
-      [{ customerId, value: ReferralValue }],
+
+    await WalletTopUp.create(
+      [{ customerId, userId: cashier._id.toString(), userRole: "cashier", value: ReferralValue, paymentMode: "referral" }],
       { session },
     );
     await Customer.findByIdAndUpdate(
       customerId,
-      { $inc: { giftWalletBalance: ReferralValue } },
+      { $inc: { walletBalance: ReferralValue } },
       { session, runValidators: true },
     );
     await ReferralCode.findByIdAndUpdate(
