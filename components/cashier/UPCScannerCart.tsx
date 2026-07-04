@@ -16,7 +16,6 @@ import {
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { AddtoCart } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { useRouter } from "next/navigation";
-import { ReloadCartpusher } from "../../actions/pusher/pusherAction";
 
 const OBJECT_ID_OR_UPC_RE = /^[a-zA-Z0-9\-]{2,}$/;
 const MIN_WEIGHT_QTY = 0.1;
@@ -135,7 +134,6 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
           setIsLoading(false);
           setUpc("");
         } else {
-          await ReloadCartpusher(`Adding ${product.name} to cart`);
           await AddtoCart(product._id as string, customerId);
           toast.success(`${product.name} added to cart`);
           router.refresh();

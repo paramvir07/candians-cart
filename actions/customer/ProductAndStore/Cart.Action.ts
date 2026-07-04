@@ -54,6 +54,9 @@ export const AddtoCart = async (
           },
         ],
       });
+      await ReloadCartpusher("Item added to cart successfully!");
+      revalidatePath("/customer/cart");
+      revalidatePath(`/cashier/customer/${user._id}/cart`);
       return { success: true };
     }
 
