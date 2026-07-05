@@ -304,7 +304,7 @@ const ReorderBtn = ({
         </Button>
 
         {allOrders && (
-          <Link href={`/cashier/customer/${orderCustomerId}`}>
+          <Link href={`/cashier/customer/${orderCustomerId}/cart`}>
             <Button
               size="icon"
               className="sm:w-auto sm:px-3 sm:gap-1.5 shrink-0"

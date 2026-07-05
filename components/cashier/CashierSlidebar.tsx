@@ -12,7 +12,6 @@ import {
   X,
   UserCircle2,
   List,
-  ShoppingBasket,
   ChevronDown,
   Gift,
   HeartHandshake,
@@ -229,7 +228,7 @@ function SidebarContent({
               <NavItem
                 href="/cashier/customer/orders"
                 label="Customer Orders"
-                icon={ShoppingCartIcon}
+                icon={Package}
                 onClick={(event) => handleNav(event, "/cashier/customer/orders")}
               />
               <NavItem
