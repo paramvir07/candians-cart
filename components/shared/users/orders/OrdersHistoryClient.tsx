@@ -147,7 +147,7 @@ export default function OrdersHistoryClient({
     ? "Customer Orders"
     : immigrationRole ? "All Orders"
     : allOrders
-      ? "All Store Orders"
+      ? "All Orders"
       : "Order History";
 
   return (
