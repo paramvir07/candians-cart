@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Banknote, Wallet, Store, User, CreditCard } from "lucide-react";
+import { Banknote, Wallet, Store, User } from "lucide-react";
 import Link from "next/link";
 import { type DateRange } from "react-day-picker";
 import {
@@ -29,7 +29,6 @@ import {
   getCashSummary,
   type CashActivity,
   type CashSummary,
-  type PaymentModeFilter,
 } from "@/actions/common/getCashActivities.action";
 import { getStores } from "@/actions/store/getStores.actions";
 import { StoreDocument } from "@/types/store/store";
@@ -74,7 +73,7 @@ function toVancouverBounds(range: DateRange | undefined): {
 
 const RowSkeleton = () => (
   <tr className="border-b border-gray-50">
-    {[32, 28, 28, 16, 24, 20].map((w, i) => (
+    {[32, 28, 28, 16, 16, 16, 20].map((w, i) => (
       <td key={i} className="px-4 py-3.5">
         <Skeleton className={`h-5 w-${w} rounded-md`} />
       </td>
@@ -116,7 +115,6 @@ export function CashCollectionList({
   );
   const [stores, setStores] = useState<StoreDocument[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [paymentType, setPaymentType] = useState<PaymentModeFilter>("all");
 
   const isAdmin = role === "admin";
   const effectiveStoreId = isAdmin
@@ -148,13 +146,13 @@ export function CashCollectionList({
 
   // Load summary — re-runs whenever a filter changes
   useEffect(() => {
-    getCashSummary(effectiveStoreId, paymentType, rangeStart, rangeEnd)
+    getCashSummary(effectiveStoreId, rangeStart, rangeEnd)
       .then(setSummary)
       .catch(console.error);
     // rangeStart/rangeEnd are Date objects recreated each render, so key off
     // the picker's own from/to instead to avoid an infinite effect loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveStoreId, paymentType, dateRange?.from, dateRange?.to]);
+  }, [effectiveStoreId, dateRange?.from, dateRange?.to]);
 
   // Load activities — re-runs whenever a filter or the page changes
   useEffect(() => {
@@ -165,7 +163,6 @@ export function CashCollectionList({
         effectiveStoreId,
         currentPage,
         8,
-        paymentType,
         rangeStart,
         rangeEnd,
       );
@@ -185,13 +182,7 @@ export function CashCollectionList({
     };
     // Same reasoning as above — key off the picker's raw from/to.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    effectiveStoreId,
-    paymentType,
-    dateRange?.from,
-    dateRange?.to,
-    currentPage,
-  ]);
+  }, [effectiveStoreId, dateRange?.from, dateRange?.to, currentPage]);
 
   const handleStoreChange = (newStoreId: string) => {
     setSelectedStoreId(newStoreId);
@@ -200,11 +191,6 @@ export function CashCollectionList({
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range);
-    setCurrentPage(1);
-  };
-
-  const handlePaymentTypeChange = (value: string) => {
-    setPaymentType(value as PaymentModeFilter);
     setCurrentPage(1);
   };
 
@@ -235,12 +221,7 @@ export function CashCollectionList({
     return pages;
   };
 
-  const topUpLabel =
-    paymentType === "cash"
-      ? "Cash Top-Ups"
-      : paymentType === "card"
-        ? "Card Top-Ups"
-        : "Top-Ups";
+  const columnCount = isAllStores ? 7 : 6;
 
   return (
     <div className="space-y-5">
@@ -270,20 +251,6 @@ export function CashCollectionList({
           </div>
         )}
 
-        <div className="space-y-2.5 w-full sm:w-45">
-          <Label className="text-sm font-medium">Payment Type</Label>
-          <Select value={paymentType} onValueChange={handlePaymentTypeChange}>
-            <SelectTrigger className="h-10 w-full">
-              <SelectValue placeholder="Payment type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="cash">Cash</SelectItem>
-              <SelectItem value="card">Card</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         <div className="space-y-2.5 w-full sm:w-auto">
           <Label className="text-sm font-medium">Date Range</Label>
           <DatePickerWithRange
@@ -305,7 +272,7 @@ export function CashCollectionList({
               icon: Banknote,
             },
             {
-              label: topUpLabel,
+              label: "Cash Top-Ups",
               value: summary.totalCashTopUps.toLocaleString(),
               bg: "bg-blue-50/60",
               border: "border-blue-100",
@@ -345,9 +312,6 @@ export function CashCollectionList({
               <Banknote className="w-4 h-4 text-amber-600" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">
-                Cash Collection
-              </h1>
               <p className="text-xs text-gray-400">
                 {isAllStores
                   ? "All cash activities across every store"
@@ -364,12 +328,9 @@ export function CashCollectionList({
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[640px]">
+          <table className="w-full text-sm min-w-[780px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/30">
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Type
-                </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Customer
                 </th>
@@ -385,6 +346,12 @@ export function CashCollectionList({
                   Amount
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Cash Paid
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Cash Due
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Date
                 </th>
               </tr>
@@ -394,10 +361,7 @@ export function CashCollectionList({
                 Array.from({ length: 8 }).map((_, i) => <RowSkeleton key={i} />)
               ) : activities.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={isAllStores ? 6 : 5}
-                    className="py-16 text-center"
-                  >
+                  <td colSpan={columnCount} className="py-16 text-center">
                     <Banknote className="w-10 h-10 text-gray-200 mx-auto mb-2" />
                     <p className="text-sm text-gray-400 font-medium">
                       No cash activities found
@@ -407,27 +371,9 @@ export function CashCollectionList({
               ) : (
                 activities.map((a) => (
                   <tr
-                    key={`${a.type}-${a.id}`}
+                    key={`${a.id}`}
                     className="hover:bg-gray-50/50 transition-colors"
                   >
-                    {/* Type badge */}
-                    <td className="px-5 py-3.5">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          a.type === "order"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-blue-100 text-blue-700"
-                        }`}
-                      >
-                        {a.paymentMode === "card" ? (
-                          <CreditCard className="w-3 h-3" />
-                        ) : (
-                          <Banknote className="w-3 h-3" />
-                        )}
-                        {a.label}
-                      </span>
-                    </td>
-
                     {/* Customer */}
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-1.5">
@@ -465,6 +411,24 @@ export function CashCollectionList({
                     {/* Amount */}
                     <td className="px-4 py-3.5 font-bold text-gray-900 tabular-nums">
                       {formatCents(a.amount)}
+                    </td>
+
+                    {/* Cash Paid */}
+                    <td className="px-4 py-3.5 text-gray-600 tabular-nums">
+                      {formatCents(a.cashPaid)}
+                    </td>
+
+                    {/* Cash Due */}
+                    <td className="px-4 py-3.5 tabular-nums">
+                      <span
+                        className={
+                          a.cashDue > 0
+                            ? "text-amber-600 font-medium"
+                            : "text-gray-600"
+                        }
+                      >
+                        {formatCents(a.cashDue)}
+                      </span>
                     </td>
 
                     {/* Date */}

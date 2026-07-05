@@ -3,28 +3,32 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getPusherClient } from "@/lib/pusher/pusher-client";
+import { toast } from "sonner";
 
 export default function CartReloadListener() {
   const router = useRouter();
 
-    useEffect(() => {
+  useEffect(() => {
     const pusherClient = getPusherClient();
     const channel = pusherClient.subscribe("cart-channel");
 
     channel.bind("pusher:subscription_succeeded", () => {
-        console.log("✅ Subscribed to cart-channel");
+      console.log("✅ Subscribed to cart-channel");
     });
 
-    channel.bind("cart-reload", () => {
-        console.log("📥 Received cart-reload event");
-        router.refresh();
+    channel.bind("cart-reload", (data: { message?: string }) => {
+      console.log("📥 Received cart-reload event", data);
+      if (data?.message) {
+        toast.success(data.message);
+      }
+      router.refresh();
     });
 
     return () => {
-        channel.unbind("cart-reload");
-        pusherClient.unsubscribe("cart-channel");
+      channel.unbind("cart-reload");
+      pusherClient.unsubscribe("cart-channel");
     };
-    }, [router]);
+  }, [router]);
 
   return null;
 }

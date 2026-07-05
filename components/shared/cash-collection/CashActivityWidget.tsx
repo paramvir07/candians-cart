@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Banknote, ShoppingCart, Wallet } from "lucide-react";
+import { Banknote, Wallet } from "lucide-react";
 import { CashActivity } from "@/actions/common/getCashActivities.action";
 
 interface CashActivityWidgetProps {
@@ -32,15 +32,7 @@ function timeAgo(date: Date): string {
   return `${days}d ago`;
 }
 
-function TypeBadge({ type }: { type: CashActivity["type"] }) {
-  if (type === "order") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">
-        <ShoppingCart className="w-2.5 h-2.5" />
-        Order
-      </span>
-    );
-  }
+function TypeBadge() {
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700">
       <Wallet className="w-2.5 h-2.5" />
@@ -87,20 +79,12 @@ export default function CashActivityWidget({
         ) : (
           visibleActivities.map((a) => (
             <div
-              key={`${a.type}-${a.id}`}
+              key={a.id}
               className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/60 transition-colors"
             >
               {/* Icon */}
-              <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                  a.type === "order" ? "bg-emerald-50" : "bg-blue-50"
-                }`}
-              >
-                {a.type === "order" ? (
-                  <ShoppingCart className="w-3.5 h-3.5 text-emerald-600" />
-                ) : (
-                  <Wallet className="w-3.5 h-3.5 text-blue-600" />
-                )}
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-blue-50">
+                <Wallet className="w-3.5 h-3.5 text-blue-600" />
               </div>
 
               {/* Info */}
@@ -109,7 +93,7 @@ export default function CashActivityWidget({
                   <p className="text-sm font-semibold text-gray-800 truncate leading-tight">
                     {a.customerName}
                   </p>
-                  <TypeBadge type={a.type} />
+                  <TypeBadge />
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400">
                   <span className="truncate">{a.cashierName}</span>

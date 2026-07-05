@@ -111,6 +111,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   )
     return (
       <>
+        <CartReloadListener />
         {customerId && (
           <div className="w-full flex items-center gap-2 px-4 xl:px-8 pt-5 xl:pt-8">
             <div className="flex-1">
@@ -486,7 +487,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
   return (
     <div className={cn("min-h-screen", !isCashier && "bg-background")}>
       {!isCashier && <Navbar />}
-
+      <CartReloadListener />
       {customerId && (
         <div className="w-full flex items-center gap-2 px-4 xl:px-8 pt-5 xl:pt-8">
           <div className="flex-1">
@@ -500,7 +501,6 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
           </Link>
         </div>
       )}
-      <CartReloadListener />
       {/* ── MOBILE / TABLET LAYOUT ── */}
       <div
         className="xl:hidden flex flex-col"

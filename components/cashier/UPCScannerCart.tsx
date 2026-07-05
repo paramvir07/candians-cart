@@ -16,6 +16,7 @@ import {
 import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
 import { AddtoCart } from "@/actions/customer/ProductAndStore/Cart.Action";
 import { useRouter } from "next/navigation";
+import { ReloadCartpusher } from "@/actions/pusher/pusherAction";
 
 const OBJECT_ID_OR_UPC_RE = /^[a-zA-Z0-9\-]{2,}$/;
 const MIN_WEIGHT_QTY = 0.1;
@@ -139,6 +140,7 @@ export const UPCScannerCart = ({ customerId, storeId }: UPCScannerProps) => {
           router.refresh();
           finishScan();
         }
+        // await ReloadCartpusher(`${results[0].name} added to cart`);
       } else {
         toast.error("Multiple products found — try a more specific barcode");
         finishScan();
