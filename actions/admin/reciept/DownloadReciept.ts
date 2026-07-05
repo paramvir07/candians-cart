@@ -525,6 +525,8 @@ export interface SavedPayoutData {
   platformMarkupGSTTax?: number;
   platformMarkupPSTTax?: number;
   grossMargin?: number;
+  totalRevenue: number;
+  profitMargin: number;
   totalSubsidy: number;
   totalDisposableFee: number;
   storeFixedValue: number;
@@ -743,11 +745,7 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   drawLabelRight("PAYMENT STATUS", data.status.toUpperCase(), y);
 
   y -= 44;
-  drawLabel(
-    "TOTAL REVENUE",
-    formatMoney((data.totalCustomerPaid || 0) + (data.totalSubsidy || 0)),
-    y,
-  );
+  drawLabel("TOTAL REVENUE", formatMoney(data.totalRevenue || 0), y);
   drawLabelRight(
     "TOTAL ORDERS",
     String(data.totalNumberofOrders || data.orderCount || 0),
@@ -813,11 +811,7 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   const profitMarginItems: ReceiptRowData[] = [
     {
       label: "Total Profit Margin",
-      value: formatMoney(
-        (data.storeProfit || 0) +
-          (data.totalSubsidy || 0) +
-          (data.platformProfit || 0),
-      ),
+      value: formatMoney(data.profitMargin || 0),
       bold: true,
     },
     {

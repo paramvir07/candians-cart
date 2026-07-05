@@ -41,6 +41,8 @@ export interface SerializedStorePayout {
   updatedAt: string;
   additionalNote: string;
   totalNumberofOrders: number;
+  totalRevenue: number;
+  profitMargin: number;
   paymentReciept: { url: string; fileId: string } | null;
   additionalCost?: number;
 }
@@ -127,6 +129,8 @@ export async function getVendorPayoutsAction(
             fileId: p.paymentReciept.fileId,
           }
         : null,
+      totalRevenue: p.totalRevenue || 0,
+      profitMargin: p.profitMargin || 0,
     }));
 
     return { success: true, data: serializedData };
@@ -191,6 +195,8 @@ export async function getSingleVendorPayoutAction(
       platformCommision: payout.platformCommision || 0,
       status: payout.status,
       additionalNote: payout.additionalNote || "",
+      totalRevenue: payout.totalRevenue || 0,
+      profitMargin: payout.profitMargin || 0,
       paymentReciept: payout.paymentReciept
         ? {
             url: payout.paymentReciept.url,

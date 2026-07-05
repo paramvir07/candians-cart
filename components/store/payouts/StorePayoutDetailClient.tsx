@@ -297,13 +297,7 @@ export default function StorePayoutDetailClient({
       drawLabelRight("PERIOD", periodStr, y);
 
       y -= 44;
-      drawLabel(
-        "TOTAL REVENUE",
-        formatCurrency(
-          (payout.totalCustomerPaid || 0) + ((payout as any).totalSubsidy || 0),
-        ),
-        y,
-      );
+      drawLabel("TOTAL REVENUE", formatCurrency(payout.totalRevenue || 0), y);
       drawLabelRight("TOTAL ORDERS", String(totalOrders), y);
 
       y -= 32;
@@ -365,11 +359,7 @@ export default function StorePayoutDetailClient({
       const profitMarginItems: ReceiptRowData[] = [
         {
           label: "Total Profit Margin",
-          value: formatCurrency(
-            ((payout as any).storeProfit || 0) +
-              ((payout as any).totalSubsidy || 0) +
-              ((payout as any).platformProfit || 0),
-          ),
+          value: formatCurrency(payout.profitMargin || 0),
           bold: true,
         },
         {
@@ -654,10 +644,7 @@ export default function StorePayoutDetailClient({
                 Total Revenue
               </span>
               <span className="text-2xl font-bold text-foreground">
-                {formatCurrency(
-                  payout.totalCustomerPaid +
-                    ((payout as any).totalSubsidy || 0),
-                )}
+                {formatCurrency(payout.totalRevenue || 0)}
               </span>
             </div>
             <div className="p-4 flex flex-col justify-center">
@@ -799,11 +786,7 @@ export default function StorePayoutDetailClient({
                   <div className="flex justify-between items-center">
                     <span className="font-bold">Total Profit Margin</span>
                     <span className="font-bold">
-                      {formatCurrency(
-                        ((payout as any).storeProfit || 0) +
-                          ((payout as any).totalSubsidy || 0) +
-                          ((payout as any).platformProfit || 0),
-                      )}
+                      {formatCurrency(payout.profitMargin || 0)}
                     </span>
                   </div>
                   <Separator className="my-2" />

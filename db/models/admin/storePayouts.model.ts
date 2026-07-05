@@ -8,6 +8,7 @@ export interface IStorePayout {
   totalPlatformFee: number;
   orderIds: Types.ObjectId[];
   totalCustomerPaid: number;
+  totalCustomerPaidAfterSubsidy: number;
   totalBasePrice: number;
   totalGST: number;
   totalPST: number;
@@ -24,6 +25,8 @@ export interface IStorePayout {
   storePayout: number;
   totalWalletTopUpCashCollected: number;
   totalCashCollected: number;
+  totalRevenue: number;
+  profitMargin: number;
   platformMarkupGSTTax: number;
   platformMarkupPSTTax: number;
   platformProfit: number;
@@ -73,6 +76,10 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       index: true,
     },
     totalCustomerPaid: {
+      type: Number,
+      required: true,
+    },
+    totalCustomerPaidAfterSubsidy: {
       type: Number,
       required: true,
     },
@@ -142,6 +149,10 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       type: Number,
       default: 0,
     },
+    totalRevenue: {
+      type: Number,
+      default: 0,
+    },
     platformMarkupGSTTax: {
       type: Number,
       required: true,
@@ -163,6 +174,11 @@ const StorePayoutSchema = new Schema<IStorePayoutDoc>(
       type: String,
       enum: ["pending", "paid"],
       default: "pending",
+    },
+
+    profitMargin: {
+      type: Number,
+      required: true,
     },
 
     additionalNote: {

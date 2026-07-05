@@ -39,7 +39,7 @@ export default function EditPayoutForm({
   const [status, setStatus] = useState<"pending" | "paid">(initialData.status);
   const [note, setNote] = useState(initialData.additionalNote);
   const [additionalCost, setAdditionalCost] = useState(
-    (initialData.additionalCost || initialData.additionalPrice || 0) / 100
+    (initialData.additionalCost || initialData.additionalPrice || 0) / 100,
   );
 
   // Existing uploaded receipt from the database
@@ -188,10 +188,7 @@ export default function EditPayoutForm({
                 Total Revenue
               </span>
               <span className="text-2xl font-bold text-foreground">
-                {formatCurrency(
-                  (initialData.totalCustomerPaid || 0) +
-                    (initialData.totalSubsidy || 0),
-                )}
+                {formatCurrency(initialData.totalRevenue || 0)}
               </span>
             </div>
             <div className="p-4 flex flex-col justify-center">
@@ -284,7 +281,10 @@ export default function EditPayoutForm({
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Store GST</span>
                     <span className="font-medium text-muted-foreground">
-                      {formatCurrency((initialData.storebasetaxGST || 0) + (initialData.storeMarkupTax || 0))}
+                      {formatCurrency(
+                        (initialData.storebasetaxGST || 0) +
+                          (initialData.storeMarkupTax || 0),
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -334,9 +334,7 @@ export default function EditPayoutForm({
                   <div className="flex justify-between items-center">
                     <span className="font-bold">Total Profit Margin</span>
                     <span className="font-bold">
-                      {formatCurrency(
-                          (initialData.totalSubsidy || 0) + (initialData.storeProfit) + (initialData.platformProfit),
-                      )}
+                      {formatCurrency(initialData.profitMargin || 0)}
                     </span>
                   </div>
                   <Separator className="my-2" />

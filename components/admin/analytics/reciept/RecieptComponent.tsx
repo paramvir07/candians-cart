@@ -300,7 +300,7 @@ export default function RecieptComponent({
                           Total Revenue
                         </span>
                         <span className="text-2xl font-bold">
-                          {fmt(r.totalCustomerPaid + r.totalSubsidy)}
+                          {fmt(r.totalRevenue)}
                         </span>
                       </div>
                       <div className="p-4 flex flex-col justify-center">
@@ -439,7 +439,7 @@ export default function RecieptComponent({
                                 Total Profit Margin
                               </span>
                               <span className="font-bold">
-                                {fmt(r.storeProfit + r.platformProfit + r.totalSubsidy)}
+                                {fmt(r.profitMargin)}
                               </span>
                             </div>
                             <Separator className="my-2" />

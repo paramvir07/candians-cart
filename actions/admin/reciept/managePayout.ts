@@ -46,6 +46,8 @@ export async function getStorePayoutByIdAction(payoutId: string) {
       storeMarkupTax: payout.storeMarkupTax || 0,
       storeFixedValue: payout.storeFixedValue || 0,
       totalDisposableFee: payout.totalDisposableFee || 0,
+      totalRevenue: payout.totalRevenue || 0,
+      profitMargin: payout.profitMargin || 0,
 
       // Platform Taxes & Fees
       platformMarkupGSTTax: payout.platformMarkupGSTTax || 0,
