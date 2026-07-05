@@ -227,7 +227,7 @@ function SidebarContent({
               />
               <NavItem
                 href="/cashier/customer/orders"
-                label="Customer Orders"
+                label="Orders"
                 icon={Package}
                 onClick={(event) => handleNav(event, "/cashier/customer/orders")}
               />

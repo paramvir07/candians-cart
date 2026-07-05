@@ -112,9 +112,22 @@ const SAVINGS_ITEMS = [
 interface HeroSectionProps {
   isLoggedIn: boolean;
   promoSlot: ReactNode;
+  role?: "customer" | "store" | "admin" | "cashier";
 }
 
-export default function HeroSection({ isLoggedIn, promoSlot }: HeroSectionProps) {
+const ROLE_HOME: Record<string, string> = {
+  customer: "/customer",
+  store: "/store",
+  admin: "/admin",
+  cashier: "/cashier",
+};
+
+export default function HeroSection({
+  isLoggedIn,
+  promoSlot,
+  role = "customer",
+}: HeroSectionProps) {
+  const homeHref = ROLE_HOME[role] ?? "/customer";
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
@@ -254,7 +267,7 @@ export default function HeroSection({ isLoggedIn, promoSlot }: HeroSectionProps)
             className="flex flex-wrap gap-3 justify-center mb-5"
           >
             {isLoggedIn ? (
-              <Link href="/customer">
+              <Link href={homeHref}>
                 <button
                   className="px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold text-white text-sm sm:text-base transition-transform active:scale-95"
                   style={{
