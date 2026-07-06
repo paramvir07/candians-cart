@@ -21,7 +21,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-// NOTE: I highly recommend you fix "Candian's" to "Canadian's" across all these fields.
+// NOTE: I highly recommend you fix "Candian's" to "Candian's" across all these fields.
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || "https://www.canadianscart.ca",

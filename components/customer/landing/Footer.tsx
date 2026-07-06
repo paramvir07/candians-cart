@@ -148,7 +148,7 @@ export function Footer() {
         className="pointer-events-none select-none flex justify-center overflow-hidden h-24 md:h-44 lg:h-62 -mt-2"
       >
         <span className="text-[8rem] md:text-[15rem] lg:text-[22rem] font-black text-foreground/10 whitespace-nowrap leading-none tracking-tighter">
-          Canadian's
+          Candian's
         </span>
       </div>
 
