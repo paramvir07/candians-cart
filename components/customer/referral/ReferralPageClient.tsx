@@ -390,15 +390,19 @@ function QRDialog({
 function EarningsHero({
   earned,
   uses,
+  pending,
   code,
   maxUses,
   perReferAmount,
+  completeCount,
 }: {
   earned: string;
   uses: number;
+  pending: number;
   maxUses: number;
   code: string;
   perReferAmount: number;
+  completeCount:number;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -445,32 +449,41 @@ function EarningsHero({
           <span className="text-sm text-white/50 mb-1.5">CAD</span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 relative">
-          <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
-            <p className="text-[10px] text-white/50 mb-1">Per referral</p>
+        <div className="grid grid-cols-4 gap-1.5 relative">
+          <div className="rounded-xl bg-white/10 border border-white/10 px-2 py-2.5">
+            <p className="text-[9px] text-white/50 mb-1 truncate">Per referral</p>
             <p
-              className="text-base font-bold text-white"
+              className="text-sm font-bold text-white"
               style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
             >
               CA${perReferAmount}
             </p>
           </div>
-          <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
-            <p className="text-[10px] text-white/50 mb-1">Referred</p>
+          <div className="rounded-xl bg-white/10 border border-white/10 px-2 py-2.5">
+            <p className="text-[9px] text-white/50 mb-1 truncate">Referred</p>
             <p
-              className="text-base font-bold text-white"
+              className="text-sm font-bold text-white"
               style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
             >
-              {uses}/{maxUses}
+              {uses-pending}/{maxUses}
             </p>
           </div>
-          <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
-            <p className="text-[10px] text-white/50 mb-1">Left to earn</p>
+          <div className="rounded-xl bg-white/10 border border-white/10 px-2 py-2.5">
+            <p className="text-[9px] text-white/50 mb-1 truncate">Pending</p>
             <p
-              className="text-base font-bold text-white"
+              className="text-sm font-bold text-white"
               style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
             >
-              CA${maxUses - uses > 0 ? (maxUses - uses) * perReferAmount : 0}
+              {pending}/{uses}
+            </p>
+          </div>
+          <div className="rounded-xl bg-white/10 border border-white/10 px-2 py-2.5">
+            <p className="text-[9px] text-white/50 mb-1 truncate">Left</p>
+            <p
+              className="text-sm font-bold text-white"
+              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+            >
+              CA${maxUses - completeCount > 0 ? (maxUses - completeCount) * perReferAmount : 0}
             </p>
           </div>
         </div>
@@ -662,18 +675,20 @@ function HowItWorks() {
 // ─── Usage stats ──────────────────────────────────────────────────────────────
 
 function UsageStats({
+  pending,
   uses,
   maxUses,
   expiresAt,
 }: {
+  pending: number;
   uses: number;
   maxUses: number;
   expiresAt: string;
 }) {
-  const remaining = maxUses - uses;
+  const remaining = (maxUses - uses) + pending;
   const isFull = remaining <= 0;
   const segCount = Math.min(maxUses, 24);
-  const filled = Math.round((uses / maxUses) * segCount);
+  const filled = Math.round((uses - pending) / maxUses * segCount);
 
   return (
     <div className="rounded-2xl bg-card border border-border/60 px-5 py-4">
@@ -710,7 +725,7 @@ function UsageStats({
             className="font-bold text-foreground"
             style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
           >
-            {uses}
+            {uses-pending}
           </span>{" "}
           of {maxUses} uses
         </span>
@@ -1129,7 +1144,8 @@ export function ReferralPageClient({
   ReqCount,
 }: ReferralPageClientProps) {
   const earnedDisplay = (referralData.totalEarned / 100).toFixed(2);
-
+  const completedCount = referralData.usedBy.filter((u) => u.placedFirstOrder).length;
+  const pendingCount = referralData.usedBy.filter((u) => !u.placedFirstOrder).length;
   return (
     <div className="min-h-screen w-full bg-background">
       <ReferralInviteModal
@@ -1188,8 +1204,10 @@ export function ReferralPageClient({
 
         <div className="mb-3">
           <EarningsHero
+            completeCount={completedCount}
             earned={earnedDisplay}
             uses={referralData.uses}
+            pending={pendingCount}
             code={referralData.code}
             maxUses={referralData.maxUses}
             perReferAmount={userData.perReferAmount}
@@ -1202,6 +1220,7 @@ export function ReferralPageClient({
 
         <div className="mb-3">
           <UsageStats
+            pending={pendingCount}
             uses={referralData.uses}
             maxUses={referralData.maxUses}
             expiresAt={referralData.expiresAt}
