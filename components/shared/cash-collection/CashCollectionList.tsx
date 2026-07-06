@@ -138,6 +138,11 @@ export function CashCollectionList({
       .catch(console.error);
   }, [isAdmin]);
 
+  // Auto-scroll to top whenever the page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
+
   const selectedStoreName =
     selectedStoreId === "all"
       ? "All Stores (Global)"
