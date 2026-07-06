@@ -630,8 +630,10 @@ const EnableUserReferralFlag = async (
 export const GenerateReferralCode = async (
   customerId: string,
   customerName: string,
-  session: mongoose.ClientSession,
+  session?: mongoose.ClientSession,
 ) => {
+  await dbConnect();
+
   const namePart = customerName.replace(/\s+/g, "").slice(0, 4).toUpperCase();
   const candidates = [
     namePart + customerId.slice(-6),
@@ -639,7 +641,7 @@ export const GenerateReferralCode = async (
   ];
 
   const tryCreate = async (code: string) => {
-    const exists = await ReferralCode.exists({ code }).session(session);
+    const exists = await ReferralCode.exists({ code }).session(session ?? null);
     if (!exists) {
       const created = await ReferralCode.create(
         [
@@ -667,12 +669,14 @@ export const GenerateReferralCode = async (
 
   for (const code of candidates) {
     const result = await tryCreate(code);
+    if (!session) await revalidateCustomerCache();
     if (result) return { success: true, code: result };
   }
 
   for (let i = 0; i < 10; i++) {
     const code = namePart + Math.random().toString(36).slice(2, 8).toUpperCase();
     const result = await tryCreate(code);
+    if (!session) await revalidateCustomerCache();
     if (result) return { success: true, code: result };
   }
 
