@@ -87,7 +87,7 @@ export const getCachedStoreProducts = async (
       else if (filters.sortBy === "markup_asc")
         sortConfig = { markup: 1, _id: 1 };
       // Default: Featured products float to top, followed by newest
-      else sortConfig = { isFeatured: -1, createdAt: -1, _id: 1 };
+      else sortConfig = { markup: -1, isFeatured: -1, createdAt: -1, _id: 1 };
 
       const skipAmount = (page - 1) * limit;
 
