@@ -396,6 +396,10 @@ export function OrdersList({
     load(currentPage);
   }, [storeId, currentPage, isSearchMode, activeDateRange]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
+
   // Reset to page 1 on period change
   useEffect(() => {
     setCurrentPage(1);
@@ -788,7 +792,7 @@ export function OrdersList({
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage < totalPages && !isLoading)
-                        setCurrentPage((p) => p - 1);
+                        setCurrentPage((p) => p + 1);
                     }}
                     className={
                       currentPage === totalPages || isLoading

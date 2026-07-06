@@ -197,6 +197,16 @@ export const StoreProductsList = ({
     };
   }, [upcMode]);
 
+  // Reset to page 1 when a new search begins
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedQuery]);
+
+  // Auto-scroll to top whenever the page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
+
   // Android scanner effect
   useEffect(() => {
     if (!upcMode) return;
@@ -270,7 +280,7 @@ export const StoreProductsList = ({
           );
         } else if (isSearchMode) {
           res = upcMode
-            ? await searchProductsByUPC((debouncedQuery).toUpperCase(), storeId)
+            ? await searchProductsByUPC(debouncedQuery.toUpperCase(), storeId)
             : await searchProductsWithFilters(
                 debouncedQuery,
                 storeId,

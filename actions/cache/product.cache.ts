@@ -43,7 +43,6 @@ export const getCachedStoreProducts = async (
 ): Promise<PaginatedProductsResponse> => {
   const filterKey = JSON.stringify(filters);
 
-  // The cache key combines storeId, pagination, and filters so every unique view is cached
   const cacheKey = `store-products-${storeId}-p${page}-l${limit}-${filterKey}`;
 
   const fetchCachedData = unstable_cache(
@@ -76,7 +75,59 @@ export const getCachedStoreProducts = async (
         }
       }
 
-      // sorting logic
+      const skipAmount = (page - 1) * limit;
+
+      // Default sort needs a computed priority: high-markup NON-subsidised products
+      // first (group 0), then everything else (subsidised, or markup < 100) mixed
+      // together by markup (group 1). Plain field sort can't express this
+      // conditional, so we use an aggregation pipeline with a computed sort key.
+      if (!filters.sortBy || filters.sortBy === "default") {
+        const basePipeline: mongoose.PipelineStage[] = [
+          { $match: query },
+          {
+            $addFields: {
+              sortGroup: {
+                $cond: [
+                  {
+                    $and: [
+                      { $gte: ["$markup", 100] },
+                      { $ne: ["$subsidised", true] },
+                    ],
+                  },
+                  0, // high markup, not subsidised -> top priority
+                  1, // subsidised OR markup < 100 -> mixed second group
+                ],
+              },
+            },
+          },
+        ];
+
+        const [products, countResult] = await Promise.all([
+          Product.aggregate([
+            ...basePipeline,
+            {
+              $sort: {
+                sortGroup: 1,
+                markup: -1,
+                isFeatured: -1,
+                createdAt: -1,
+                _id: 1,
+              },
+            },
+            { $skip: skipAmount },
+            { $limit: limit },
+            { $project: { sortGroup: 0 } },
+          ]),
+          Product.aggregate([...basePipeline, { $count: "totalCount" }]),
+        ]);
+
+        return {
+          products: JSON.parse(JSON.stringify(products)),
+          totalCount: countResult[0]?.totalCount ?? 0,
+        };
+      }
+
+      // sorting logic for explicit sort options
       let sortConfig: { [key: string]: SortOrder } = {};
       if (filters.sortBy === "price_asc") sortConfig = { price: 1, _id: 1 };
       else if (filters.sortBy === "price_desc")
@@ -86,12 +137,7 @@ export const getCachedStoreProducts = async (
         sortConfig = { markup: -1, _id: -1 };
       else if (filters.sortBy === "markup_asc")
         sortConfig = { markup: 1, _id: 1 };
-      // Default: Featured products float to top, followed by newest
-      else sortConfig = { markup: -1, isFeatured: -1, createdAt: -1, _id: 1 };
 
-      const skipAmount = (page - 1) * limit;
-
-      // execute in parallel
       const [products, totalCount] = await Promise.all([
         Product.find(query)
           .sort(sortConfig)
@@ -106,10 +152,10 @@ export const getCachedStoreProducts = async (
         totalCount,
       };
     },
-    [cacheKey], // dependencies for cache invalidation
+    [cacheKey],
     {
-      revalidate: 86400, // revalidate after 24 hr
-      tags: [`products-${storeId}`, "global-products"], // tag for manual invalidation when products change
+      revalidate: 86400,
+      tags: [`products-${storeId}`, "global-products"],
     },
   );
 
