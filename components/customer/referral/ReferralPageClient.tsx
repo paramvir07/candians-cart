@@ -1143,7 +1143,7 @@ export function ReferralPageClient({
   userData,
   ReqCount,
 }: ReferralPageClientProps) {
-  const earnedDisplay = (referralData.totalEarned / 100).toFixed(2);
+  const earnedDisplay = (referralData.totalEarned / 100).toFixed(0);
   const completedCount = referralData.usedBy.filter((u) => u.placedFirstOrder).length;
   const pendingCount = referralData.usedBy.filter((u) => !u.placedFirstOrder).length;
   return (
