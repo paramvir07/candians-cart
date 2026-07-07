@@ -58,13 +58,11 @@ export default function OrderDetail({
   const nonSubsidisedPinned = nonSubsidisedAll.filter(isPinned);
   const nonSubsidisedRest = nonSubsidisedAll.filter((i: any) => !isPinned(i));
 
-  const nonSubsidised = [...nonSubsidisedRest, ...nonSubsidisedPinned];
-
   const subsidised = rawItems
     .filter((i: any) => i.productId?.subsidised)
     .reverse();
 
-  const allProducts = [...nonSubsidised, ...subsidised];
+  const allProducts = [...nonSubsidisedRest, ...subsidised, ...nonSubsidisedPinned];
   const PlatformFee = 50;
   const subtotal = cartTotal - totalGST - totalPST - totalFee - PlatformFee;
 
