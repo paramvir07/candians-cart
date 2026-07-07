@@ -40,7 +40,8 @@ import {
   getFullOrderDetails,
 } from "@/actions/admin/orders/getOrders.action";
 import { OrderStats } from "@/actions/admin/orders/getOrderStats.action";
-import OrderDetail from "@/components/shared/users/orders/OrderDetail";
+// import OrderDetail from "@/components/shared/users/orders/OrderDetail";
+import OrderDetailInternal  from "@/components/admin/orders/OrderDetailsInternal";
 import { format } from "date-fns";
 import { type DateRange as DayPickerDateRange } from "react-day-picker";
 import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
@@ -494,7 +495,8 @@ export function OrdersList({
               >
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
-              <OrderDetail order={selectedOrderData as any} allOrders={true} />
+              {/* <OrderDetail order={selectedOrderData as any} allOrders={true} /> */}
+               <OrderDetailInternal order={selectedOrderData as any} role={role} />
             </div>
           ) : null}
         </DialogContent>
