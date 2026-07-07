@@ -1,23 +1,22 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, BarChart2, User, PackageCheck, HandCoins } from "lucide-react";
+import { Home, BarChart2, User, HandCoins, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
 const navItems = [
   { label: "Home", href: "/customer", icon: Home, exact: true },
-  { label: "Budget Packs", href: "/customer/budget-packs", icon: PackageCheck },
+  { label: "Analytics", href: "/customer/analytics", icon: BarChart2 },
   // { label: "Scan", href: "/customer/search?scan=1", icon: ScanLine },
   { label: "Refer & Earn", href: "/customer/referrals", icon: HandCoins },
-  { label: "Analytics", href: "/customer/analytics", icon: BarChart2 },
+  { label: "Orders", href: "/customer/orders", icon: Package },
   { label: "Profile", href: "/customer/profile", icon: User },
 ];
 
 function getIndex(pathname: string) {
   return navItems.findIndex(({ href, exact }) =>
-    exact ? pathname === href : pathname.startsWith(href)
+    exact ? pathname === href : pathname.startsWith(href),
   );
 }
 
@@ -50,18 +49,25 @@ export default function BottomNavbar() {
 
   return (
     <>
-      <div className="h-20 md:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom)" }} />
+      <div
+        className="h-20 md:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      />
 
       <nav
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-100"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div ref={navRef} className="relative flex items-center justify-around px-2 py-2">
-
+        <div
+          ref={navRef}
+          className="relative flex items-center justify-around px-2 py-2"
+        >
           <span
             ref={pillRef}
             className="pointer-events-none absolute left-0 top-2 h-10 w-12 rounded-2xl bg-[#16a34a] shadow-[0_4px_16px_rgba(22,163,74,0.35)]"
-            style={{ transition: "transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+            style={{
+              transition: "transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}
           />
 
           {navItems.map(({ label, href, icon: Icon }, i) => {
@@ -70,9 +76,14 @@ export default function BottomNavbar() {
             return (
               <div
                 key={href}
-                ref={(el) => { itemRefs.current[i] = el; }}
+                ref={(el) => {
+                  itemRefs.current[i] = el;
+                }}
                 className="relative z-10 flex flex-col items-center justify-center flex-1 gap-1 min-w-0 select-none cursor-pointer"
-                style={{ WebkitTapHighlightColor: "transparent", touchAction: "manipulation" }}
+                style={{
+                  WebkitTapHighlightColor: "transparent",
+                  touchAction: "manipulation",
+                }}
                 onPointerDown={() => {
                   // Move pill & update active state instantly on first touch
                   setActiveIndex(i);
@@ -85,15 +96,17 @@ export default function BottomNavbar() {
                     strokeWidth={active ? 2.5 : 1.75}
                     className={cn(
                       "transition-colors duration-150",
-                      active ? "text-white" : "text-gray-400"
+                      active ? "text-white" : "text-gray-400",
                     )}
                   />
                 </span>
 
-                <span className={cn(
-                  "text-[10px] leading-none font-semibold tracking-wide transition-colors duration-150",
-                  active ? "text-[#15803d]" : "text-gray-400"
-                )}>
+                <span
+                  className={cn(
+                    "text-[10px] leading-none font-semibold tracking-wide transition-colors duration-150",
+                    active ? "text-[#15803d]" : "text-gray-400",
+                  )}
+                >
                   {label}
                 </span>
               </div>

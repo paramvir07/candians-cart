@@ -9,7 +9,6 @@ export default function EmailVerifiedClient({ type }: { type?: string }) {
   const isChange = type === "change";
 
   useEffect(() => {
-    if (isChange) return;
     const t = setTimeout(() => {
       router.push("/customer");
       router.refresh();
@@ -32,11 +31,9 @@ export default function EmailVerifiedClient({ type }: { type?: string }) {
               ? "Your new email address has been confirmed and is now linked to your account."
               : "Your email address has been verified. You're all set."}
           </p>
-          {!isChange && (
-            <p className="text-xs text-muted-foreground">
-              Taking you home in a moment…
-            </p>
-          )}
+          <p className="text-xs text-muted-foreground">
+            Taking you home in a moment…
+          </p>
         </div>
         <button
           onClick={() => {

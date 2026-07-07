@@ -1,6 +1,5 @@
 import EmailVerifiedClient from "@/components/auth/EmailVerifiedClient";
 
-
 export default async function EmailVerifiedPage({
   searchParams,
 }: {
