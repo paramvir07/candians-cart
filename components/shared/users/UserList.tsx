@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Store, Users, X } from "lucide-react";
+import { Search, ShoppingCart, Store, Users, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import CustomerCard from "./CustomerCard";
@@ -15,8 +15,13 @@ import { SerializedCustomer } from "@/types/customer/customer";
 import {
   getStoreCustomers,
   getSearchCustomer,
+  getCustomersFiltered,
+  getCustomerFilterOptions,
   PaginationMeta,
+  CustomerFilters,
 } from "@/actions/admin/customers/getCustomers.action";
+import { getStores } from "@/actions/store/getStores.actions";
+import { StoreDocument } from "@/types/store/store";
 import { useDebounce } from "use-debounce";
 import {
   Pagination,
@@ -27,6 +32,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  CustomerFiltersSheet,
+  countActiveCustomerFilters,
+} from "@/components/admin/customers/CustomerFilterSheet";
+import type { EventParticipantStatus } from "@/db/models/customer/customer.model";
 
 const CustomerCardSkeleton = () => (
   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3 animate-pulse">
@@ -42,6 +52,24 @@ const CustomerCardSkeleton = () => (
   </div>
 );
 
+const FilterChip = ({
+  label,
+  onRemove,
+}: {
+  label: string;
+  onRemove: () => void;
+}) => (
+  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-medium">
+    {label}
+    <button
+      onClick={onRemove}
+      className="hover:text-destructive transition-colors ml-0.5"
+    >
+      <X className="h-3 w-3" />
+    </button>
+  </span>
+);
+
 type UserListProps = {
   userRole?: "cashier" | "store" | "admin" | "immigration";
   adminMode?: boolean;
@@ -50,8 +78,9 @@ type UserListProps = {
   initialPagination?: PaginationMeta;
 };
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 5;
 const OBJECT_ID_RE = /^[a-f0-9]{24}$/i;
+const EMPTY_FILTERS: CustomerFilters = {};
 
 const getSortableTime = (c: SerializedCustomer) => {
   const t = new Date(c.createdAt).getTime();
@@ -101,6 +130,18 @@ const UserList = (props: UserListProps) => {
 
   const [debouncedSearch] = useDebounce(search, 500);
 
+  // ── Admin-only filters ──
+  const [filters, setFilters] = useState<CustomerFilters>(EMPTY_FILTERS);
+  const [stores, setStores] = useState<StoreDocument[]>([]);
+
+  const [eventParticipantOptions, setEventParticipantOptions] = useState<
+    EventParticipantStatus[]
+  >([]);
+
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+
+  const isFilterMode = isAdminMode && countActiveCustomerFilters(filters) > 0;
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scanBufferRef = useRef("");
 
@@ -109,8 +150,30 @@ const UserList = (props: UserListProps) => {
   }, []);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
+
+  useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
+
+  // Load store list + filter dropdown options once, admin only
+  useEffect(() => {
+    if (!isAdminMode) return;
+    getStores()
+      .then((res) => {
+        if (res.success && res.data) setStores(res.data);
+      })
+      .catch(console.error);
+    getCustomerFilterOptions()
+      .then((res) => {
+        if (res.success && res.data) {
+          setEventParticipantOptions(res.data.eventParticipantOptions);
+          setCityOptions(res.data.cityOptions);
+        }
+      })
+      .catch(console.error);
+  }, [isAdminMode]);
 
   useEffect(() => {
     const commitScan = (value: string) => {
@@ -173,6 +236,11 @@ const UserList = (props: UserListProps) => {
     setSearch(trimmed);
   };
 
+  const handleApplyFilters = (newFilters: CustomerFilters) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -185,7 +253,27 @@ const UserList = (props: UserListProps) => {
           setServerPagination(null);
           setIsLoading(false);
         }
+        return;
+      }
 
+      // Admin path: search + structured filters combined
+      if (isAdminMode) {
+        setIsLoading(true);
+        const result = await getCustomersFiltered(
+          query || null,
+          page,
+          ITEMS_PER_PAGE,
+          filters,
+        );
+        if (!mounted) return;
+
+        if (result.success) {
+          setFetchedCustomers(result.data as unknown as SerializedCustomer[]);
+          if (result.pagination) setServerPagination(result.pagination);
+        } else {
+          toast.error(result.error || "Failed to fetch customers");
+        }
+        setIsLoading(false);
         return;
       }
 
@@ -250,6 +338,14 @@ const UserList = (props: UserListProps) => {
     props.initialPagination,
     cashierRole,
     router,
+    filters.storeId,
+    filters.walletMin,
+    filters.walletMax,
+    filters.referralCodeEnabled,
+    filters.placedFirstOrder,
+    filters.eventParticipant,
+    filters.city,
+    filters.hasCartItems,
   ]);
 
   const displayData = useMemo(() => {
@@ -271,6 +367,70 @@ const UserList = (props: UserListProps) => {
     : cashierRole || storeRole
       ? "Search id, name or scan QR…"
       : "Search";
+
+  // Build readable chips for active admin filters
+  const filterChips: { label: string; clear: () => void }[] = [];
+
+  if (isAdminMode) {
+    if (filters.storeId) {
+      const storeName =
+        stores.find((s) => s._id.toString() === filters.storeId)?.name ??
+        "Store";
+      filterChips.push({
+        label: storeName,
+        clear: () => handleApplyFilters({ ...filters, storeId: undefined }),
+      });
+    }
+    if (filters.walletMin !== undefined || filters.walletMax !== undefined) {
+      filterChips.push({
+        label: `Wallet CA$${((filters.walletMin ?? 0) / 100).toFixed(0)}–CA$${((filters.walletMax ?? 100000) / 100).toFixed(0)}`,
+        clear: () =>
+          handleApplyFilters({
+            ...filters,
+            walletMin: undefined,
+            walletMax: undefined,
+          }),
+      });
+    }
+    if (filters.referralCodeEnabled !== undefined) {
+      filterChips.push({
+        label: filters.referralCodeEnabled
+          ? "Referral Enabled"
+          : "Referral Disabled",
+        clear: () =>
+          handleApplyFilters({ ...filters, referralCodeEnabled: undefined }),
+      });
+    }
+    if (filters.placedFirstOrder !== undefined) {
+      filterChips.push({
+        label: filters.placedFirstOrder
+          ? "Placed 1st Order"
+          : "No 1st Order Yet",
+        clear: () =>
+          handleApplyFilters({ ...filters, placedFirstOrder: undefined }),
+      });
+    }
+    if (filters.hasCartItems !== undefined) {
+      filterChips.push({
+        label: filters.hasCartItems ? "Has Cart Items" : "Empty / No Cart",
+        clear: () =>
+          handleApplyFilters({ ...filters, hasCartItems: undefined }),
+      });
+    }
+    if (filters.eventParticipant) {
+      filterChips.push({
+        label: `Event: ${filters.eventParticipant}`,
+        clear: () =>
+          handleApplyFilters({ ...filters, eventParticipant: undefined }),
+      });
+    }
+    if (filters.city) {
+      filterChips.push({
+        label: filters.city,
+        clear: () => handleApplyFilters({ ...filters, city: undefined }),
+      });
+    }
+  }
 
   return (
     <div
@@ -324,7 +484,35 @@ const UserList = (props: UserListProps) => {
           </div>
 
           {!isAllStores && <QrScannerButton onScan={handleScanResult} />}
+
+          {isAdminMode && (
+            <CustomerFiltersSheet
+              filters={filters}
+              onApply={handleApplyFilters}
+              stores={stores}
+              eventParticipantOptions={eventParticipantOptions}
+              cityOptions={cityOptions}
+            />
+          )}
         </div>
+
+        {isAdminMode && filterChips.length > 0 && (
+          <div className="flex flex-wrap gap-2 items-center px-3 pb-3 sm:px-4">
+            {filterChips.map((chip) => (
+              <FilterChip
+                key={chip.label}
+                label={chip.label}
+                onRemove={chip.clear}
+              />
+            ))}
+            <button
+              onClick={() => handleApplyFilters(EMPTY_FILTERS)}
+              className="text-xs font-medium text-muted-foreground hover:text-destructive transition-colors underline underline-offset-2"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
       </div>
 
       {isLoading ? (
@@ -346,7 +534,9 @@ const UserList = (props: UserListProps) => {
           <Users className="w-10 h-10 opacity-20" />
 
           <p className="text-sm">
-            {search ? "No customers match your search" : "No customers yet"}
+            {search || isFilterMode
+              ? "No customers match your search/filters"
+              : "No customers yet"}
           </p>
 
           {search && (
@@ -357,6 +547,16 @@ const UserList = (props: UserListProps) => {
               type="button"
             >
               Clear search
+            </Button>
+          )}
+          {!search && isFilterMode && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleApplyFilters(EMPTY_FILTERS)}
+              type="button"
+            >
+              Clear filters
             </Button>
           )}
         </div>
@@ -379,29 +579,38 @@ const UserList = (props: UserListProps) => {
                   }
                 }}
               >
-                {isAllStores &&
-                  customer.associatedStoreId &&
-                  (isAdminMode ? (
-                    <Link
-                      href={`/admin/store/${customer.associatedStoreId}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="group inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors"
-                    >
-                      <Store className="w-3 h-3 text-emerald-500 shrink-0" />
+                <div className="flex items-center gap-1.5 self-start mb-1.5 flex-wrap">
+                  {isAllStores &&
+                    customer.associatedStoreId &&
+                    (isAdminMode ? (
+                      <Link
+                        href={`/admin/store/${customer.associatedStoreId}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors"
+                      >
+                        <Store className="w-3 h-3 text-emerald-500 shrink-0" />
+                        <span className="text-xs font-semibold text-emerald-700 truncate max-w-40 group-hover:underline underline-offset-2">
+                          {customer.storeName ?? "Unknown Store"}
+                        </span>
+                      </Link>
+                    ) : (
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100">
+                        <Store className="w-3 h-3 text-emerald-500 shrink-0" />
+                        <span className="text-xs font-semibold text-emerald-700 truncate max-w-40">
+                          {customer.storeName ?? "Unknown Store"}
+                        </span>
+                      </div>
+                    ))}
 
-                      <span className="text-xs font-semibold text-emerald-700 truncate max-w-40 group-hover:underline underline-offset-2">
-                        {customer.storeName ?? "Unknown Store"}
-                      </span>
-                    </Link>
-                  ) : (
-                    <div className="inline-flex items-center gap-1.5 self-start mb-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-100">
-                      <Store className="w-3 h-3 text-emerald-500 shrink-0" />
-
-                      <span className="text-xs font-semibold text-emerald-700 truncate max-w-40">
-                        {customer.storeName ?? "Unknown Store"}
+                  {isAdminMode && (customer as any).hasCartItems && (
+                    <div className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 border border-amber-100">
+                      <ShoppingCart className="w-3 h-3 text-amber-500 shrink-0" />
+                      <span className="text-xs font-semibold text-amber-700">
+                        In Cart
                       </span>
                     </div>
-                  ))}
+                  )}
+                </div>
 
                 <CustomerCard customer={customer} userRole={customerCardRole} />
               </div>

@@ -6,6 +6,7 @@ export interface ICategorySaleDetail {
   sales: number;
   date: string; // UTC ISO string
   isMeasuredInWeight: boolean;
+  uom?: string | null;
 }
 
 export interface ICategorySales {

@@ -65,6 +65,7 @@ export const getCategorySales = cache(
             latestSaleDate: { $max: "$createdAt" },
             // carry the flag through — $first is fine since it's constant per product
             isMeasuredInWeight: { $first: "$productDoc.isMeasuredInWeight" },
+            uom: { $first: "$productDoc.UOM" },   
           },
         },
         // 7. Second Grouping: Group by Category
@@ -82,6 +83,7 @@ export const getCategorySales = cache(
                 sales: "$productSalesQuantity",
                 date: "$latestSaleDate",
                 isMeasuredInWeight: "$isMeasuredInWeight",
+                uom: "$uom",  
               },
             },
           },
@@ -114,6 +116,7 @@ export const getCategorySales = cache(
             sales: detail.sales,
             date: new Date(detail.date).toISOString(),
             isMeasuredInWeight: !!detail.isMeasuredInWeight,
+            uom: detail.uom ?? null, 
           })),
         }),
       );

@@ -300,6 +300,9 @@ export default function CategorySalesTableClient({
                         <TableCell>{detail.productName}</TableCell>
                         <TableCell>
                           {formatSales(detail.sales, detail.isMeasuredInWeight)}
+                          {detail.isMeasuredInWeight && detail.uom
+                            ? ` ${detail.uom}`
+                            : ""}
                         </TableCell>
                         <TableCell>{formatToPST(detail.date)}</TableCell>
                       </TableRow>
