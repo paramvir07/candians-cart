@@ -336,11 +336,7 @@ export async function getRecieptDataByDateRange(
       const storeMarkupTaxRaw = markupTaxRaw * STORE_PROFIT_MARGIN;
 
       const profitMarginRaw =
-        totalCustomerPaidAfterSubsidy -
-        totalBasePriceRaw -
-        totalDisposableFeeRaw -
-        totalTaxRaw +
-        totalSubsidyRaw;
+        totalSubsidyRaw + dbStoreProfitRaw + dbPlatformProfitRaw;
 
       const totalRevenueRaw = totalCustomerPaidAfterSubsidy + totalSubsidyRaw;
 
@@ -353,8 +349,6 @@ export async function getRecieptDataByDateRange(
 
       const grossMarginRaw =
         totalCustomerPaidRaw - storeFixedValueRaw - totalSubsidyRaw;
-
-      // const grossMarginRaw = totalCustomerPaidRaw - storeFixedValueRaw;
 
       const storeProfitRaw = profitMarginRaw * STORE_PROFIT_MARGIN; // divided by 2 or 50%
 
