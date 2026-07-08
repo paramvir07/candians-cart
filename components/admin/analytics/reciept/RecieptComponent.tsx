@@ -54,9 +54,12 @@ import {
 
 export default function RecieptComponent({
   initialStoreId,
+  userRole,
 }: {
   initialStoreId?: string;
+  userRole?: "store" | "admin";
 }) {
+  const storeRole = userRole === "store";
   const [date, setDate] = useState<DateRange | undefined>(undefined);
   const [storeId, setStoreId] = useState<string>(initialStoreId || "all");
 
@@ -179,13 +182,19 @@ export default function RecieptComponent({
       <CardHeader className="bg-muted/30 border-b pb-6">
         <CardTitle className="text-xl flex items-center gap-2">
           <Store className="h-5 w-5 text-primary" />
-          {initialStoreId
+          {!storeRole && initialStoreId
             ? "Store Settlement Generator"
-            : "Platform Settlement Generator"}
+            : storeRole && initialStoreId
+              ? "Generate Your Store Settlement"
+              : "Platform Settlement Generator"}
         </CardTitle>
         <CardDescription>
           Generate and download settlement receipts{" "}
-          {initialStoreId ? "for this store" : "across stores or platform-wide"}
+          {!storeRole && initialStoreId
+            ? "for this store"
+            : storeRole && initialStoreId
+              ? "for your store"
+              : "across stores or platform-wide"}
           .
         </CardDescription>
       </CardHeader>
@@ -249,6 +258,8 @@ export default function RecieptComponent({
                 <Receipt className="h-5 w-5 text-primary" />
                 {debouncedStoreId === "all"
                   ? "Platform-wide Aggregation"
+                  : storeRole
+                  ? "Your store Data"
                   : "Store-specific Data"}
               </h2>
               <DownloadButton
@@ -280,7 +291,7 @@ export default function RecieptComponent({
                     {/* Header showing store name and save button */}
                     <div className="px-6 py-4 border-b flex items-center justify-between bg-muted/5">
                       <h3 className="font-semibold">{sName}</h3>
-                      {rIdString && (
+                      {rIdString && !storeRole && (
                         <Button
                           size="sm"
                           variant="secondary"
@@ -313,10 +324,10 @@ export default function RecieptComponent({
                       </div>
                       <div className="p-4 flex flex-col justify-center">
                         <span className="text-xs text-primary font-medium mb-1 uppercase tracking-wider">
-                          Platform Profit
+                          {storeRole ? "Store Profit" : "Platform Profit"}
                         </span>
                         <span className="text-2xl font-bold text-primary">
-                          {fmt(r.platformProfit)}
+                          {fmt(storeRole ? r.storeProfit : r.platformProfit)}
                         </span>
                       </div>
                       <div className="p-4 flex flex-col justify-center">
@@ -415,7 +426,19 @@ export default function RecieptComponent({
                                 {fmt(r.storeProfit)}
                               </span>
                             </div>
-                            <div className="flex justify-between items-center text-muted-foreground">
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium text-blue-700">
+                                Total
+                              </span>
+                              <span className="font-medium text-blue-700">
+                                {fmt(
+                                  r.storePayout +
+                                    r.totalWalletTopUpCashCollected,
+                                )}
+                              </span>
+                            </div>
+                            <Separator/>
+                            <div className="flex justify-between items-center text-black font-medium">
                               <span>Total Cash Collected</span>
                               <span>
                                 -{fmt(r.totalWalletTopUpCashCollected)}
@@ -455,11 +478,12 @@ export default function RecieptComponent({
                               <span>Platform Profit</span>
                               <span>{fmt(r.platformProfit)}</span>
                             </div>
-
-                            <div className="flex justify-between items-center text-sm font-medium text-primary mt-2">
-                              <span>Platform Fee</span>
-                              <span>{fmt(r.totalPlatformFee)}</span>
-                            </div>
+                            {!storeRole && (
+                              <div className="flex justify-between items-center text-sm font-medium text-primary mt-2">
+                                <span>Platform Fee</span>
+                                <span>{fmt(r.totalPlatformFee)}</span>
+                              </div>
+                            )}
 
                             <h4 className="font-semibold flex items-center gap-2 text-primary pt-2 text-lg">
                               <PanelsTopLeft className="w-4 h-4 text-primary" />{" "}

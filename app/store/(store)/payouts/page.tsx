@@ -3,6 +3,7 @@ import Store from "@/db/models/store/store.model";
 import { dbConnect } from "@/db/dbConnect";
 import StorePayoutsClient from "@/components/store/payouts/StorePayoutsClient";
 import PayoutStatsCards, { PayoutStatsCardsSkeleton } from "@/components/store/payouts/PayoutStatsCards";
+import ReceiptPage from "@/components/admin/analytics/reciept/RecieptComponent";
 import { Suspense } from "react";
 
 export default async function StorePayoutsPage() {
@@ -47,6 +48,7 @@ export default async function StorePayoutsPage() {
       </Suspense>
 
       <StorePayoutsClient storeId={storeId} />
+      <ReceiptPage userRole="store" initialStoreId={storeId} />
     </div>
   );
 }

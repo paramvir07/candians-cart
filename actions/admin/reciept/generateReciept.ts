@@ -85,8 +85,10 @@ export async function getRecieptDataByDateRange(
 ): Promise<AggregatedReciept[]> {
   const session = await getUserSession();
 
-  if (session.user.role !== "admin") {
-    throw new Error("Unauthorized: Admin access required");
+  const role = session?.user?.role;
+
+  if (!role || !["admin", "store"].includes(role)) {
+    throw new Error("Unauthorized: Admin or store access required");
   }
 
   const { startDate, endDate, storeId, status = "completed" } = params;
@@ -359,7 +361,7 @@ export async function getRecieptDataByDateRange(
       // 4. Payout Calculations
       const totalCashCollectedRaw = totalWalletTopUpCashCollectedRaw;
       const storePayoutRaw =
-        storeProfitRaw + storeFixedValueRaw - totalCashCollectedRaw;
+        dbStoreProfitRaw + storeFixedValueRaw - totalCashCollectedRaw;
 
       // 5. Platform Metrics
       const platformProfitRaw = profitMarginRaw - storeProfitRaw;

@@ -4,23 +4,34 @@ import Logo from "@/components/shared/Logo";
 import {
   Banknote,
   HandCoins,
-  LinkIcon,
   Package,
   Receipt,
   ShoppingCart,
-  UserPlus,
   Users2,
   Mail,
+  BadgeDollarSign,
+  List,
+  BarChart,
+  HomeIcon,
 } from "lucide-react";
 import Link from "next/link";
 
 const FOOTER_GROUPS = [
   {
+    label: "Overview",
+    items: [
+      { href: "/store", label: "Dashboard", icon: HomeIcon },
+      { href: "/store/analytics", label: "Analytics", icon: BarChart },
+    ],
+  },
+  {
     label: "Management",
     items: [
+      { href: "/store/categories", label: "Sales", icon: BadgeDollarSign },
       { href: "/store/orders", label: "Orders", icon: ShoppingCart },
       { href: "/store/products", label: "Products", icon: Package },
-      { href: "/store/subsidy-list", label: "Subsidy List", icon: Users2 },
+      { href: "/store/customers", label: "Customers", icon: Users2 },
+      { href: "/store/subsidy-list", label: "Subsidy List", icon: List },
     ],
   },
   {
@@ -33,13 +44,6 @@ const FOOTER_GROUPS = [
         icon: Banknote,
       },
       { href: "/store/invoice", label: "Invoices", icon: Receipt },
-    ],
-  },
-  {
-    label: "Other",
-    items: [
-      { href: "/store/", label: "Dashboard", icon: UserPlus },
-      { href: "/store/analytics", label: "Analytics", icon: LinkIcon },
     ],
   },
 ];

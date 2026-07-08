@@ -29,7 +29,6 @@ const NAV_GROUPS = [
     items: [
       { href: "/store", label: "Dashboard", icon: HomeIcon, exact: true },
       { href: "/store/analytics", label: "Analytics", icon: BarChart },
-      { href: "/store/categories", label: "Categories", icon: List },
     ],
   },
   {
