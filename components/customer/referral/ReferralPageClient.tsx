@@ -483,7 +483,7 @@ function EarningsHero({
               className="text-sm font-bold text-white"
               style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
             >
-              CA${maxUses - completeCount > 0 ? (maxUses - completeCount) * perReferAmount : 0}
+              ${maxUses - completeCount > 0 ? (maxUses - completeCount) * perReferAmount : 0}/{maxUses*(perReferAmount)}
             </p>
           </div>
         </div>
