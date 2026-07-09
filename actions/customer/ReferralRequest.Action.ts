@@ -19,28 +19,53 @@ interface ReferralRequestData {
 export const getRandom10Referrals = async () => {
   try {
     await dbConnect();
+
     const users = await Customer.aggregate([
       {
         $match: {
           recieveReferralInvites: true,
           placedFirstOrder: true,
           referralCodeEnabled: true,
+          myreferralCodeId: { $exists: true, $ne: null },
         },
       },
       { $sample: { size: 10 } },
       {
+        $lookup: {
+          from: "referralcodes",
+          localField: "myreferralCodeId",
+          foreignField: "_id",
+          as: "referralCode",
+        },
+      },
+      {
+        $unwind: {
+          path: "$referralCode",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
           _id: 1,
           name: 1,
+          uses: "$referralCode.uses",
+          maxUses: "$referralCode.maxUses",
         },
       },
     ]);
-    // Serialize here so page.tsx doesn't have to worry about it
+
     const serialized = users.map((u) => ({
       _id: u._id.toString(),
       name: u.name as string,
+      uses: (u.uses as number | undefined) ?? 0,
+      maxUses: (u.maxUses as number | null | undefined) ?? null,
     }));
-    return { success: true, data: serialized, message: "" };
+
+    return {
+      success: true,
+      data: serialized,
+      message: "",
+    };
   } catch (err) {
     console.log(err);
     return { success: false, message: "Error getting Referrals", data: null };

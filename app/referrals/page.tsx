@@ -37,7 +37,7 @@ function MemberListSkeleton() {
 
 async function MemberListServer() {
   const LoggedIn = await isLoggedIn();
-  if(LoggedIn) redirect('/customer')
+  if (LoggedIn) redirect('/customer')
   const result = await getRandom10Referrals()
   const members = result.success && result.data ? result.data : []
   return <ReferralsLanding initialMembers={members} />
