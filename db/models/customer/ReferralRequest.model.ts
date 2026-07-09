@@ -5,6 +5,7 @@ export interface IReferralRequest {
   email: string;
   phoneNumber: string;
   accepted: boolean | null;
+  budget: number;
   customerId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -39,6 +40,10 @@ const referralRequestSchema = new Schema<IReferralRequest>(
       type: Boolean,
       required:false,
       default: null,
+    },
+    budget:{
+      type:Number,
+      required:true,
     },
     customerId: {
       type: Schema.Types.ObjectId,

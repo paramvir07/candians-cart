@@ -35,5 +35,5 @@ export function getReferralShareMessageTwilio(code: string,name:string): string 
 }
 
 export function getReferralRequestMessage(name: string): string {
-  return `${name} requested a referral invite. Review the request here: 🛒 ${websiteURL}/customer/referrals`;
+  return `${name} requested a referral invite. Review the request here: 🛒 ${websiteURL}/customer/referrals/requests`;
 }

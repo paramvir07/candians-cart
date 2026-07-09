@@ -36,7 +36,7 @@ interface UserInfo {
   name: string;
   phoneNumber: string;
   email?: string;
-  budget?: string;
+  budget: string;
 }
 
 interface ReferralUser {

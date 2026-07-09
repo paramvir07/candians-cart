@@ -13,7 +13,8 @@ import { revalidatePath } from "next/cache";
 interface ReferralRequestData {
     name: string,
     email?: string,
-    phoneNumber: string
+    phoneNumber: string,
+    budget: string
 }
 
 export const getRandom10Referrals = async () => {
@@ -129,6 +130,7 @@ export const SendReferralRequest = async (data: ReferralRequestData, memberId: s
       email,
       phoneNumber,
       customerId: memberId,
+      budget: Number(data.budget),
       accepted: null,
     });
 
