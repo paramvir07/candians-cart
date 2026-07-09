@@ -23,11 +23,11 @@ export function AddressRequiredDialog() {
     postalCode: "",
   });
 
-  const isComplete =
-    !!addressData.address &&
-    !!addressData.city &&
-    !!addressData.province &&
-    !!addressData.postalCode;
+const isComplete =
+  !!addressData.address &&
+  !!addressData.city.trim() &&
+  !!addressData.province.trim() &&
+  !!addressData.postalCode.trim();
 
   const handleSelect = (parsed: ParsedAddress) => {
     setAddressData((prev) => ({
@@ -113,7 +113,6 @@ export function AddressRequiredDialog() {
               required
             />
           </div>
-
           {/* Apt / Unit */}
           <div>
             <label className="block text-[11px] text-muted-foreground mb-1.5">
@@ -136,7 +135,6 @@ export function AddressRequiredDialog() {
               className="h-11 rounded-xl border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
             />
           </div>
-
           {/* City / Province / Postal — read-only */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <div>
@@ -144,47 +142,52 @@ export function AddressRequiredDialog() {
                 City
               </label>
               <Input
-                readOnly
-                tabIndex={-1}
                 value={addressData.city}
+                onChange={(e) =>
+                  setAddressData((prev) => ({ ...prev, city: e.target.value }))
+                }
                 placeholder="City"
-                className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
-                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
-                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+                className="h-11 rounded-xl border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
               />
             </div>
-
             <div>
               <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
                 Province
               </label>
               <Input
-                readOnly
-                tabIndex={-1}
                 value={addressData.province}
-                placeholder="Province"
-                className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
-                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
-                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+                onChange={(e) =>
+                  setAddressData((prev) => ({
+                    ...prev,
+                    province: e.target.value.toUpperCase().slice(0, 2),
+                  }))
+                }
+                placeholder="BC"
+                maxLength={2}
+                className="h-11 rounded-xl border-border bg-background px-3 text-sm uppercase placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
               />
             </div>
-
             <div>
               <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
                 Postal Code
               </label>
               <Input
-                readOnly
-                tabIndex={-1}
                 value={addressData.postalCode}
+                onChange={(e) => {
+                  let raw = e.target.value
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "")
+                    .slice(0, 6);
+                  if (raw.length > 3)
+                    raw = `${raw.slice(0, 3)} ${raw.slice(3)}`;
+                  setAddressData((prev) => ({ ...prev, postalCode: raw }));
+                }}
                 placeholder="V__ ___"
-                className="h-11 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
-                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
-                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+                maxLength={7}
+                className="h-11 rounded-xl border-border bg-background px-3 text-sm uppercase font-mono placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
               />
             </div>
           </div>
-
           {/* Preview */}
           <div className="min-h-[32px] px-0.5">
             {addressData.address && (
