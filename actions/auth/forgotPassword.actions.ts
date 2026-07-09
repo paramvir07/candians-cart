@@ -18,12 +18,11 @@ export async function sendForgotPasswordOTPAction(
   try {
     const user = await db.collection<UserDoc>("user").findOne({
       phoneNumber,
-      phoneNumberVerified: true,
     });
 
     // Don't reveal whether number is registered (prevents enumeration)
     if (!user) {
-      return { success: true, message: "Code sent if number is registered." };
+      return { success: true, message: "OTP sent." };
     }
 
     await auth.api.sendPhoneNumberOTP({
@@ -48,7 +47,6 @@ export async function verifyForgotPasswordOTPAction(
   try {
     const user = await db.collection<UserDoc>("user").findOne({
       phoneNumber,
-      phoneNumberVerified: true,
     });
 
     if (!user) {
