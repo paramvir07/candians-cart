@@ -618,7 +618,6 @@ export default function EditProfileForm({ user }: { user: FormUserData }) {
 const addressFields = (
   <div className="space-y-4">
     <SectionLabel>Address</SectionLabel>
-
     <div>
       <FieldLabel>Street Address</FieldLabel>
       <IconAddressAutocomplete
@@ -632,7 +631,6 @@ const addressFields = (
       />
       <input type="hidden" name="address" value={fields.address.trim()} />
     </div>
-
     <div>
       <FieldLabel>
         Apt / Unit / Suite{" "}
@@ -644,39 +642,61 @@ const addressFields = (
         type="text"
         value={aptUnit}
         onChange={handleChange}
-        placeholder="e.g. 308"
+        placeholder="e.g. 305"
         autoComplete="address-line2"
         maxLength={30}
         className="h-11 rounded-xl border-border/60 bg-card text-sm focus-visible:ring-1 focus-visible:ring-primary"
       />
     </div>
-
     <div className="grid grid-cols-3 gap-3">
       <div>
         <FieldLabel>City</FieldLabel>
-        <IconReadOnly icon={Building2} value={fields.city} placeholder="City" />
-        <input type="hidden" name="city" value={fields.city} />
+        <IconInput
+          icon={Building2}
+          name="city"
+          value={fields.city}
+          onChange={handleChange}
+          placeholder="City"
+          error={state?.errors?.city?.[0]}
+        />
       </div>
-
       <div>
         <FieldLabel>Province</FieldLabel>
-        <IconReadOnly
+        <IconInput
           icon={Map}
+          name="province"
           value={fields.province}
-          placeholder="Province"
+          onChange={(e) =>
+            setFields((prev) => ({
+              ...prev,
+              province: e.target.value.toUpperCase().slice(0, 2),
+            }))
+          }
+          placeholder="BC"
+          maxLength={2}
+          className="uppercase"
+          error={state?.errors?.province?.[0]}
         />
-        <input type="hidden" name="province" value={fields.province} />
       </div>
-
       <div>
         <FieldLabel>Postal Code</FieldLabel>
-        <IconReadOnly
+        <IconInput
           icon={Hash}
+          name="postalCode"
           value={fields.postalCode}
-          placeholder="Postal Code"
+          onChange={(e) => {
+            let raw = e.target.value
+              .toUpperCase()
+              .replace(/[^A-Z0-9]/g, "")
+              .slice(0, 6);
+            if (raw.length > 3) raw = `${raw.slice(0, 3)} ${raw.slice(3)}`;
+            setFields((prev) => ({ ...prev, postalCode: raw }));
+          }}
+          placeholder="V__ ___"
+          maxLength={7}
           className="uppercase font-mono"
+          error={state?.errors?.postalCode?.[0]}
         />
-        <input type="hidden" name="postalCode" value={fields.postalCode} />
       </div>
     </div>
   </div>

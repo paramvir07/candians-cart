@@ -317,7 +317,7 @@ export function SignupForm({
                   type="text"
                   name="address"
                   placeholder={
-                    store ? "e.g. 123 Main St, Surrey" : "e.g. 308-123 Main St"
+                    store ? "e.g. 123 Main St, Surrey" : "e.g. 305-123 Main St"
                   }
                   required
                   className="h-12 rounded-xl border-border bg-background px-4 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
@@ -327,54 +327,59 @@ export function SignupForm({
           </>
         )}
 
-        {/* Read-only city / province / postal */}
         {customer && (
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <div>
               <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
                 City
               </label>
-
               <Input
-                readOnly
-                tabIndex={-1}
+                name="city"
                 value={addressData.city}
+                onChange={(e) =>
+                  setAddressData((prev) => ({ ...prev, city: e.target.value }))
+                }
                 placeholder="City"
-                className="h-12 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
-                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
-                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+                className="h-12 rounded-xl border-border bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
               />
             </div>
-
             <div>
               <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
                 Province
               </label>
-
               <Input
-                readOnly
-                tabIndex={-1}
+                name="province"
                 value={addressData.province}
-                placeholder="Province"
-                className="h-12 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm text-muted-foreground cursor-not-allowed truncate
-                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
-                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+                onChange={(e) =>
+                  setAddressData((prev) => ({
+                    ...prev,
+                    province: e.target.value.toUpperCase().slice(0, 2),
+                  }))
+                }
+                placeholder="BC"
+                maxLength={2}
+                className="h-12 rounded-xl border-border bg-background px-3 text-sm uppercase placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
               />
             </div>
-
             <div>
               <label className="block text-[11px] text-muted-foreground/70 mb-1.5">
                 Postal Code
               </label>
-
               <Input
-                readOnly
-                tabIndex={-1}
+                name="postalCode"
                 value={addressData.postalCode}
+                onChange={(e) => {
+                  let raw = e.target.value
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "")
+                    .slice(0, 6);
+                  if (raw.length > 3)
+                    raw = `${raw.slice(0, 3)} ${raw.slice(3)}`;
+                  setAddressData((prev) => ({ ...prev, postalCode: raw }));
+                }}
                 placeholder="V__ ___"
-                className="h-12 rounded-xl border-border/40 bg-secondary/30 px-3 text-sm uppercase text-muted-foreground cursor-not-allowed truncate
-                focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40
-                focus:ring-0 focus:ring-offset-0 focus:border-border/40"
+                maxLength={7}
+                className="h-12 rounded-xl border-border bg-background px-3 text-sm uppercase font-mono placeholder:normal-case placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary"
               />
             </div>
           </div>
