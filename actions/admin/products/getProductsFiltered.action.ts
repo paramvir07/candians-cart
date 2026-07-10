@@ -10,7 +10,7 @@ export interface ProductFilters {
   minPrice?: number; // in cents
   maxPrice?: number; // in cents
   subsidised?: boolean;
-  subsidyLevel?: "low" | "medium" | "high";
+  subsidyLevels?: ("low" | "medium" | "high")[];
   inStock?: boolean;
   taxRates?: TaxRate[];
   markupMin?: number;
@@ -69,18 +69,18 @@ export const getStoreProductsFiltered = async (
         query.markup.$lte = filters.markupMax;
     }
 
-    if (filters.subsidyLevel) {
+    if (filters.subsidyLevels && filters.subsidyLevels.length > 0) {
       query.subsidised = { $ne: true };
-      query.markup = query.markup || {};
-      if (filters.subsidyLevel === "low") {
-        query.markup.$gte = 0;
-        query.markup.$lt = 50;
-      } else if (filters.subsidyLevel === "medium") {
-        query.markup.$gte = 50;
-        query.markup.$lt = 100;
-      } else if (filters.subsidyLevel === "high") {
-        query.markup.$gte = 100;
-      }
+
+      const rangeConditions = filters.subsidyLevels.map((level) => {
+        if (level === "low") return { markup: { $gte: 0, $lt: 50 } };
+        if (level === "medium") return { markup: { $gte: 50, $lt: 100 } };
+        return { markup: { $gte: 100 } }; // "high"
+      });
+
+      // Merge with any existing $or from other filters (none exist currently in this
+      // function, but this keeps it safe if markupMin/markupMax logic changes later)
+      query.$or = rangeConditions;
     }
 
     let sortOption: Record<string, 1 | -1> = { createdAt: -1, _id: -1 };
@@ -220,18 +220,16 @@ export const searchProductsWithFilters = async (
         matchStage.markup.$lte = filters.markupMax;
     }
 
-    if (filters.subsidyLevel) {
+    if (filters.subsidyLevels && filters.subsidyLevels.length > 0) {
       matchStage.subsidised = { $ne: true };
-      matchStage.markup = matchStage.markup || {};
-      if (filters.subsidyLevel === "high") {
-        matchStage.markup.$gte = 100;
-      } else if (filters.subsidyLevel === "medium") {
-        matchStage.markup.$gte = 50;
-        matchStage.markup.$lt = 100;
-      } else if (filters.subsidyLevel === "low") {
-        matchStage.markup.$gte = 0;
-        matchStage.markup.$lt = 50;
-      }
+
+      const rangeConditions = filters.subsidyLevels.map((level) => {
+        if (level === "low") return { markup: { $gte: 0, $lt: 50 } };
+        if (level === "medium") return { markup: { $gte: 50, $lt: 100 } };
+        return { markup: { $gte: 100 } }; // "high"
+      });
+
+      matchStage.$or = rangeConditions;
     }
 
     if (Object.keys(matchStage).length > 0) {

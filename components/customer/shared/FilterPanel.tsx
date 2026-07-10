@@ -13,7 +13,7 @@ export interface FilterState {
   categories: string[];
   inStockOnly: boolean;
   subsidisedOnly: boolean;
-  subsidyLevel?: "high" | "medium" | "low";
+  subsidyLevels: ("high" | "medium" | "low")[];
   sortBy:
     | "default"
     | "price_asc"
@@ -27,7 +27,7 @@ export const DEFAULT_FILTERS: FilterState = {
   categories: [],
   inStockOnly: false,
   subsidisedOnly: false,
-  subsidyLevel: undefined,
+  subsidyLevels: [],
   sortBy: "default",
 };
 
@@ -51,7 +51,7 @@ export function getActiveFilterCount(filters: FilterState) {
     categoryCount +
     (filters.inStockOnly ? 1 : 0) +
     (filters.subsidisedOnly ? 1 : 0) +
-    (filters.subsidyLevel ? 1 : 0) +
+    filters.subsidyLevels.length +
     (filters.sortBy !== "default" ? 1 : 0)
   );
 }
@@ -204,23 +204,23 @@ export function FilterPanel({
             <SectionLabel>Subsidy Level</SectionLabel>
             <div className="flex flex-col gap-1.5">
               {[
-                { value: "high", label: "High Subsidy", emoji: "🔥" },
+                { value: "high" as const, label: "High Subsidy", emoji: "🔥" },
                 {
-                  value: "medium",
+                  value: "medium" as const,
                   label: "Medium Subsidy",
                   emoji: "⭐",
                 },
-                { value: "low", label: "Low Subsidy", emoji: "🟢" },
+                { value: "low" as const, label: "Low Subsidy", emoji: "🟢" },
               ].map((opt) => {
-                const isActive = filters.subsidyLevel === opt.value;
+                const isActive = filters.subsidyLevels.includes(opt.value);
                 return (
                   <button
                     key={opt.value}
                     onClick={() =>
                       onChange({
-                        subsidyLevel: isActive
-                          ? undefined
-                          : (opt.value as "high" | "medium" | "low"),
+                        subsidyLevels: isActive
+                          ? filters.subsidyLevels.filter((l) => l !== opt.value)
+                          : [...filters.subsidyLevels, opt.value],
                       })
                     }
                     className={`flex items-center gap-0 rounded-full border transition-all duration-150 text-left pr-3 ${
@@ -230,16 +230,12 @@ export function FilterPanel({
                     }`}
                   >
                     <span
-                      className={`flex items-center justify-center w-8 h-8 rounded-full text-sm m-0.5 shrink-0 transition-colors ${
-                        isActive ? "bg-white/40" : "bg-secondary"
-                      }`}
+                      className={`flex items-center justify-center w-8 h-8 rounded-full text-sm m-0.5 shrink-0 transition-colors ${isActive ? "bg-white/40" : "bg-secondary"}`}
                     >
                       {opt.emoji}
                     </span>
                     <span
-                      className={`text-sm font-semibold pl-2 flex-1 ${
-                        isActive ? "text-amber-700" : "text-muted-foreground"
-                      }`}
+                      className={`text-sm font-semibold pl-2 flex-1 ${isActive ? "text-amber-700" : "text-muted-foreground"}`}
                     >
                       {opt.label}
                     </span>

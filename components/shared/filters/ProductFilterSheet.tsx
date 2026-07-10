@@ -243,13 +243,13 @@ function ActiveSummary({ draft }: { draft: ProductFilters }) {
   if (draft.inStock === false) parts.push("Out of stock");
   if (draft.subsidised) parts.push("Subsidised");
 
-  if (draft.subsidyLevel) {
+  if (draft.subsidyLevels) {
     const subsidyLabels = {
       high: "High Subsidy",
       medium: "Medium Subsidy",
       low: "Low Subsidy",
     };
-    parts.push(subsidyLabels[draft.subsidyLevel]);
+    parts.push(subsidyLabels[draft.subsidyLevels[0]]);
   }
 
   if (draft.minPrice !== undefined || draft.maxPrice !== undefined) {
@@ -580,15 +580,15 @@ function FilterBody({
       {/* SUBSIDY LEVEL */}
       <FilterSection label="Subsidy Level">
         <Select
-          value={draft.subsidyLevel || "none"}
+          value={draft.subsidyLevels?.[0] || "none"}
           onValueChange={(val) => {
             if (val === "none") {
-              const { subsidyLevel, ...rest } = draft;
+              const { subsidyLevels, ...rest } = draft;
               setDraft(rest);
             } else {
               setDraft({
                 ...draft,
-                subsidyLevel: val as "high" | "medium" | "low",
+                subsidyLevels: [val as "high" | "medium" | "low"],
               });
             }
           }}
@@ -718,7 +718,7 @@ export function ProductFiltersSheet({
     (draft.categories?.length ?? 0) > 0,
     draft.minPrice !== undefined || draft.maxPrice !== undefined,
     draft.subsidised !== undefined,
-    draft.subsidyLevel !== undefined, // <-- Added to active count tracking
+    (draft.subsidyLevels?.length ?? 0) > 0,
     draft.inStock !== undefined,
     (draft.taxRates?.length ?? 0) > 0,
     draft.markupMin !== undefined || draft.markupMax !== undefined,
@@ -732,7 +732,7 @@ export function ProductFiltersSheet({
     if (cleaned.markupMin === 0) delete cleaned.markupMin;
     if (cleaned.markupMax === 100) delete cleaned.markupMax;
     if (cleaned.sortBy === "recommended") delete cleaned.sortBy;
-    if (!cleaned.subsidyLevel) delete cleaned.subsidyLevel;
+    if (!cleaned.subsidyLevels) delete cleaned.subsidyLevels;
     onApply(cleaned);
     setOpen(false);
   };

@@ -93,7 +93,7 @@ export function ProductsSection({
           categories: expandCategories(filters.categories),
           inStockOnly: filters.inStockOnly,
           subsidisedOnly: filters.subsidisedOnly || subsidized,
-          subsidyLevel: filters.subsidyLevel,
+          subsidyLevels: filters.subsidyLevels,
           sortBy: filters.sortBy,
         },
       );
@@ -115,7 +115,7 @@ export function ProductsSection({
         // Use the exact keys defined in ProductCacheFilters
         inStockOnly: filters.inStockOnly,
         subsidisedOnly: filters.subsidisedOnly || subsidized,
-        subsidyLevel: filters.subsidyLevel,
+        subsidyLevels: filters.subsidyLevels,
         sortBy: filters.sortBy,
       });
     }
