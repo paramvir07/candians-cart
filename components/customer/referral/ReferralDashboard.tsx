@@ -43,11 +43,19 @@ function RequestCard({
       const res = await respondToReferralRequest(req._id, accept);
       if (res.success) {
         setResult(accept ? "accepted" : "declined");
-        // After flash animation completes, tell parent to remove this item
         setTimeout(() => onDismiss(req._id), 900);
       }
     });
   }
+
+  const formattedBudget =
+    typeof req.budget === "number"
+      ? req.budget.toLocaleString("en-CA", {
+          style: "currency",
+          currency: "CAD",
+          maximumFractionDigits: 0,
+        })
+      : req.budget;
 
   return (
     <div
@@ -105,15 +113,22 @@ function RequestCard({
       </Avatar>
 
       <div className="flex-1 min-w-0">
-        <p
-          className="text-sm font-bold text-foreground truncate"
-          style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
-        >
-          {req.name}
-        </p>
-        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-          <span className="text-xs text-muted-foreground font-mono">
-            {maskPhone(req.phoneNumber)}
+        <div className="flex items-center gap-2 flex-wrap">
+          <p
+            className="text-sm font-bold text-foreground truncate"
+            style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+          >
+            {req.name}
+          </p>
+          {formattedBudget && (
+            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[0.68rem] font-bold text-primary">
+              {formattedBudget}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+          <span className="text-xs text-muted-foreground">
+            {req.city}, {req.province}
           </span>
           <span className="text-muted-foreground/40 text-xs">·</span>
           <span className="text-xs text-muted-foreground flex items-center gap-1">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -10,7 +10,7 @@ import {
   DialogDescription,
   DialogClose,
 } from "@/components/ui/dialog";
-import { X } from "lucide-react";
+import { X, ChevronDown, Search, PartyPopper } from "lucide-react";
 import {
   SendReferralRequest,
   getAlreadySentMemberIds,
@@ -27,6 +27,8 @@ import {
   Loader2,
   MessageCircle,
   Wallet,
+  MapPin,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -37,6 +39,8 @@ interface UserInfo {
   phoneNumber: string;
   email?: string;
   budget: string;
+  province: string;
+  city: string;
 }
 
 interface ReferralUser {
@@ -50,6 +54,42 @@ type SentMap = Record<string, "idle" | "pending" | "sent" | "already_sent">;
 
 const LS_KEY = "referral_user_info";
 const LS_SUBMITTED = "referral_form_submitted";
+
+const BC_CITIES = [
+  "Vancouver",
+  "Surrey",
+  "Burnaby",
+  "Richmond",
+  "Abbotsford",
+  "Coquitlam",
+  "Kelowna",
+  "Langley",
+  "Saanich",
+  "Delta",
+  "Nanaimo",
+  "Kamloops",
+  "Chilliwack",
+  "Maple Ridge",
+  "New Westminster",
+  "Port Coquitlam",
+  "North Vancouver",
+  "West Vancouver",
+  "Victoria",
+  "Prince George",
+  "Vernon",
+  "Courtenay",
+  "Penticton",
+  "Campbell River",
+  "Mission",
+  "Port Moody",
+  "Squamish",
+  "White Rock",
+  "Fort St. John",
+  "Duncan",
+  "Nelson",
+  "Cranbrook",
+  "Whistler",
+];
 
 // ─── Canadian Phone Field ─────────────────────────────────────────────────────
 
@@ -110,6 +150,140 @@ function CanadianPhoneField({
   );
 }
 
+// ─── Province Field (locked to BC) ────────────────────────────────────────────
+
+function ProvinceField() {
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-[0.8rem] font-semibold text-foreground flex items-center gap-1">
+        Province
+        <span className="text-destructive">*</span>
+      </label>
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <MapPin size={14} className="text-muted-foreground" />
+        </span>
+        <div className="w-full py-2.5 pl-9 pr-9 rounded-lg border border-input bg-muted/40 text-sm text-foreground cursor-not-allowed select-none flex items-center justify-between">
+          <span>British Columbia</span>
+        </div>
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <ChevronDown size={14} className="text-muted-foreground/50" />
+        </span>
+      </div>
+      <span className="text-[0.72rem] text-muted-foreground">
+        Currently only available in British Columbia.
+      </span>
+    </div>
+  );
+}
+
+// ─── City Field (searchable dropdown, BC cities only) ─────────────────────────
+
+function CityField({
+  value,
+  error,
+  onChange,
+}: {
+  value: string;
+  error?: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(value ?? "");
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setQuery(value ?? "");
+  }, [value]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        // Revert visible text to last committed value if user didn't pick one
+        setQuery(value ?? "");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [value]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return BC_CITIES;
+    return BC_CITIES.filter((c) => c.toLowerCase().includes(q));
+  }, [query]);
+
+  const handleSelect = (city: string) => {
+    onChange(city);
+    setQuery(city);
+    setOpen(false);
+  };
+
+  return (
+    <div className="flex flex-col gap-1" ref={wrapperRef}>
+      <label className="text-[0.8rem] font-semibold text-foreground flex items-center gap-1">
+        City
+        <span className="text-destructive">*</span>
+      </label>
+      <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <Building2 size={14} className="text-muted-foreground" />
+        </span>
+        <input
+          type="text"
+          placeholder="Search for your city"
+          value={query}
+          onFocus={() => setOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+            // Clear committed value until user picks a valid option again
+            if (value) onChange("");
+          }}
+          className={`w-full py-2.5 pl-9 pr-9 rounded-lg border text-sm bg-background text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary ${
+            error ? "border-destructive" : "border-input"
+          }`}
+        />
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <Search size={13} className="text-muted-foreground/60" />
+        </span>
+
+        {open && (
+          <div className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg">
+            {filtered.length === 0 ? (
+              <div className="px-3.5 py-2.5 text-sm text-muted-foreground">
+                No matching cities.
+              </div>
+            ) : (
+              filtered.map((city) => (
+                <button
+                  key={city}
+                  type="button"
+                  onClick={() => handleSelect(city)}
+                  className={`w-full text-left px-3.5 py-2 text-sm hover:bg-secondary transition-colors ${
+                    city === value
+                      ? "bg-secondary font-semibold text-primary"
+                      : "text-foreground"
+                  }`}
+                >
+                  {city}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+      {error && (
+        <span className="text-[0.75rem] text-destructive flex items-center gap-1">
+          <ShieldCheck size={11} />
+          {error}
+        </span>
+      )}
+    </div>
+  );
+}
+
 // ─── Budget Field (numbers only) ──────────────────────────────────────────────
 
 function BudgetField({
@@ -152,7 +326,14 @@ function InfoGateForm({
   prefill: UserInfo | null;
 }) {
   const [form, setForm] = useState<UserInfo>(
-    prefill ?? { name: "", phoneNumber: "", email: "", budget: "" }
+    prefill ?? {
+      name: "",
+      phoneNumber: "",
+      email: "",
+      budget: "",
+      province: "BC",
+      city: "",
+    }
   );
   const [errors, setErrors] = useState<Partial<Record<keyof UserInfo, string>>>({});
 
@@ -175,15 +356,18 @@ function InfoGateForm({
     if (!form.budget?.trim() || !/^\d+$/.test(form.budget))
       next.budget = "Enter a valid number.";
 
+    if (!form.city?.trim()) next.city = "Select a city.";
+
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
   const handleSubmit = () => {
     if (!validate()) return;
-    localStorage.setItem(LS_KEY, JSON.stringify(form));
+    const finalForm: UserInfo = { ...form, province: "BC" };
+    localStorage.setItem(LS_KEY, JSON.stringify(finalForm));
     localStorage.setItem(LS_SUBMITTED, "1");
-    onSave(form);
+    onSave(finalForm);
   };
 
     return (
@@ -216,6 +400,15 @@ function InfoGateForm({
               error={errors.email}
               onChange={(v) => setForm((f) => ({ ...f, email: v }))}
             />
+
+            <div className="grid grid-cols-2 gap-3">
+              <ProvinceField />
+              <CityField
+                value={form.city ?? ""}
+                error={errors.city}
+                onChange={(v) => setForm((f) => ({ ...f, city: v }))}
+              />
+            </div>
 
             <BudgetField
               value={form.budget ?? ""}
@@ -444,6 +637,83 @@ function MemberCard({
   );
 }
 
+// ─── Success Modal ─────────────────────────────────────────────────────────────
+
+function SuccessModal({
+  open,
+  onOpenChange,
+  userInfo,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  userInfo: UserInfo | null;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogClose className="absolute right-4 top-4 rounded-full p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
+          <X size={16} />
+          <span className="sr-only">Close</span>
+        </DialogClose>
+
+        <DialogHeader>
+          <div className="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
+            <PartyPopper size={22} className="text-primary" />
+          </div>
+          <DialogTitle className="text-center text-[1.25rem] font-bold leading-tight">
+            Request sent!
+          </DialogTitle>
+          <DialogDescription className="text-center text-sm">
+            We&apos;ll notify you the moment they respond. If they accept,
+            here&apos;s exactly where your referral code will show up:
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-2.5 mt-2 mb-2">
+          <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl border border-border bg-card">
+            <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-lg bg-secondary text-primary">
+              <Phone size={14} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-foreground">Text message</p>
+              <p className="text-[0.72rem] text-muted-foreground truncate">
+                {userInfo?.phoneNumber
+                  ? `Sent to ${userInfo.phoneNumber}`
+                  : "Sent to the phone number you provided"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl border border-border bg-card">
+            <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-lg bg-secondary text-primary">
+              <Mail size={14} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-foreground">Email</p>
+              <p className="text-[0.72rem] text-muted-foreground truncate">
+                {userInfo?.email
+                  ? `Sent to ${userInfo.email}`
+                  : "Sent to the email address you provided"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-center text-[0.72rem] text-muted-foreground">
+          No action needed on your end — just keep an eye on your phone and
+          inbox.
+        </p>
+
+        <DialogClose asChild>
+          <button className="w-full mt-3 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity">
+            Got it
+          </button>
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function ReferralsLanding({
@@ -458,11 +728,13 @@ export default function ReferralsLanding({
     Object.fromEntries(initialMembers.map((m) => [m._id, "idle"]))
   );
   const [sentCount, setSentCount] = useState(0);
-  const [toast, setToast] = useState<string | null>(null);
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [pendingMemberId, setPendingMemberId] = useState<string | null>(null);
+
+  // Success modal state
+  const [successOpen, setSuccessOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -500,8 +772,7 @@ export default function ReferralsLanding({
 
   const handleSent = () => {
     setSentCount((c) => c + 1);
-    setToast("Request sent! You'll get a text with your referral code if they accept.");
-    setTimeout(() => setToast(null), 4500);
+    setSuccessOpen(true);
   };
 
   // Triggered by a MemberCard when there's no saved info yet
@@ -683,12 +954,12 @@ export default function ReferralsLanding({
         </DialogContent>
       </Dialog>
 
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-foreground text-background text-xs font-medium px-4 py-3 rounded-xl shadow-lg max-w-xs text-center animate-in fade-in slide-in-from-bottom-2 duration-200">
-          {toast}
-        </div>
-      )}
+      {/* Success Modal — replaces the old toast */}
+      <SuccessModal
+        open={successOpen}
+        onOpenChange={setSuccessOpen}
+        userInfo={userInfo}
+      />
     </div>
   );
 }

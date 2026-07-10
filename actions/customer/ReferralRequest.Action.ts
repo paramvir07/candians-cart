@@ -8,52 +8,91 @@ import ReferralRequest from "@/db/models/customer/ReferralRequest.model";
 import { sendEmail } from "@/lib/auth/email";
 import { getReferralRequestMessage, getReferralShareMessageTwilio, getReferralUrl } from "@/lib/shareMessage";
 import { sendSMS } from "@/lib/twilio/twilio";
+import mongoose from "mongoose";
 import { revalidatePath } from "next/cache";
 
 interface ReferralRequestData {
     name: string,
     email?: string,
     phoneNumber: string,
-    budget: string
+    budget: string,
+    province: string,
+    city: string
 }
 
 export const getRandom10Referrals = async () => {
   try {
     await dbConnect();
 
-    const users = await Customer.aggregate([
-      {
-        $match: {
-          recieveReferralInvites: true,
-          placedFirstOrder: true,
-          referralCodeEnabled: true,
-          myreferralCodeId: { $exists: true, $ne: null },
+    const PINNED_CUSTOMER_ID = "69edaaad17bea5daa8c58cb4";
+
+    const [pinnedResult, randomUsers] = await Promise.all([
+      Customer.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(PINNED_CUSTOMER_ID),
+          },
         },
-      },
-      { $sample: { size: 10 } },
-      {
-        $lookup: {
-          from: "referralcodes",
-          localField: "myreferralCodeId",
-          foreignField: "_id",
-          as: "referralCode",
+        {
+          $lookup: {
+            from: "referralcodes",
+            localField: "myreferralCodeId",
+            foreignField: "_id",
+            as: "referralCode",
+          },
         },
-      },
-      {
-        $unwind: {
-          path: "$referralCode",
-          preserveNullAndEmptyArrays: true,
+        {
+          $unwind: {
+            path: "$referralCode",
+            preserveNullAndEmptyArrays: true,
+          },
         },
-      },
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          uses: "$referralCode.uses",
-          maxUses: "$referralCode.maxUses",
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            uses: "$referralCode.uses",
+            maxUses: "$referralCode.maxUses",
+          },
         },
-      },
+      ]),
+      Customer.aggregate([
+        {
+          $match: {
+            _id: { $ne: new mongoose.Types.ObjectId(PINNED_CUSTOMER_ID) },
+            recieveReferralInvites: true,
+            placedFirstOrder: true,
+            referralCodeEnabled: true,
+            myreferralCodeId: { $exists: true, $ne: null },
+          },
+        },
+        { $sample: { size: 9 } },
+        {
+          $lookup: {
+            from: "referralcodes",
+            localField: "myreferralCodeId",
+            foreignField: "_id",
+            as: "referralCode",
+          },
+        },
+        {
+          $unwind: {
+            path: "$referralCode",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            uses: "$referralCode.uses",
+            maxUses: "$referralCode.maxUses",
+          },
+        },
+      ]),
     ]);
+
+    const users = [...pinnedResult, ...randomUsers];
 
     const serialized = users.map((u) => ({
       _id: u._id.toString(),
@@ -131,6 +170,8 @@ export const SendReferralRequest = async (data: ReferralRequestData, memberId: s
       phoneNumber,
       customerId: memberId,
       budget: Number(data.budget),
+      province:data.province,
+      city:data.city,
       accepted: null,
     });
 
@@ -151,7 +192,7 @@ export const SendReferralRequest = async (data: ReferralRequestData, memberId: s
       notifications.push(
         sendEmail({
           to: member.email,
-          subject: `${data.name} requested a referral invite 🎫`,
+          subject: `${data.name} requested a referral invite`,
           react: ReferralRequestEmail({
             recipientName: member.name,
             requesterName: data.name,
@@ -209,6 +250,9 @@ export interface SerializedReferralRequest {
   name: string;
   email: string;
   phoneNumber: string;
+  budget:number;
+  city:string;
+  province:string;
   accepted: boolean | null;
   customerId: string;
   createdAt: string;
@@ -230,6 +274,9 @@ export const getPendingReferralRequests = async (customerId: string) => {
       name: r.name,
       email: r.email,
       phoneNumber: r.phoneNumber,
+      budget:r.budget,
+      city: r.city,
+      province:r.province,
       accepted: r.accepted,
       customerId: r.customerId.toString(),
       createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt),

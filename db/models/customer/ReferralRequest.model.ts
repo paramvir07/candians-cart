@@ -6,6 +6,8 @@ export interface IReferralRequest {
   phoneNumber: string;
   accepted: boolean | null;
   budget: number;
+  province:string;
+  city:string;
   customerId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -44,6 +46,14 @@ const referralRequestSchema = new Schema<IReferralRequest>(
     budget:{
       type:Number,
       required:true,
+    },
+    province:{
+      type:String,
+      required:true
+    },
+    city:{
+      type:String,
+      required:true
     },
     customerId: {
       type: Schema.Types.ObjectId,
