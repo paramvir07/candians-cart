@@ -23,11 +23,11 @@ export function AddressRequiredDialog() {
     postalCode: "",
   });
 
-const isComplete =
-  !!addressData.address &&
-  !!addressData.city.trim() &&
-  !!addressData.province.trim() &&
-  !!addressData.postalCode.trim();
+  const isComplete =
+    !!addressData.address &&
+    !!addressData.city.trim() &&
+    !!addressData.province.trim() &&
+    !!addressData.postalCode.trim();
 
   const handleSelect = (parsed: ParsedAddress) => {
     setAddressData((prev) => ({
@@ -194,10 +194,8 @@ const isComplete =
               <p className="text-[11px] text-muted-foreground break-words leading-snug">
                 Saving as:{" "}
                 <span className="font-semibold text-foreground font-mono">
+                  {addressData.aptUnit ? `${addressData.aptUnit.trim()}-` : ""}
                   {addressData.address}
-                  {addressData.aptUnit
-                    ? `, Apt/Unit ${addressData.aptUnit.trim()}`
-                    : ""}
                   {addressData.city ? `, ${addressData.city}` : ""}
                   {addressData.province ? `, ${addressData.province}` : ""}
                   {addressData.postalCode ? ` ${addressData.postalCode}` : ""}

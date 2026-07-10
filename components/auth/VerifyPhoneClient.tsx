@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +18,6 @@ type Props = {
 };
 
 export function VerifyPhoneClient({ userName }: Props) {
-  const router = useRouter();
   const [step, setStep] = useState<Step>("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [e164Phone, setE164Phone] = useState("");
@@ -126,9 +124,7 @@ const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         otpRefs.current[0]?.focus();
       } else {
         toast.success("Phone verified! Welcome to Candian's Cart");
-        // Give revalidation time to complete, then hard navigate
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        window.location.href = "/customer";
+        window.location.href = "/socials";
       }
     });
   };

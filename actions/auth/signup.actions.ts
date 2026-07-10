@@ -79,6 +79,7 @@ export const signupAction = async (
         };
       }
 
+      // Update per refer amount for customer referral code if expired
       if (expired) {
         if (referralCode.type === "customer") {
           referralCode.uses = 0;
@@ -86,7 +87,7 @@ export const signupAction = async (
 
           const customer = await Customer.findOneAndUpdate(
             { referralCode: referralCode._id },
-            { $set: { perReferAmount: 2 } },
+            { $set: { perReferAmount: 5 } },
             { new: true },
           );
 
