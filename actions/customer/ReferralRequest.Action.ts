@@ -1,6 +1,5 @@
 "use server"
 import { ReferralAcceptedEmail } from "@/components/EmailTemplates/ReferralAcceptEmail";
-import { ReferralRequestEmail } from "@/components/EmailTemplates/ReferralRequestEmail";
 import { dbConnect } from "@/db/dbConnect";
 import ReferralCode from "@/db/models/admin/referralCode.model";
 import Customer from "@/db/models/customer/customer.model";
@@ -10,6 +9,7 @@ import { getReferralRequestMessage, getReferralShareMessageTwilio, getReferralUr
 import { sendSMS } from "@/lib/twilio/twilio";
 import mongoose from "mongoose";
 import { revalidatePath } from "next/cache";
+import ReferralRequestEmail from "../../components/EmailTemplates/ReferralRequestEmail";
 
 interface ReferralRequestData {
     name: string,
