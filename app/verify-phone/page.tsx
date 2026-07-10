@@ -12,7 +12,7 @@ export default async function VerifyPhonePage() {
   }
 
   if (session.user.phoneNumberVerified) {
-    redirect("/socials");
+    redirect("/customer");
   }
 
   return <VerifyPhoneClient userName={session.user.name} />;

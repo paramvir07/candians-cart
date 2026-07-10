@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight, Bell, Sparkles } from "lucide-react";
 import Logo from "@/components/shared/Logo";
 import { cn } from "@/lib/utils";
+import FooterWrapper from "@/components/landing/FooterWrapper";
 
 const socials = [
   {
@@ -38,128 +39,134 @@ const socials = [
 
 export default function SocialsPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      {/* Background decoration */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-0 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute -left-24 top-40 h-72 w-72 rounded-full bg-pink-500/10 blur-3xl" />
-        <div className="absolute -right-24 bottom-20 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_35%)]" />
-      </div>
-
-      <section className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-5 py-6 sm:px-8 lg:px-10">
-        {/* Header */}
-        <header className="flex items-center justify-between">
-          <Logo variant="icon" href="/" />
-
-          <Link
-            href="/customer"
-            className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur transition hover:border-primary/40 hover:text-foreground"
-          >
-            Skip
-          </Link>
-        </header>
-
-        {/* Hero */}
-        <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center py-12 text-center sm:py-16">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-4 py-2 text-sm text-muted-foreground shadow-sm backdrop-blur">
-            <Sparkles className="h-4 w-4 text-primary" />
-            Get the latest from Candian's Cart
-          </div>
-
-          <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Follow us for updates, new features, and fresh announcements.
-          </h1>
-
-          <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            We share app improvements, new launches, offers, community updates,
-            and helpful tips across our social channels.
-          </p>
-
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-            <Link
-              href="#socials"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:opacity-90 active:scale-[0.98]"
-            >
-              <Bell className="h-4 w-4" />
-              View our socials
-            </Link>
-
-            <Link
-              href="https://www.instagram.com/canadianscart"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-background/70 px-6 text-sm font-semibold shadow-sm backdrop-blur transition hover:border-primary/40 hover:text-primary active:scale-[0.98]"
-            >
-              Follow on Instagram
-            </Link>
-          </div>
+    <>
+      <main className="relative min-h-screen overflow-x-hidden scroll-smooth bg-background text-foreground">
+        {/* Background decoration */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute left-1/2 top-0 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute -left-24 top-40 h-72 w-72 rounded-full bg-pink-500/10 blur-3xl" />
+          <div className="absolute -right-24 bottom-20 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_35%)]" />
         </div>
 
-        {/* Social Cards */}
-        <div
-          id="socials"
-          className="grid w-full gap-5 pb-10 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {socials.map((social) => {
-            const Icon = social.icon;
+        <section className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-5 py-6 sm:px-8 lg:px-10">
+          {/* Header */}
+          <header className="flex items-center justify-between">
+            <Logo variant="icon" href="/" />
 
-            return (
+            <Link
+              href="/customer"
+              className="rounded-full border border-border bg-background/70 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur transition hover:border-primary/40 hover:text-foreground"
+            >
+              Skip
+            </Link>
+          </header>
+
+          {/* Hero */}
+          <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center py-12 text-center sm:py-16">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-4 py-2 text-sm text-muted-foreground shadow-sm backdrop-blur">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Get the latest from Candian&apos;s Cart
+            </div>
+
+            <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              Follow us for updates, new features, and fresh announcements.
+            </h1>
+
+            <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+              We share app improvements, new launches, offers, community
+              updates, and helpful tips across our social channels.
+            </p>
+
+            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
+              <a
+                href="#socials"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:opacity-90 active:scale-[0.98]"
+              >
+                <Bell className="h-4 w-4" />
+                View our socials
+              </a>
+
               <Link
-                key={social.name}
-                href={social.href}
+                href="https://www.instagram.com/canadianscart"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-background/70 px-6 text-sm font-semibold shadow-sm backdrop-blur transition hover:border-primary/40 hover:text-primary active:scale-[0.98]"
               >
-                {/* Card glow */}
-                <div
-                  className={cn(
-                    "absolute -right-16 -top-16 h-40 w-40 rounded-full blur-3xl transition duration-300 group-hover:scale-125",
-                    social.bgGlow,
-                  )}
-                />
+                Follow on Instagram
+              </Link>
+            </div>
+          </div>
+        </section>
 
-                <div className="relative z-10">
+        {/* Social Cards */}
+        <section
+          id="socials"
+          className="mx-auto w-full max-w-7xl scroll-mt-10 px-5 pb-16 sm:px-8 lg:px-10"
+        >
+          <div className="grid w-full gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {socials.map((social) => {
+              const Icon = social.icon;
+
+              return (
+                <Link
+                  key={social.name}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl"
+                >
+                  {/* Card glow */}
                   <div
                     className={cn(
-                      "mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg transition duration-300 group-hover:scale-105",
-                      social.gradient,
+                      "absolute -right-16 -top-16 h-40 w-40 rounded-full blur-3xl transition duration-300 group-hover:scale-125",
+                      social.bgGlow,
                     )}
-                  >
-                    <Icon className="h-8 w-8" />
-                  </div>
+                  />
 
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h2 className="text-xl font-bold tracking-tight">
-                        {social.name}
-                      </h2>
-                      <p className="mt-1 text-sm font-medium text-primary">
-                        {social.username}
-                      </p>
+                  <div className="relative z-10">
+                    <div
+                      className={cn(
+                        "mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg transition duration-300 group-hover:scale-105",
+                        social.gradient,
+                      )}
+                    >
+                      <Icon className="h-8 w-8" />
                     </div>
 
-                    <div className="rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition group-hover:border-primary/40 group-hover:text-primary">
-                      <ArrowUpRight className="h-4 w-4" />
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h2 className="text-xl font-bold tracking-tight">
+                          {social.name}
+                        </h2>
+                        <p className="mt-1 text-sm font-medium text-primary">
+                          {social.username}
+                        </p>
+                      </div>
+
+                      <div className="rounded-full border border-border bg-background/70 p-2 text-muted-foreground transition group-hover:border-primary/40 group-hover:text-primary">
+                        <ArrowUpRight className="h-4 w-4" />
+                      </div>
+                    </div>
+
+                    <p className="mt-5 text-sm leading-6 text-muted-foreground">
+                      {social.description}
+                    </p>
+
+                    <div className="mt-6 inline-flex items-center text-sm font-semibold text-foreground transition group-hover:text-primary">
+                      Visit {social.name}
+                      <ArrowUpRight className="ml-1 h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </div>
                   </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      </main>
 
-                  <p className="mt-5 text-sm leading-6 text-muted-foreground">
-                    {social.description}
-                  </p>
-
-                  <div className="mt-6 inline-flex items-center text-sm font-semibold text-foreground transition group-hover:text-primary">
-                    Visit {social.name}
-                    <ArrowUpRight className="ml-1 h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-    </main>
+      <FooterWrapper />
+    </>
   );
 }
 
