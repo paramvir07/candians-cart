@@ -13,6 +13,7 @@ import { revalidateTag } from "next/cache";
 import { getOrderCountCached } from "@/actions/cache/user.cache";
 import { OrderWithProductsClient } from "@/types/customer/OrdersClient";
 import Product from "@/db/models/store/products.model";
+import { getVancouverDayBoundsUTC } from "@/lib/timezone";
 
 type OrderSearchClause = {
   text?: {
@@ -25,6 +26,18 @@ type OrderSearchClause = {
     path: string;
     fuzzy?: { maxEdits: number };
   };
+};
+export interface OrderDateRange {
+  from?: Date;
+  to?: Date;
+}
+const buildDateMatch = (dateRange?: OrderDateRange): Record<string, unknown> => {
+  if (!dateRange?.from || !dateRange?.to) return {};
+
+  const { start } = getVancouverDayBoundsUTC(new Date(dateRange.from));
+  const { end } = getVancouverDayBoundsUTC(new Date(dateRange.to));
+
+  return { createdAt: { $gte: start, $lte: end } };
 };
 
 export interface PaginatedStoreOrdersResult {
@@ -40,43 +53,33 @@ export const getOrders = async (
   customerId?: string,
   page: number = 1,
   limit: number = 5,
+  dateRange?: OrderDateRange,
 ): Promise<PaginatedStoreOrdersResult> => {
   try {
     await dbConnect();
     const user = await getUser(customerId);
 
     if (!user) {
-      return {
-        success: false,
-        error: "User not found",
-      };
+      return { success: false, error: "User not found" };
     }
 
-    // Calculate how many documents to skip based on the current page
     const skip = (page - 1) * limit;
+    const match = { userId: user._id, ...buildDateMatch(dateRange) };
 
-    // Run the query and the total count concurrently for better performance
     const [prevOrders, totalCount] = await Promise.all([
-      OrderModel.find({ userId: user._id })
+      OrderModel.find(match)
         .populate([
-          {
-            path: "products.productId",
-            model: "Product",
-          },
-          {
-            path: "subsidyItems.productId",
-            model: "Product",
-          },
+          { path: "products.productId", model: "Product" },
+          { path: "subsidyItems.productId", model: "Product" },
         ])
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      OrderModel.countDocuments({ userId: user._id }),
+      OrderModel.countDocuments(match),
     ]);
 
     const totalPages = Math.ceil(totalCount / limit);
-
     const serializedOrders = JSON.parse(
       JSON.stringify(prevOrders),
     ) as OrderWithProductsClient[];
@@ -97,25 +100,22 @@ export const getOrders = async (
 export const getAllOrders = async (
   page: number = 1,
   limit: number = 5,
+  dateRange?: OrderDateRange,
 ): Promise<PaginatedStoreOrdersResult> => {
   try {
     const session = await getUserSession();
     const role = session?.user?.role;
 
     if (!session?.user?.id || (role !== "cashier" && role !== "immigration")) {
-      return {
-        success: false,
-        error: "Unauthorized",
-      };
+      return { success: false, error: "Unauthorized" };
     }
 
     await dbConnect();
 
     const skip = (page - 1) * limit;
-
     const isImmigrationUser = session.user.role === "immigration";
 
-    let orderQuery = {};
+    let orderQuery: Record<string, unknown> = {};
 
     if (!isImmigrationUser) {
       const cashier = await Cashier.findOne({ userId: session.user.id })
@@ -124,37 +124,28 @@ export const getAllOrders = async (
 
       if (!cashier?.storeId) {
         console.log("No cashier or storeId found");
-        return {
-          success: false,
-          error: "No cashier or storeId found",
-        };
+        return { success: false, error: "No cashier or storeId found" };
       }
 
       orderQuery = { storeId: cashier.storeId };
     }
 
+    orderQuery = { ...orderQuery, ...buildDateMatch(dateRange) };
+
     const [prevOrders, totalCount] = await Promise.all([
       OrderModel.find(orderQuery)
         .populate([
-          {
-            path: "products.productId",
-            model: "Product",
-          },
-          {
-            path: "subsidyItems.productId",
-            model: "Product",
-          },
+          { path: "products.productId", model: "Product" },
+          { path: "subsidyItems.productId", model: "Product" },
         ])
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-
       OrderModel.countDocuments(orderQuery),
     ]);
 
     const totalPages = Math.ceil(totalCount / limit);
-
     const serializedOrders = JSON.parse(
       JSON.stringify(prevOrders),
     ) as OrderWithProductsClient[];
@@ -632,13 +623,14 @@ export const searchOrders = async (
   customerId?: string,
   page: number = 1,
   limit: number = 5,
+  dateRange?: OrderDateRange,
 ): Promise<PaginatedStoreOrdersResult> => {
   try {
     await dbConnect();
     const cleanSearchTerm = searchTerm.trim();
 
     if (!cleanSearchTerm) {
-      return getOrders(customerId, page, limit);
+      return getOrders(customerId, page, limit, dateRange);
     }
 
     const user = await getUser(customerId);
@@ -648,7 +640,7 @@ export const searchOrders = async (
 
     const orderIds = await findMatchingOrderIds(
       cleanSearchTerm,
-      { userId: user._id },
+      { userId: user._id, ...buildDateMatch(dateRange) },
       { includeCustomerSearch: false },
     );
 
@@ -659,16 +651,11 @@ export const searchOrders = async (
   }
 };
 
-/**
- * Store-wide order search for cashier/immigration roles — mirrors
- * getAllOrders(). Cashiers are confined to their own store's orders;
- * within that scope, matches by customer name/email/mobile, product
- * name, status/paymentMode, or an exact order-id match.
- */
 export const searchAllOrders = async (
   searchTerm: string,
   page: number = 1,
   limit: number = 5,
+  dateRange?: OrderDateRange,
 ): Promise<PaginatedStoreOrdersResult> => {
   try {
     const session = await getUserSession();
@@ -682,11 +669,11 @@ export const searchAllOrders = async (
 
     const cleanSearchTerm = searchTerm.trim();
     if (!cleanSearchTerm) {
-      return getAllOrders(page, limit);
+      return getAllOrders(page, limit, dateRange);
     }
 
     const isImmigrationUser = role === "immigration";
-    const baseMatch: Record<string, unknown> = {};
+    const baseMatch: Record<string, unknown> = { ...buildDateMatch(dateRange) };
     let storeId: mongoose.Types.ObjectId | undefined;
 
     if (!isImmigrationUser) {
