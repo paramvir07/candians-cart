@@ -21,7 +21,6 @@ import {
   ShoppingCart,
   Store,
   User,
-  Eye,
   Calendar,
   CalendarDays,
   DollarSign,
@@ -41,7 +40,7 @@ import {
 } from "@/actions/admin/orders/getOrders.action";
 import { OrderStats } from "@/actions/admin/orders/getOrderStats.action";
 // import OrderDetail from "@/components/shared/users/orders/OrderDetail";
-import OrderDetailInternal  from "@/components/admin/orders/OrderDetailsInternal";
+import OrderDetailInternal from "@/components/admin/orders/OrderDetailsInternal";
 import { format } from "date-fns";
 import { type DateRange as DayPickerDateRange } from "react-day-picker";
 import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
@@ -469,7 +468,7 @@ export function OrdersList({
   };
 
   // Order, [Store], Customer, Date, Amount, Actions
-  const colCount = (isAllStores ? 1 : 0) + 6;
+  const colCount = (isAllStores ? 1 : 0) + 5;
 
   return (
     <div className="space-y-5">
@@ -496,7 +495,10 @@ export function OrdersList({
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
               {/* <OrderDetail order={selectedOrderData as any} allOrders={true} /> */}
-               <OrderDetailInternal order={selectedOrderData as any} role={role} />
+              <OrderDetailInternal
+                order={selectedOrderData as any}
+                role={role}
+              />
             </div>
           ) : null}
         </DialogContent>
@@ -615,16 +617,13 @@ export function OrdersList({
                   Customer
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   Amount
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                   {role === "admin" ? "Platform Profit" : "Store Profit"}
                 </th>
-                <th className="px-4 py-3 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Actions
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Date
                 </th>
               </tr>
             </thead>
@@ -704,11 +703,6 @@ export function OrdersList({
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {formatDate(order.createdAt)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5">
                       <span className="text-sm font-semibold text-foreground tabular-nums">
                         {formatCents(order.amount)}
                       </span>
@@ -718,19 +712,10 @@ export function OrdersList({
                         {formatCents(getProfitForRole(order, role))}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 text-xs font-medium text-muted-foreground hover:text-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewOrder(order.orderId);
-                        }}
-                      >
-                        <Eye className="w-3.5 h-3.5 mr-1.5" />
-                        View
-                      </Button>
+                    <td className="px-4 py-3.5">
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {formatDate(order.createdAt)}
+                      </span>
                     </td>
                   </tr>
                 ))
@@ -741,14 +726,14 @@ export function OrdersList({
 
         {/* Pagination */}
         {!isSearchMode && totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-border/60">
+          <div className="flex items-center justify-center sm:justify-between px-5 py-3.5 border-t border-border/60">
             <p className="text-xs text-muted-foreground hidden sm:block">
               Page{" "}
               <span className="font-medium text-foreground">{currentPage}</span>{" "}
               of{" "}
               <span className="font-medium text-foreground">{totalPages}</span>
             </p>
-            <Pagination className="mx-0 w-auto justify-end">
+            <Pagination className="mx-0 w-auto sm:justify-end">
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious

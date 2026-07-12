@@ -20,6 +20,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { formatVancouverDate, formatVancouverTime } from "@/lib/timezone";
 
 const fmt = (cents: number) => `CA$${(cents / 100).toFixed(2)}`;
 
@@ -41,7 +42,10 @@ function StatusBadge({ status }: { status?: string }) {
 }
 
 function PaymentBadge({ mode }: { mode?: string }) {
-  const map: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
+  const map: Record<
+    string,
+    { label: string; className: string; icon: React.ReactNode }
+  > = {
     wallet: {
       label: "Wallet",
       className: "bg-violet-50 text-violet-700 border-violet-200",
@@ -59,7 +63,8 @@ function PaymentBadge({ mode }: { mode?: string }) {
     },
     pending: {
       label: "Not paid",
-      className: "bg-stone-100 text-stone-500 border-stone-200 whitespace-nowrap",
+      className:
+        "bg-stone-100 text-stone-500 border-stone-200 whitespace-nowrap",
       icon: <Clock className="w-2.5 h-2.5" />,
     },
   };
@@ -71,7 +76,9 @@ function PaymentBadge({ mode }: { mode?: string }) {
   };
 
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border tracking-wide uppercase ${m.className}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border tracking-wide uppercase ${m.className}`}
+    >
       {m.icon}
       {m.label}
     </span>
@@ -84,15 +91,16 @@ interface OrderCardProps {
   allOrders?: boolean;
 }
 
-export default function OrderCard({ order, customerId, allOrders }: OrderCardProps) {
+export default function OrderCard({
+  order,
+  customerId,
+  allOrders,
+}: OrderCardProps) {
   const [open, setOpen] = useState(false);
 
   const orderId = order._id.toString().slice(-7).toUpperCase();
-  const date = new Date(order.createdAt).toLocaleDateString("en-CA", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const date = formatVancouverDate(order.createdAt);
+  const time = formatVancouverTime(order.createdAt);
 
   const thumbUrl = order.products?.[0]?.productId?.images?.[0]?.url;
   const firstCat = order.products?.[0]?.productId?.category ?? "Other";
@@ -203,9 +211,14 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
 
                 {/* Row 2: date + item count */}
                 <div className="flex items-center justify-between gap-2 mt-0.5">
-                  <p className="text-[11px] text-stone-400 font-medium">
-                    {date}
-                  </p>
+                  <div className="flex flex-col leading-tight">
+                    <p className="text-[11px] text-stone-400 font-medium">
+                      {date}
+                    </p>
+                    <p className="text-[10px] text-stone-400/80 font-medium">
+                      {time}
+                    </p>
+                  </div>
                   <p className="text-[11px] text-stone-400 font-medium">
                     {totalItems} item{totalItems !== 1 ? "s" : ""}
                   </p>
@@ -284,6 +297,9 @@ export default function OrderCard({ order, customerId, allOrders }: OrderCardPro
                   </p>
                   <p className="text-[13px] font-semibold text-stone-600 truncate">
                     {date}
+                  </p>
+                  <p className="text-[11px] font-medium text-stone-400 truncate">
+                    {time}
                   </p>
                 </div>
 
