@@ -12,6 +12,20 @@ import Customer from "@/db/models/customer/customer.model";
 import { revalidateTag } from "next/cache";
 import { getOrderCountCached } from "@/actions/cache/user.cache";
 import { OrderWithProductsClient } from "@/types/customer/OrdersClient";
+import Product from "@/db/models/store/products.model";
+
+type OrderSearchClause = {
+  text?: {
+    query: string;
+    path: string | string[];
+    fuzzy?: { maxEdits: number };
+  };
+  autocomplete?: {
+    query: string;
+    path: string;
+    fuzzy?: { maxEdits: number };
+  };
+};
 
 export interface PaginatedStoreOrdersResult {
   success: boolean;
@@ -449,4 +463,252 @@ export const cancelPendingOrder = async (
 export const getOrderCount = async () => {
   const session = await getUserSession(); // ← session outside
   return getOrderCountCached(session.user.id); // ← id into cache key
+};
+
+
+const findMatchingProductIds = async (
+  term: string,
+  storeId?: mongoose.Types.ObjectId,
+): Promise<mongoose.Types.ObjectId[]> => {
+  const pipeline: mongoose.PipelineStage[] = [
+    {
+      $search: {
+        index: "ProductSearch",
+        compound: {
+          should: [
+            {
+              text: {
+                query: term,
+                path: ["name", "description", "category"],
+                fuzzy: { maxEdits: 2, prefixLength: 1, maxExpansions: 50 },
+              },
+            },
+          ],
+          minimumShouldMatch: 1,
+        },
+      },
+    },
+  ];
+
+  if (storeId) {
+    pipeline.push({ $match: { storeId } });
+  }
+
+  pipeline.push({ $limit: 100 }, { $project: { _id: 1 } });
+
+  const results = await Product.aggregate(pipeline);
+  return results.map((r) => r._id);
+};
+
+const findMatchingCustomerIds = async (
+  term: string,
+  storeId?: mongoose.Types.ObjectId,
+): Promise<mongoose.Types.ObjectId[]> => {
+  const compound: {
+    should: OrderSearchClause[];
+    minimumShouldMatch: number;
+    filter?: Record<string, unknown>[];
+  } = {
+    should: [
+      { autocomplete: { query: term, path: "name", fuzzy: { maxEdits: 1 } } },
+      { autocomplete: { query: term, path: "email", fuzzy: { maxEdits: 1 } } },
+      { text: { query: term, path: "mobile" } },
+    ],
+    minimumShouldMatch: 1,
+  };
+
+  if (storeId) {
+    compound.filter = [
+      { equals: { path: "associatedStoreId", value: storeId } },
+    ];
+  }
+
+  const results = await Customer.aggregate([
+    { $search: { index: "CustomerSearch", compound } },
+    { $limit: 100 },
+    { $project: { _id: 1 } },
+  ]);
+  return results.map((r) => r._id);
+};
+
+/**
+ * Resolves a search term into matching Order _ids within a given base scope
+ * (already-applied auth boundary — a single customer's userId, or a store's
+ * storeId). Never widens the base scope, only narrows within it.
+ */
+const findMatchingOrderIds = async (
+  cleanSearchTerm: string,
+  baseMatch: Record<string, unknown>,
+  options: { includeCustomerSearch: boolean; storeId?: mongoose.Types.ObjectId },
+): Promise<mongoose.Types.ObjectId[]> => {
+  if (mongoose.isValidObjectId(cleanSearchTerm)) {
+    const docs = await OrderModel.find({
+      ...baseMatch,
+      _id: new mongoose.Types.ObjectId(cleanSearchTerm),
+    })
+      .select("_id")
+      .lean();
+    return docs.map((d) => d._id);
+  }
+
+  const [matchedProductIds, matchedCustomerIds] = await Promise.all([
+    findMatchingProductIds(cleanSearchTerm, options.storeId),
+    options.includeCustomerSearch
+      ? findMatchingCustomerIds(cleanSearchTerm, options.storeId)
+      : Promise.resolve([] as mongoose.Types.ObjectId[]),
+  ]);
+
+  const orConditions: Record<string, unknown>[] = [
+    { status: { $regex: cleanSearchTerm, $options: "i" } },
+    { paymentMode: { $regex: cleanSearchTerm, $options: "i" } },
+  ];
+
+  if (matchedProductIds.length) {
+    orConditions.push(
+      { "products.productId": { $in: matchedProductIds } },
+      { "subsidyItems.productId": { $in: matchedProductIds } },
+    );
+  }
+  if (matchedCustomerIds.length) {
+    orConditions.push({ userId: { $in: matchedCustomerIds } });
+  }
+
+  const docs = await OrderModel.aggregate([
+    { $match: baseMatch },
+    { $addFields: { idString: { $toString: "$_id" } } },
+    {
+      $match: {
+        $or: [
+          ...orConditions,
+          { idString: { $regex: cleanSearchTerm, $options: "i" } },
+        ],
+      },
+    },
+    { $project: { _id: 1 } },
+  ]);
+  return docs.map((d) => d._id);
+};
+
+const populateAndPaginate = async (
+  orderIds: mongoose.Types.ObjectId[],
+  page: number,
+  limit: number,
+): Promise<PaginatedStoreOrdersResult> => {
+  const skip = (page - 1) * limit;
+  const totalCount = orderIds.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+
+  const prevOrders = await OrderModel.find({ _id: { $in: orderIds } })
+    .populate([
+      { path: "products.productId", model: "Product" },
+      { path: "subsidyItems.productId", model: "Product" },
+    ])
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  const serializedOrders = JSON.parse(
+    JSON.stringify(prevOrders),
+  ) as OrderWithProductsClient[];
+
+  return {
+    success: true,
+    data: serializedOrders,
+    totalPages,
+    currentPage: page,
+    totalCount,
+  };
+};
+
+/**
+ * Customer-scoped order search — mirrors getOrders(), but narrows by a
+ * fuzzy match against products in the order, order status/paymentMode,
+ * or an exact order-id match. Always confined to this customer's own
+ * orders (userId), same as getOrders().
+ */
+export const searchOrders = async (
+  searchTerm: string,
+  customerId?: string,
+  page: number = 1,
+  limit: number = 5,
+): Promise<PaginatedStoreOrdersResult> => {
+  try {
+    await dbConnect();
+    const cleanSearchTerm = searchTerm.trim();
+
+    if (!cleanSearchTerm) {
+      return getOrders(customerId, page, limit);
+    }
+
+    const user = await getUser(customerId);
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
+    const orderIds = await findMatchingOrderIds(
+      cleanSearchTerm,
+      { userId: user._id },
+      { includeCustomerSearch: false },
+    );
+
+    return await populateAndPaginate(orderIds, page, limit);
+  } catch (err) {
+    console.error("Error while searching customer orders: ", err);
+    return { success: false, error: "Failed to search customer orders" };
+  }
+};
+
+/**
+ * Store-wide order search for cashier/immigration roles — mirrors
+ * getAllOrders(). Cashiers are confined to their own store's orders;
+ * within that scope, matches by customer name/email/mobile, product
+ * name, status/paymentMode, or an exact order-id match.
+ */
+export const searchAllOrders = async (
+  searchTerm: string,
+  page: number = 1,
+  limit: number = 5,
+): Promise<PaginatedStoreOrdersResult> => {
+  try {
+    const session = await getUserSession();
+    const role = session?.user?.role;
+
+    if (!session?.user?.id || (role !== "cashier" && role !== "immigration")) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    await dbConnect();
+
+    const cleanSearchTerm = searchTerm.trim();
+    if (!cleanSearchTerm) {
+      return getAllOrders(page, limit);
+    }
+
+    const isImmigrationUser = role === "immigration";
+    const baseMatch: Record<string, unknown> = {};
+    let storeId: mongoose.Types.ObjectId | undefined;
+
+    if (!isImmigrationUser) {
+      const cashier = await Cashier.findOne({ userId: session.user.id })
+        .select("storeId")
+        .lean();
+
+      if (!cashier?.storeId) {
+        return { success: false, error: "No cashier or storeId found" };
+      }
+      storeId = cashier.storeId;
+      baseMatch.storeId = storeId;
+    }
+
+    const orderIds = await findMatchingOrderIds(cleanSearchTerm, baseMatch, {
+      includeCustomerSearch: true,
+      storeId,
+    });
+
+    return await populateAndPaginate(orderIds, page, limit);
+  } catch (err) {
+    console.error("Error while searching store orders: ", err);
+    return { success: false, error: "Failed to search store orders" };
+  }
 };

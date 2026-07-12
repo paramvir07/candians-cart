@@ -2,11 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, Package } from "lucide-react";
+import { ChevronLeft, Package, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { OrderWithProductsClient } from "@/types/customer/OrdersClient";
 import OrderCard from "./OrderCard";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
+import { useDebounce } from "use-debounce";
 
 import {
   Pagination,
@@ -21,6 +23,8 @@ import {
 import {
   getAllOrders,
   getOrders,
+  searchAllOrders,
+  searchOrders,
 } from "@/actions/customer/ProductAndStore/Order.Action";
 
 const norm = (v: unknown) =>
@@ -45,6 +49,7 @@ export default function OrdersHistoryClient({
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
+  const [debouncedQ] = useDebounce(q, 400);
 
   const [orders, setOrders] =
     useState<OrderWithProductsClient[]>(initialOrders);
@@ -52,8 +57,15 @@ export default function OrdersHistoryClient({
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Whenever the search term changes, jump back to page 1.
   useEffect(() => {
-    if (currentPage === 1) {
+    setCurrentPage(1);
+  }, [debouncedQ]);
+
+  useEffect(() => {
+    // No search term and first page → use the server-provided initial data,
+    // same optimization as before.
+    if (currentPage === 1 && !debouncedQ) {
       setOrders(initialOrders);
       setTotalPages(initialTotalPages);
       return;
@@ -63,20 +75,23 @@ export default function OrdersHistoryClient({
     const fetchOrders = async () => {
       setIsLoading(true);
       try {
-        const res = allOrders
-          ? await getAllOrders(currentPage, 5) // <-- 5 items
-          : await getOrders(customerId, currentPage, 5);
+        const res = debouncedQ
+          ? allOrders
+            ? await searchAllOrders(debouncedQ, currentPage, 5)
+            : await searchOrders(debouncedQ, customerId, currentPage, 5)
+          : allOrders
+            ? await getAllOrders(currentPage, 5)
+            : await getOrders(customerId, currentPage, 5);
 
         if (!mounted) return;
 
-        // Safely extract the standardized paginated response
-        const parsedRes = res as {
-          data?: OrderWithProductsClient[];
-          totalPages?: number;
-        } | null;
-
-        setOrders(parsedRes?.data ?? []);
-        setTotalPages(parsedRes?.totalPages ?? 1);
+        if (res?.success) {
+          setOrders(res.data ?? []);
+          setTotalPages(res.totalPages ?? 1);
+        } else {
+          setOrders([]);
+          setTotalPages(1);
+        }
       } catch (error) {
         console.error("Error fetching orders:", error);
       } finally {
@@ -88,32 +103,14 @@ export default function OrdersHistoryClient({
     return () => {
       mounted = false;
     };
-  }, [currentPage, allOrders, customerId]);
+  }, [currentPage, debouncedQ, allOrders, customerId]);
 
+  // Search is now server-side; this only applies the status tab filter
+  // to whatever page of results is currently loaded.
   const filteredOrders = useMemo(() => {
-    const query = norm(q);
-    return orders.filter((order) => {
-      const okStatus = filter === "all" ? true : norm(order.status) === filter;
-      if (!okStatus) return false;
-      if (!query) return true;
-
-      const shortId = order._id?.toString().slice(-7).toUpperCase();
-      const names =
-        order.products?.map((it) => it?.productId?.name).filter(Boolean) ?? [];
-
-      const hay = norm(
-        [
-          shortId,
-          order._id?.toString(),
-          ...names,
-          order.status,
-          order.paymentMode,
-        ].join(" "),
-      );
-
-      return hay.includes(query);
-    });
-  }, [orders, filter, q]);
+    if (filter === "all") return orders;
+    return orders.filter((order) => norm(order.status) === filter);
+  }, [orders, filter]);
 
   const getPageNumbers = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
@@ -142,20 +139,19 @@ export default function OrdersHistoryClient({
     return pages;
   };
 
-
   const pageTitle = customerId
     ? "Customer Orders"
-    : immigrationRole ? "All Orders"
-    : allOrders
+    : immigrationRole
       ? "All Orders"
-      : "Order History";
+      : allOrders
+        ? "All Orders"
+        : "Order History";
 
   return (
     <div className="max-w-3xl mx-auto py-6 sm:py-8 px-4 sm:px-6">
       {!customerId && !allOrders && <CustomerAdvertisements maxHeight={250} />}
 
       {/* Header */}
-
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           {!immigrationRole && !customerId && !allOrders && (
@@ -169,6 +165,22 @@ export default function OrdersHistoryClient({
             {pageTitle}
           </h1>
         </div>
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          type="text"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder={
+            allOrders
+              ? "Search by customer, product, or order ID..."
+              : "Search by product or order ID..."
+          }
+          className="pl-9"
+        />
       </div>
 
       {/* Order list */}
