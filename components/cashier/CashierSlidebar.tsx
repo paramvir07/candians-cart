@@ -46,11 +46,15 @@ type CustomerData = {
     id?: string;
     name?: string;
     walletBalance?: number;
-    giftWalletBalance?:number;
-    CartCount?:number;
+    giftWalletBalance?: number;
+    CartCount?: number;
   };
 };
 
+type CashierInfo = {
+  name?: string;
+  email?: string;
+};
 
 // ─── Active check ───────────────────────────────────────────────────────────────
 
@@ -119,11 +123,23 @@ function NavItem({
 
 // ─── Sidebar inner content ──────────────────────────────────────────────────────
 
+function getInitials(name?: string) {
+  if (!name) return "CS";
+  const parts = name.trim().split(/\s+/);
+  const initials =
+    parts.length > 1
+      ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+      : parts[0].slice(0, 2);
+  return initials.toUpperCase();
+}
+
 function SidebarContent({
   customerData,
+  cashierData,
   onNav,
 }: {
   customerData?: CustomerData["customerData"];
+  cashierData?: CashierInfo;
   onNav?: () => void;
 }) {
   const customerId = customerData?.id;
@@ -131,9 +147,8 @@ function SidebarContent({
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
-  const [customerOpen, setCustomerOpen] = useState(false)
-  const [SubsidyVal,] = useAtom(OrderSubsidyValue)
-
+  const [customerOpen, setCustomerOpen] = useState(false);
+  const [SubsidyVal] = useAtom(OrderSubsidyValue);
 
   const isInsideCustomer =
     Boolean(customerId) &&
@@ -229,7 +244,9 @@ function SidebarContent({
                 href="/cashier/customer/orders"
                 label="All Orders"
                 icon={Package}
-                onClick={(event) => handleNav(event, "/cashier/customer/orders")}
+                onClick={(event) =>
+                  handleNav(event, "/cashier/customer/orders")
+                }
               />
               <NavItem
                 href="/cashier/subsidy-list"
@@ -392,14 +409,16 @@ function SidebarContent({
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full"
           >
             <Avatar className="h-8 w-8 shrink-0">
-              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarImage
+                src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(cashierData?.name ?? "Cashier")}`}
+              />
               <AvatarFallback className="text-xs bg-emerald-100 text-emerald-700 font-semibold">
-                CS
+                {getInitials(cashierData?.name)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-800 leading-tight">
-                Profile
+              <p className="text-sm font-semibold text-gray-800 leading-tight truncate">
+                {cashierData?.name ?? "Profile"}
               </p>
               <p className="text-xs text-gray-400 leading-tight">Cashier</p>
             </div>
@@ -415,7 +434,7 @@ function SidebarContent({
 
 // ─── Main component ─────────────────────────────────────────────────────────────
 
-const CashierSidebar = ({ customerData }: CustomerData) => {
+const CashierSidebar = ({ customerData, cashierData }: CustomerData & { cashierData?: CashierInfo }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const pathname = usePathname();
@@ -449,7 +468,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0">
-          <SidebarContent customerData={customerData} />
+          <SidebarContent customerData={customerData} cashierData={cashierData} />
         </div>
       </aside>
 
@@ -517,6 +536,7 @@ const CashierSidebar = ({ customerData }: CustomerData) => {
         <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0">
           <SidebarContent
             customerData={customerData}
+            cashierData={cashierData}
             onNav={() => setMobileOpen(false)}
           />
         </div>
