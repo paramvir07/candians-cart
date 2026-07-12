@@ -202,7 +202,7 @@ export default function ProfileHero({ customer, referralCode }: Props) {
                     <QRCodeSVG
                       value={customer._id.toString()}
                       size={220}
-                      fgColor="#07553f"
+                      fgColor="#000000"
                       bgColor="#ffffff"
                       level="H"
                       marginSize={0}
