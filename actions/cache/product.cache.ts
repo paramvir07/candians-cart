@@ -11,7 +11,7 @@ export interface ProductCacheFilters {
   categories?: string[];
   inStockOnly?: boolean;
   subsidisedOnly?: boolean;
-  subsidyLevel?: "high" | "medium" | "low";
+  subsidyLevels?: ("high" | "medium" | "low")[];
   sortBy?:
     | "price_asc"
     | "price_desc"
@@ -61,18 +61,16 @@ export const getCachedStoreProducts = async (
       if (filters.subsidisedOnly) {
         query.subsidised = true;
       }
-      if (filters.subsidyLevel) {
+      if (filters.subsidyLevels && filters.subsidyLevels.length > 0) {
         query.subsidised = { $ne: true };
-        query.markup = query.markup || {};
-        if (filters.subsidyLevel === "low") {
-          query.markup.$gte = 0;
-          query.markup.$lt = 50;
-        } else if (filters.subsidyLevel === "medium") {
-          query.markup.$gte = 50;
-          query.markup.$lt = 100;
-        } else if (filters.subsidyLevel === "high") {
-          query.markup.$gte = 100;
-        }
+
+        const rangeConditions = filters.subsidyLevels.map((level) => {
+          if (level === "low") return { markup: { $gte: 0, $lt: 50 } };
+          if (level === "medium") return { markup: { $gte: 50, $lt: 100 } };
+          return { markup: { $gte: 100 } }; // "high"
+        });
+
+        query.$or = rangeConditions;
       }
 
       const skipAmount = (page - 1) * limit;

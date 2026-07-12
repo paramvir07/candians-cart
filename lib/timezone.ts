@@ -212,3 +212,35 @@ export function getVancouverTodayString(): string {
     day: "2-digit",
   }).format(new Date());
 }
+
+/**
+ * Formats a date/time for display in Vancouver local time.
+ * Use this anywhere you're showing an order's createdAt (or any timestamp)
+ * to the user — avoids the same local-time bug the date pickers had.
+ *
+ * Example: "Jul 11, 2026, 3:45 PM"
+ */
+export function formatVancouverDate(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: STORE_TIMEZONE,
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(d);
+}
+
+/**
+ * Time-only Vancouver formatter, e.g. "3:45 PM" — pair with
+ * formatVancouverDateTime split into date-only if you want date/time
+ * stacked on separate lines instead of one combined string.
+ */
+export function formatVancouverTime(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: STORE_TIMEZONE,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(d);
+}

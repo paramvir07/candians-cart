@@ -161,7 +161,7 @@ export function SearchResultsClient({
       filters.categories.length > 0 ||
       filters.subsidisedOnly ||
       filters.inStockOnly ||
-      !!filters.subsidyLevel;
+      filters.subsidyLevels.length > 0;
 
     const queryChanged = prevQueryRef.current !== debouncedQuery;
     const filtersChanged =
@@ -169,7 +169,7 @@ export function SearchResultsClient({
       prevFiltersRef.current.categories !== filters.categories ||
       prevFiltersRef.current.subsidisedOnly !== filters.subsidisedOnly ||
       prevFiltersRef.current.inStockOnly !== filters.inStockOnly ||
-      prevFiltersRef.current.subsidyLevel !== filters.subsidyLevel;
+        prevFiltersRef.current.subsidyLevels !== filters.subsidyLevels; 
 
     prevQueryRef.current = debouncedQuery;
     prevFiltersRef.current = filters;
@@ -210,7 +210,7 @@ export function SearchResultsClient({
             ? (filters.categories as any)
             : undefined,
         subsidised: filters.subsidisedOnly ? true : undefined,
-        subsidyLevel: filters.subsidyLevel,
+         subsidyLevels: filters.subsidyLevels.length > 0 ? filters.subsidyLevels : undefined,
         inStock: filters.inStockOnly ? true : undefined,
       };
 
@@ -249,7 +249,7 @@ export function SearchResultsClient({
     filters.sortBy,
     filters.categories,
     filters.subsidisedOnly,
-    filters.subsidyLevel,
+     filters.subsidyLevels,
     filters.inStockOnly,
     currentPage,
   ]);
