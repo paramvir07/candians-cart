@@ -36,8 +36,12 @@ export default function OrderDetail({
   const hasFee = totalFee > 0;
   const hasPST = totalPST > 0;
 
-  const normalProducts = (order.products ?? []).filter((item: any) => item.productId != null);
-  const subsidyProducts = (order.subsidyItems ?? []).filter((item: any) => item.productId != null);
+  const normalProducts = (order.products ?? []).filter(
+    (item: any) => item.productId != null,
+  );
+  const subsidyProducts = (order.subsidyItems ?? []).filter(
+    (item: any) => item.productId != null,
+  );
   const miscProducts = order.miscItems ?? [];
 
   const rawItems = [
@@ -46,7 +50,10 @@ export default function OrderDetail({
     ...miscProducts.map((item: any) => ({ ...item, __type: "misc" })),
   ];
 
-  const PINNED_LAST_IDS = ["6a2f51207f6cc4d79650b794", "6a2f51897f6cc4d79650b796"];
+  const PINNED_LAST_IDS = [
+    "6a2f51207f6cc4d79650b794",
+    "6a2f51897f6cc4d79650b796",
+  ];
 
   const isPinned = (item: any) =>
     PINNED_LAST_IDS.includes(item.productId?._id?.toString());
@@ -62,13 +69,19 @@ export default function OrderDetail({
     .filter((i: any) => i.productId?.subsidised)
     .reverse();
 
-  const allProducts = [...nonSubsidisedRest, ...subsidised, ...nonSubsidisedPinned];
+  const allProducts = [
+    ...nonSubsidisedRest,
+    ...subsidised,
+    ...nonSubsidisedPinned,
+  ];
   const PlatformFee = 50;
-  const subtotal = cartTotal - totalGST - totalPST - totalFee - PlatformFee;
+
+  // const subtotal = cartTotal - totalGST - totalPST - totalFee - PlatformFee;
+  const wasValue = (cartTotal + subsidyUsed);
+
 
   return (
     <div className="flex flex-col h-full max-h-[85vh] bg-background rounded-2xl overflow-hidden">
-
       {/* ── Header ── */}
       <div className="shrink-0 px-4 pt-4 pb-3 border-b border-border/60 bg-background">
         <div className="flex items-center justify-between gap-3">
@@ -98,7 +111,6 @@ export default function OrderDetail({
       {/* ── Scrollable body ── */}
       <ScrollArea className="flex-1 min-h-0">
         <div className="px-3 sm:px-5 pb-2">
-
           {/* Items list */}
           <div className="pt-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5 px-1">
@@ -107,127 +119,137 @@ export default function OrderDetail({
             </p>
 
             <div className="rounded-xl border border-border/60 overflow-hidden divide-y divide-border/50 bg-card">
-              {allProducts.map((item: any, i: number) => {
+              {allProducts
+                .map((item: any, i: number) => {
+                  // ── Misc item row ──
+                  if (item.__type === "misc") {
+                    return (
+                      <div
+                        key={`misc-${i}`}
+                        className="flex items-start gap-2.5 px-3 py-3 hover:bg-muted/30 transition-colors"
+                      >
+                        <div className="relative w-10 h-10 rounded-md overflow-hidden bg-stone-100 shrink-0 border border-border/50 flex items-center justify-center">
+                          <Tag className="w-4 h-4 text-stone-400" />
+                        </div>
 
-                // ── Misc item row ──
-                if (item.__type === "misc") {
+                        <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2 flex-1 min-w-0">
+                              {item.productName ?? "Misc item"}
+                            </p>
+                            <p className="text-xs font-bold text-foreground tabular-nums shrink-0 ml-1">
+                              {fmt(item.total)}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge
+                              variant="outline"
+                              className="h-4 px-1.5 text-[9px] font-semibold bg-stone-50 border-stone-200 text-stone-500 gap-0.5 w-fit"
+                            >
+                              Misc
+                            </Badge>
+                            <p className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                              {fmt(item.price)} × {item.quantity}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const p = item.productId;
+                  if (!p) return null;
+                  const imgUrl = p?.images?.[0]?.url;
+                  const itemSub = item.subsidy ?? 0;
+                  const markup = item.markup ?? 0;
+                  const lineTotal = Math.round(
+                    (item.total ?? 0) / (1 + (item.tax ?? 0)),
+                  );
+                  const unitBase =
+                    item.quantity > 0
+                      ? Math.round(lineTotal / item.quantity)
+                      : 0;
+
                   return (
                     <div
-                      key={`misc-${i}`}
+                      key={`${item.__type}-${i}`}
                       className="flex items-start gap-2.5 px-3 py-3 hover:bg-muted/30 transition-colors"
                     >
-                      <div className="relative w-10 h-10 rounded-md overflow-hidden bg-stone-100 shrink-0 border border-border/50 flex items-center justify-center">
-                        <Tag className="w-4 h-4 text-stone-400" />
+                      {/* Image */}
+                      <div className="relative w-10 h-10 rounded-md overflow-hidden bg-muted shrink-0 border border-border/50">
+                        {imgUrl ? (
+                          <Image
+                            src={imgUrl}
+                            alt={p?.name ?? "Product"}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <CategoryIllustration
+                            category={p?.category ?? "Other"}
+                          />
+                        )}
                       </div>
 
+                      {/* Info + Price stacked row */}
                       <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                        <div className="flex items-start justify-between gap-2">
+                        {/* Top: name + total price */}
+                        <div className="flex items-center justify-between gap-2">
                           <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2 flex-1 min-w-0">
-                            {item.productName ?? "Misc item"}
+                            {p?.name ?? "Unknown product"}
                           </p>
+                          {!item.productId.subsidised && (
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-black leading-none ${
+                                markup >= 100
+                                  ? "bg-red-500 text-white"
+                                  : markup >= 50
+                                    ? "bg-amber-400 text-amber-950"
+                                    : "bg-emerald-500 text-white"
+                              }`}
+                            >
+                              {markup >= 100
+                                ? "HIGH"
+                                : markup >= 50
+                                  ? "MED"
+                                  : "LOW"}
+                            </span>
+                          )}
                           <p className="text-xs font-bold text-foreground tabular-nums shrink-0 ml-1">
-                            {fmt(item.total)}
+                            {fmt(lineTotal)}
                           </p>
                         </div>
 
+                        {/* Bottom: category + unit price */}
                         <div className="flex items-center justify-between gap-2">
-                          <Badge
-                            variant="outline"
-                            className="h-4 px-1.5 text-[9px] font-semibold bg-stone-50 border-stone-200 text-stone-500 gap-0.5 w-fit"
-                          >
-                            Misc
-                          </Badge>
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {p?.category}
+                          </p>
                           <p className="text-[10px] text-muted-foreground tabular-nums shrink-0">
-                            {fmt(item.price)} × {item.quantity}
+                            {fmt(unitBase)} × {item.quantity}
                           </p>
                         </div>
+
+                        {itemSub > 0 && (
+                          <div className="flex items-center justify-between gap-2 mt-0.5">
+                            <Badge
+                              variant="outline"
+                              className="h-4 px-1.5 text-[9px] font-semibold bg-amber-50 border-amber-200 text-amber-700 gap-0.5"
+                            >
+                              <Sparkles className="w-2 h-2" />
+                              subsidy
+                            </Badge>
+                            <p className="text-[10px] text-amber-600 tabular-nums shrink-0">
+                              -{fmt(itemSub)}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
-                }
-
-                const p = item.productId;
-                if (!p) return null;
-                const imgUrl = p?.images?.[0]?.url;
-                const itemSub = item.subsidy ?? 0;
-                const markup = item.markup ?? 0; 
-                const lineTotal = Math.round((item.total ?? 0) / (1 + (item.tax ?? 0)));
-                const unitBase = item.quantity > 0 ? Math.round(lineTotal / item.quantity) : 0;
-
-                return (
-                  <div
-                    key={`${item.__type}-${i}`}
-                    className="flex items-start gap-2.5 px-3 py-3 hover:bg-muted/30 transition-colors"
-                  >
-                    {/* Image */}
-                    <div className="relative w-10 h-10 rounded-md overflow-hidden bg-muted shrink-0 border border-border/50">
-                      {imgUrl ? (
-                        <Image
-                          src={imgUrl}
-                          alt={p?.name ?? "Product"}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <CategoryIllustration
-                          category={p?.category ?? "Other"}
-                        />
-                      )}
-                    </div>
-
-                    {/* Info + Price stacked row */}
-                    <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                      {/* Top: name + total price */}
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2 flex-1 min-w-0">
-                          {p?.name ?? "Unknown product"}
-                        </p>
-                        {!item.productId.subsidised && (
-                          <span
-                            className={`px-1.5 py-0.5 rounded text-[9px] font-black leading-none ${
-                              markup >= 100
-                                ? "bg-red-500 text-white"
-                                : markup >= 50
-                                ? "bg-amber-400 text-amber-950"
-                                : "bg-emerald-500 text-white"
-                            }`}
-                          >
-                            {markup >= 100 ? "HIGH" : markup >= 50 ? "MED" : "LOW"}
-                          </span>
-                        )}
-                        <p className="text-xs font-bold text-foreground tabular-nums shrink-0 ml-1">
-                          {fmt(lineTotal)}
-                        </p>
-                      </div>
-
-                      {/* Bottom: category + unit price */}
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-[10px] text-muted-foreground truncate">
-                          {p?.category}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground tabular-nums shrink-0">
-                          {fmt(unitBase)} × {item.quantity}
-                        </p>
-                      </div>
-
-                      {itemSub > 0 && (
-                        <div className="flex items-center justify-between gap-2 mt-0.5">
-                          <Badge
-                            variant="outline"
-                            className="h-4 px-1.5 text-[9px] font-semibold bg-amber-50 border-amber-200 text-amber-700 gap-0.5"
-                          >
-                            <Sparkles className="w-2 h-2" />
-                            subsidy
-                          </Badge>
-                          <p className="text-[10px] text-amber-600 tabular-nums shrink-0">
-                            -{fmt(itemSub)}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              }).filter(Boolean)}
+                })
+                .filter(Boolean)}
             </div>
           </div>
 
@@ -239,17 +261,18 @@ export default function OrderDetail({
 
             <div className="rounded-xl border border-border/60 overflow-hidden bg-card">
               <div className="px-4 py-4 space-y-2 text-sm">
-
                 {/* Subtotal */}
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium tabular-nums">{fmt(subtotal)}</span>
+                  <span className="font-medium tabular-nums">
+                    {fmt(wasValue-50)}
+                  </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="text-muted-foreground">Platform Fee</span>
-                    <span className="font-medium tabular-nums">{fmt(50)}</span>
-                  </div>
+                  <span className="text-muted-foreground">Platform Fee</span>
+                  <span className="font-medium tabular-nums">{fmt(50)}</span>
+                </div>
 
                 {/* GST */}
                 {totalGST > 0 && (
@@ -296,7 +319,7 @@ export default function OrderDetail({
                       Was
                     </span>
                     <span className="text-sm font-semibold tabular-nums text-muted-foreground line-through">
-                      {fmt(cartTotal + subsidyUsed)}
+                      {fmt(wasValue+50)}
                     </span>
                   </div>
                 )}
@@ -308,7 +331,6 @@ export default function OrderDetail({
                     {fmt(cartTotal)}
                   </span>
                 </div>
-
               </div>
 
               {/* Subsidy summary footer */}
@@ -325,7 +347,8 @@ export default function OrderDetail({
                     </span>
                     {hasSubsidyUsed && (
                       <>
-                        {" "}and used{" "}
+                        {" "}
+                        and used{" "}
                         <span className="font-semibold text-emerald-700">
                           {fmt(subsidyUsed)}
                         </span>
@@ -337,7 +360,6 @@ export default function OrderDetail({
               )}
             </div>
           </div>
-
         </div>
       </ScrollArea>
 
@@ -354,9 +376,7 @@ export default function OrderDetail({
               order={order}
             />
           </div>
-          {!customerId && !allOrders && (
-            <QrCodeButton orderId={order._id} />
-          )}
+          {!customerId && !allOrders && <QrCodeButton orderId={order._id} />}
         </div>
       </div>
     </div>
