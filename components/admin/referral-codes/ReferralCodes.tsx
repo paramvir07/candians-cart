@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect  } from "react";
 import {
   Table,
   TableBody,
@@ -91,6 +91,10 @@ export function ReferralCodes({
   const [isPending, startTransition] = useTransition();
 
   const pageList = getPageList(currentPage, totalPages);
+
+  useEffect(() => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}, [currentPage]);
 
   const fetchData = (p: number, t: ReferralCodeType) => {
     startTransition(async () => {

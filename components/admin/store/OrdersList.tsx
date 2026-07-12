@@ -543,7 +543,7 @@ export function OrdersList({
       </div>
 
       {/* ── Table Card ── */}
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-border bg-card shadow-sm">
         {/* Top bar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center justify-between px-5 py-4 border-b border-border/60">
           <div className="flex items-center gap-3">
