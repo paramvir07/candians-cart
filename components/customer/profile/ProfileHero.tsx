@@ -205,7 +205,7 @@ export default function ProfileHero({ customer, referralCode }: Props) {
                       fgColor="#000000"
                       bgColor="#ffffff"
                       level="H"
-                      marginSize={0}
+                      marginSize={2}
                       imageSettings={{
                         src: logoIcon.src,
                         height: 44,
