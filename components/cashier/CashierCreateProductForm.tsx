@@ -90,15 +90,29 @@ const DEFAULT_FORM: ProductFormData = {
 
 // ── sub‑components ────────────────────────────────────────────────────────────
 
-function Field({ label, hint, error, required, children }: {
-  label: string; hint?: string; error?: string; required?: boolean; children: React.ReactNode;
+function Field({
+  label,
+  hint,
+  error,
+  required,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  error?: string;
+  required?: boolean;
+  children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
       <Label className="flex flex-wrap items-center gap-1 text-sm font-medium leading-none">
         {label}
         {required && <span className="text-destructive">*</span>}
-        {hint && <span className="font-normal text-muted-foreground/70 text-xs">· {hint}</span>}
+        {hint && (
+          <span className="font-normal text-muted-foreground/70 text-xs">
+            · {hint}
+          </span>
+        )}
       </Label>
       {children}
       {error && (
@@ -111,8 +125,16 @@ function Field({ label, hint, error, required, children }: {
   );
 }
 
-function ToggleCard({ label, description, checked, onCheckedChange }: {
-  label: string; description: string; checked: boolean; onCheckedChange: (v: boolean) => void;
+function ToggleCard({
+  label,
+  description,
+  checked,
+  onCheckedChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onCheckedChange: (v: boolean) => void;
 }) {
   return (
     <div
@@ -132,10 +154,14 @@ function ToggleCard({ label, description, checked, onCheckedChange }: {
       }`}
     >
       <div className="mr-3 min-w-0">
-        <p className={`text-sm font-medium leading-tight transition-colors ${checked ? "text-foreground" : "text-foreground/80"}`}>
+        <p
+          className={`text-sm font-medium leading-tight transition-colors ${checked ? "text-foreground" : "text-foreground/80"}`}
+        >
           {label}
         </p>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">{description}</p>
+        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+          {description}
+        </p>
       </div>
       <Switch
         checked={checked}
@@ -147,7 +173,13 @@ function ToggleCard({ label, description, checked, onCheckedChange }: {
   );
 }
 
-function SectionLabel({ label, icon }: { label: string; icon?: React.ReactNode }) {
+function SectionLabel({
+  label,
+  icon,
+}: {
+  label: string;
+  icon?: React.ReactNode;
+}) {
   return (
     <div className="flex items-center gap-2">
       {icon && <span className="text-muted-foreground/70">{icon}</span>}
@@ -170,14 +202,25 @@ interface AddQtyDialogProps {
   onClose: () => void;
 }
 
-function AddQtyDialog({ open, productName, isMeasuredInWeight, UOM, onConfirm, onClose }: AddQtyDialogProps) {
+function AddQtyDialog({
+  open,
+  productName,
+  isMeasuredInWeight,
+  UOM,
+  onConfirm,
+  onClose,
+}: AddQtyDialogProps) {
   const [qty, setQty] = useState("1");
   const [adding, setAdding] = useState(false);
 
   const qtyNum = parseFloat(qty);
   const isDecimal = qtyNum % 1 !== 0;
-  const isValid = !isNaN(qtyNum) && qtyNum > 0 && (isMeasuredInWeight || !isDecimal);
-  const decimalError = !isMeasuredInWeight && isDecimal ? "Quantity must be a whole number for this item" : undefined;
+  const isValid =
+    !isNaN(qtyNum) && qtyNum > 0 && (isMeasuredInWeight || !isDecimal);
+  const decimalError =
+    !isMeasuredInWeight && isDecimal
+      ? "Quantity must be a whole number for this item"
+      : undefined;
 
   async function handleConfirm() {
     if (!isValid) return;
@@ -198,7 +241,12 @@ function AddQtyDialog({ open, productName, isMeasuredInWeight, UOM, onConfirm, o
   prevOpen.current = open;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Add to Cart</DialogTitle>
@@ -206,13 +254,17 @@ function AddQtyDialog({ open, productName, isMeasuredInWeight, UOM, onConfirm, o
 
         <div className="py-2 space-y-4">
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{productName}</span> was created.
-            Enter a quantity to add it to the cart.
+            <span className="font-medium text-foreground">{productName}</span>{" "}
+            was created. Enter a quantity to add it to the cart.
           </p>
 
           <Field
-            label={isMeasuredInWeight ? `Quantity (${UOM || "unit"})` : "Quantity"}
-            hint={isMeasuredInWeight ? "decimals allowed" : "whole numbers only"}
+            label={
+              isMeasuredInWeight ? `Quantity (${UOM || "unit"})` : "Quantity"
+            }
+            hint={
+              isMeasuredInWeight ? "decimals allowed" : "whole numbers only"
+            }
             error={decimalError}
             required
           >
@@ -224,7 +276,9 @@ function AddQtyDialog({ open, productName, isMeasuredInWeight, UOM, onConfirm, o
               placeholder={isMeasuredInWeight ? "e.g. 1.5" : "e.g. 2"}
               autoFocus
               className={decimalError ? "border-destructive" : ""}
-              onKeyDown={(e) => { if (e.key === "Enter" && isValid) handleConfirm(); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && isValid) handleConfirm();
+              }}
             />
           </Field>
         </div>
@@ -233,8 +287,16 @@ function AddQtyDialog({ open, productName, isMeasuredInWeight, UOM, onConfirm, o
           <Button variant="outline" onClick={onClose} disabled={adding}>
             Skip
           </Button>
-          <Button onClick={handleConfirm} disabled={!isValid || adding} className="gap-2">
-            {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircleIcon className="h-4 w-4" />}
+          <Button
+            onClick={handleConfirm}
+            disabled={!isValid || adding}
+            className="gap-2"
+          >
+            {adding ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <PlusCircleIcon className="h-4 w-4" />
+            )}
             Add to Cart
           </Button>
         </DialogFooter>
@@ -245,10 +307,16 @@ function AddQtyDialog({ open, productName, isMeasuredInWeight, UOM, onConfirm, o
 
 // ── page ──────────────────────────────────────────────────────────────────────
 
-export default function CashierCreateProductForm({ customerId }: { customerId: string }) {
+export default function CashierCreateProductForm({
+  customerId,
+}: {
+  customerId: string;
+}) {
   const [form, setForm] = useState<ProductFormData>(DEFAULT_FORM);
   const [submitting, setSubmitting] = useState(false);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof ProductFormData, string>>>({});
+  const [formErrors, setFormErrors] = useState<
+    Partial<Record<keyof ProductFormData, string>>
+  >({});
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -261,19 +329,34 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
     productName: string;
     isMeasuredInWeight: boolean;
     UOM: string;
-  }>({ open: false, productId: "", productName: "", isMeasuredInWeight: false, UOM: "" });
+  }>({
+    open: false,
+    productId: "",
+    productName: "",
+    isMeasuredInWeight: false,
+    UOM: "",
+  });
 
   const router = useRouter();
 
-  function set<K extends keyof ProductFormData>(key: K, value: ProductFormData[K]) {
+  function set<K extends keyof ProductFormData>(
+    key: K,
+    value: ProductFormData[K],
+  ) {
     setForm((prev) => ({ ...prev, [key]: value }));
-    if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: undefined }));
+    if (formErrors[key])
+      setFormErrors((prev) => ({ ...prev, [key]: undefined }));
   }
 
-  function calcMissing(changed: "price" | "markup" | "finalPrice") {
-    const price = parseFloat(form.price);
-    const markup = parseFloat(form.markup);
-    const finalPrice = parseFloat(form.finalPrice);
+  function calcMissing(
+    changed: "price" | "markup" | "finalPrice",
+    overrides?: Partial<
+      Pick<ProductFormData, "price" | "markup" | "finalPrice">
+    >,
+  ) {
+    const price = parseFloat(overrides?.price ?? form.price);
+    const markup = parseFloat(overrides?.markup ?? form.markup);
+    const finalPrice = parseFloat(overrides?.finalPrice ?? form.finalPrice);
 
     const hasPrice = !isNaN(price) && price > 0;
     const hasMarkup = !isNaN(markup) && markup >= 0;
@@ -285,12 +368,12 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
         setForm((prev) => ({ ...prev, finalPrice: computed }));
       }
     } else if (changed === "finalPrice") {
-      if (hasFinal && hasPrice) {
-        const computed = (((finalPrice - price) / price) * 100).toFixed(2);
-        setForm((prev) => ({ ...prev, markup: computed }));
-      } else if (hasFinal && hasMarkup) {
+      if (hasFinal && hasMarkup) {
         const computed = (finalPrice / (1 + markup / 100)).toFixed(2);
         setForm((prev) => ({ ...prev, price: computed }));
+      } else if (hasFinal && hasPrice) {
+        const computed = (((finalPrice - price) / price) * 100).toFixed(2);
+        setForm((prev) => ({ ...prev, markup: computed }));
       }
     }
   }
@@ -340,7 +423,9 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
         if (field && !next[field]) next[field] = issue.message;
       }
       if (!next.price && !next.finalPrice) {
-        const priceIssue = result.error.issues.find((i) => i.path[0] === "price");
+        const priceIssue = result.error.issues.find(
+          (i) => i.path[0] === "price",
+        );
         if (priceIssue) next.price = priceIssue.message;
       }
 
@@ -364,7 +449,10 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
       if (imageFile) {
         const fd = new FormData();
         fd.append("file", imageFile);
-        const uploadRes = await fetch("/imagekit", { method: "POST", body: fd });
+        const uploadRes = await fetch("/imagekit", {
+          method: "POST",
+          body: fd,
+        });
         const uploadData = await uploadRes.json();
         if (!uploadData.success) {
           toast.error(uploadData.error || "Failed to upload image");
@@ -379,7 +467,9 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
         category: form.category,
         markup: parseFloat(form.markup),
         tax: parseFloat(form.tax),
-        disposableFee: form.disposableFee ? Math.round(parseFloat(form.disposableFee) * 100) : 0,
+        disposableFee: form.disposableFee
+          ? Math.round(parseFloat(form.disposableFee) * 100)
+          : 0,
         price: Math.round(parseFloat(form.finalPrice || form.price) * 100),
         stock: form.stock,
         subsidised: form.subsidised,
@@ -388,7 +478,9 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
         UOM: form.isMeasuredInWeight && form.UOM !== "" ? form.UOM : undefined,
         PriceDrop: form.PriceDrop,
         images: finalImages,
-        ...(form.primaryUPC.trim() ? { primaryUPC: form.primaryUPC.trim() } : {}),
+        ...(form.primaryUPC.trim()
+          ? { primaryUPC: form.primaryUPC.trim() }
+          : {}),
       };
 
       const res = await createCashierProduct(payload, customerId);
@@ -458,20 +550,39 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">New Product</h1>
-              <p className="mt-0.5 text-sm text-muted-foreground">Fill in the details to add a product to the catalogue</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Fill in the details to add a product to the catalogue
+              </p>
             </div>
           </div>
         </div>
 
         <div className="space-y-8">
-
           {/* flags */}
           <section>
-            <SectionLabel icon={<ShieldCheckIcon className="h-3 w-3" />} label="Flags" />
+            <SectionLabel
+              icon={<ShieldCheckIcon className="h-3 w-3" />}
+              label="Flags"
+            />
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <ToggleCard label="In Stock" description="Product is currently available" checked={form.stock} onCheckedChange={(v) => set("stock", v)} />
-              <ToggleCard label="Featured" description="Show on featured section" checked={form.isFeatured} onCheckedChange={(v) => set("isFeatured", v)} />
-              <ToggleCard label="Subsidised" description="Item is subsidised" checked={form.subsidised} onCheckedChange={(v) => set("subsidised", v)} />
+              <ToggleCard
+                label="In Stock"
+                description="Product is currently available"
+                checked={form.stock}
+                onCheckedChange={(v) => set("stock", v)}
+              />
+              <ToggleCard
+                label="Featured"
+                description="Show on featured section"
+                checked={form.isFeatured}
+                onCheckedChange={(v) => set("isFeatured", v)}
+              />
+              <ToggleCard
+                label="Subsidised"
+                description="Item is subsidised"
+                checked={form.subsidised}
+                onCheckedChange={(v) => set("subsidised", v)}
+              />
               <ToggleCard
                 label="Measured by Weight"
                 description="Sold per lb / kg — enables unit selection below"
@@ -486,7 +597,10 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
 
           {/* product image */}
           <section>
-            <SectionLabel icon={<ImageIcon className="h-3 w-3" />} label="Product Image" />
+            <SectionLabel
+              icon={<ImageIcon className="h-3 w-3" />}
+              label="Product Image"
+            />
             <div className="mt-4">
               <input
                 ref={fileInputRef}
@@ -504,11 +618,23 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
                     className="h-48 w-full object-contain p-2"
                   />
                   <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all hover:bg-black/30 hover:opacity-100">
-                    <Button type="button" size="sm" variant="secondary" className="gap-1.5 shadow" onClick={() => fileInputRef.current?.click()}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      className="gap-1.5 shadow"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
                       <Upload className="h-3.5 w-3.5" />
                       Change
                     </Button>
-                    <Button type="button" size="sm" variant="destructive" className="gap-1.5 shadow" onClick={handleRemoveImage}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      className="gap-1.5 shadow"
+                      onClick={handleRemoveImage}
+                    >
                       <X className="h-3.5 w-3.5" />
                       Remove
                     </Button>
@@ -524,8 +650,12 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
                     <ImageIcon className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">Click to upload image</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">PNG, JPG, WEBP · Max 4 MB</p>
+                    <p className="text-sm font-medium text-foreground">
+                      Click to upload image
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      PNG, JPG, WEBP · Max 4 MB
+                    </p>
                   </div>
                 </button>
               )}
@@ -536,26 +666,38 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
           <section>
             <SectionLabel label="Core Details" />
             <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
-
               <div className="sm:col-span-2">
                 <Field label="Product Name" required error={formErrors.name}>
                   <Input
                     value={form.name}
                     onChange={(e) => set("name", e.target.value)}
                     placeholder="e.g. Kehar Dry Soya Beans 300g"
-                    className={formErrors.name ? "border-destructive ring-destructive/20" : ""}
+                    className={
+                      formErrors.name
+                        ? "border-destructive ring-destructive/20"
+                        : ""
+                    }
                   />
                 </Field>
               </div>
 
-              <Field label="Base Price (CAD)" required error={formErrors.price} hint="auto-calculated if empty">
+              <Field
+                label="Base Price (CAD)"
+                required
+                error={formErrors.price}
+                hint="auto-calculated if empty"
+              >
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">$</span>
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                    $
+                  </span>
                   <Input
                     className={`pl-7 ${formErrors.price ? "border-destructive" : ""}`}
                     value={form.price}
-                    onChange={(e) => set("price", e.target.value)}
-                    onBlur={() => calcMissing("price")}
+                    onChange={(e) => {
+                      set("price", e.target.value);
+                      calcMissing("price", { price: e.target.value });
+                    }}
                     type="number"
                     min="0.01"
                     step="0.01"
@@ -564,31 +706,49 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
                 </div>
               </Field>
 
-              <Field label="Markup %" required error={formErrors.markup} hint="auto-calculated if empty">
+              <Field
+                label="Markup %"
+                required
+                error={formErrors.markup}
+                hint="auto-calculated if empty"
+              >
                 <div className="relative">
                   <Input
                     className={`pr-7 ${formErrors.markup ? "border-destructive" : ""}`}
                     value={form.markup}
-                    onChange={(e) => set("markup", e.target.value)}
-                    onBlur={() => calcMissing("markup")}
+                    onChange={(e) => {
+                      set("markup", e.target.value);
+                      calcMissing("markup", { markup: e.target.value });
+                    }}
                     type="number"
                     min="0"
                     step="0.01"
                     placeholder="e.g. 55.68"
                   />
-                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">%</span>
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                    %
+                  </span>
                 </div>
               </Field>
 
               <div className="sm:col-span-2">
-                <Field label="Final Price (CAD)" hint="after markup · auto-calculated if empty">
+                <Field
+                  label="Final Price (CAD)"
+                  hint="after markup · auto-calculated if empty"
+                >
                   <div className="relative">
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">$</span>
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                      $
+                    </span>
                     <Input
                       className="pl-7 border-primary/40 bg-primary/2 focus-visible:ring-primary/30"
                       value={form.finalPrice}
-                      onChange={(e) => set("finalPrice", e.target.value)}
-                      onBlur={() => calcMissing("finalPrice")}
+                      onChange={(e) => {
+                        set("finalPrice", e.target.value);
+                        calcMissing("finalPrice", {
+                          finalPrice: e.target.value,
+                        });
+                      }}
                       type="number"
                       min="0.01"
                       step="0.01"
@@ -596,7 +756,8 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
                     />
                   </div>
                   <p className="text-[11px] text-muted-foreground/70 mt-1">
-                    Fill any two fields — the third is calculated automatically on blur.
+                    Fill any two fields — the third is calculated automatically
+                    on blur.
                   </p>
                 </Field>
               </div>
@@ -611,13 +772,20 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
               </Field>
 
               <Field label="Category" required error={formErrors.category}>
-                <Select value={form.category} onValueChange={(v) => set("category", v)}>
-                  <SelectTrigger className={formErrors.category ? "border-destructive" : ""}>
+                <Select
+                  value={form.category}
+                  onValueChange={(v) => set("category", v)}
+                >
+                  <SelectTrigger
+                    className={formErrors.category ? "border-destructive" : ""}
+                  >
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -625,10 +793,14 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
 
               <Field label="Tax Rate">
                 <Select value={form.tax} onValueChange={(v) => set("tax", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {TAX_OPTIONS.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -636,7 +808,9 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
 
               <Field label="Disposable Fee (CAD)" hint="e.g. milk carton fee">
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">$</span>
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+                    $
+                  </span>
                   <Input
                     className="pl-7"
                     value={form.disposableFee}
@@ -656,7 +830,11 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
               >
                 <div
                   className="relative"
-                  title={!form.isMeasuredInWeight ? 'Enable "Measured by Weight" to select a unit' : undefined}
+                  title={
+                    !form.isMeasuredInWeight
+                      ? 'Enable "Measured by Weight" to select a unit'
+                      : undefined
+                  }
                 >
                   <Select
                     value={form.UOM}
@@ -666,14 +844,24 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
                     <SelectTrigger
                       className={[
                         formErrors.UOM ? "border-destructive" : "",
-                        !form.isMeasuredInWeight ? "cursor-not-allowed opacity-50" : "",
+                        !form.isMeasuredInWeight
+                          ? "cursor-not-allowed opacity-50"
+                          : "",
                       ].join(" ")}
                     >
-                      <SelectValue placeholder={form.isMeasuredInWeight ? "Select unit" : "Enable weight first"} />
+                      <SelectValue
+                        placeholder={
+                          form.isMeasuredInWeight
+                            ? "Select unit"
+                            : "Enable weight first"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {UOM_OPTIONS.map((u) => (
-                        <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                        <SelectItem key={u.value} value={u.value}>
+                          {u.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -701,20 +889,29 @@ export default function CashierCreateProductForm({ customerId }: { customerId: s
               <Button
                 variant="outline"
                 disabled={submitting}
-                onClick={() => router.push(`/cashier/customer/${customerId}/cart`)}
+                onClick={() =>
+                  router.push(`/cashier/customer/${customerId}/cart`)
+                }
               >
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={submitting} className="gap-2">
+              <Button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="gap-2"
+              >
                 {submitting ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Creating…</>
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Creating…
+                  </>
                 ) : (
-                  <><PlusCircleIcon className="h-4 w-4" /> Create Product</>
+                  <>
+                    <PlusCircleIcon className="h-4 w-4" /> Create Product
+                  </>
                 )}
               </Button>
             </div>
           </div>
-
         </div>
       </div>
     </>

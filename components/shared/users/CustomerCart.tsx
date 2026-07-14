@@ -530,11 +530,11 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
               <div className="flex items-center gap-2">
                 <Package className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Items ({items.length})
+                  {items.length} {items.length === 1 ? "item" : "items"}
                 </span>
               </div>
               <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tabular-nums text-primary">
-                CA${fmt(itemTotals.total)}
+                CA${fmt(itemTotals.total-itemTotals.totalTax)}
               </span>
             </div>
 
@@ -648,7 +648,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
                       </span>
                     </div>
                     <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tabular-nums text-primary">
-                      CA${fmt(itemTotals.total)}
+                      CA${fmt(itemTotals.total-itemTotals.totalTax)}
                     </span>
                   </div>
                 </CardHeader>
