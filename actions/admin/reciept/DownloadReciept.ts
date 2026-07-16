@@ -24,6 +24,20 @@ interface ReceiptRowData {
   color?: ReturnType<typeof rgb>;
 }
 
+type AggregatedReceiptPayoutData = AggregatedReciept & {
+  totalRevenue?: number;
+  profitMargin?: number;
+  totalNumberofOrders?: number;
+  orderIds?: string[];
+  additionalNote?: string;
+  additionalCost?: number;
+  additionalPrice?: number;
+  paymentReciept?: {
+    url: string;
+    fileId: string;
+  };
+};
+
 // --- Helper for wrapping long text (like order IDs) ---
 function drawWrappedText(
   page: any,
@@ -82,6 +96,17 @@ async function generateReceiptPDF(
   const { width, height } = page.getSize();
   const margin = 48;
   const contentWidth = width - margin * 2;
+
+  const payoutData = data as AggregatedReceiptPayoutData;
+  const totalRevenue = payoutData.totalRevenue || 0;
+  const profitMargin = payoutData.profitMargin || 0;
+  const totalOrders =
+    payoutData.totalNumberofOrders ||
+    data.orderCount ||
+    payoutData.orderIds?.length ||
+    0;
+  const additionalCost =
+    payoutData.additionalCost || payoutData.additionalPrice || 0;
 
   // --- Header / Footer Helpers ---
   const drawHeader = (targetPage: any, title: string) => {
@@ -273,12 +298,8 @@ async function generateReceiptPDF(
 
   y -= 44;
 
-  drawLabel(
-    "TOTAL REVENUE",
-    formatMoney((data.totalCustomerPaid || 0) + (data.totalSubsidy || 0)),
-    y,
-  );
-  drawLabelRight("TOTAL ORDERS", String(data.orderCount), y);
+  drawLabel("TOTAL REVENUE", formatMoney(totalRevenue), y);
+  drawLabelRight("TOTAL ORDERS", String(totalOrders), y);
 
   y -= 32;
   page.drawRectangle({
@@ -320,6 +341,15 @@ async function generateReceiptPDF(
       color: GREEN_PRIMARY,
     },
     {
+      label: "Total",
+      value: formatMoney(
+        (data.storePayout || 0) +
+          (data.totalWalletTopUpCashCollected || 0),
+      ),
+      bold: true,
+      color: GREEN_PRIMARY,
+    },
+    {
       label: "Total Cash Collected",
       value: `-${formatMoney(data.totalWalletTopUpCashCollected || 0)}`,
       color: MUTED,
@@ -335,11 +365,7 @@ async function generateReceiptPDF(
   const profitMarginItems: ReceiptRowData[] = [
     {
       label: "Total Profit Margin",
-      value: formatMoney(
-        (data.storeProfit || 0) +
-          (data.totalSubsidy || 0) +
-          (data.platformProfit || 0),
-      ),
+      value: formatMoney(profitMargin),
       bold: true,
     },
     {
@@ -439,40 +465,136 @@ async function generateReceiptPDF(
 
   drawFooter(page);
 
-  // --- Build Page 2 (Appendix: Orders) ---
-  if (data.orderIds && data.orderIds.length > 0) {
+  // --- Build Page 2 (Appendix: Notes & Orders) ---
+  const hasNotes =
+    !!payoutData.additionalNote ||
+    !!payoutData.paymentReciept?.url ||
+    additionalCost > 0;
+  const hasOrders = payoutData.orderIds && payoutData.orderIds.length > 0;
+
+  if (hasNotes || hasOrders) {
     const extraPage = pdfDoc.addPage([595, 842]);
     drawHeader(extraPage, "APPENDIX");
     let extraY = height - 130;
 
-    extraPage.drawRectangle({
-      x: margin,
-      y: extraY - 4,
-      width: contentWidth,
-      height: 20,
-      color: GREEN_LIGHT,
-    });
-    extraPage.drawText(`INCLUDED ORDERS (${data.orderIds.length})`, {
-      x: margin + 8,
-      y: extraY + 3,
-      font: boldFont,
-      size: 8,
-      color: GREEN_PRIMARY,
-    });
-    extraY -= 18;
+    if (hasNotes) {
+      extraPage.drawRectangle({
+        x: margin,
+        y: extraY - 4,
+        width: contentWidth,
+        height: 20,
+        color: GREEN_LIGHT,
+      });
+      extraPage.drawText("PAYMENT DETAILS & NOTES", {
+        x: margin + 8,
+        y: extraY + 3,
+        font: boldFont,
+        size: 8,
+        color: GREEN_PRIMARY,
+      });
+      extraY -= 22;
 
-    const orderString = data.orderIds.join(", ");
-    drawWrappedText(
-      extraPage,
-      orderString,
-      margin,
-      extraY,
-      contentWidth,
-      font,
-      8,
-      MUTED,
-      60,
-    );
+      if (additionalCost > 0) {
+        extraPage.drawText(
+          `Additional Cost: ${formatMoney(additionalCost)}`,
+          {
+            x: margin + 8,
+            y: extraY,
+            font: boldFont,
+            size: 10,
+            color: RED_ALERT,
+          },
+        );
+        extraY -= 18;
+        extraPage.drawText(
+          "Not added in the payout. Charged externally. Please refer to the admin note.",
+          {
+            x: margin + 8,
+            y: extraY,
+            font,
+            size: 9,
+            color: RED_ALERT,
+          },
+        );
+        extraY -= 24;
+      }
+
+      if (payoutData.additionalNote) {
+        extraPage.drawText("Notes:", {
+          x: margin + 8,
+          y: extraY,
+          font: boldFont,
+          size: 10,
+          color: GREEN_DARK,
+        });
+        extraY = drawWrappedText(
+          extraPage,
+          payoutData.additionalNote,
+          margin + 50,
+          extraY,
+          contentWidth - 60,
+          font,
+          10,
+          GREEN_DARK,
+          60,
+        );
+        extraY -= 12;
+      }
+
+      if (payoutData.paymentReciept?.url) {
+        extraPage.drawText("Receipt Document:", {
+          x: margin + 8,
+          y: extraY,
+          font: boldFont,
+          size: 10,
+          color: GREEN_DARK,
+        });
+        const receiptUrl = payoutData.paymentReciept.url;
+        const displayUrl =
+          receiptUrl.length > 70 ? receiptUrl.slice(0, 70) + "..." : receiptUrl;
+        extraPage.drawText(displayUrl, {
+          x: margin + 110,
+          y: extraY,
+          font,
+          size: 9,
+          color: rgb(0.1, 0.4, 0.8),
+        });
+        extraY -= 24;
+      }
+
+      extraY -= 12;
+    }
+
+    if (hasOrders) {
+      extraPage.drawRectangle({
+        x: margin,
+        y: extraY - 4,
+        width: contentWidth,
+        height: 20,
+        color: GREEN_LIGHT,
+      });
+      extraPage.drawText(`INCLUDED ORDERS (${totalOrders})`, {
+        x: margin + 8,
+        y: extraY + 3,
+        font: boldFont,
+        size: 8,
+        color: GREEN_PRIMARY,
+      });
+      extraY -= 18;
+
+      const orderString = payoutData.orderIds!.join(", ");
+      drawWrappedText(
+        extraPage,
+        orderString,
+        margin,
+        extraY,
+        contentWidth,
+        font,
+        8,
+        MUTED,
+        60,
+      );
+    }
 
     drawFooter(extraPage);
   }
@@ -515,6 +637,7 @@ export interface SavedPayoutData {
   orderCount?: number;
   orderIds: string[];
   totalCustomerPaid: number;
+  totalBasePrice?: number;
   totalGST: number;
   totalPST: number;
   baseTax: number;
@@ -538,6 +661,7 @@ export interface SavedPayoutData {
   totalWalletTopUpCashCollected: number;
   status: "pending" | "paid";
   additionalNote?: string;
+  additionalCost?: number;
   additionalPrice?: number;
   storeMarkupTax: number;
   paymentReciept?: {
@@ -555,6 +679,10 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   const { width, height } = page.getSize();
   const margin = 48;
   const contentWidth = width - margin * 2;
+
+  const totalOrders =
+    data.totalNumberofOrders || data.orderCount || data.orderIds?.length || 0;
+  const additionalCost = data.additionalCost || data.additionalPrice || 0;
 
   // --- Header / Footer Helpers ---
   const drawHeader = (targetPage: any, title: string) => {
@@ -746,11 +874,7 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
 
   y -= 44;
   drawLabel("TOTAL REVENUE", formatMoney(data.totalRevenue || 0), y);
-  drawLabelRight(
-    "TOTAL ORDERS",
-    String(data.totalNumberofOrders || data.orderCount || 0),
-    y,
-  );
+  drawLabelRight("TOTAL ORDERS", String(totalOrders), y);
 
   y -= 32;
   page.drawRectangle({
@@ -766,7 +890,7 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   const orderBreakdownItems: ReceiptRowData[] = [
     {
       label: "Total Base Price",
-      value: formatMoney((data as any).totalBasePrice || 0),
+      value: formatMoney(data.totalBasePrice || 0),
     },
     { label: "Total GST", value: formatMoney(data.totalGST || 0) },
     { label: "Total PST", value: formatMoney(data.totalPST || 0) },
@@ -779,7 +903,7 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   const storeBreakdownItems: ReceiptRowData[] = [
     {
       label: "Total Base Price",
-      value: formatMoney((data as any).totalBasePrice || 0),
+      value: formatMoney(data.totalBasePrice || 0),
     },
     {
       label: "Store GST",
@@ -793,6 +917,15 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
     {
       label: "Store Profit (50%)",
       value: formatMoney(data.storeProfit || 0),
+      color: GREEN_PRIMARY,
+    },
+    {
+      label: "Total",
+      value: formatMoney(
+        (data.storePayout || 0) +
+          (data.totalWalletTopUpCashCollected || 0),
+      ),
+      bold: true,
       color: GREEN_PRIMARY,
     },
     {
@@ -912,7 +1045,10 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
   drawFooter(page);
 
   // --- Build Page 2 (Appendix: Notes & Orders) ---
-  const hasNotes = !!data.additionalNote || !!data.paymentReciept?.url;
+  const hasNotes =
+    !!data.additionalNote ||
+    !!data.paymentReciept?.url ||
+    additionalCost > 0;
   const hasOrders = data.orderIds && data.orderIds.length > 0;
 
   if (hasNotes || hasOrders) {
@@ -937,6 +1073,31 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
         color: GREEN_PRIMARY,
       });
       extraY -= 22;
+
+      if (additionalCost > 0) {
+        extraPage.drawText(
+          `Additional Cost: ${formatMoney(additionalCost)}`,
+          {
+            x: margin + 8,
+            y: extraY,
+            font: boldFont,
+            size: 10,
+            color: RED_ALERT,
+          },
+        );
+        extraY -= 18;
+        extraPage.drawText(
+          "Not added in the payout. Charged externally. Please refer to the admin note.",
+          {
+            x: margin + 8,
+            y: extraY,
+            font,
+            size: 9,
+            color: RED_ALERT,
+          },
+        );
+        extraY -= 24;
+      }
 
       if (data.additionalNote) {
         extraPage.drawText("Notes:", {
@@ -999,7 +1160,7 @@ export async function downloadSavedPayoutPdfAction(data: SavedPayoutData) {
         color: GREEN_LIGHT,
       });
       extraPage.drawText(
-        `INCLUDED ORDERS (${data.totalNumberofOrders || data.orderIds.length})`,
+        `INCLUDED ORDERS (${totalOrders})`,
         {
           x: margin + 8,
           y: extraY + 3,
