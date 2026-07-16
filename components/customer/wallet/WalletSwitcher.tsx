@@ -21,7 +21,7 @@ const WalletSwitcher = () => {
               active === WalletViewEnum.WALLET ? "text-black" : "text-white"
             }`}
           >
-            Wallet Card
+            Wallet
           </button>
           <button
             onClick={() => setActive(WalletViewEnum.GIFT)}
@@ -29,7 +29,7 @@ const WalletSwitcher = () => {
               active === WalletViewEnum.GIFT ? "text-black" : "text-white"
             }`}
           >
-            Gift Card
+            Gift Wallet
           </button>
         </div>
       </div>

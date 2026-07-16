@@ -72,8 +72,6 @@ export default function OrdersHistoryClient({
   }, [debouncedQ, debouncedDate]);
 
   useEffect(() => {
-    // No search term, no date filter, first page → use the server-provided
-    // initial data, same optimization as before.
     if (currentPage === 1 && !debouncedQ && !hasDateFilter) {
       setOrders(initialOrders);
       setTotalPages(initialTotalPages);
@@ -122,7 +120,6 @@ export default function OrdersHistoryClient({
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, debouncedQ, debouncedDate, allOrders, customerId]);
 
   const filteredOrders = useMemo(() => {
@@ -173,7 +170,7 @@ export default function OrdersHistoryClient({
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
           {!immigrationRole && !customerId && !allOrders && (
-            <Link href="/customer/">
+            <Link href="/customer">
               <Button className="rounded-full" variant="outline" size="icon">
                 <ChevronLeft className="w-4 h-4" />
               </Button>

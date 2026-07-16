@@ -77,8 +77,8 @@ export async function createProduct(
     } = validationResult.data;
 
     const normalizedInvoiceId =
-    InvoiceId && InvoiceId.trim() !== "" ? InvoiceId.trim() : undefined;
-  
+      InvoiceId && InvoiceId.trim() !== "" ? InvoiceId.trim() : undefined;
+
     // Enable this later when InvoiceId should be required for store users
     // when adding a new product.
     //
@@ -95,17 +95,17 @@ export async function createProduct(
      * Admin: optional, but if provided must be valid
      */
     if (normalizedInvoiceId) {
-    const invoice = await ProductInvoice.findOne({
-      _id: normalizedInvoiceId,
-      storeId,
-    }).lean();
+      const invoice = await ProductInvoice.findOne({
+        _id: normalizedInvoiceId,
+        storeId,
+      }).lean();
 
-    if (!invoice) {
-      return {
-        success: false,
-        message: "Invoice does not exist for this store",
-      };
-    }
+      if (!invoice) {
+        return {
+          success: false,
+          message: "Invoice does not exist for this store",
+        };
+      }
     }
 
     /**
@@ -132,7 +132,7 @@ export async function createProduct(
     const newTaxRate = tax > 0 ? tax / 100 : 0;
 
     // const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
-    // const isSubsidized = subsidyCategories.includes(otherData.category);
+    // const issubsidised = subsidyCategories.includes(otherData.category);
 
     const dbPayload: any = {
       ...otherData,
@@ -151,7 +151,7 @@ export async function createProduct(
       dbPayload.InvoiceId = normalizedInvoiceId;
     }
 
-    let createdProductId :string | undefined;
+    let createdProductId: string | undefined;
     const mongoSession = await mongoose.startSession();
 
     try {
@@ -181,24 +181,24 @@ export async function createProduct(
          * If InvoiceId exists, add newly created product into invoice products.
          * This is inside transaction, so product create + invoice update succeed/fail together.
          */
-      if (normalizedInvoiceId) {
-      await ProductInvoice.updateOne(
-        {
-          _id: normalizedInvoiceId,
-          storeId,
-        },
-        {
-          $push: {
-            products: {
-              productId: newProduct._id,
-              newPrice: newPriceInCents,
-              status: "PENDING",
+        if (normalizedInvoiceId) {
+          await ProductInvoice.updateOne(
+            {
+              _id: normalizedInvoiceId,
+              storeId,
             },
-          },
-        },
-        { session: mongoSession },
-      );
-    }
+            {
+              $push: {
+                products: {
+                  productId: newProduct._id,
+                  newPrice: newPriceInCents,
+                  status: "PENDING",
+                },
+              },
+            },
+            { session: mongoSession },
+          );
+        }
       });
     } catch (error) {
       console.error("Transaction failed:", error);
@@ -226,8 +226,12 @@ export async function createProduct(
     }
 
     if (createdProductId && dbPayload.images?.[0]) {
-      await triggerImageGeneration(createdProductId, dbPayload.images[0],storeId);
-    }    
+      await triggerImageGeneration(
+        createdProductId,
+        dbPayload.images[0],
+        storeId,
+      );
+    }
     return {
       success: true,
       message: "Product created successfully",

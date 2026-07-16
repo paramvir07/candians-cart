@@ -39,21 +39,21 @@ export default async function SubsidizedProductsPage() {
 
   const storeId = storeResponse.customer.associatedStoreId.toString();
 
-  // 2. Fetch ONLY Page 1 of SUBSIDIZED products using our fast Cache Action
+  // 2. Fetch ONLY Page 1 of subsidised products using our fast Cache Action
   const initialProductsData = await getCachedStoreProducts(storeId, 1, 16, {
     categories: [],
     sortBy: "default",
-    subsidisedOnly: true, // This tells the cache to only return subsidized items!
+    subsidisedOnly: true, // This tells the cache to only return subsidised items!
   });
 
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <Navbar />
 
-      {/* Optional: A nice header so users know they are on the Subsidized page */}
+      {/* Optional: A nice header so users know they are on the subsidised page */}
       <div className="pt-24 pb-2 max-w-7xl mx-auto px-4 sm:px-6">
         <h1 className="text-3xl font-black text-green-700 tracking-tight">
-          Subsidized Products
+          subsidised Products
         </h1>
         <p className="text-slate-500 mt-2 font-medium">
           Exclusive items available for your wallet balance.

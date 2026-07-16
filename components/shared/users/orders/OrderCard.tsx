@@ -2,16 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import {
-  Sparkles,
-  Clock,
-  CheckCircle2,
-  Banknote,
-  CreditCard,
-  Wallet,
-  X,
-  Package,
-} from "lucide-react";
+import { Sparkles, X, Package } from "lucide-react";
 import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
 import OrderDetail from "./OrderDetail";
 import {
@@ -23,67 +14,7 @@ import {
 import { formatVancouverDate, formatVancouverTime } from "@/lib/timezone";
 
 const fmt = (cents: number) => `CA$${(cents / 100).toFixed(2)}`;
-
-function StatusBadge({ status }: { status?: string }) {
-  if (status === "completed") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 tracking-wide uppercase">
-        <CheckCircle2 className="w-2.5 h-2.5" />
-        Completed
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200 tracking-wide uppercase">
-      <Clock className="w-2.5 h-2.5" />
-      Pending
-    </span>
-  );
-}
-
-function PaymentBadge({ mode }: { mode?: string }) {
-  const map: Record<
-    string,
-    { label: string; className: string; icon: React.ReactNode }
-  > = {
-    wallet: {
-      label: "Wallet",
-      className: "bg-violet-50 text-violet-700 border-violet-200",
-      icon: <Wallet className="w-2.5 h-2.5" />,
-    },
-    cash: {
-      label: "Cash",
-      className: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      icon: <Banknote className="w-2.5 h-2.5" />,
-    },
-    card: {
-      label: "Card",
-      className: "bg-blue-50 text-blue-700 border-blue-200",
-      icon: <CreditCard className="w-2.5 h-2.5" />,
-    },
-    pending: {
-      label: "Not paid",
-      className:
-        "bg-stone-100 text-stone-500 border-stone-200 whitespace-nowrap",
-      icon: <Clock className="w-2.5 h-2.5" />,
-    },
-  };
-
-  const m = map[mode ?? ""] ?? {
-    label: mode ?? "—",
-    className: "bg-stone-50 text-stone-500 border-stone-200",
-    icon: null,
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border tracking-wide uppercase ${m.className}`}
-    >
-      {m.icon}
-      {m.label}
-    </span>
-  );
-}
+const fmtBefore = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
 interface OrderCardProps {
   order: any;
@@ -109,6 +40,7 @@ export default function OrderCard({
   const subsidyGenerated = order.subsidy ?? 0;
   const hasSubsidyUsed = subsidyUsed > 0;
   const hasSubsidyGenerated = subsidyGenerated > 0;
+  const originalTotal = (order.cartTotal ?? 0) + subsidyUsed;
 
   // ✅ miscItems included in count
   const totalItems =
@@ -117,9 +49,6 @@ export default function OrderCard({
     (order.miscItems?.length ?? 0);
 
   const isCompleted = order.status === "completed";
-  const isPendingPayment = order.paymentMode === "pending";
-
-  const accentColor = isCompleted ? "#10b981" : "#f59e0b";
   const accentGradient = isCompleted
     ? "linear-gradient(to bottom, #10b981, #059669)"
     : "linear-gradient(to bottom, #f59e0b, #d97706)";
@@ -156,7 +85,7 @@ export default function OrderCard({
           >
             {/* Left accent bar */}
             <div
-              className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-2xl"
+              className="absolute left-0 top-0 bottom-0 w-0.75 rounded-l-2xl"
               style={{ background: accentGradient }}
             />
 
@@ -201,12 +130,24 @@ export default function OrderCard({
                   <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider">
                     #{orderId}
                   </p>
-                  <p
-                    className="font-bold text-[15px] tabular-nums"
-                    style={{ color: "#16a34a" }}
-                  >
-                    {fmt(order.cartTotal)}
-                  </p>
+                  <div className="shrink-0 text-right tabular-nums">
+                    {hasSubsidyUsed && (
+                      <div className="mb-1 flex items-center justify-end gap-1.5">
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">
+                          Total
+                        </span>
+                        <span className="text-[11px] font-medium leading-none text-stone-500 line-through decoration-1 decoration-current/70">
+                          {fmtBefore(originalTotal)}
+                        </span>
+                      </div>
+                    )}
+                    <p
+                      className="text-[16px] font-bold leading-none"
+                      style={{ color: "#16a34a" }}
+                    >
+                      {fmt(order.cartTotal)}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Row 2: date + item count */}
@@ -224,21 +165,17 @@ export default function OrderCard({
                   </p>
                 </div>
 
-                {/* Row 3: badges */}
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
-                      Order
+                {/* Row 3: savings */}
+                {hasSubsidyUsed && (
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">
+                      Savings
                     </span>
-                    <StatusBadge status={order.status} />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
-                      Pay
+                    <span className="text-[11px] font-bold tabular-nums text-amber-600">
+                      {fmt(subsidyUsed)}
                     </span>
-                    <PaymentBadge mode={order.paymentMode} />
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
@@ -279,7 +216,7 @@ export default function OrderCard({
               </div>
 
               {/* Data columns */}
-              <div className="flex-1 grid grid-cols-[1.4fr_1.3fr_0.5fr_1fr_1.1fr_1fr] items-center gap-x-2 min-w-0">
+              <div className="flex-1 grid grid-cols-[1.45fr_1.35fr_0.55fr_1fr_1.15fr] items-center gap-x-4 min-w-0">
                 {/* Order # */}
                 <div className="min-w-0">
                   <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">
@@ -316,28 +253,33 @@ export default function OrderCard({
                   </div>
                 </div>
 
-                {/* Payment */}
-                <div className="min-w-0 overflow-hidden">
-                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">
-                    Payment
-                  </p>
-                  <PaymentBadge mode={order.paymentMode} />
-                </div>
-
-                {/* Status */}
-                <div className="min-w-0 overflow-hidden">
-                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-1">
-                    Status
-                  </p>
-                  <StatusBadge status={order.status} />
+                {/* Savings */}
+                <div className="min-w-0">
+                  {hasSubsidyUsed && (
+                    <>
+                      <p className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-stone-400">
+                        Savings
+                      </p>
+                      <p className="text-[13px] font-bold tabular-nums text-amber-600">
+                        {fmt(subsidyUsed)}
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 {/* Total */}
-                <div className="min-w-0 text-right">
-                  <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">
-                    Total
-                  </p>
-                  <p className="tabular-nums font-bold text-[15px] text-green-700 truncate">
+                <div className="min-w-[108px] text-right tabular-nums">
+                  <div className="mb-1 flex items-center justify-end gap-1.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">
+                      Total
+                    </span>
+                    {hasSubsidyUsed && (
+                      <span className="text-[11px] font-medium leading-none text-stone-500 line-through decoration-1 decoration-current/70">
+                        {fmtBefore(originalTotal)}
+                      </span>
+                    )}
+                  </div>
+                  <p className="truncate text-[16px] font-bold leading-none text-green-700">
                     {fmt(order.cartTotal)}
                   </p>
                 </div>

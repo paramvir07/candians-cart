@@ -25,7 +25,7 @@ const TopupWallet = ({
           style={{
             backgroundColor: "#2d6a35",
             boxShadow:
-              "0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
+              "0 24px 60px rgba(0,0,0,0.6), 0 0 0 0 rgba(255,255,255,0.06)",
           }}
         >
           {/* Blob — top right */}
@@ -100,7 +100,7 @@ const TopupWallet = ({
         {!customerId && (
           <Link href="/customer/wallet/history">
             <Button variant="default" className="rounded-full">
-              Wallet History
+              History
             </Button>
           </Link>
         )}

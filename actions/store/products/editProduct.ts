@@ -97,7 +97,7 @@ export async function updateProduct(
     const priceHasChanged = existingProduct.price !== newPriceInCents;
 
     // const subsidyCategories = ["Fruits", "Vegetables", "Dairy"];
-    // const isSubsidized = subsidyCategories.includes(otherData.category);
+    // const issubsidised = subsidyCategories.includes(otherData.category);
 
     const normalizedPrimaryUPC =
       typeof primaryUPC === "string" && primaryUPC.trim() !== ""

@@ -12,7 +12,7 @@ https://www.canadianscart.ca/
 
 ## Overview
 
-Candian's Cart helps make grocery shopping more affordable by offering subsidies on selected daily-use grocery products. Users can earn subsidies by purchasing regular items and apply those subsidies toward eligible subsidized items such as milk, fruits, vegetables, and other selected grocery essentials.
+Candian's Cart helps make grocery shopping more affordable by offering subsidies on selected daily-use grocery products. Users can earn subsidies by purchasing regular items and apply those subsidies toward eligible subsidised items such as milk, fruits, vegetables, and other selected grocery essentials.
 
 The app supports both online cart preparation and in-store checkout. Customers can build their cart in the app, use available subsidies, and pay at the selected store. They may also shop directly in store, where an authorized cashier can scan their ID and apply eligible Gift Wallet subsidies at checkout.
 
@@ -22,7 +22,7 @@ The app supports both online cart preparation and in-store checkout. Customers c
 - City and store selection during signup
 - Selected store-based shopping experience
 - Grocery cart management
-- Regular and subsidized item support
+- Regular and subsidised item support
 - Subsidy calculation based on eligible order value
 - Gift Wallet for storing unused subsidies
 - Pay-at-store checkout flow
@@ -44,25 +44,25 @@ The app supports both online cart preparation and in-store checkout. Customers c
 
 1. A user creates an account.
 2. The user selects their city and preferred store.
-3. The user browses regular and subsidized grocery items.
+3. The user browses regular and subsidised grocery items.
 4. When the cart reaches at least C$21 of regular items before tax, eligible subsidies may appear.
-5. The user can apply subsidies to subsidized items in the same order.
+5. The user can apply subsidies to subsidised items in the same order.
 6. Unused subsidies can be saved in the user's Gift Wallet.
 7. The user can tap **Pay at Store** and complete payment at the selected store.
 8. Alternatively, the user can shop directly in store and have a cashier scan their ID at checkout.
 
 ## Subsidies and Gift Wallet
 
-Subsidies are promotional savings that help users reduce the cost of eligible subsidized grocery items.
+Subsidies are promotional savings that help users reduce the cost of eligible subsidised grocery items.
 
 Users may receive subsidies when their order contains at least C$21 of regular items before tax. The more regular items a user buys, the more subsidies may become available.
 
 Subsidies can be:
 
-- Used immediately on eligible subsidized items
+- Used immediately on eligible subsidised items
 - Saved in the Gift Wallet for future orders
 - Applied only at the user's selected store
-- Used only on items marked as subsidized
+- Used only on items marked as subsidised
 
 Subsidies are not cash and may be subject to eligibility rules, limits, or expiration where permitted by law.
 
@@ -70,11 +70,11 @@ Subsidies are not cash and may be subject to eligibility rules, limits, or expir
 
 ### How do I save money with Candian's Cart?
 
-You save money by using subsidies on subsidized items. When your order has at least C$21 of regular items before tax, the app shows subsidies you may be able to use. These subsidies can reduce the cost of eligible items in your cart.
+You save money by using subsidies on subsidised items. When your order has at least C$21 of regular items before tax, the app shows subsidies you may be able to use. These subsidies can reduce the cost of eligible items in your cart.
 
 ### How do I earn subsidies?
 
-You earn subsidies when your order has at least C$21 of regular items before tax. Regular items are products that are not already subsidized.
+You earn subsidies when your order has at least C$21 of regular items before tax. Regular items are products that are not already subsidised.
 
 ### Can I order from the app or shop in store?
 
@@ -82,7 +82,7 @@ Yes. You can add items to your cart in the app and tap **Pay at Store**, or you 
 
 ### What happens if I do not use my subsidies?
 
-Unused subsidies remain saved in your Gift Wallet and can be used later on eligible subsidized items.
+Unused subsidies remain saved in your Gift Wallet and can be used later on eligible subsidised items.
 
 ## Legal and Privacy
 

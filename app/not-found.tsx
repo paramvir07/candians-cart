@@ -9,14 +9,13 @@ import Logo from "@/components/shared/Logo";
 const NotFound = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 text-center gap-4">
-
       {/* Logo */}
       <div className="flex w-15 h-15 items-center gap-2.5 mb-2">
         {/* <div className="w-9 h-9 rounded-2xl flex items-center justify-center shadow-sm"> */}
-          <Logo variant="icon" />
+        <Logo variant="icon" />
         {/* </div> */}
         {/* <span className="text-base font-bold text-foreground tracking-tight"> */}
-          {/* Canadian&apos;s Cart */}
+        {/* Candian&apos;s Cart */}
         {/* </span> */}
       </div>
 
@@ -46,7 +45,6 @@ const NotFound = () => {
         <ChevronLeft className="h-4 w-4" />
         Back to home
       </Link>
-
     </div>
   );
 };

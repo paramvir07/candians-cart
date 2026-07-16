@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -30,16 +30,17 @@ const ContactUs = () => {
   const [state, action, pending] = useActionState(ContactSubmit, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const [topic, setTopic] = useState("");
-  const [open, setopen] = useState(false)
-
+  const [open, setopen] = useState(false);
 
   useEffect(() => {
     if (state.success) formRef.current?.reset();
   }, [state.success]);
 
   return (
-    <div className="min-h-screen w-full relative flex flex-col" style={{ backgroundColor: "#f5f0e8" }}>
-
+    <div
+      className="min-h-screen w-full relative flex flex-col"
+      style={{ backgroundColor: "#f5f0e8" }}
+    >
       {/* Diagonal cross grid */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -49,17 +50,17 @@ const ContactUs = () => {
             linear-gradient(-45deg, transparent 49%, #c8c2b8 49%, #c8c2b8 51%, transparent 51%)
           `,
           backgroundSize: "40px 40px",
-          WebkitMaskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 80%)",
-          maskImage: "radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 80%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 80%)",
+          maskImage:
+            "radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 80%)",
           opacity: 0.5,
         }}
       />
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-16 lg:py-20">
-
         <p className="text-center text-sm text-gray-400 mb-3">
-          Canadian&apos;s Cart{" "}
-          <span className="mx-1.5 text-gray-300">•</span>
+          Candian&apos;s Cart <span className="mx-1.5 text-gray-300">•</span>
           <span className="text-gray-500 font-medium">Contact us</span>
         </p>
 
@@ -82,36 +83,38 @@ const ContactUs = () => {
             </span>
           </a>
 
-        <button
-          onClick={() => setopen(true)}
-          className="flex items-center gap-2.5 px-5 py-3 rounded-full shadow-sm transition-all hover:opacity-90 active:scale-[0.97]"
-          style={{
-            background: "var(--primary)",
-            color: "var(--primary-foreground)",
-          }}
-        >
-          <span className="text-base">🎟️</span>
-          <span className="text-sm font-bold" style={{ letterSpacing: "-0.01em" }}>
-            Request a referral code
-          </span>
-        </button>
+          <button
+            onClick={() => setopen(true)}
+            className="flex items-center gap-2.5 px-5 py-3 rounded-full shadow-sm transition-all hover:opacity-90 active:scale-[0.97]"
+            style={{
+              background: "var(--primary)",
+              color: "var(--primary-foreground)",
+            }}
+          >
+            <span className="text-base">🎟️</span>
+            <span
+              className="text-sm font-bold"
+              style={{ letterSpacing: "-0.01em" }}
+            >
+              Request a referral code
+            </span>
+          </button>
 
           <ReferCodeModal open={open} onOpenChange={setopen} />
         </div>
 
-
-
         <div className="relative w-full max-w-[640px]">
-
           <img
             src="https://ik.imagekit.io/h7w5h0hou/contact-us-guy-left"
-            alt="" aria-hidden="true"
+            alt=""
+            aria-hidden="true"
             className="hidden xl:block absolute -left-[260px] bottom-0 h-[420px] w-auto object-contain select-none pointer-events-none"
             draggable={false}
           />
           <img
             src="https://ik.imagekit.io/h7w5h0hou/contact-us-girl-left"
-            alt="" aria-hidden="true"
+            alt=""
+            aria-hidden="true"
             className="hidden xl:block absolute -right-[260px] bottom-0 h-[420px] w-auto object-contain select-none pointer-events-none"
             draggable={false}
           />
@@ -119,9 +122,12 @@ const ContactUs = () => {
           {state.success ? (
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 px-8 py-16 text-center">
               <div className="text-5xl mb-4">🎉</div>
-              <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Message sent!</h2>
+              <h2 className="text-2xl font-extrabold text-gray-900 mb-2">
+                Message sent!
+              </h2>
               <p className="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">
-                Thanks for reaching out. Our team will get back to you within 3 business day.
+                Thanks for reaching out. Our team will get back to you within 3
+                business day.
               </p>
               <Button
                 className="mt-8 bg-green-700 hover:bg-green-800 text-white rounded-full px-10 font-semibold shadow-md shadow-green-900/10"
@@ -149,7 +155,9 @@ const ContactUs = () => {
                     className="rounded-xl border-gray-200 bg-[#fafaf8] h-12 text-sm focus-visible:ring-green-500 placeholder:text-gray-400"
                   />
                   {state.errors?.name && (
-                    <p className="text-xs text-red-500">{state.errors.name[0]}</p>
+                    <p className="text-xs text-red-500">
+                      {state.errors.name[0]}
+                    </p>
                   )}
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -164,7 +172,9 @@ const ContactUs = () => {
                     className="rounded-xl border-gray-200 bg-[#fafaf8] h-12 text-sm focus-visible:ring-green-500 placeholder:text-gray-400"
                   />
                   {state.errors?.email && (
-                    <p className="text-xs text-red-500">{state.errors.email[0]}</p>
+                    <p className="text-xs text-red-500">
+                      {state.errors.email[0]}
+                    </p>
                   )}
                 </div>
               </div>
@@ -182,7 +192,9 @@ const ContactUs = () => {
                     className="rounded-xl border-gray-200 bg-[#fafaf8] h-12 text-sm focus-visible:ring-green-500 placeholder:text-gray-400"
                   />
                   {state.errors?.phone && (
-                    <p className="text-xs text-red-500">{state.errors.phone[0]}</p>
+                    <p className="text-xs text-red-500">
+                      {state.errors.phone[0]}
+                    </p>
                   )}
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -190,19 +202,23 @@ const ContactUs = () => {
                     Interested in <span className="text-green-600">*</span>
                   </label>
                   {/* Hidden input so the Select value is picked up by FormData */}
-                    <input type="hidden" name="topic" value={topic} />
-                    <Select onValueChange={setTopic} value={topic}>
+                  <input type="hidden" name="topic" value={topic} />
+                  <Select onValueChange={setTopic} value={topic}>
                     <SelectTrigger className="w-full rounded-xl border-gray-200 bg-[#fafaf8] h-12 text-sm focus:ring-green-500">
                       <SelectValue placeholder="Select a topic" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
                       {TOPICS.map((t) => (
-                        <SelectItem key={t} value={t} className="text-sm">{t}</SelectItem>
+                        <SelectItem key={t} value={t} className="text-sm">
+                          {t}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   {state.errors?.topic && (
-                    <p className="text-xs text-red-500">{state.errors.topic[0]}</p>
+                    <p className="text-xs text-red-500">
+                      {state.errors.topic[0]}
+                    </p>
                   )}
                 </div>
               </div>
@@ -220,7 +236,9 @@ const ContactUs = () => {
                   className="rounded-xl border-gray-200 bg-[#fafaf8] resize-none text-sm focus-visible:ring-green-500 placeholder:text-gray-400"
                 />
                 {state.errors?.message && (
-                  <p className="text-xs text-red-500">{state.errors.message[0]}</p>
+                  <p className="text-xs text-red-500">
+                    {state.errors.message[0]}
+                  </p>
                 )}
               </div>
 

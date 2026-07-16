@@ -15,7 +15,7 @@ import { AddressCheckLoader } from "@/components/customer/shared/AddressCheckLoa
 
 export const metadata: Metadata = {
   description:
-    "Browse our fresh selection of groceries, exclusive subsidized items, and everyday essentials.",
+    "Browse our fresh selection of groceries, exclusive subsidised items, and everyday essentials.",
 };
 
 export default async function CustomerPage() {

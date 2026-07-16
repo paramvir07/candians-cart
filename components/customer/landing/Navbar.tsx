@@ -86,19 +86,19 @@ const Navbar = async () => {
 
           {/* Wallet pill */}
           <Link href="/customer/wallet" className="shrink-0">
-            <div className="flex h-9 items-center gap-1.5 sm:gap-2 bg-secondary border border-border rounded-xl px-2 min-[360px]:px-3 sm:px-5 py-0 hover:bg-secondary/80 active:scale-[0.97] transition-all">
-              <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                <Wallet className="w-3.5 h-3.5 text-primary-foreground" />
+            <div className="flex h-9 items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary px-2 py-0 transition-all hover:bg-secondary/80 active:scale-[0.97] min-[360px]:px-3 sm:gap-2 sm:px-5">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary">
+                <Wallet className="h-3.5 w-3.5 text-primary-foreground" />
               </div>
 
-              <div className="flex flex-col leading-none">
-                <span className="hidden min-[390px]:block text-[9px] text-primary font-semibold uppercase tracking-wide">
-                  Balance
-                </span>
-                <span className="text-[13px] sm:text-sm font-black text-foreground tracking-tight min-[390px]:mt-0.5 whitespace-nowrap">
-                  ${(customerData.walletBalance / 100).toFixed(2)}
-                </span>
-              </div>
+              <span className="whitespace-nowrap text-center text-[13px] font-black leading-none tracking-tight text-foreground sm:text-sm">
+                $
+                {(
+                  (customerData.walletBalance +
+                    customerData.giftWalletBalance) /
+                  100
+                ).toFixed(2)}
+              </span>
             </div>
           </Link>
 

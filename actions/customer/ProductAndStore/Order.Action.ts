@@ -31,7 +31,9 @@ export interface OrderDateRange {
   from?: Date;
   to?: Date;
 }
-const buildDateMatch = (dateRange?: OrderDateRange): Record<string, unknown> => {
+const buildDateMatch = (
+  dateRange?: OrderDateRange,
+): Record<string, unknown> => {
   if (!dateRange?.from || !dateRange?.to) return {};
 
   const { start } = getVancouverDayBoundsUTC(new Date(dateRange.from));
@@ -211,7 +213,7 @@ export const ReOrder = async (orderId: string) => {
       }
     }
 
-    // Add subsidized products to cart.subsidyItems
+    // Add subsidised products to cart.subsidyItems
     if (
       Array.isArray(userOrder.subsidyItems) &&
       userOrder.subsidyItems.length > 0
@@ -456,7 +458,6 @@ export const getOrderCount = async () => {
   return getOrderCountCached(session.user.id); // ← id into cache key
 };
 
-
 const findMatchingProductIds = async (
   term: string,
   storeId?: mongoose.Types.ObjectId,
@@ -530,7 +531,10 @@ const findMatchingCustomerIds = async (
 const findMatchingOrderIds = async (
   cleanSearchTerm: string,
   baseMatch: Record<string, unknown>,
-  options: { includeCustomerSearch: boolean; storeId?: mongoose.Types.ObjectId },
+  options: {
+    includeCustomerSearch: boolean;
+    storeId?: mongoose.Types.ObjectId;
+  },
 ): Promise<mongoose.Types.ObjectId[]> => {
   if (mongoose.isValidObjectId(cleanSearchTerm)) {
     const docs = await OrderModel.find({

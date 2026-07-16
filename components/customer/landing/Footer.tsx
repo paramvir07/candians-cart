@@ -136,7 +136,7 @@ export function Footer() {
           {/* Copyright bar */}
           <div className="border-t border-border/60 mt-10 pt-5 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()}{" "}Canadian&apos;s Cart. All rights reserved.
+              © {new Date().getFullYear()}{" "}Candian&apos;s Cart. All rights reserved.
             </p>
           </div>
         </div>
