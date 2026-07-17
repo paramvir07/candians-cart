@@ -260,7 +260,7 @@ export default function Navbar({
               </div>
             ) : (
               <>
-                <Link href="/customer">
+                <Link href="/customer/login">
                   <Button
                     variant="outline"
                     size="sm"
@@ -388,7 +388,7 @@ export default function Navbar({
                 </>
               ) : (
                 <>
-                  <Link href="/customer" onClick={closeMobile}>
+                  <Link href="/customer/login" onClick={closeMobile}>
                     <Button
                       variant="outline"
                       className="h-12 w-full rounded-xl border-stone-900/12 text-[14px] font-bold text-stone-700"

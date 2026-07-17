@@ -525,6 +525,10 @@ export const PlaceOrder = async ({
 
     const PlatformFee = 50;
 
+    const orderStatus: "pending" | "completed" = receivedCustomerId
+  ? "completed"
+  : "pending";
+
     const OrderData = {
       products,
       subsidyItems,
@@ -542,7 +546,7 @@ export const PlaceOrder = async ({
       storeProfit: ProfitFields.StoreProfit,
       platformProfit: ProfitFields.PlatformProfit + PlatformFee,
       paymentMode,
-      status: receivedCustomerId ? "completed" : "pending",
+      status: orderStatus,
       ...(receivedCustomerId && { cashierId }),
     };
 

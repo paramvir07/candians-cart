@@ -106,6 +106,12 @@ export async function POST(req: Request) {
           throw new Error(`No user found in DB with the auth ID: ${userId}`);
         }
 
+        const paymentStatus: "paid" | "unpaid" | "pending" =
+          session.payment_status === "paid"
+            ? "paid"
+            : session.payment_status === "unpaid"
+              ? "unpaid"
+              : "pending";
         // creating payment record
         await WalletPayment.create(
           [
@@ -118,7 +124,7 @@ export async function POST(req: Request) {
               topUpAmount: topUpAmount || 0,
               stripeFee: stripeFee || 0,
               currency: session.currency || "cad",
-              status: session.payment_status || "pending",
+              status: paymentStatus,
             },
           ],
           { session: dbSession },

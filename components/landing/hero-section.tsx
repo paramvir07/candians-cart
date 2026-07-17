@@ -297,7 +297,7 @@ export default function HeroSection({
                     Sign Up
                   </button>
                 </Link>
-                <Link href="/customer">
+                <Link href="/customer/login">
                   <button className="px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl font-bold text-green-800 text-sm sm:text-base bg-white border border-green-200 hover:bg-green-50 transition-colors active:scale-95">
                     Login
                   </button>

@@ -13,12 +13,39 @@ import { dbConnect } from "@/db/dbConnect";
 import { revalidateCustomerCache } from "@/actions/cache/user.cache";
 import { revalidatePath, revalidateTag } from "next/cache";
 import Store from "@/db/models/store/store.model";
+import { jwt } from "better-auth/plugins";
+import { oauthProvider } from "@better-auth/oauth-provider";
+import { APIError } from "better-auth/api";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const client = new MongoClient(MONGODB_URI as string);
 const db = client.db();
 
+type GiftCartRole = "customer" | "admin";
+
+function getGiftCartRole(user: unknown): GiftCartRole {
+  if (typeof user !== "object" || user === null || !("role" in user)) {
+    throw new APIError("FORBIDDEN", {
+      message: "This account does not have a valid role.",
+    });
+  }
+
+  const role = (user as { role?: unknown }).role;
+
+  if (role !== "customer" && role !== "admin") {
+    throw new APIError("FORBIDDEN", {
+      message:
+        "Only Canadian's Cart customers and administrators can access Gift Cart.",
+    });
+  }
+
+  return role;
+}
+
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL,
+
+  trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL!, process.env.GC_APP_URL!],
   database: mongodbAdapter(db, { client }),
   session: {
     expiresIn: 60 * 60 * 24 * 365,
@@ -113,6 +140,72 @@ export const auth = betterAuth({
       roles,
       defaultRole: "customer",
     }),
+
+    jwt(),
+
+    oauthProvider({
+      loginPage: "/customer/login",
+      consentPage: "/oauth/consent",
+
+      scopes: ["openid", "profile", "email", "offline_access"],
+
+      customIdTokenClaims: ({ user }) => {
+        const role = getGiftCartRole(user);
+
+        return {
+          gc_role: role,
+        };
+      },
+
+      customAccessTokenClaims: ({ user }) => {
+        const role = getGiftCartRole(user);
+
+        return {
+          gc_role: role,
+        };
+      },
+
+      customUserInfoClaims: ({ user, scopes }) => {
+        const role = getGiftCartRole(user);
+
+        const claims: {
+          gc_role: GiftCartRole;
+          phone_number?: string;
+        } = {
+          gc_role: role,
+        };
+
+        /*
+         * Phone is included only for customers.
+         * Admins do not need phone or phone verification in Gift Cart.
+         */
+        if (role === "customer" && scopes.includes("profile")) {
+          const phoneNumber = (
+            user as {
+              phoneNumber?: unknown;
+            }
+          ).phoneNumber;
+
+          if (
+            typeof phoneNumber === "string" &&
+            phoneNumber.trim().length > 0
+          ) {
+            claims.phone_number = phoneNumber.trim();
+          }
+        }
+
+        return claims;
+      },
+
+      advertisedMetadata: {
+        claims_supported: ["gc_role", "phone_number"],
+      },
+
+      silenceWarnings: {
+        oauthAuthServerConfig: true,
+      },
+    }),
+
     nextCookies(),
     phoneNumber({
       otpLength: 6,
