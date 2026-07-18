@@ -3,6 +3,10 @@
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 
+function removeTrailingSlash(url: string): string {
+  return url.replace(/\/+$/, "");
+}
+
 export async function createGCOAuthClient() {
   const requestHeaders = await headers();
 
@@ -24,44 +28,65 @@ export async function createGCOAuthClient() {
     };
   }
 
+  const gcAppUrl = process.env.GC_APP_URL;
+
+  if (!gcAppUrl) {
+    return {
+      success: false,
+      message: "GC_APP_URL is missing.",
+    };
+  }
+
+  const normalizedGCAppUrl =
+    removeTrailingSlash(gcAppUrl);
+
+  const callbackUrl =
+    `${normalizedGCAppUrl}/api/auth/oauth2/callback/canadians-cart`;
+
   try {
-    const client = await auth.api.adminCreateOAuthClient({
-      headers: requestHeaders,
+    const client =
+      await auth.api.adminCreateOAuthClient({
+        headers: requestHeaders,
 
-      body: {
-        client_name: "Gift Cart",
+        body: {
+          client_name: "Gift Cart",
 
-        redirect_uris: [
-          "http://localhost:3001/api/auth/oauth2/callback/canadians-cart",
-        ],
+          redirect_uris: [
+            callbackUrl,
+          ],
 
-        token_endpoint_auth_method: "client_secret_basic",
+          token_endpoint_auth_method:
+            "client_secret_basic",
 
-        grant_types: [
-          "authorization_code",
-          "refresh_token",
-        ],
+          grant_types: [
+            "authorization_code",
+            "refresh_token",
+          ],
 
-        response_types: ["code"],
+          response_types: ["code"],
 
-        scope: "openid profile email offline_access",
+          scope:
+            "openid profile email offline_access",
 
-        client_secret_expires_at: 0,
+          client_secret_expires_at: 0,
 
-        // CC and GC are both your applications.
-        skip_consent: true,
+          skip_consent: true,
 
-        enable_end_session: true,
-      },
-    });
+          enable_end_session: true,
+        },
+      });
 
     return {
       success: true,
       clientId: client.client_id,
       clientSecret: client.client_secret,
+      redirectUri: callbackUrl,
     };
   } catch (error) {
-    console.error("Failed to create GC OAuth client:", error);
+    console.error(
+      "Failed to create Gift Cart OAuth client:",
+      error,
+    );
 
     return {
       success: false,
