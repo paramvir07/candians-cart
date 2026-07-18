@@ -1,0 +1,47 @@
+import InvoiceForm from "@canadian-cart/ui/store/invoice/InvoiceForm";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import Store from "@canadian-cart/db/models/store/store.model";
+import { dbConnect } from "@canadian-cart/db/dbConnect";
+
+export default async function AddInvoicePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ storeId?: string }>;
+}) {
+  // 1. Check if storeId was passed in the URL (e.g., if an Admin is navigating here)
+  const { storeId: urlStoreId } = await searchParams;
+
+  // 2. Get the authenticated user's session
+  const session = await getUserSession();
+  const sessionUserId = session?.user?.id;
+
+  let finalStoreId = urlStoreId;
+
+  // 3. If no storeId in URL, fetch it from the database using the Auth ID
+  if (!finalStoreId && sessionUserId) {
+    await dbConnect(); // Ensure DB is connected before querying
+
+    // .select("_id") ensures we ONLY fetch the ID, saving memory and time
+    // .lean() returns a plain JS object instead of a heavy Mongoose document
+    const store = await Store.findOne({ userId: sessionUserId })
+      .select("_id")
+      .lean();
+
+    if (store) {
+      // Safely convert the MongoDB ObjectId to a standard string
+      finalStoreId = store._id.toString();
+    }
+  }
+
+  // 4. Handle cases where the store couldn't be determined
+  if (!finalStoreId) {
+    return (
+      <div className="flex h-screen items-center justify-center text-red-500 font-semibold text-center px-4">
+        Error: Store ID could not be determined. Please make sure you have an active store associated with your account.
+      </div>
+    );
+  }
+
+  // 5. Render the form with the strictly typed string
+  return <InvoiceForm storeId={finalStoreId} />;
+}

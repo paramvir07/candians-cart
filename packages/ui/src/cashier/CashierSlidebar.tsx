@@ -1,0 +1,554 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  HomeIcon,
+  RefreshCw,
+  Package,
+  ShoppingBag,
+  Wallet,
+  Menu,
+  X,
+  UserCircle2,
+  List,
+  ChevronDown,
+  Gift,
+  HeartHandshake,
+  ShoppingCartIcon,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import LogoutButton from "../shared/LogoutButton";
+import { cn } from "@/packages/ui/src/utils";
+import { useState, useEffect } from "react";
+import Logo from "../shared/Logo";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { useAtom } from "jotai";
+import { OrderSubsidyValue } from "@/atoms/customer/CartAtom";
+// ─── Types ──────────────────────────────────────────────────────────────────────
+
+type CustomerData = {
+  customerData?: {
+    id?: string;
+    name?: string;
+    walletBalance?: number;
+    giftWalletBalance?: number;
+    CartCount?: number;
+  };
+};
+
+type CashierInfo = {
+  name?: string;
+  email?: string;
+};
+
+// ─── Active check ───────────────────────────────────────────────────────────────
+
+function useIsActive(href: string, exact = false) {
+  const pathname = usePathname();
+  if (exact) return pathname === href;
+  return pathname === href || pathname.startsWith(href + "/");
+}
+
+// ─── NavItem ────────────────────────────────────────────────────────────────────
+
+function NavItem({
+  href,
+  label,
+  icon: Icon,
+  badge,
+  exact,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  badge?: number;
+  exact?: boolean;
+  onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+}) {
+  const active = useIsActive(href, exact);
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={cn(
+        "group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 w-full relative",
+        active
+          ? "bg-emerald-50 text-emerald-700"
+          : "text-gray-500 hover:bg-gray-50 hover:text-gray-800",
+      )}
+    >
+      <Icon
+        className={cn(
+          "w-[18px] h-[18px] shrink-0",
+          active
+            ? "text-emerald-600"
+            : "text-gray-400 group-hover:text-gray-600",
+        )}
+      />
+      <span
+        className={cn(
+          "text-sm font-medium flex-1",
+          active ? "text-emerald-700" : "text-gray-600",
+        )}
+      >
+        {label}
+      </span>
+      {badge !== undefined && badge > 0 && (
+        <span className="ml-auto shrink-0 min-w-[20px] h-5 px-1 flex items-center justify-center rounded-full bg-emerald-500 text-white text-[10px] font-bold">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
+      {active && !badge && (
+        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+      )}
+    </Link>
+  );
+}
+
+// ─── Sidebar inner content ──────────────────────────────────────────────────────
+
+function getInitials(name?: string) {
+  if (!name) return "CS";
+  const parts = name.trim().split(/\s+/);
+  const initials =
+    parts.length > 1
+      ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+      : parts[0].slice(0, 2);
+  return initials.toUpperCase();
+}
+
+function SidebarContent({
+  customerData,
+  cashierData,
+  onNav,
+}: {
+  customerData?: CustomerData["customerData"];
+  cashierData?: CashierInfo;
+  onNav?: () => void;
+}) {
+  const customerId = customerData?.id;
+  const pathname = usePathname();
+  const router = useRouter();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [customerOpen, setCustomerOpen] = useState(false);
+  const [SubsidyVal] = useAtom(OrderSubsidyValue);
+
+  const isInsideCustomer =
+    Boolean(customerId) &&
+    pathname.startsWith(`/cashier/customer/${customerId}`);
+
+  const handleReload = () => {
+    window.location.reload();
+  };
+
+  const handleNav = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
+    const isCustomerRoute =
+      Boolean(customerId) && href.startsWith(`/cashier/customer/${customerId}`);
+
+    if (isInsideCustomer && !isCustomerRoute) {
+      event.preventDefault();
+      setPendingHref(href);
+      setConfirmOpen(true);
+      return;
+    }
+
+    onNav?.();
+  };
+
+  const handleLeaveCustomer = () => {
+    if (!pendingHref) return;
+
+    setConfirmOpen(false);
+    onNav?.();
+
+    if (pendingHref === "#") {
+      setPendingHref(null);
+      return;
+    }
+
+    router.push(pendingHref);
+    setPendingHref(null);
+  };
+
+  return (
+    <>
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave this customer?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are currently working with{" "}
+              {customerData?.name ?? "this customer"}. Are you sure you want to
+              leave this customer and open a different section?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingHref(null)}>
+              Stay with customer
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleLeaveCustomer}>
+              Leave customer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className="flex flex-col h-full">
+        {/* Nav groups */}
+        <nav className="flex-1 overflow-y-auto no-scrollbar space-y-4 pr-0.5">
+          {/* General */}
+          <div>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.08em] px-3 mb-1">
+              General
+            </p>
+            <div className="space-y-0.5">
+              <button
+                type="button"
+                onClick={handleReload}
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 w-full relative text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+              >
+                <RefreshCw className="w-[18px] h-[18px] shrink-0 text-gray-400 group-hover:text-gray-600" />
+                <span className="text-sm font-medium flex-1 text-left text-gray-600">
+                  Reload Page
+                </span>
+              </button>
+              <NavItem
+                href="/cashier"
+                label="Dashboard"
+                icon={HomeIcon}
+                exact
+                onClick={(event) => handleNav(event, "/cashier")}
+              />
+              <NavItem
+                href="/cashier/customer/orders"
+                label="All Orders"
+                icon={Package}
+                onClick={(event) =>
+                  handleNav(event, "/cashier/customer/orders")
+                }
+              />
+              <NavItem
+                href="/cashier/subsidy-list"
+                label="Subsidy List"
+                icon={List}
+                onClick={(event) => handleNav(event, "/cashier/subsidy-list")}
+              />
+            </div>
+          </div>
+
+          {/* Customer section — only when a customer is selected */}
+          {customerId && (
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.08em] px-3 mb-1">
+                Current Customer
+              </p>
+
+              {/* Customer identity chip — collapsible */}
+              <Collapsible open={customerOpen} onOpenChange={setCustomerOpen}>
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-left transition-colors hover:bg-primary/5 group"
+                  >
+                    <Avatar className="h-8 w-8 shrink-0 ring-2 ring-primary/20">
+                      <AvatarImage
+                        src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(customerData?.name ?? "User")}`}
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                        {(customerData?.name ?? "U").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {customerData?.name ?? "Customer"}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        #{customerId.slice(-6).toUpperCase()}
+                      </p>
+                    </div>
+                    <ChevronDown
+                      className={cn(
+                        "w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-300",
+                        customerOpen && "rotate-180",
+                      )}
+                    />
+                  </button>
+                </CollapsibleTrigger>
+
+                <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up overflow-hidden">
+                  <div className="mx-1 mb-2 mt-0.5 rounded-xl border border-border bg-muted/40 divide-y divide-border overflow-hidden">
+                    <div className="flex items-center gap-2.5 px-3 py-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+                        <HeartHandshake className="w-3.5 h-3.5 text-amber-600" />
+                      </div>
+                      <span className="text-xs text-muted-foreground flex-1">
+                        Subsidy
+                      </span>
+                      <span className="text-xs font-semibold text-foreground tabular-nums">
+                        CA${(SubsidyVal ?? 0).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 px-3 py-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <Wallet className="w-3.5 h-3.5 text-primary" />
+                      </div>
+                      <span className="text-xs text-muted-foreground flex-1">
+                        Wallet
+                      </span>
+                      <span className="text-xs font-semibold text-foreground tabular-nums">
+                        CA$
+                        {((customerData?.walletBalance ?? 0) / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 px-3 py-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-violet-500/10 flex items-center justify-center shrink-0">
+                        <Gift className="w-3.5 h-3.5 text-violet-500" />
+                      </div>
+                      <span className="text-xs text-muted-foreground flex-1">
+                        Gift Wallet
+                      </span>
+                      <span className="text-xs font-semibold text-foreground tabular-nums">
+                        CA$
+                        {((customerData?.giftWalletBalance ?? 0) / 100).toFixed(
+                          2,
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2.5 px-3 py-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                        <ShoppingCartIcon className="w-3.5 h-3.5 text-blue-500" />
+                      </div>
+                      <span className="text-xs text-muted-foreground flex-1">
+                        Cart
+                      </span>
+                      <span className="text-xs font-semibold text-foreground tabular-nums">
+                        {customerData?.CartCount ?? 0} items
+                      </span>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <div className="space-y-0.5">
+                <NavItem
+                  href={`/cashier/customer/${customerId}/cart`}
+                  label="Cart"
+                  icon={ShoppingCartIcon}
+                  onClick={(event) =>
+                    handleNav(event, `/cashier/customer/${customerId}/cart`)
+                  }
+                />
+                <NavItem
+                  href={`/cashier/customer/${customerId}/orders`}
+                  label="Orders"
+                  icon={Package}
+                  onClick={(event) =>
+                    handleNav(event, `/cashier/customer/${customerId}/orders`)
+                  }
+                />
+                <NavItem
+                  href={`/cashier/customer/${customerId}/products`}
+                  label="Products"
+                  icon={ShoppingBag}
+                  onClick={(event) =>
+                    handleNav(event, `/cashier/customer/${customerId}/products`)
+                  }
+                />
+                <NavItem
+                  href={`/cashier/customer/${customerId}/wallet`}
+                  label="Wallet"
+                  icon={Wallet}
+                  onClick={(event) =>
+                    handleNav(event, `/cashier/customer/${customerId}/wallet`)
+                  }
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Placeholder when no customer selected */}
+          {!customerId && (
+            <div className="mx-1 px-4 py-4 rounded-xl bg-gray-50 border border-dashed border-gray-200 text-center">
+              <UserCircle2 className="w-7 h-7 text-gray-300 mx-auto mb-1.5" />
+              <p className="text-xs text-gray-400 font-medium">
+                No customer selected
+              </p>
+              <p className="text-[10px] text-gray-300 mt-0.5">
+                Select a customer to see their actions
+              </p>
+            </div>
+          )}
+        </nav>
+
+        {/* Profile + Logout */}
+        <div className="shrink-0 border-t border-gray-100 pt-3 mt-3 space-y-1">
+          <Link
+            href="#"
+            onClick={(event) => handleNav(event, "#")}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors w-full"
+          >
+            <Avatar className="h-8 w-8 shrink-0">
+              <AvatarImage
+                src={`https://api.dicebear.com/9.x/notionists-neutral/svg?seed=${encodeURIComponent(cashierData?.name ?? "Cashier")}`}
+              />
+              <AvatarFallback className="text-xs bg-emerald-100 text-emerald-700 font-semibold">
+                {getInitials(cashierData?.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-800 leading-tight truncate">
+                {cashierData?.name ?? "Profile"}
+              </p>
+              <p className="text-xs text-gray-400 leading-tight">Cashier</p>
+            </div>
+          </Link>
+          <div className="px-1">
+            <LogoutButton />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Main component ─────────────────────────────────────────────────────────────
+
+const CashierSidebar = ({
+  customerData,
+  cashierData,
+}: CustomerData & { cashierData?: CashierInfo }) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const pathname = usePathname();
+
+  // Close on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  return (
+    <>
+      {/* ── Desktop Sidebar ────────────────────────────────────────────────── */}
+      <aside className="hidden md:flex fixed top-4 bottom-4 left-3 w-56 flex-col bg-white rounded-2xl border border-gray-100 shadow-sm z-40 overflow-hidden">
+        {/* Brand header */}
+        <div className="flex items-center gap-2.5 px-5 py-4 border-b border-gray-50 shrink-0">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0">
+            <Logo variant="icon" />
+          </div>
+          <span className="text-[15px] font-bold text-gray-900 tracking-tight">
+            Cashier
+          </span>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0">
+          <SidebarContent
+            customerData={customerData}
+            cashierData={cashierData}
+          />
+        </div>
+      </aside>
+
+      {/* ── Mobile top bar ─────────────────────────────────────────────────── */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center gap-3 px-4 h-14 bg-white border-b border-gray-100">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600 shrink-0"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
+            <Logo variant="icon" />
+          </div>
+          <span className="text-sm font-bold text-gray-900">Cashier</span>
+        </div>
+
+        {/* Show customer name on mobile if selected */}
+        {customerData?.id && (
+          <span className="ml-auto text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 truncate max-w-[140px]">
+            {customerData.name ?? "Customer"}
+          </span>
+        )}
+      </header>
+
+      {/* ── Mobile backdrop ─────────────────────────────────────────────────── */}
+      <div
+        className={cn(
+          "md:hidden fixed inset-0 z-60 bg-black/40 backdrop-blur-sm transition-opacity duration-300",
+          mobileOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none",
+        )}
+        onClick={() => setMobileOpen(false)}
+      />
+
+      {/* ── Mobile drawer ───────────────────────────────────────────────────── */}
+      <div
+        className={cn(
+          "md:hidden fixed top-0 left-0 bottom-0 z-70 w-72 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out",
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        {/* Drawer header */}
+        <div className="flex items-center justify-between px-5 h-14 border-b border-gray-100 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center">
+              {/* <ShoppingCartIcon className="w-4 h-4 text-white" /> */}
+              <Logo variant="icon" />
+            </div>
+            <span className="text-[15px] font-bold text-gray-900">Cashier</span>
+          </div>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+            aria-label="Close menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Drawer content */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0">
+          <SidebarContent
+            customerData={customerData}
+            cashierData={cashierData}
+            onNav={() => setMobileOpen(false)}
+          />
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default CashierSidebar;

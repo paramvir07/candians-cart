@@ -1,0 +1,15 @@
+{
+  "name": "@canadian-cart/lib",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "mongoose": "^9.1.6",
+    "next": "^16.2.4"
+  },
+  "peerDependencies": {
+    "react": "^19.2.5"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "customer-cashier-app",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@canadian-cart/types": "workspace:*",
+    "@canadian-cart/db": "workspace:*",
+    "@canadian-cart/lib": "workspace:*",
+    "next": "^16.2.4",
+    "react": "^19.2.5"
+  }
+}

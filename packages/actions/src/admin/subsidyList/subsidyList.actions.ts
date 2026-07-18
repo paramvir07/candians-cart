@@ -1,0 +1,169 @@
+"use server"
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { dbConnect } from "@canadian-cart/db/dbConnect";
+import SubsidisedList from "@canadian-cart/db/models/admin/subsidisedList.model";
+import { IFormActionResponse } from "@canadian-cart/types/form";
+import {
+  createSubsidyListItemSchema,
+  updateSubsidyListItemSchema,
+} from "@canadian-cart/types/schemas/admin/subsidyList";
+import { zodErrorResponse } from "@canadian-cart/types/validation/error";
+import { formDataToObject } from "@canadian-cart/types/validation/form";
+
+// ─── GET ────────────────────────────────────────────────────────────────────
+
+const isDuplicateSubsidyItemError = (error: unknown) => {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === 11000
+  );
+};
+
+export const getSubsidisedList = async () => {
+  try {
+    await dbConnect();
+    const subsidisedList = await SubsidisedList.find().lean();
+    return {
+      success: true,
+      message: "Fetched subsidy list successfully",
+      subsidisedList: JSON.parse(JSON.stringify(subsidisedList)),
+    };
+  } catch (error) {
+    console.error("Error fetching subsidy list:", error);
+    return {
+      success: false,
+      message: "Something went wrong while fetching subsidy list",
+      subsidisedList: [],
+    };
+  }
+};
+
+// ─── CREATE ─────────────────────────────────────────────────────────────────
+
+export const createSubsidyListItemAction = async (
+  prevState: IFormActionResponse,
+  formData: FormData,
+): Promise<IFormActionResponse> => {
+  try {
+    const session = await getUserSession();
+    if (session.user.role !== "admin")
+      return { success: false, message: "Unauthorized" };
+
+    const rawData = formDataToObject(formData);
+    const result = createSubsidyListItemSchema.safeParse(rawData);
+
+    if (!result.success)
+      return {
+        success: false,
+        message: zodErrorResponse(result) || "Validation error",
+      };
+
+    await dbConnect();
+
+    await SubsidisedList.create({
+      name: result.data.name,
+      category: result.data.category,
+    });
+
+    return { success: true, message: "Subsidy item created successfully" };
+  } catch (error) {
+    console.error("Error creating subsidy item:", error);
+
+    if (isDuplicateSubsidyItemError(error)) {
+      return {
+        success: false,
+        message: "This product has already been added to this category.",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Something went wrong while creating subsidy item",
+    };
+  }
+};
+
+// ─── UPDATE ─────────────────────────────────────────────────────────────────
+
+export const updateSubsidyListItemAction = async (
+  prevState: IFormActionResponse,
+  formData: FormData,
+): Promise<IFormActionResponse> => {
+  try {
+    const session = await getUserSession();
+    if (session.user.role !== "admin")
+      return { success: false, message: "Unauthorized" };
+
+    const rawData = formDataToObject(formData);
+    const result = updateSubsidyListItemSchema.safeParse(rawData);
+
+    if (!result.success)
+      return {
+        success: false,
+        message: zodErrorResponse(result) || "Validation error",
+      };
+
+    await dbConnect();
+
+    const updated = await SubsidisedList.findByIdAndUpdate(
+      result.data.id,
+      {
+        name: result.data.name,
+        category: result.data.category,
+      },
+      {
+        returnDocument: "after",
+        runValidators: true,
+      },
+    );
+
+    if (!updated) {
+      return { success: false, message: "Item not found" };
+    }
+
+    return { success: true, message: "Subsidy item updated successfully" };
+  } catch (error) {
+    console.error("Error updating subsidy item:", error);
+
+    if (isDuplicateSubsidyItemError(error)) {
+      return {
+        success: false,
+        message: "This product has already been added to this category.",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Something went wrong while updating subsidy item",
+    };
+  }
+};
+
+// ─── DELETE ─────────────────────────────────────────────────────────────────
+
+export const deleteSubsidyListItemAction = async (
+  prevState: IFormActionResponse,
+  formData: FormData,
+): Promise<IFormActionResponse> => {
+  try {
+    const session = await getUserSession();
+    if (session.user.role !== "admin")
+      return { success: false, message: "Unauthorized" };
+
+    const id = formData.get("id") as string;
+    if (!id) return { success: false, message: "Item ID is required" };
+
+    await dbConnect();
+    const deleted = await SubsidisedList.findByIdAndDelete(id);
+    if (!deleted) return { success: false, message: "Item not found" };
+    return { success: true, message: "Subsidy item deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting subsidy item:", error);
+    return {
+      success: false,
+      message: "Something went wrong while deleting subsidy item",
+    };
+  }
+};

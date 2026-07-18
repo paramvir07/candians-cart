@@ -1,0 +1,50 @@
+"use server"
+
+import { dbConnect } from "@canadian-cart/db/dbConnect";
+import ContactModel from "@canadian-cart/db/models/customer/Contact.model";
+import { contactSchema } from "@canadian-cart/types/schemas/customer/contact";
+import { SendContactAdmin } from "../resend/ResendActions";
+
+export type FormErrors = Partial<Record<"name" | "email" | "phone" | "topic" | "message", string[]>>;
+
+export type FormState = {
+  success: boolean;
+  errors: FormErrors;
+};
+
+export const ContactSubmit = async (
+  _prevState: FormState,
+  formData: FormData
+): Promise<FormState> => {
+  try {
+    await dbConnect();
+    const raw = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      topic: formData.get("topic"),
+      message: formData.get("message"),
+    };
+
+    const parsed = contactSchema.safeParse(raw);
+
+    if (!parsed.success) {
+      return {
+        success: false,
+        errors: parsed.error.flatten().fieldErrors as FormErrors,
+      };
+    }
+
+    await ContactModel.create(parsed.data);
+    await SendContactAdmin(parsed.data);
+
+
+    return { success: true, errors: {} };
+  } catch (err) {
+    console.error(err);
+    return {
+      success: false,
+      errors: { message: ["Something went wrong. Try again."] },
+    };
+  }
+};
