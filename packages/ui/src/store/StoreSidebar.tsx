@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
 import LogoutButton from "../shared/LogoutButton";
 import { usePathname } from "next/navigation";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { useState, useEffect } from "react";
 import { getPendingPriceChangesCount } from "@canadian-cart/actions/admin/invoice/getPriceChange";
 import Logo from "../shared/Logo";

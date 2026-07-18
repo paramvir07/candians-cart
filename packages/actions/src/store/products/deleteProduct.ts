@@ -3,7 +3,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import Product from "@canadian-cart/db/models/store/products.model";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import Store from "@canadian-cart/db/models/store/store.model";
 import ImageKit from "@imagekit/nodejs";
 

@@ -7,7 +7,7 @@ import {
 } from "@canadian-cart/actions/admin/Requests/request";
 import { IReport, ReportCategory } from "@canadian-cart/db/models/customer/Report.model";
 import { IContact, ContactTopic } from "@canadian-cart/db/models/customer/Contact.model";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import {
   Bug,
   HelpCircle,

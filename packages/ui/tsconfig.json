@@ -7,14 +7,14 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "jsx": "preserve",
-    "types": ["node", "react"],
+    "jsx": "react-jsx",
+    "types": ["node"],
     "paths": {
-      "@canadian-cart/ui/*": ["../ui/src/*"],
-      "@canadian-cart/db/*": ["../db/src/*"],
-      "@canadian-cart/types/*": ["../types/src/*"],
       "@canadian-cart/lib/*": ["../lib/src/*"],
-      "@canadian-cart/actions/*": ["./src/*"],
+      "@canadian-cart/types/*": ["../types/src/*"],
+      "@canadian-cart/ui/*": ["./src/*"],
+      "@canadian-cart/actions/*": ["../actions/src/*"],
+      "@canadian-cart/db/*": ["../db/src/*"]
     }
   },
   "include": ["src/**/*"]

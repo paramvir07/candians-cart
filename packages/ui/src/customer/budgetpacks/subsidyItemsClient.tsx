@@ -27,7 +27,7 @@ import {
 import { Badge } from "@canadian-cart/ui/ui/badge";
 import { Card, CardContent } from "@canadian-cart/ui/ui/card";
 import { Input } from "@canadian-cart/ui/ui/input";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 

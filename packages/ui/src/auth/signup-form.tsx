@@ -14,11 +14,11 @@ import {
   budgetAtom,
   referralCodeAtom,
   storeIdAtom,
-} from "@/atoms/customer/signUp";
+} from "@canadian-cart/lib/atoms/customer/signUp";
 import SelectStore from "../customer/signup/SelectStore";
 import StoreSelected from "../customer/signup/StoreSelected";
 import { StoreDocument } from "@canadian-cart/types/store/store";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "../shared/Logo";

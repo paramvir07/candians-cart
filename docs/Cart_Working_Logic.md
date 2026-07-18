@@ -145,7 +145,7 @@ A purely visual component that subscribes to the `cartTotalAtom`. It compares th
 "use client";
 
 import { useAtomValue } from "jotai";
-import { cartItemsAtom } from "@/atoms/customer/CartAtom";
+import { cartItemsAtom } from "@canadian-cart/lib/atoms/customer/CartAtom";
 import { Progress } from "@/components/ui/progress";
 
 export const ProgressBarCart = ({

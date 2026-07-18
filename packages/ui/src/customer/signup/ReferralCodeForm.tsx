@@ -9,7 +9,7 @@ import { Spinner } from "@canadian-cart/ui/ui/spinner";
 import { validateReferralCodeAction } from "@canadian-cart/actions/customer/validateReferralCode.actions";
 import { toast } from "sonner";
 import { useSetAtom } from "jotai";
-import { referralCodeAtom, stepAtom } from "@/atoms/customer/signUp";
+import { referralCodeAtom, stepAtom } from "@canadian-cart/lib/atoms/customer/signUp";
 
 const initialState = {
   success: false,

@@ -10,9 +10,23 @@
     "@canadian-cart/types": "workspace:*",
     "@canadian-cart/lib": "workspace:*",
     "mongoose": "^9.1.6",
-    "next": "^16.2.4"
+    "next": "^16.2.4",
+    "zod": "^4.4.3",
+    "mongodb": "^7.1.1",
+    "stripe": "^20.4.1",
+    "pdf-lib": "^1.17.1",
+    "@imagekit/nodejs": "^7.3.0",
+    "date-fns-tz": "^3.2.0",
+    "sonner": "^2.0.7",
+    "@react-email/components": "^1.0.11",
+    "resend": "^6.10.0"
   },
   "peerDependencies": {
     "react": "^19.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "typescript": "^5"
   }
 }

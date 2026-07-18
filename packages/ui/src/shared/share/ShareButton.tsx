@@ -11,7 +11,7 @@ import {
 } from "@canadian-cart/ui/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
 import { getReferralShareMessage, getReferralUrl } from "@canadian-cart/lib/shareMessage";
-import logoIcon from "@/app/icon.jpg";
+import logoIcon from "@canadian-cart/ui/assets/logo.jpg";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

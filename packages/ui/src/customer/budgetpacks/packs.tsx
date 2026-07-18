@@ -36,7 +36,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@canadian-cart/ui/ui/tooltip";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

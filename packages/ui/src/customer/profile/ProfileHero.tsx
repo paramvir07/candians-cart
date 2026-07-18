@@ -16,7 +16,7 @@ import {
 import { getMemberSince } from "@canadian-cart/lib/memberSince";
 import ShareButton from "@canadian-cart/ui/shared/share/ShareButton";
 import { IReferralCode } from "@canadian-cart/db/models/admin/referralCode.model";
-import logoIcon from "@/app/icon.jpg";
+import logoIcon from "@canadian-cart/ui/assets/logo.jpg";
 import { QRCodeSVG } from "qrcode.react";
 import EmailVerificationBadge from "./EmailVerificationBadge";
 

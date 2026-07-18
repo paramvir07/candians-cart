@@ -1,6 +1,6 @@
 // components/customer/orderHistory/OrdersHistorySkeleton.tsx
 
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 
 function Bone({ className }: { className?: string }) {
   return <div className={cn("rounded-lg bg-muted animate-pulse", className)} />;

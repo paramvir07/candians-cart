@@ -445,3 +445,4 @@ export const ProductCard = ({ product, role, onDelete }: ProductCardProps) => {
     </>
   );
 };
+

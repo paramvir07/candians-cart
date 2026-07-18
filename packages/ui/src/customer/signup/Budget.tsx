@@ -2,7 +2,7 @@ import { ChevronRight, DollarSign } from "lucide-react";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { useAtom, useSetAtom } from "jotai";
-import { budgetAtom, stepAtom } from "@/atoms/customer/signUp";
+import { budgetAtom, stepAtom } from "@canadian-cart/lib/atoms/customer/signUp";
 
 const QUICK_AMOUNTS = [300, 500, 750, 1000];
 

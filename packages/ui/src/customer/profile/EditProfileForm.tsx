@@ -37,7 +37,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CUSTOMER_PROVINCE } from "@canadian-cart/lib/customer/location";
 import { authClient } from "@canadian-cart/lib/auth/auth-client";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { sendPhoneOTPAction } from "@canadian-cart/actions/auth/verifiyPhone.actions";
 import {
   AddressAutocomplete,

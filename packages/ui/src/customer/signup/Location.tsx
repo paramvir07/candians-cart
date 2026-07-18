@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { Check, ChevronDown, ChevronRight, MapPin } from "lucide-react";
 import { useSetAtom } from "jotai";
-import { stepAtom } from "@/atoms/customer/signUp";
+import { stepAtom } from "@canadian-cart/lib/atoms/customer/signUp";
 import { Button } from "../../ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@canadian-cart/ui/ui/popover";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 
 const CITIES = [
   { value: "abbotsford", label: "Abbotsford", province: "BC", available: true },

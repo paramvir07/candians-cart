@@ -1,36 +1,35 @@
 import os
-import re
 from pathlib import Path
 
-def fix_imports():
-    root = Path(r"D:\candian-cart")
-    # Only target actions, apps, and lib to avoid node_modules
-    targets = [root / "packages" / "actions", root / "apps", root / "packages" / "lib"]
+root = Path(r"D:\candian-cart")
 
-    # Regex to remove extensions from within the import string
-    # Matches: '@canadian-cart/actions/auth/getUserSession.actions' -> '@canadian-cart/actions/auth/getUserSession'
-    pattern = re.compile(r'(@canadian-cart/[^/]+/[^"\']+)\.(actions|ts|tsx)')
+replacements_by_target = [
+    (root / "packages" / "ui" / "src", {
+        "@/packages/ui/src/utils": "@canadian-cart/ui/utils",
+    }),
+    (root / "packages" / "actions" / "src", {
+        '@canadian-cart/actions/auth/getUserSession"': '@canadian-cart/actions/auth/getUserSession.actions"',
+    }),
+]
 
-    count = 0
-    for target in targets:
-        if not target.exists(): continue
-        for root_dir, _, files in os.walk(target):
-            for file in files:
-                if file.endswith(('.ts', '.tsx')):
-                    filepath = Path(root_dir) / file
-                    with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-                        content = f.read()
+total = 0
+for target, replacements in replacements_by_target:
+    if not target.exists():
+        print(f"Skipping missing folder: {target}")
+        continue
+    for filepath in target.rglob("*"):
+        if filepath.is_file() and filepath.suffix in (".ts", ".tsx"):
+            try:
+                content = filepath.read_text(encoding="utf-8")
+            except Exception as e:
+                print(f"Skipped {filepath}: {e}")
+                continue
+            new_content = content
+            for old, new in replacements.items():
+                new_content = new_content.replace(old, new)
+            if new_content != content:
+                filepath.write_text(new_content, encoding="utf-8")
+                total += 1
+                print(f"Fixed: {filepath.relative_to(root)}")
 
-                    # Replace extensions
-                    new_content = pattern.sub(r'\1', content)
-
-                    if content != new_content:
-                        with open(filepath, 'w', encoding='utf-8') as f:
-                            f.write(new_content)
-                        count += 1
-                        print(f"Cleaned imports in: {filepath.relative_to(root)}")
-
-    print(f"\nFixed {count} files. Extensions removed.")
-
-if __name__ == "__main__":
-    fix_imports()
+print(f"\nDone. Modified {total} files.")

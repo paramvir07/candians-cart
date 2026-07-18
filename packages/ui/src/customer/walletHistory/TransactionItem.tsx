@@ -6,7 +6,7 @@ import {
   Trophy,
   Gift,
 } from "lucide-react";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { Badge } from "@canadian-cart/ui/ui/badge";
 import { UnifiedTransaction } from "@canadian-cart/types/customer/WalletHistory";
 import { formatTime, formatCurrency, formatDate } from "@canadian-cart/lib/walletHistory";

@@ -4,7 +4,7 @@ import { dbConnect } from "@canadian-cart/db/dbConnect";
 import { revalidatePath } from "next/cache";
 import ProductInvoice from "@canadian-cart/db/models/store/invoice.model";
 import Product from "@canadian-cart/db/models/store/products.model";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import Store from "@canadian-cart/db/models/store/store.model";
 
 export type PriceChangeStatus = "PENDING" | "APPROVED" | "REJECTED";

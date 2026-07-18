@@ -27,7 +27,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { SerializedStorePayout } from "@canadian-cart/actions/store/payouts/getStorePayouts";
-import ccLogo from "@/app/icon.jpg";
+import ccLogo from "@canadian-cart/ui/assets/logo.jpg";
 
 const formatCurrency = (cents: number | undefined) =>
   `$${((cents || 0) / 100).toFixed(2)}`;

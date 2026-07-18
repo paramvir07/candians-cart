@@ -3,7 +3,7 @@
 import { ArrowLeft, Check } from "lucide-react";
 import { Button } from "../../ui/button";
 import Link from "next/link";
-import { stepAtom } from "@/atoms/customer/signUp";
+import { stepAtom } from "@canadian-cart/lib/atoms/customer/signUp";
 import { useAtom } from "jotai";
 import { StoreDocument } from "@canadian-cart/types/store/store";
 import Location from "./Location";

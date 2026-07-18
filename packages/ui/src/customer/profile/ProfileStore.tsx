@@ -16,7 +16,7 @@ import {
   ChevronRight,
   ChevronDown,
 } from "lucide-react";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import StoreProfileClient from "./StoreProfileClient";
 
 type Props = { store: StoreDocument };

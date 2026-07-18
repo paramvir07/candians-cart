@@ -70,3 +70,4 @@ export function ProfitTrendChart({ data }: { data: ProfitTrendPoint[] }) {
     </Card>
   );
 }
+

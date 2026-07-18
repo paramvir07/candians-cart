@@ -291,3 +291,4 @@ export const ProductDetailDialog = ({
     </Dialog>
   );
 };
+

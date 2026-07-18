@@ -46,3 +46,4 @@ export function BurstCacheButton({ storeId }: BurstCacheButtonProps) {
     </Button>
   );
 }
+

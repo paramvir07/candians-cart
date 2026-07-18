@@ -20,7 +20,7 @@ import {
   PaginationPrevious,
 } from "@canadian-cart/ui/ui/pagination";
 import { Tabs, TabsList, TabsTrigger } from "@canadian-cart/ui/ui/tabs";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { ReferralCode } from "@canadian-cart/types/admin/referralCode";
 import { ReferralCodeDialogForm } from "./ReferralCodeDialogForm";
 import {
@@ -329,3 +329,4 @@ export function ReferralCodes({
     </div>
   );
 }
+

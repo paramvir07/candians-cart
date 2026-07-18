@@ -10,7 +10,7 @@ import {
   CarouselPrevious,
 } from "@canadian-cart/ui/ui/carousel";
 import { type CarouselApi } from "@canadian-cart/ui/ui/carousel";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 
 const DEFAULT_AD_IMAGES: string[] = [
   "https://ik.imagekit.io/h7w5h0hou/ads/ashirwad%20food%20banner.png?updatedAt=1778039959719",

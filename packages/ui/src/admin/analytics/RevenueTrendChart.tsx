@@ -89,3 +89,4 @@ export function RevenueTrendChart({ data }: { data: RevenueTrendPoint[] }) {
     </Card>
   );
 }
+

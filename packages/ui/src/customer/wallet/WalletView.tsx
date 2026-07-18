@@ -3,7 +3,7 @@
 import { useAtomValue } from "jotai";
 import GiftWallet from "./GiftWallet";
 import TopupWallet from "./TopupWallet";
-import { WalletSwitcherAtom, WalletViewEnum } from "@/atoms/customer/Wallet";
+import { WalletSwitcherAtom, WalletViewEnum } from "@canadian-cart/lib/atoms/customer/Wallet";
 import { Customer } from "@canadian-cart/types/customer/customer";
 import { getMemberSince } from "@canadian-cart/lib/memberSince";
 

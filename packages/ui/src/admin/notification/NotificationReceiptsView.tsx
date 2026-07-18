@@ -163,3 +163,4 @@ export function NotificationReceiptsView({ notification, receipts }: Props) {
     </div>
   );
 }
+

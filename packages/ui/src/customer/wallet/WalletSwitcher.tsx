@@ -1,5 +1,5 @@
 "use client";
-import { WalletSwitcherAtom, WalletViewEnum } from "@/atoms/customer/Wallet";
+import { WalletSwitcherAtom, WalletViewEnum } from "@canadian-cart/lib/atoms/customer/Wallet";
 import { useAtom } from "jotai";
 
 const WalletSwitcher = () => {

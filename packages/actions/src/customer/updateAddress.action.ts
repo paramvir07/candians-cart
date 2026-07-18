@@ -2,7 +2,7 @@
 
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import Customer from "@canadian-cart/db/models/customer/customer.model";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import { CUSTOMER_PROVINCE } from "@canadian-cart/lib/customer/location";
 import { z } from "zod";
 import { aptUnitSchema } from "@canadian-cart/types/schemas/customer/customerSignup";

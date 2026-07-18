@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import logoIcon from "@/app/icon.jpg";
+import logoIcon from "@canadian-cart/ui/assets/logo.jpg";
 import {
   Copy,
   Check,

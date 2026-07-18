@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { Input } from "@canadian-cart/ui/ui/input";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";

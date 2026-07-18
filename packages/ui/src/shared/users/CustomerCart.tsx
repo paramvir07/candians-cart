@@ -24,7 +24,7 @@ import CheckoutActions from "./CheckOutActions";
 import { SubsidyItemsSection } from "@canadian-cart/ui/customer/products/SubsidyItemsSection";
 import { IMiscCartItem, ISubsidyItems } from "@canadian-cart/db/models/customer/cart.model";
 import { getFibBracketFrom21 } from "@canadian-cart/lib/FibBracket";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { MiscItemsSection } from "@canadian-cart/ui/cashier/MiscItemSection";
 import { UPCScannerCart } from "@canadian-cart/ui/cashier/UPCScannerCart";
 import ClearCartDialog from "./ClearCartDialog";

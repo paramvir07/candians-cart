@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
 import { useAtom } from "jotai"
-import { OrderSubsidyValue, SubsidyValue, UsedSubsidy } from "@/atoms/customer/CartAtom"
+import { OrderSubsidyValue, SubsidyValue, UsedSubsidy } from "@canadian-cart/lib/atoms/customer/CartAtom"
 import { Tag, Gift, Wallet, MinusCircle, Check } from "lucide-react"
 import { ClearAllSubsidyItems, updateCartSubsidy } from "@canadian-cart/actions/customer/SubsidyItems.Action"
 import { getFibBracketFrom21 } from "@canadian-cart/lib/FibBracket"

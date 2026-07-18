@@ -13,7 +13,7 @@ import {
   Home,
   ChevronDown,
 } from "lucide-react";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { StoreInfoDialog } from "@canadian-cart/ui/customer/signup/StoreInfoDialog";
 
 interface HeroBannerProps {

@@ -19,7 +19,7 @@ import {
   storeAddressAtom,
   pendingStoreIdAtom,
   pendingStoreAddressAtom,
-} from "@/atoms/customer/signUp";
+} from "@canadian-cart/lib/atoms/customer/signUp";
 import { UserRole } from "@canadian-cart/types/auth";
 import { MapPin } from "lucide-react";
 

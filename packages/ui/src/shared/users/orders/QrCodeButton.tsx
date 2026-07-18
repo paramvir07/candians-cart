@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import appIcon from "@/app/icon.jpg";
+import appIcon from "@canadian-cart/ui/assets/logo.jpg";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@canadian-cart/ui/ui/button";
 import {

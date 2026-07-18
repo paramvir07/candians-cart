@@ -13,7 +13,7 @@ import { IProduct } from "@canadian-cart/types/store/products.types";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { AddSubsidyItem } from "@canadian-cart/actions/customer/SubsidyItems.Action";
 import { useAtom } from "jotai";
-import { UsedSubsidy } from "@/atoms/customer/CartAtom";
+import { UsedSubsidy } from "@canadian-cart/lib/atoms/customer/CartAtom";
 import { useRouter } from "next/navigation";
 
 const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`;

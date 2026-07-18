@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Clock } from "lucide-react";
 import { FormattedDay } from "@canadian-cart/lib/storeInfoUtils";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 
 type Props = {
   formattedDays: FormattedDay[];

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 import Logo from "../shared/Logo";
 import LogoutButton from "../shared/LogoutButton";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 
 // ─── Active check ───────────────────────────────────────────────────────────────
 

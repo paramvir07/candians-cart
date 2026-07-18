@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import LogoutButton from "../shared/LogoutButton";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { useState, useEffect } from "react";
 import Logo from "../shared/Logo";
 import {
@@ -38,7 +38,7 @@ import {
   CollapsibleTrigger,
 } from "@canadian-cart/ui/ui/collapsible";
 import { useAtom } from "jotai";
-import { OrderSubsidyValue } from "@/atoms/customer/CartAtom";
+import { OrderSubsidyValue } from "@canadian-cart/lib/atoms/customer/CartAtom";
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 type CustomerData = {
@@ -552,3 +552,4 @@ const CashierSidebar = ({
 };
 
 export default CashierSidebar;
+

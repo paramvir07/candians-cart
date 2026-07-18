@@ -1,6 +1,6 @@
 // components/customer/analytics/AnalyticsSkeleton.tsx
 
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { Card, CardContent } from "@canadian-cart/ui/ui/card";
 
 function Bone({ className }: { className?: string }) {

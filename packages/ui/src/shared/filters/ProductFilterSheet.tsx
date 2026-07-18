@@ -22,7 +22,7 @@ import { Slider } from "@canadian-cart/ui/ui/slider";
 import { Separator } from "@canadian-cart/ui/ui/separator";
 import { Input } from "@canadian-cart/ui/ui/input";
 import { SlidersHorizontal, Check, AlertCircle, RotateCcw } from "lucide-react";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { ProductCategory, TaxRate } from "@canadian-cart/types/store/products.types";
 import { ProductFilters } from "@canadian-cart/actions/admin/products/getProductsFiltered.action";
 import { getCategoryCounts } from "@canadian-cart/actions/admin/products/getProductCategoryNumber";

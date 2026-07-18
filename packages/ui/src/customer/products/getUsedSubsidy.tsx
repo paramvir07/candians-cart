@@ -1,6 +1,6 @@
 "use client"
 
-import { UsedSubsidy } from "@/atoms/customer/CartAtom";
+import { UsedSubsidy } from "@canadian-cart/lib/atoms/customer/CartAtom";
 import { useAtom } from "jotai";
 import { useEffect } from "react";
 

@@ -20,7 +20,7 @@ import {
   Download,
   Loader2,
 } from "lucide-react";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { UnifiedTransaction } from "@canadian-cart/types/customer/WalletHistory";
 import { formatCurrency, formatDate, formatTime } from "@canadian-cart/lib/walletHistory";
 import { downloadTransactionPDF } from "./DownloadPdf";

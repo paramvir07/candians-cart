@@ -5,7 +5,7 @@ import { getUser } from "../User.action";
 import OrderModel from "@canadian-cart/db/models/customer/Orders.Model";
 import "@canadian-cart/db/models/store/products.model";
 import CartModel from "@canadian-cart/db/models/customer/cart.model";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import { Cashier } from "@canadian-cart/db/models/cashier/cashier.model";
 import mongoose from "mongoose";
 import Customer from "@canadian-cart/db/models/customer/customer.model";

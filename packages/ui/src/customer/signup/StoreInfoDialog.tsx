@@ -17,7 +17,7 @@ import {
   getStoreOpenStatus,
   DAY_ORDER,
 } from "@canadian-cart/lib/storeInfoUtils";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import Image from "next/image";
 
 type StoreInfoDialogProps = {

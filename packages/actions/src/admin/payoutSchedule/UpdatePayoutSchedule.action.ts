@@ -2,7 +2,7 @@
 
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import Store, { PayoutFrequency } from "@canadian-cart/db/models/store/store.model";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import { revalidatePath } from "next/cache";
 import { computeNextPayoutDate } from "@canadian-cart/lib/PayoutSchedule";
 

@@ -10,7 +10,7 @@ import {
   storeAddressAtom,
   pendingStoreIdAtom,
   pendingStoreAddressAtom,
-} from "@/atoms/customer/signUp";
+} from "@canadian-cart/lib/atoms/customer/signUp";
 import { StoreDocument } from "@canadian-cart/types/store/store";
 import { StoreInfoDialog } from "./StoreInfoDialog";
 import { useMemo, useState } from "react";

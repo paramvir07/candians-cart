@@ -3,7 +3,7 @@
 import mongoose from "mongoose";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import ProductInvoice from "@canadian-cart/db/models/store/invoice.model";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import Store from "@canadian-cart/db/models/store/store.model";
 import Product from "@canadian-cart/db/models/store/products.model";
 

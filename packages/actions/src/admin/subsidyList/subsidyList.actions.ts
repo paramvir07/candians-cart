@@ -1,5 +1,5 @@
 "use server"
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import SubsidisedList from "@canadian-cart/db/models/admin/subsidisedList.model";
 import { IFormActionResponse } from "@canadian-cart/types/form";

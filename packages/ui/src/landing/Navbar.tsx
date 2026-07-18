@@ -5,7 +5,7 @@ import Logo from "../shared/Logo";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "@canadian-cart/ui/ui/button";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import { ChevronDown, MapPin, Menu, X, Home, LogOut } from "lucide-react";
 import { logoutAction } from "@canadian-cart/actions/auth/login-logout.actions";
 

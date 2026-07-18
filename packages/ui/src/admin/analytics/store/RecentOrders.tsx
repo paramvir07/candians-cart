@@ -128,3 +128,4 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
     </div>
   );
 }
+

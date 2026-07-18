@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "../../ui/button";
 import { CheckCircle, ExternalLink } from "lucide-react";
 import { useSetAtom } from "jotai";
-import { stepAtom } from "@/atoms/customer/signUp";
+import { stepAtom } from "@canadian-cart/lib/atoms/customer/signUp";
 import { useState } from "react";
 
 const POLICY_LINKS = [

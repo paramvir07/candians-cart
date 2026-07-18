@@ -7,7 +7,7 @@ import { Button } from "@canadian-cart/ui/ui/button";
 import { Input } from "@canadian-cart/ui/ui/input";
 import { Spinner } from "@canadian-cart/ui/ui/spinner";
 import Logo from "@canadian-cart/ui/shared/Logo";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import {
   sendForgotPasswordOTPAction,
   verifyForgotPasswordOTPAction,
