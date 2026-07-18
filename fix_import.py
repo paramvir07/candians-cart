@@ -2,34 +2,34 @@ import os
 from pathlib import Path
 
 root = Path(r"D:\candian-cart")
+targets = [root / "apps", root / "packages"]
 
-replacements_by_target = [
-    (root / "packages" / "ui" / "src", {
-        "@/packages/ui/src/utils": "@canadian-cart/ui/utils",
-    }),
-    (root / "packages" / "actions" / "src", {
-        '@canadian-cart/actions/auth/getUserSession"': '@canadian-cart/actions/auth/getUserSession.actions"',
-    }),
-]
+replacements = {
+    "@canadian-cart/types/src/categories": "@canadian-cart/types/categories",
+    "@canadian-cart/lib/customer/heardAboutUs": "@canadian-cart/types/customer/heardAboutUs",
+    "@canadian-cart/lib/customer/location": "@canadian-cart/types/customer/location",
+    "@canadian-cart/lib/google/addressValidation": "@canadian-cart/types/google/addressValidation",
+    "@/types/customer/signUp": "@canadian-cart/types/customer/signUp",
+    "@/types/store/store": "@canadian-cart/types/store/store",
+}
 
-total = 0
-for target, replacements in replacements_by_target:
-    if not target.exists():
-        print(f"Skipping missing folder: {target}")
-        continue
-    for filepath in target.rglob("*"):
-        if filepath.is_file() and filepath.suffix in (".ts", ".tsx"):
-            try:
-                content = filepath.read_text(encoding="utf-8")
-            except Exception as e:
-                print(f"Skipped {filepath}: {e}")
-                continue
-            new_content = content
-            for old, new in replacements.items():
-                new_content = new_content.replace(old, new)
-            if new_content != content:
-                filepath.write_text(new_content, encoding="utf-8")
-                total += 1
-                print(f"Fixed: {filepath.relative_to(root)}")
+count = 0
+for target in targets:
+    for dirpath, dirnames, files in os.walk(target):
+        dirnames[:] = [d for d in dirnames if d not in ("node_modules", ".next", ".git")]
+        for file in files:
+            if file.endswith((".ts", ".tsx")):
+                fp = Path(dirpath) / file
+                try:
+                    content = fp.read_text(encoding="utf-8", errors="ignore")
+                except Exception:
+                    continue
+                new_content = content
+                for old, new in replacements.items():
+                    new_content = new_content.replace(old, new)
+                if new_content != content:
+                    fp.write_text(new_content, encoding="utf-8")
+                    count += 1
+                    print(f"Fixed: {fp.relative_to(root)}")
 
-print(f"\nDone. Modified {total} files.")
+print(f"\nDone. Modified {count} files.")

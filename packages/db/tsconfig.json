@@ -6,7 +6,12 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
+    "paths": {
+      "@canadian-cart/db/*": ["./src/*"],
+      "@canadian-cart/types/*": ["../types/src/*"]
+    }
   },
   "include": ["src/**/*"]
 }

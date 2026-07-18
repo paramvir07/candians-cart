@@ -7,7 +7,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "@canadian-cart/db/*": ["../db/src/*"],
+      "@canadian-cart/types/*": ["./src/*"],
+      "@canadian-cart/lib/*": ["../lib/src/*"]
+    }
   },
   "include": ["src/**/*"]
 }

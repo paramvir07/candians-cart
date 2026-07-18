@@ -3,11 +3,19 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "types": ["node"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "paths": {
+      "@canadian-cart/lib/*": ["./src/*"],
+      "@canadian-cart/types/*": ["../types/src/*"],
+      "@canadian-cart/db/*": ["../db/src/*"],
+      "@canadian-cart/ui/*": ["../ui/src/*"],
+      "@canadian-cart/actions/*": ["../actions/src/*"]
+    }
   },
   "include": ["src/**/*"]
 }

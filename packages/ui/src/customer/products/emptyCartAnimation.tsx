@@ -1,6 +1,6 @@
 "use client";AbortController
 import Lottie from "lottie-react";
-import emptyCartAnimation from "@/public/animations/emptyCart.json";
+import emptyCartAnimation from "@canadian-cart/ui/assets/emptyCart.json";
 
 export const AnimatedEmptyCart = () => {
   return (

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Input } from "@canadian-cart/ui/ui/input";
 import { Spinner } from "@canadian-cart/ui/ui/spinner";
 import { MapPin } from "lucide-react";
-import { CUSTOMER_PROVINCE } from "@canadian-cart/lib/customer/location";
+import { CUSTOMER_PROVINCE } from "@canadian-cart/types/customer/location";
 import {
   AddressAutocomplete,
   ParsedAddress,

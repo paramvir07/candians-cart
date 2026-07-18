@@ -4,7 +4,7 @@ import { dbConnect } from "@canadian-cart/db/dbConnect";
 import mongoose from "mongoose";
 import Product from "@canadian-cart/db/models/store/products.model";
 import { ProductCategory } from "@canadian-cart/types/store/products.types";
-import { categories } from "@canadian-cart/lib/categories";
+import { categories } from "@canadian-cart/types/categories";
 
 export type CategoryCountResponse =
   | { success: true; data: Partial<Record<ProductCategory, number>> }

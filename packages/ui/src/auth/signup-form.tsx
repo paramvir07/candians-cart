@@ -22,12 +22,12 @@ import { cn } from "@canadian-cart/ui/utils";
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "../shared/Logo";
-import { CUSTOMER_PROVINCE } from "@canadian-cart/lib/customer/location";
+import { CUSTOMER_PROVINCE } from "@canadian-cart/types/customer/location";
 import {
   AddressAutocomplete,
   ParsedAddress,
 } from "../shared/AddressAutocomplete";
-import { HEARD_ABOUT_US_OPTIONS } from "@canadian-cart/lib/customer/heardAboutUs";
+import { HEARD_ABOUT_US_OPTIONS } from "@canadian-cart/types/customer/heardAboutUs";
 
 const initialState = { success: false, message: "" };
 

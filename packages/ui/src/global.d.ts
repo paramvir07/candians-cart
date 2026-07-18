@@ -1,16 +1,16 @@
 declare module "*.jpg" {
-  const src: string;
-  export default src;
+  const value: import("next/image").StaticImageData;
+  export default value;
 }
 declare module "*.jpeg" {
-  const src: string;
-  export default src;
+  const value: import("next/image").StaticImageData;
+  export default value;
 }
 declare module "*.png" {
-  const src: string;
-  export default src;
+  const value: import("next/image").StaticImageData;
+  export default value;
 }
 declare module "*.svg" {
-  const src: string;
-  export default src;
+  const value: import("next/image").StaticImageData;
+  export default value;
 }

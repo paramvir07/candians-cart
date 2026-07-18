@@ -31,7 +31,7 @@ import {
 } from "@canadian-cart/ui/ui/dialog";
 import { Switch } from "@canadian-cart/ui/ui/switch";
 import { toast } from "sonner";
-import { categories as CATEGORIES } from "@canadian-cart/lib/categories";
+import { categories as CATEGORIES } from "@canadian-cart/types/categories";
 import { createCashierProduct } from "@canadian-cart/actions/cashier/CashierProduct";
 import { CashierCreateProductSchema } from "@canadian-cart/types/schemas/cashier/cashierProductSchema";
 import { AddtoCart } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";

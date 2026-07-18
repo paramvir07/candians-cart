@@ -5,7 +5,7 @@ import {
   SerializedOrder,
   SerializedWalletPayment,
   WalletTopUpEntry,
-} from "@/app/customer/(customer)/analytics/page";
+} from "@canadian-cart/types/customer/analytics";
 
 export default async function AnalyticsLoader() {
   const [Orders, WalletHistory] = await Promise.all([

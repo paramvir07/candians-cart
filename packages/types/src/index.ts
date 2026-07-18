@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 // Direct path referencing during your migration slice step
-import { CashierCreateProductSchema } from "@/zod/schemas/cashier/cashierProductSchema";
-import { createProductFormSchema } from "@/zod/schemas/store/addProductsValidation";
+import { CashierCreateProductSchema } from "./schemas/cashier/cashierProductSchema";
+import { createProductFormSchema } from "./schemas/store/addProductsValidation";
 
 export const ProductFormSchema = CashierCreateProductSchema;
 export type ProductFormValues = z.infer<typeof CashierCreateProductSchema>;

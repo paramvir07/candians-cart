@@ -30,10 +30,15 @@ import {
   SerializedOrder,
   SerializedWalletPayment,
   WalletTopUpEntry,
-} from "@/app/customer/(customer)/analytics/page";
+} from "@canadian-cart/types/customer/analytics";
 
 // ── shadcn/ui imports
-import { Card, CardContent, CardHeader, CardTitle } from "@canadian-cart/ui/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@canadian-cart/ui/ui/card";
 import { Badge } from "@canadian-cart/ui/ui/badge";
 import { Separator } from "@canadian-cart/ui/ui/separator";
 import { Button } from "@canadian-cart/ui/ui/button";

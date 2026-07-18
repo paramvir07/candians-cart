@@ -1,4 +1,4 @@
-import { HEARD_ABOUT_US_VALUES } from "@canadian-cart/lib/customer/heardAboutUs";
+import { HEARD_ABOUT_US_VALUES } from "@canadian-cart/types/customer/heardAboutUs";
 import { model, Model, models, Schema, Types } from "mongoose";
 
 export type EventParticipantStatus = "participant" | "winner";

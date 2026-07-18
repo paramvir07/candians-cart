@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect } from "react";
 import { IFormActionResponse } from "@canadian-cart/types/form";
-import { categories } from "@canadian-cart/lib/categories";
+import { categories } from "@canadian-cart/types/categories";
 import SubsidyListView from "@canadian-cart/ui/shared/subsidyList/SubsidyListView";
 import { SubsidyItem } from "@canadian-cart/types/admin/subsidyList.types";
 

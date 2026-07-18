@@ -35,7 +35,7 @@ import {
 import { Customer } from "@canadian-cart/types/customer/customer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CUSTOMER_PROVINCE } from "@canadian-cart/lib/customer/location";
+import { CUSTOMER_PROVINCE } from "@canadian-cart/types/customer/location";
 import { authClient } from "@canadian-cart/lib/auth/auth-client";
 import { cn } from "@canadian-cart/ui/utils";
 import { sendPhoneOTPAction } from "@canadian-cart/actions/auth/verifiyPhone.actions";

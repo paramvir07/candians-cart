@@ -1,4 +1,4 @@
-import { categories } from "@canadian-cart/lib/categories";
+import { categories } from "@canadian-cart/types/categories";
 import { model, models, Schema } from "mongoose";
 
 const productSchema = new Schema(

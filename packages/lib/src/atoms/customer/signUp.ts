@@ -1,5 +1,5 @@
-import { Step } from "@/types/customer/signUp";
-import { StoreDetails } from "@/types/store/store";
+import { Step } from "@canadian-cart/types/customer/signUp";
+import { StoreDetails } from "@canadian-cart/types/store/store";
 import { atom } from "jotai";
 
 export const stepAtom = atom<Step>("code");

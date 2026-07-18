@@ -1,6 +1,6 @@
-import { HEARD_ABOUT_US_VALUES } from "@canadian-cart/lib/customer/heardAboutUs";
-import { CUSTOMER_PROVINCE } from "@canadian-cart/lib/customer/location";
-import { validateBCAddress } from "@canadian-cart/lib/google/addressValidation";
+import { HEARD_ABOUT_US_VALUES } from "@canadian-cart/types/customer/heardAboutUs";
+import { CUSTOMER_PROVINCE } from "@canadian-cart/types/customer/location";
+import { validateBCAddress } from "@canadian-cart/types/google/addressValidation";
 import { z } from "zod";
 
 export const passwordSchema = z

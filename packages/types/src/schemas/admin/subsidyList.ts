@@ -1,5 +1,5 @@
 
-import { categories } from "@canadian-cart/lib/categories";
+import { categories } from "@canadian-cart/types/categories";
 import { z } from "zod";
 
 export const createSubsidyListItemSchema = z.object({
