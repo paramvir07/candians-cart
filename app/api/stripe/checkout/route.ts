@@ -72,8 +72,8 @@ export async function POST(req: Request) {
             "⚠️ NOTE: A calculated processing fee is added to cover Stripe's transaction costs. To avoid this fee, please recharge directly at your assigned Candian's Cart store.",
         },
       },
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/customer/wallet/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/customer/wallet/payment-cancel?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/customer/wallet/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/customer/wallet/payment-cancel?session_id={CHECKOUT_SESSION_ID}`,
     });
 
     return NextResponse.json({ url: session.url });
