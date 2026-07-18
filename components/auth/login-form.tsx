@@ -14,15 +14,24 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { IFormActionResponse } from "@/types/form";
 import Logo from "../shared/Logo";
+import { authClient } from "@/lib/auth/auth-client";
 
 const initialState: IFormActionResponse = {
   success: false,
   message: "",
 };
 
-type loginProps = React.ComponentProps<"div"> & { userRole: UserRole };
+type LoginProps = React.ComponentProps<"div"> & {
+  userRole: UserRole;
+  isOAuthLogin?: boolean;
+};
 
-export function LoginForm({ userRole, className, ...props }: loginProps) {
+export function LoginForm({
+  userRole,
+  isOAuthLogin = false,
+  className,
+  ...props
+}: LoginProps) {
   const customer = userRole === "customer";
   const admin = userRole === "admin";
   const store = userRole === "store";
@@ -31,6 +40,7 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
 
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [isOAuthPending, setIsOAuthPending] = useState(false);
   const [state, formAction, isPending] = useActionState(
     loginAction,
     initialState,
@@ -41,7 +51,18 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
 
     if (state.success) {
       toast.success(state.message);
-      router.push(state.redirectTo || "/customer");
+
+      const destination = state.redirectTo || "/customer";
+
+      if (
+        destination.startsWith("http://") ||
+        destination.startsWith("https://")
+      ) {
+        window.location.assign(destination);
+        return;
+      }
+
+      router.push(destination);
     } else {
       toast.error(state.message);
       if (state.redirectTo) {
@@ -60,6 +81,98 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
           ? "Login to Immigration account"
           : "Login to your account";
 
+          async function handleOAuthLogin(
+            event: React.SubmitEvent<HTMLFormElement>,
+          ) {
+            event.preventDefault();
+
+            if (!isOAuthLogin) {
+              return;
+            }
+
+            try {
+              setIsOAuthPending(true);
+
+              const formData = new FormData(event.currentTarget);
+
+              const emailValue = formData.get("email");
+              const passwordValue = formData.get("password");
+
+              const email =
+                typeof emailValue === "string" ? emailValue.trim() : "";
+
+              const password =
+                typeof passwordValue === "string" ? passwordValue : "";
+
+              if (!email || !password) {
+                toast.error("Email and password are required.");
+                setIsOAuthPending(false);
+                return;
+              }
+
+              /*
+               * oauthProviderClient() reads the signed OAuth parameters
+               * from window.location.search and sends them as oauth_query.
+               */
+              const { data, error } = await authClient.signIn.email({
+                email,
+                password,
+                rememberMe: true,
+              });
+
+              if (error) {
+                toast.error(
+                  error.message ?? "Something went wrong while signing in.",
+                );
+
+                setIsOAuthPending(false);
+                return;
+              }
+
+              const result = data as {
+                redirect?: boolean;
+                url?: string;
+              } | null;
+
+              /*
+               * The OAuth Provider should return the next authorization
+               * URL after the CC session is created.
+               */
+              if (result?.redirect && typeof result.url === "string") {
+                window.location.assign(result.url);
+                return;
+              }
+
+              /*
+               * Some responses contain a URL without redirect=true.
+               */
+              if (typeof result?.url === "string") {
+                window.location.assign(result.url);
+                return;
+              }
+
+              console.error(
+                "[Candian's Cart OAuth] No continuation URL returned:",
+                data,
+              );
+
+              toast.error(
+                "Login succeeded, but the Gift Cart authorization did not continue.",
+              );
+
+              setIsOAuthPending(false);
+            } catch (error) {
+              console.error("Candian's Cart OAuth login failed:", error);
+
+              toast.error(
+                error instanceof Error
+                  ? error.message
+                  : "Something went wrong while signing in.",
+              );
+
+              setIsOAuthPending(false);
+            }
+          }
   const formContent = (
     <>
       {/* Logo */}
@@ -76,7 +189,11 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
       </div>
 
       {/* Form */}
-      <form action={formAction} className="flex flex-col gap-3">
+      <form
+        action={isOAuthLogin ? undefined : formAction}
+        onSubmit={isOAuthLogin ? handleOAuthLogin : undefined}
+        className="flex flex-col gap-3"
+      >
         <input type="hidden" name="role" value={userRole} />
         <Input
           id="email"
@@ -106,10 +223,10 @@ export function LoginForm({ userRole, className, ...props }: loginProps) {
         </div>
         <Button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || isOAuthPending}
           className="h-12 w-full rounded-full bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all mt-1 flex items-center justify-center"
         >
-          {isPending ? <Spinner /> : "Log in"}
+          {isPending || isOAuthPending ? <Spinner /> : "Log in"}
         </Button>
       </form>
 
