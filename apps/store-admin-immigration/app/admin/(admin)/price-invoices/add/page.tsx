@@ -1,6 +1,6 @@
 import InvoiceForm from "@canadian-cart/ui/store/invoice/InvoiceForm";
-import { getStores } from "@canadian-cart/actions/store/getStores.actions";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getStores } from "@canadian-cart/actions/store/getStores";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import { redirect } from "next/navigation";
 
 export default async function AdminAddInvoicePage() {

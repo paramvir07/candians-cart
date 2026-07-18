@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSubsidizedProducts } from "@/actions/customer/ProductAndStore/Cart.Action";
-import { Button } from "@/components/ui/button";
+import { getSubsidizedProducts } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { IProduct } from "@/types/store/products.types";
+} from "@canadian-cart/ui/ui/dialog";
+import { IProduct } from "@canadian-cart/types/store/products.types";
 import { Sparkles, ArrowRight } from "lucide-react";
-import { AddSubsidyItem } from "@/actions/customer/SubsidyItems.Action";
+import { AddSubsidyItem } from "@canadian-cart/actions/customer/SubsidyItems.Action";
 import { useAtom } from "jotai";
 import { UsedSubsidy } from "@/atoms/customer/CartAtom";
 import { useRouter } from "next/navigation";

@@ -1,7 +1,7 @@
 "use client";
 
 import { Mail, Phone, MapPin, CreditCard, Star, Building2 } from "lucide-react";
-import type { StoreProfile } from "@/actions/admin/analytics/store/getStoreDetail.action";
+import type { StoreProfile } from "@canadian-cart/actions/admin/analytics/store/getStoreDetail.action";
 
 interface StoreProfileHeaderProps {
   profile: StoreProfile;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
 import { toast } from "sonner";
 import { Banknote, Wallet, Store, User } from "lucide-react";
 import Link from "next/link";
@@ -14,24 +14,24 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@canadian-cart/ui/ui/pagination";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
+} from "@canadian-cart/ui/ui/select";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { DatePickerWithRange } from "@canadian-cart/ui/admin/analytics/reciept/DatePickerWithRange";
 import {
   getCashActivitiesPaginated,
   getCashSummary,
   type CashActivity,
   type CashSummary,
-} from "@/actions/common/getCashActivities.action";
-import { getStores } from "@/actions/store/getStores.actions";
-import { StoreDocument } from "@/types/store/store";
+} from "@canadian-cart/actions/common/getCashActivities.action";
+import { getStores } from "@canadian-cart/actions/store/getStores.actions";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 import { getVancouverDayBoundsUTC } from "@canadian-cart/lib/timezone";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────

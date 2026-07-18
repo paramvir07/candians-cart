@@ -3,7 +3,7 @@
 import {
   ALL_CATEGORIES,
   getCategoryConfig,
-} from "@/components/customer/shared/CategoryIllustration";
+} from "@canadian-cart/ui/customer/shared/CategoryIllustration";
 
 interface CategoryPillsBarProps {
   activeCategories: string[];

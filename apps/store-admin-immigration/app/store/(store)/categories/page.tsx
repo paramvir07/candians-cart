@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getCategorySales } from "@canadian-cart/actions/store/categories/categorySales.action";
 import CategorySalesTableClient from "@canadian-cart/ui/store/categories/CategorySalesTableClient";
 import CategorySalesSkeleton from "@canadian-cart/ui/skeletons/CategorySalesSkeleton";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import Store from "@canadian-cart/db/models/store/store.model";
 import { getTodayVancouverBoundsUTC } from "@canadian-cart/lib/timezone";
 

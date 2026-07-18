@@ -9,7 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@canadian-cart/ui/ui/alert-dialog";
 import { useAtom, useSetAtom } from "jotai";
 import {
   isStoreSelectedDialogOpenAtom,
@@ -20,7 +20,7 @@ import {
   pendingStoreIdAtom,
   pendingStoreAddressAtom,
 } from "@/atoms/customer/signUp";
-import { UserRole } from "@/types/auth";
+import { UserRole } from "@canadian-cart/types/auth";
 import { MapPin } from "lucide-react";
 
 const StoreSelected = ({ userRole }: { userRole?: UserRole }) => {

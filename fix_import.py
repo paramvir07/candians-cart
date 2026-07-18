@@ -1,48 +1,36 @@
 import os
+import re
 from pathlib import Path
 
-def replace_imports():
-    root_dir = Path(r"D:\candian-cart")
-    
-    # Target all the places where old aliases might be hiding
-    targets = [
-        root_dir / "packages" / "actions" / "src",
-        root_dir / "apps" / "customer-cashier" / "app",
-        root_dir / "apps" / "store-admin-immigration" / "app",
-        root_dir / "components" # If you haven't moved components to packages/ui yet
-    ]
+def fix_imports():
+    root = Path(r"D:\candian-cart")
+    # Only target actions, apps, and lib to avoid node_modules
+    targets = [root / "packages" / "actions", root / "apps", root / "packages" / "lib"]
 
-    # The exact string mappings
-    replacements = {
-        "@/db/dbConnect": "@canadian-cart/db/dbConnect",
-        "@/db/": "@canadian-cart/db/",
-        "@/zod/schemas/": "@canadian-cart/types/schemas/",
-        "@/zod/validation/": "@canadian-cart/types/validation/"
-    }
+    # Regex to remove extensions from within the import string
+    # Matches: '@canadian-cart/actions/auth/getUserSession.actions' -> '@canadian-cart/actions/auth/getUserSession'
+    pattern = re.compile(r'(@canadian-cart/[^/]+/[^"\']+)\.(actions|ts|tsx)')
 
-    print("Scanning for old Next.js path aliases...\n")
-
+    count = 0
     for target in targets:
-        if not target.exists(): 
-            continue
-            
-        for root, _, files in os.walk(target):
+        if not target.exists(): continue
+        for root_dir, _, files in os.walk(target):
             for file in files:
                 if file.endswith(('.ts', '.tsx')):
-                    file_path = Path(root) / file
-                    with open(file_path, 'r', encoding='utf-8') as f:
+                    filepath = Path(root_dir) / file
+                    with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
                         content = f.read()
 
-                    new_content = content
-                    for old_str, new_str in replacements.items():
-                        new_content = new_content.replace(old_str, new_str)
+                    # Replace extensions
+                    new_content = pattern.sub(r'\1', content)
 
                     if content != new_content:
-                        with open(file_path, 'w', encoding='utf-8') as f:
+                        with open(filepath, 'w', encoding='utf-8') as f:
                             f.write(new_content)
-                        print(f"Fixed imports in: {file_path.relative_to(root_dir)}")
+                        count += 1
+                        print(f"Cleaned imports in: {filepath.relative_to(root)}")
 
-    print("\nImport migration complete.")
+    print(f"\nFixed {count} files. Extensions removed.")
 
 if __name__ == "__main__":
-    replace_imports()
+    fix_imports()

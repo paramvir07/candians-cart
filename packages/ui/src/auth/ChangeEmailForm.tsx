@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Mail, ChevronLeft, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
-import { changeEmailAction } from "@/actions/auth/changeEmail.action";
+import { changeEmailAction } from "@canadian-cart/actions/auth/changeEmail.action";
 
 export default function ChangeEmailForm() {
   const router = useRouter();

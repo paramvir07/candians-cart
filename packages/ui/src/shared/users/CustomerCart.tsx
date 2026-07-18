@@ -1,8 +1,8 @@
-import { getCart } from "@/actions/customer/ProductAndStore/Cart.Action";
-import { EmptyCart } from "@/components/customer/products/EmptyCart";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { getCart } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
+import { EmptyCart } from "@canadian-cart/ui/customer/products/EmptyCart";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Separator } from "@canadian-cart/ui/ui/separator";
+import { Card, CardContent, CardHeader } from "@canadian-cart/ui/ui/card";
 import {
   Shield,
   Wallet,
@@ -12,27 +12,27 @@ import {
   CreditCard,
   Plus,
 } from "lucide-react";
-import { getUser } from "@/actions/customer/User.action";
-import { TopUpDialog } from "@/components/customer/wallet/TopupDialog";
+import { getUser } from "@canadian-cart/actions/customer/User.action";
+import { TopUpDialog } from "@canadian-cart/ui/customer/wallet/TopupDialog";
 import ProgressBarCart, {
   CartAmountBadge,
   SubsidyCart,
-} from "@/components/customer/products/ProgressBarCart";
-import { ICartItem } from "@/types/customer/CustomerCart";
-import Navbar from "@/components/customer/landing/Navbar";
+} from "@canadian-cart/ui/customer/products/ProgressBarCart";
+import { ICartItem } from "@canadian-cart/types/customer/CustomerCart";
+import Navbar from "@canadian-cart/ui/customer/landing/Navbar";
 import CheckoutActions from "./CheckOutActions";
-import { SubsidyItemsSection } from "@/components/customer/products/SubsidyItemsSection";
-import { IMiscCartItem, ISubsidyItems } from "@/db/models/customer/cart.model";
+import { SubsidyItemsSection } from "@canadian-cart/ui/customer/products/SubsidyItemsSection";
+import { IMiscCartItem, ISubsidyItems } from "@canadian-cart/db/models/customer/cart.model";
 import { getFibBracketFrom21 } from "@canadian-cart/lib/FibBracket";
 import { cn } from "@/packages/ui/src/utils";
-import { MiscItemsSection } from "@/components/cashier/MiscItemSection";
-import { UPCScannerCart } from "@/components/cashier/UPCScannerCart";
+import { MiscItemsSection } from "@canadian-cart/ui/cashier/MiscItemSection";
+import { UPCScannerCart } from "@canadian-cart/ui/cashier/UPCScannerCart";
 import ClearCartDialog from "./ClearCartDialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import Link from "next/link";
-import { ScrollableItemsList } from "@/components/customer/products/ScrollableItemsList";
+import { ScrollableItemsList } from "@canadian-cart/ui/customer/products/ScrollableItemsList";
 import { CartItemRow } from "./CartItemRow";
-import CartReloadListener from "@/actions/pusher/pusherCartClient";
+import CartReloadListener from "@canadian-cart/actions/pusher/pusherCartClient";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 

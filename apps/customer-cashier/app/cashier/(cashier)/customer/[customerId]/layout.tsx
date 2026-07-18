@@ -3,7 +3,7 @@ import { getCustomerDataAction } from "@canadian-cart/actions/customer/User.acti
 import CashierSidebar from "@canadian-cart/ui/cashier/CashierSlidebar";
 import { TooltipProvider } from "@canadian-cart/ui/ui/tooltip";
 import { Customer } from "@canadian-cart/types/customer/customer";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import { Cashier } from "@canadian-cart/db/models/cashier/cashier.model";
 
 type Props = {

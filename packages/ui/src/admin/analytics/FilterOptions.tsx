@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@canadian-cart/ui/ui/button"
 import { CalendarDays, FolderUp, SlidersHorizontal } from "lucide-react"
 
 const FilterOptions = () => {

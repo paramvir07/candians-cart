@@ -2,10 +2,10 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@canadian-cart/ui/ui/switch";
 import { toast } from "sonner";
-import { subsidisedProduct } from "@/actions/admin/subsidisedProducts";
-import { deleteProduct } from "@/actions/store/products/deleteProduct";
+import { subsidisedProduct } from "@canadian-cart/actions/admin/subsidisedProducts";
+import { deleteProduct } from "@canadian-cart/actions/store/products/deleteProduct";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@canadian-cart/ui/ui/alert-dialog";
 import {
   Edit,
   Trash2,
@@ -25,18 +25,18 @@ import {
   Star,
   CheckSquare,
 } from "lucide-react";
-import { IProduct } from "@/types/store/products.types";
+import { IProduct } from "@canadian-cart/types/store/products.types";
 import { fmt } from "@canadian-cart/lib/fomatPrice";
 import { ProductDetailDialog } from "./ProductDetailDialog";
 import {
   CategoryIllustration,
   getCategoryConfig,
-} from "@/components/customer/shared/CategoryIllustration";
+} from "@canadian-cart/ui/customer/shared/CategoryIllustration";
 import {
   availableProduct,
   featuredProduct,
-} from "@/actions/common/FeaturedProduct.action";
-import Logo from "@/components/shared/Logo";
+} from "@canadian-cart/actions/common/FeaturedProduct.action";
+import Logo from "@canadian-cart/ui/shared/Logo";
 
 export type ProductCardRole = "admin" | "store" | "customer";
 

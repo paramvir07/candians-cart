@@ -1,4 +1,4 @@
-import EditProfileForm from "@/components/customer/profile/EditProfileForm";
+import EditProfileForm from "@canadian-cart/ui/customer/profile/EditProfileForm";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import Customer from "@canadian-cart/db/models/customer/customer.model";
 import { auth } from "@canadian-cart/lib/auth/auth";

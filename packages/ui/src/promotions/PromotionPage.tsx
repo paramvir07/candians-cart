@@ -10,9 +10,9 @@ import {
   Trophy,
   Sparkles,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { PromoStats } from "@/types/promotions/promo.types";
+import { Card } from "@canadian-cart/ui/ui/card";
+import { Separator } from "@canadian-cart/ui/ui/separator";
+import { PromoStats } from "@canadian-cart/types/promotions/promo.types";
 
 // ─── Countdown tile ────────────────────────────────────────────────────────────
 

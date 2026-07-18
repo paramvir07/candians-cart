@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
 import { Search, ShoppingCart, Store, Users, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import CustomerCard from "./CustomerCard";
 import QrScannerButton from "./QrScannerButton";
 import { useRouter } from "next/navigation";
-import { SerializedCustomer } from "@/types/customer/customer";
+import { SerializedCustomer } from "@canadian-cart/types/customer/customer";
 import {
   getStoreCustomers,
   getSearchCustomer,
@@ -19,9 +19,9 @@ import {
   getCustomerFilterOptions,
   PaginationMeta,
   CustomerFilters,
-} from "@/actions/admin/customers/getCustomers.action";
-import { getStores } from "@/actions/store/getStores.actions";
-import { StoreDocument } from "@/types/store/store";
+} from "@canadian-cart/actions/admin/customers/getCustomers.action";
+import { getStores } from "@canadian-cart/actions/store/getStores.actions";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 import { useDebounce } from "use-debounce";
 import {
   Pagination,
@@ -31,12 +31,12 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@canadian-cart/ui/ui/pagination";
 import {
   CustomerFiltersSheet,
   countActiveCustomerFilters,
-} from "@/components/admin/customers/CustomerFilterSheet";
-import type { EventParticipantStatus } from "@/db/models/customer/customer.model";
+} from "@canadian-cart/ui/admin/customers/CustomerFilterSheet";
+import type { EventParticipantStatus } from "@canadian-cart/db/models/customer/customer.model";
 
 const CustomerCardSkeleton = () => (
   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3 animate-pulse">

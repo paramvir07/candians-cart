@@ -2,9 +2,9 @@
 
 import {
   PlaceOrder,
-} from "@/actions/customer/ProductAndStore/Cart.Action";
-import { CartTotals } from "@/components/shared/users/CheckOutActions";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
+import { CartTotals } from "@canadian-cart/ui/shared/users/CheckOutActions";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";

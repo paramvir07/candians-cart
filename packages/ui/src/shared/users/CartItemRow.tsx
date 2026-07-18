@@ -3,11 +3,11 @@
 import { memo } from "react";
 import Image from "next/image";
 import { BadgePercent } from "lucide-react";
-import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
-import { AddtoSubsidyBtn } from "@/components/customer/products/CartActionBtns";
-import { RemoveButton } from "@/components/customer/products/RemoveButton";
-import { QuantityControl } from "@/components/customer/products/QuantityControls";
-import { ICartItem } from "@/types/customer/CustomerCart";
+import { CategoryIllustration } from "@canadian-cart/ui/customer/shared/CategoryIllustration";
+import { AddtoSubsidyBtn } from "@canadian-cart/ui/customer/products/CartActionBtns";
+import { RemoveButton } from "@canadian-cart/ui/customer/products/RemoveButton";
+import { QuantityControl } from "@canadian-cart/ui/customer/products/QuantityControls";
+import { ICartItem } from "@canadian-cart/types/customer/CustomerCart";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 

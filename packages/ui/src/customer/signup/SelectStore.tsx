@@ -11,10 +11,10 @@ import {
   pendingStoreIdAtom,
   pendingStoreAddressAtom,
 } from "@/atoms/customer/signUp";
-import { StoreDocument } from "@/types/store/store";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 import { StoreInfoDialog } from "./StoreInfoDialog";
 import { useMemo, useState } from "react";
-import { UserRole } from "@/types/auth";
+import { UserRole } from "@canadian-cart/types/auth";
 
 const SelectStore = ({
   stores,

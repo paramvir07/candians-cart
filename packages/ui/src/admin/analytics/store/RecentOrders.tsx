@@ -1,6 +1,6 @@
 "use client";
 
-import { RecentOrder } from "@/actions/admin/analytics/store/allStoresData.action";
+import { RecentOrder } from "@canadian-cart/actions/admin/analytics/store/allStoresData.action";
 import { MoreHorizontal, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 

@@ -10,21 +10,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/ui/ui/table";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+} from "@canadian-cart/ui/ui/select";
+import { Input } from "@canadian-cart/ui/ui/input";
 import {
   getStorePayoutsAction,
   SerializedPayout,
-} from "@/actions/admin/reciept/getPayouts";
+} from "@canadian-cart/actions/admin/reciept/getPayouts";
 import { Loader2, ReceiptText, ArrowRight, UploadCloud } from "lucide-react";
 import Link from "next/link";
 

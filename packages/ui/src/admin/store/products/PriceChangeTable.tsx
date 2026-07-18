@@ -12,18 +12,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@canadian-cart/ui/ui/table";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from "@canadian-cart/ui/ui/sheet";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Badge } from "@canadian-cart/ui/ui/badge";
 import { Eye, Receipt, ArrowRight, Check, X, ExternalLink, Loader2 } from "lucide-react";
-import { resolvePriceChange, SerializedInvoiceWithChanges } from "@/actions/admin/invoice/getPriceChange";
+import { resolvePriceChange, SerializedInvoiceWithChanges } from "@canadian-cart/actions/admin/invoice/getPriceChange";
 
 interface PriceChangesTableProps {
   invoices: SerializedInvoiceWithChanges[];

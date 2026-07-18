@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@canadian-cart/ui/ui/card";
 import {
   ShoppingCart,
   DollarSign,
@@ -11,7 +11,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { fmt } from "@canadian-cart/lib/fomatPrice";
-import type { OverviewStats } from "@/actions/admin/analytics/analytics.action";
+import type { OverviewStats } from "@canadian-cart/actions/admin/analytics/analytics.action";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 

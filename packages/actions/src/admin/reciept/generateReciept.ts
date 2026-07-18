@@ -16,7 +16,7 @@ import OrderModel, {
 } from "@canadian-cart/db/models/customer/Orders.Model";
 import { WalletTopUp } from "@canadian-cart/db/models/cashier/walletTopUp.model";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import { MiscellaneousItemsModel } from "@canadian-cart/db/models/customer/MiscItem.model";
 
 export interface GetRecieptParams {

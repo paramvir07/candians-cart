@@ -1,6 +1,6 @@
-import { Customer, SerializedCustomer } from "@/types/customer/customer";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Customer, SerializedCustomer } from "@canadian-cart/types/customer/customer";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Card, CardContent } from "@canadian-cart/ui/ui/card";
 import {
   MapPin,
   Phone,

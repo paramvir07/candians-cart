@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { StoreDocument } from "@/types/store/store";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 import {
   getStoreOpenStatus,
   formatStoreHours,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@canadian-cart/ui/ui/dialog";
 import {
   MapPin,
   Phone,
@@ -11,7 +11,7 @@ import {
   X,
   ChevronDown,
 } from "lucide-react";
-import { StoreDocument } from "@/types/store/store";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 import {
   formatStoreHours,
   getStoreOpenStatus,

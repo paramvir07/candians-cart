@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { Plus } from "lucide-react";
 import AddMiscItemModal from "./AddMiscItem";
-import { createMiscProduct } from "@/actions/cashier/MiscItem";
+import { createMiscProduct } from "@canadian-cart/actions/cashier/MiscItem";
 
 export default function AddMiscItemModalTrigger({ customerId }: { customerId: string }) {
   const [open, setOpen] = useState(false);

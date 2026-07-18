@@ -4,16 +4,16 @@ import { useState } from "react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { PDFDocument, StandardFonts, rgb, PDFFont } from "pdf-lib";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+} from "@canadian-cart/ui/ui/card";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   Download,
   ExternalLink,
@@ -26,7 +26,7 @@ import {
   PanelsTopLeft,
   AlertCircle,
 } from "lucide-react";
-import { SerializedStorePayout } from "@/actions/store/payouts/getStorePayouts";
+import { SerializedStorePayout } from "@canadian-cart/actions/store/payouts/getStorePayouts";
 import ccLogo from "@/app/icon.jpg";
 
 const formatCurrency = (cents: number | undefined) =>

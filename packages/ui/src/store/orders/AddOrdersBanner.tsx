@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CirclePlus } from "lucide-react";
-import { Button } from "@/components/ui/button"; // Adjust path if your Button is elsewhere
+import { Button } from "@canadian-cart/ui/ui/button"; // Adjust path if your Button is elsewhere
 
 export const AddOrderBanner = () => {
   return (

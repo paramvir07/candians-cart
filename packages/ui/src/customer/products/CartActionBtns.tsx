@@ -5,8 +5,8 @@ import {
   movetoSubsidy,
   RemoveSubsidyItem,
   UpdateSubsidyItemQuantity,
-} from "@/actions/customer/SubsidyItems.Action";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/actions/customer/SubsidyItems.Action";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useCallback, useEffect, useRef, useState } from "react";

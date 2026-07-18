@@ -22,19 +22,19 @@ import {
   BadgePercent,
 } from "lucide-react";
 import { toast } from "sonner";
-import { IProduct } from "@/types/store/products.types";
+import { IProduct } from "@canadian-cart/types/store/products.types";
 import {
   CategoryIllustration,
   getCategoryConfig,
-} from "@/components/customer/shared/CategoryIllustration";
+} from "@canadian-cart/ui/customer/shared/CategoryIllustration";
 import { fmt } from "@canadian-cart/lib/fomatPrice";
 import {
   AddtoCart,
   RemoveItem,
   UpdateItemQuantity,
-} from "@/actions/customer/ProductAndStore/Cart.Action";
-import { ProductDetailDialog } from "@/components/customer/products/ProductDetailDialog";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
+import { ProductDetailDialog } from "@canadian-cart/ui/customer/products/ProductDetailDialog";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { emitCartUpdated } from "@canadian-cart/lib/cartEvent";
 import PriceDropBtn from "./PriceDropBtn";
 

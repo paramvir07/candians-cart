@@ -8,8 +8,8 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
-import { type CarouselApi } from "@/components/ui/carousel";
+} from "@canadian-cart/ui/ui/carousel";
+import { type CarouselApi } from "@canadian-cart/ui/ui/carousel";
 import { cn } from "@/packages/ui/src/utils";
 
 const DEFAULT_AD_IMAGES: string[] = [
@@ -205,8 +205,8 @@ export default function CustomerAdvertisements({
 //   CarouselItem,
 //   CarouselNext,
 //   CarouselPrevious,
-// } from "@/components/ui/carousel";
-// import { type CarouselApi } from "@/components/ui/carousel";
+// } from "@canadian-cart/ui/ui/carousel";
+// import { type CarouselApi } from "@canadian-cart/ui/ui/carousel";
 // import { cn } from "@canadian-cart/lib/utils";
 
 // interface CustomerAdvertisementsProps {

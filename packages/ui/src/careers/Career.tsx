@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet";
+} from "@canadian-cart/ui/ui/sheet";
 import {
   MapPin,
   Clock,

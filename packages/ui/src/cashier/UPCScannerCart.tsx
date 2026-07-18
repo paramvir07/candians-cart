@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { Loader2, ScanBarcode } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,11 +12,11 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
-import { AddtoCart } from "@/actions/customer/ProductAndStore/Cart.Action";
+} from "@canadian-cart/ui/ui/dialog";
+import { searchProductsByUPC } from "@canadian-cart/actions/common/searchProducts.action";
+import { AddtoCart } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 import { useRouter } from "next/navigation";
-import { ReloadCartpusher } from "@/actions/pusher/pusherAction";
+import { ReloadCartpusher } from "@canadian-cart/actions/pusher/pusherAction";
 
 const OBJECT_ID_OR_UPC_RE = /^[a-zA-Z0-9\-]{2,}$/;
 const MIN_WEIGHT_QTY = 0.1;

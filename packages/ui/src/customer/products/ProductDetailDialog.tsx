@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition, useCallback, useRef } from "react";
 import Image from "next/image";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@canadian-cart/ui/ui/dialog";
 import {
   BadgeDollarSign,
   Star,
@@ -18,17 +18,17 @@ import {
   CircleDot,
 } from "lucide-react";
 import { toast } from "sonner";
-import { IProduct } from "@/types/store/products.types";
+import { IProduct } from "@canadian-cart/types/store/products.types";
 import {
   CategoryIllustration,
   getCategoryConfig,
-} from "@/components/customer/shared/CategoryIllustration";
+} from "@canadian-cart/ui/customer/shared/CategoryIllustration";
 import { fmt } from "@canadian-cart/lib/fomatPrice";
 import {
   AddtoCart,
   RemoveItem,
   UpdateItemQuantity,
-} from "@/actions/customer/ProductAndStore/Cart.Action";
+} from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 
 interface ProductDetailDialogProps {
   product: IProduct;

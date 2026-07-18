@@ -2,15 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Spinner } from "@canadian-cart/ui/ui/spinner";
 import { MapPin } from "lucide-react";
 import { CUSTOMER_PROVINCE } from "@canadian-cart/lib/customer/location";
 import {
   AddressAutocomplete,
   ParsedAddress,
-} from "@/components/shared/AddressAutocomplete";
-import { updateAddressAction } from "@/actions/customer/updateAddress.action";
+} from "@canadian-cart/ui/shared/AddressAutocomplete";
+import { updateAddressAction } from "@canadian-cart/actions/customer/updateAddress.action";
 
 export function AddressRequiredDialog() {
   const [isPending, startTransition] = useTransition();

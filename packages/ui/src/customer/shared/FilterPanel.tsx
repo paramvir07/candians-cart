@@ -6,7 +6,7 @@ import { X, SlidersHorizontal } from "lucide-react";
 import {
   ALL_CATEGORIES,
   getCategoryConfig,
-} from "@/components/customer/shared/CategoryIllustration";
+} from "@canadian-cart/ui/customer/shared/CategoryIllustration";
 import { useSearchParams } from "next/navigation";
 
 export interface FilterState {

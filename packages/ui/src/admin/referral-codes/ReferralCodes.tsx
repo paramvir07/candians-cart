@@ -8,8 +8,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+} from "@canadian-cart/ui/ui/table";
+import { Badge } from "@canadian-cart/ui/ui/badge";
 import {
   Pagination,
   PaginationContent,
@@ -18,15 +18,15 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+} from "@canadian-cart/ui/ui/pagination";
+import { Tabs, TabsList, TabsTrigger } from "@canadian-cart/ui/ui/tabs";
 import { cn } from "@/packages/ui/src/utils";
-import { ReferralCode } from "@/types/admin/referralCode";
+import { ReferralCode } from "@canadian-cart/types/admin/referralCode";
 import { ReferralCodeDialogForm } from "./ReferralCodeDialogForm";
 import {
   getReferalCodesAction,
   ReferralCodeType,
-} from "@/actions/admin/referalCode.actions";
+} from "@canadian-cart/actions/admin/referalCode.actions";
 
 function formatDate(d?: string | Date | null) {
   if (!d) return "Never";

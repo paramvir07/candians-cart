@@ -1,6 +1,6 @@
 "use client";
 
-import { StoreDetailStats } from "@/actions/admin/analytics/store/getStoreDetail.action";
+import { StoreDetailStats } from "@canadian-cart/actions/admin/analytics/store/getStoreDetail.action";
 import {
   ShoppingCart,
   Package,

@@ -3,14 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Sparkles, X, Package } from "lucide-react";
-import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
+import { CategoryIllustration } from "@canadian-cart/ui/customer/shared/CategoryIllustration";
 import OrderDetail from "./OrderDetail";
 import {
   Dialog,
   DialogClose,
   DialogContent,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@canadian-cart/ui/ui/dialog";
 import { formatVancouverDate, formatVancouverTime } from "@canadian-cart/lib/timezone";
 
 const fmt = (cents: number) => `CA$${(cents / 100).toFixed(2)}`;

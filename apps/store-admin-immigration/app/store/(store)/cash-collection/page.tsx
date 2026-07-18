@@ -1,4 +1,4 @@
-import { getMyStoreData } from "@canadian-cart/actions/store/getStores.actions";
+import { getMyStoreData } from "@canadian-cart/actions/store/getStores";
 import { CashCollectionList } from "@canadian-cart/ui/shared/cash-collection/CashCollectionList";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";

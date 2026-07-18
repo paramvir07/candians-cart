@@ -1,6 +1,6 @@
 "use client";
 
-import { StoreOrder } from "@/actions/admin/analytics/store/getStoreDetail.action";
+import { StoreOrder } from "@canadian-cart/actions/admin/analytics/store/getStoreDetail.action";
 import { Eye } from "lucide-react";
 import Link from "next/link";
 

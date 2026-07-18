@@ -16,14 +16,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@canadian-cart/ui/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart";
-import type { RevenueTrendPoint } from "@/actions/admin/analytics/analytics.action";
+} from "@canadian-cart/ui/ui/chart";
+import type { RevenueTrendPoint } from "@canadian-cart/actions/admin/analytics/analytics.action";
 
 const chartConfig: ChartConfig = {
   revenue: { label: "Revenue ($)", color: "var(--chart-1)" },

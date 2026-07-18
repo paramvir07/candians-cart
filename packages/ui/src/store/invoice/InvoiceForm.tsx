@@ -10,18 +10,18 @@ import {
   Camera,
   FolderOpen,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@canadian-cart/ui/ui/card";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Textarea } from "@canadian-cart/ui/ui/textarea";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Label } from "@canadian-cart/ui/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@canadian-cart/ui/ui/select";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -29,10 +29,10 @@ import {
   createInvoice,
   editInvoice,
   getInvoiceById,
-} from "@/actions/store/invoice/createInvoice";
+} from "@canadian-cart/actions/store/invoice/createInvoice";
 import { InvoiceFormSchema } from "@canadian-cart/types/schemas/store/addProductsValidation";
 import { zodErrorResponse } from "@canadian-cart/types/validation/error";
-import { StoreDocument } from "@/types/store/store";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 
 interface InvoiceFormProps {
   storeId?: string;

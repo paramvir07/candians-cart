@@ -1,12 +1,12 @@
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
+} from "@canadian-cart/ui/ui/card";
 import {
   Bell,
   Users,
@@ -16,9 +16,9 @@ import {
   InboxIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { NotificationReadReceipt } from "@/actions/common/notification.action";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationReadReceipt } from "@canadian-cart/actions/common/notification.action";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@canadian-cart/ui/ui/avatar";
 
 interface Props {
   notification: {

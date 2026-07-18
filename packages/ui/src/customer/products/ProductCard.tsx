@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { IProduct } from "@/types/store/products.types";
-import { DecrementItem, IncrementItem } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { IProduct } from "@canadian-cart/types/store/products.types";
+import { DecrementItem, IncrementItem } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 
 // ── Type matching your Mongoose ProductSchema ──────────────────────────────
 

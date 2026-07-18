@@ -1,4 +1,4 @@
-import { getMyStoreData } from "@canadian-cart/actions/store/getStores.actions";
+import { getMyStoreData } from "@canadian-cart/actions/store/getStores";
 import { StoreProductsList } from "@canadian-cart/ui/admin/store/products/StoreProductsList";
 import { StoreDocument } from "@canadian-cart/types/store/store";
 import Link from "next/link";

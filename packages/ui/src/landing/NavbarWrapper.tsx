@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { auth } from "@canadian-cart/lib/auth/auth";
-import Navbar from "@/components/landing/Navbar";
+import Navbar from "@canadian-cart/ui/landing/Navbar";
 
 export default async function NavbarWrapper() {
   let isLoggedIn = false;

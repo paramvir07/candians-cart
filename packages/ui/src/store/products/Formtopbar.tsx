@@ -1,6 +1,6 @@
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@canadian-cart/ui/ui/alert-dialog";
 
 interface FormTopBarProps {
   isEditMode: boolean;

@@ -1,11 +1,11 @@
 // components/customer/profile/ProfileServer.tsx
-import { getCustomerAndStoreDataAction } from "@/actions/customer/User.action";
-import Navbar from "@/components/customer/landing/Navbar";
-import ProfileHero from "@/components/customer/profile/ProfileHero";
-import ProfileStats from "@/components/customer/profile/ProfileStats";
-import ProfileStore from "@/components/customer/profile/ProfileStore";
-import ProfileContact from "@/components/customer/profile/ProfileContact";
-import LogoutButton from "@/components/customer/profile/LogoutButton";
+import { getCustomerAndStoreDataAction } from "@canadian-cart/actions/customer/User.action";
+import Navbar from "@canadian-cart/ui/customer/landing/Navbar";
+import ProfileHero from "@canadian-cart/ui/customer/profile/ProfileHero";
+import ProfileStats from "@canadian-cart/ui/customer/profile/ProfileStats";
+import ProfileStore from "@canadian-cart/ui/customer/profile/ProfileStore";
+import ProfileContact from "@canadian-cart/ui/customer/profile/ProfileContact";
+import LogoutButton from "@canadian-cart/ui/customer/profile/LogoutButton";
 import {
   Edit,
   Package,
@@ -15,14 +15,14 @@ import {
   ChartSpline,
   KeyRound,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import Link from "next/link";
-import { getOrderCount } from "@/actions/customer/ProductAndStore/Order.Action";
+import { getOrderCount } from "@canadian-cart/actions/customer/ProductAndStore/Order.Action";
 import { Metadata } from "next";
-import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
-import PromotionBanner from "@/components/promotions/PromotionsBanner";
-import { getPromoStats } from "@/actions/promotions/getPromoStats.action";
-import { getReferral } from "@/actions/customer/ReferralAction";
+import CustomerAdvertisements from "@canadian-cart/ui/customer/shared/CustomerAdvertisements";
+import PromotionBanner from "@canadian-cart/ui/promotions/PromotionsBanner";
+import { getPromoStats } from "@canadian-cart/actions/promotions/getPromoStats.action";
+import { getReferral } from "@canadian-cart/actions/customer/ReferralAction";
 
 export const metadata: Metadata = {
   title: "Profile",

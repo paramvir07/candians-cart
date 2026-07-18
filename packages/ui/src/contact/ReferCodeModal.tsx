@@ -6,14 +6,14 @@ import {
   DialogContent,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/ui/ui/dialog";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ArrowRight, Mail, TicketCheck } from "lucide-react";
-import { SendReferralCode } from "@/actions/resend/ResendActions";
+import { SendReferralCode } from "@canadian-cart/actions/resend/ResendActions";
 
 const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),

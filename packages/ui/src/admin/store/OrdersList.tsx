@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@canadian-cart/ui/ui/dialog";
 import {
   Pagination,
   PaginationContent,
@@ -14,7 +14,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@canadian-cart/ui/ui/pagination";
 import { toast } from "sonner";
 import {
   Search,
@@ -37,13 +37,13 @@ import {
   getOrdersPaginated,
   searchOrders,
   getFullOrderDetails,
-} from "@/actions/admin/orders/getOrders.action";
-import { OrderStats } from "@/actions/admin/orders/getOrderStats.action";
-// import OrderDetail from "@/components/shared/users/orders/OrderDetail";
-import OrderDetailInternal from "@/components/admin/orders/OrderDetailsInternal";
+} from "@canadian-cart/actions/admin/orders/getOrders.action";
+import { OrderStats } from "@canadian-cart/actions/admin/orders/getOrderStats.action";
+// import OrderDetail from "@canadian-cart/ui/shared/users/orders/OrderDetail";
+import OrderDetailInternal from "@canadian-cart/ui/admin/orders/OrderDetailsInternal";
 import { format } from "date-fns";
 import { type DateRange as DayPickerDateRange } from "react-day-picker";
-import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
+import { DatePickerWithRange } from "@canadian-cart/ui/admin/analytics/reciept/DatePickerWithRange";
 import { getVancouverTodayString, STORE_TIMEZONE } from "@canadian-cart/lib/timezone";
 
 // ─── useDebounce ────────────────────────────────────────────────────────────────

@@ -8,20 +8,20 @@ import {
   SheetTitle,
   SheetFooter,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+} from "@canadian-cart/ui/ui/sheet";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { Input } from "@canadian-cart/ui/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@canadian-cart/ui/ui/select";
 import { SlidersHorizontal } from "lucide-react";
-import { StoreDocument } from "@/types/store/store";
-import { CustomerFilters } from "@/actions/admin/customers/getCustomers.action";
+import { StoreDocument } from "@canadian-cart/types/store/store";
+import { CustomerFilters } from "@canadian-cart/actions/admin/customers/getCustomers.action";
 import type { EventParticipantStatus } from "@canadian-cart/db/models/customer/customer.model";
 
 const THREE_STATE = ["any", "yes", "no"] as const;

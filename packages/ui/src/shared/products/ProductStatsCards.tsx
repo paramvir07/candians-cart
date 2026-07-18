@@ -1,11 +1,11 @@
-import { ProductStats } from "@/actions/admin/products/getProductStats.action";
+import { ProductStats } from "@canadian-cart/actions/admin/products/getProductStats.action";
 import { Package, TrendingUp, ShoppingCart, HelpCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@canadian-cart/ui/ui/tooltip";
 
 interface ProductStatCardsProps {
   stats: ProductStats;

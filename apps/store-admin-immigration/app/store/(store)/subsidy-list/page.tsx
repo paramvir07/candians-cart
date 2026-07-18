@@ -1,4 +1,4 @@
-import { getSubsidisedList } from "@canadian-cart/actions/admin/subsidyList/subsidyList.actions";
+import { getSubsidisedList } from "@canadian-cart/actions/admin/subsidyList/subsidyList";
 import SubsidyListView from "@canadian-cart/ui/shared/subsidyList/SubsidyListView";
 
 const subsidyList = async () => {

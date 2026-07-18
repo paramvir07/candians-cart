@@ -10,7 +10,7 @@ import {
   ArrowRight,
   HelpCircle,
 } from "lucide-react";
-import type { DashboardStats } from "@/actions/admin/analytics/store/allStoresData.action";
+import type { DashboardStats } from "@canadian-cart/actions/admin/analytics/store/allStoresData.action";
 
 interface StatCardsProps {
   stats: DashboardStats;

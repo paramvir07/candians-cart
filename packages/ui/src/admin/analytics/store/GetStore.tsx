@@ -9,13 +9,13 @@ import {
   Search,
   ArrowRight,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
+import { Button } from "@canadian-cart/ui/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
-import { StoreDocument } from "@/types/store/store";
-import { searchStores } from "@/actions/common/searchStore.action";
-import { SearchBar } from "@/components/shared/SearchBar";
+import { StoreDocument } from "@canadian-cart/types/store/store";
+import { searchStores } from "@canadian-cart/actions/common/searchStore.action";
+import { SearchBar } from "@canadian-cart/ui/shared/SearchBar";
 
 const StoreCardSkeleton = () => (
   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col overflow-hidden animate-pulse">

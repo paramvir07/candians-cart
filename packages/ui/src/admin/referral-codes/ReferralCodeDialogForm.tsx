@@ -3,8 +3,8 @@
 import {
   createReferalCodeAction,
   updateReferalCodeAction,
-} from "@/actions/admin/referalCode.actions";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/actions/admin/referalCode.actions";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -14,17 +14,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Field, FieldGroup } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
-import { Switch } from "@/components/ui/switch";
+} from "@canadian-cart/ui/ui/dialog";
+import { Field, FieldGroup } from "@canadian-cart/ui/ui/field";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { Spinner } from "@canadian-cart/ui/ui/spinner";
+import { Switch } from "@canadian-cart/ui/ui/switch";
 import { Pencil, Plus, Wand2 } from "lucide-react";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { ReferralCode } from "@/types/admin/referralCode";
+import { ReferralCode } from "@canadian-cart/types/admin/referralCode";
 
 type ReferralCodeDialogFormProps = {
   usage: "create" | "update";

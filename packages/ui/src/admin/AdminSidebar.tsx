@@ -25,9 +25,9 @@ import LogoutButton from "../shared/LogoutButton";
 import { usePathname } from "next/navigation";
 import { cn } from "@/packages/ui/src/utils";
 import { useState, useEffect } from "react";
-import { getPendingPriceChangesCount } from "@/actions/admin/invoice/getPriceChange";
+import { getPendingPriceChangesCount } from "@canadian-cart/actions/admin/invoice/getPriceChange";
 import Logo from "../shared/Logo";
-import { getPendingRequests } from "@/actions/admin/Requests/request";
+import { getPendingRequests } from "@canadian-cart/actions/admin/Requests/request";
 
 const NAV_GROUPS = [
   {

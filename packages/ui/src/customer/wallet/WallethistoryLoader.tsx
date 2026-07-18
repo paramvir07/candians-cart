@@ -1,7 +1,7 @@
-import { getWalletTopUpHistory } from "@/actions/common/getWalletRechargeHistory.action";
-import { AnalyticsPanel } from "@/components/customer/walletHistory/AnalyticsPanel";
-import { WalletHistoryClient } from "@/components/customer/walletHistory/WalletHistoryClient";
-import { WalletStatsHeader } from "@/components/customer/walletHistory/WalletStatsHeader";
+import { getWalletTopUpHistory } from "@canadian-cart/actions/common/getWalletRechargeHistory.action";
+import { AnalyticsPanel } from "@canadian-cart/ui/customer/walletHistory/AnalyticsPanel";
+import { WalletHistoryClient } from "@canadian-cart/ui/customer/walletHistory/WalletHistoryClient";
+import { WalletStatsHeader } from "@canadian-cart/ui/customer/walletHistory/WalletStatsHeader";
 import { unifyTransactions } from "@canadian-cart/lib/walletHistory";
 import { AlertTriangle } from "lucide-react";
 

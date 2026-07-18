@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Gift, Users, ArrowRight, Sparkles, Clock } from "lucide-react";
-import { PromoStats } from "@/types/promotions/promo.types";
+import { PromoStats } from "@canadian-cart/types/promotions/promo.types";
 
 interface PromotionBannerProps {
   initialStats: PromoStats;

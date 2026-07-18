@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@canadian-cart/ui/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -9,12 +9,12 @@ import {
   DialogTitle,
   DialogDescription,
   DialogClose,
-} from "@/components/ui/dialog";
+} from "@canadian-cart/ui/ui/dialog";
 import { X, ChevronDown, Search, PartyPopper } from "lucide-react";
 import {
   SendReferralRequest,
   getAlreadySentMemberIds,
-} from "@/actions/customer/ReferralRequest.Action";
+} from "@canadian-cart/actions/customer/ReferralRequest.Action";
 import {
   UserRound,
   Phone,

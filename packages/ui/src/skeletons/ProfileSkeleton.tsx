@@ -1,7 +1,7 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { ChevronLeft } from "lucide-react";
-import Navbar from "@/components/customer/landing/Navbar";
+import Navbar from "@canadian-cart/ui/customer/landing/Navbar";
 
 export default function ProfileSkeleton() {
   return (

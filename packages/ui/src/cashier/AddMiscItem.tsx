@@ -6,17 +6,17 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/ui/ui/dialog";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@canadian-cart/ui/ui/select";
 import {
   Package,
   Barcode,

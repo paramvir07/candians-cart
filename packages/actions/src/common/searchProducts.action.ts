@@ -4,7 +4,7 @@ import { dbConnect } from "@canadian-cart/db/dbConnect";
 import Product from "@canadian-cart/db/models/store/products.model";
 import { ProductActionResponse } from "@canadian-cart/types/store/products.types";
 import mongoose, { PipelineStage } from "mongoose";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import Customer from "@canadian-cart/db/models/customer/customer.model";
 import { cache as reactCache } from "react";
 

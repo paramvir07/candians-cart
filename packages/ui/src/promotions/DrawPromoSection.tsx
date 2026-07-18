@@ -13,11 +13,11 @@ import {
   Gift,
   UserPlus,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { DrawStats, DrawWinner } from "@/types/promotions/draw";
-import { joinDraw } from "@/actions/promotions/joinDraw.action";
+import { Card } from "@canadian-cart/ui/ui/card";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Separator } from "@canadian-cart/ui/ui/separator";
+import { DrawStats, DrawWinner } from "@canadian-cart/types/promotions/draw";
+import { joinDraw } from "@canadian-cart/actions/promotions/joinDraw.action";
 
 // ─── TikTok icon ──────────────────────────────────────────────────────────────
 function TikTokIcon({ className }: { className?: string }) {

@@ -2,7 +2,7 @@ import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card"
+} from "@canadian-cart/ui/ui/hover-card"
 import { Info } from "lucide-react"
 
 export function WalletInfo() {

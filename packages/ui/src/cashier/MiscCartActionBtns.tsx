@@ -1,13 +1,13 @@
 "use client";
 
 import { Trash2, Plus, Minus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { useRef, useState } from "react";
 import {
   IncrementMiscItem,
   DecrementMiscItem,
   RemoveMiscItem,
-} from "@/actions/cashier/MiscItem";
+} from "@canadian-cart/actions/cashier/MiscItem";
 
 const fmt = (cents: number) => (cents / 100).toFixed(2);
 

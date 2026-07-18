@@ -1,7 +1,7 @@
-import { getSubsidisedList } from "@canadian-cart/actions/admin/subsidyList/subsidyList.actions";
+import { getSubsidisedList } from "@canadian-cart/actions/admin/subsidyList/subsidyList";
 import CashierSidebar from "@canadian-cart/ui/cashier/CashierSlidebar";
 import SubsidyListView from "@canadian-cart/ui/shared/subsidyList/SubsidyListView";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import { Cashier } from "@canadian-cart/db/models/cashier/cashier.model";
 
 const subsidyList = async () => {

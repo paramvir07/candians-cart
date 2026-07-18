@@ -1,5 +1,5 @@
-import getStoreAndProduct from "@/actions/customer/ProductAndStore/getAssociatedStore";
-import { getCachedStoreProducts } from "@/actions/cache/product.cache";
+import getStoreAndProduct from "@canadian-cart/actions/customer/ProductAndStore/getAssociatedStore";
+import { getCachedStoreProducts } from "@canadian-cart/actions/cache/product.cache";
 import { ProductsSection } from "./ProductsSection";
 
 export async function ProductsSectionLoader() {

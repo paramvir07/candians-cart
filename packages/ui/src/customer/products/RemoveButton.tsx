@@ -1,6 +1,6 @@
 "use client";
 import { Trash2 } from "lucide-react";
-import { RemoveItem } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { RemoveItem } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 import { useRef, useState } from "react";
 
 interface Props {

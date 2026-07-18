@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDate } from "@canadian-cart/lib/walletHistory";
-import { UnifiedTransaction } from "@/types/customer/WalletHistory";
+import { UnifiedTransaction } from "@canadian-cart/types/customer/WalletHistory";
 
 export async function downloadTransactionPDF(transaction: UnifiedTransaction) {
   let body: string;

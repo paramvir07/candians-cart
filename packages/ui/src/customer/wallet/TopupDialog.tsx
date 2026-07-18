@@ -1,13 +1,13 @@
 "use client";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
+} from "@canadian-cart/ui/ui/dialog";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   Delete,
   Wallet,
@@ -18,8 +18,8 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
-import { PaymentModeToggle } from "@/components/cashier/wallet/PaymentModeToggle";
-import { walletTopUpAction } from "@/actions/cashier/walletTopUp.actions";
+import { PaymentModeToggle } from "@canadian-cart/ui/cashier/wallet/PaymentModeToggle";
+import { walletTopUpAction } from "@canadian-cart/actions/cashier/walletTopUp.actions";
 import { toast } from "sonner";
 
 const PRESETS = [5, 10, 20, 50, 100, 150, 200, 250];

@@ -14,7 +14,7 @@ import { ICartItem } from "@canadian-cart/types/customer/CustomerCart";
 import { CartTotals } from "@canadian-cart/ui/shared/users/CheckOutActions";
 import { IProduct } from "@canadian-cart/types/store/products.types";
 import Customer from "@canadian-cart/db/models/customer/customer.model";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import OrderModel from "@canadian-cart/db/models/customer/Orders.Model";
 import "@canadian-cart/db/models/customer/MiscItem.model";
 import ReferralCode from "@canadian-cart/db/models/admin/referralCode.model";

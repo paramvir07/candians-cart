@@ -2,13 +2,13 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
-import Logo from "@/components/shared/Logo";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Spinner } from "@canadian-cart/ui/ui/spinner";
+import Logo from "@canadian-cart/ui/shared/Logo";
 import { cn } from "@/packages/ui/src/utils";
 import { Phone, ArrowLeft, ShieldCheck } from "lucide-react";
-import { sendPhoneOTPAction } from "@/actions/auth/verifiyPhone.actions";
+import { sendPhoneOTPAction } from "@canadian-cart/actions/auth/verifiyPhone.actions";
 import { authClient } from "@canadian-cart/lib/auth/auth-client";
 
 type Step = "phone" | "otp";

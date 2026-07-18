@@ -11,7 +11,7 @@ interface ProductDialogProps {
   onDeleteConfirm?: () => void;
 }
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@canadian-cart/ui/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@canadian-cart/ui/ui/alert-dialog";
 import {
   Sparkles,
   PackageX,
@@ -35,11 +35,11 @@ import {
   Trash2,
 } from "lucide-react";
 import { ProductCardRole } from "./ProductCard";
-import { IProduct } from "@/types/store/products.types";
+import { IProduct } from "@canadian-cart/types/store/products.types";
 import Image from "next/image";
 import Link from "next/link";
 import { fmt } from "@canadian-cart/lib/fomatPrice";
-import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
+import { CategoryIllustration } from "@canadian-cart/ui/customer/shared/CategoryIllustration";
 
 export const ProductDetailDialog = ({
   product,

@@ -13,20 +13,20 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@canadian-cart/ui/ui/switch";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Badge } from "@canadian-cart/ui/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@canadian-cart/ui/ui/select";
 import {
   getPayoutScheduleAction,
   updatePayoutScheduleAction,
-} from "@/actions/admin/payoutSchedule/UpdatePayoutSchedule.action";
+} from "@canadian-cart/actions/admin/payoutSchedule/UpdatePayoutSchedule.action";
 import { PayoutFrequency } from "@canadian-cart/db/models/store/store.model";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────

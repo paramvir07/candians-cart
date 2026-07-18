@@ -36,7 +36,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from "@canadian-cart/ui/ui/collapsible";
 import { useAtom } from "jotai";
 import { OrderSubsidyValue } from "@/atoms/customer/CartAtom";
 // ─── Types ──────────────────────────────────────────────────────────────────────

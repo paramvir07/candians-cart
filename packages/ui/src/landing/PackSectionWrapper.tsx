@@ -3,7 +3,7 @@
 
 import { headers } from "next/headers";
 import { auth } from "@canadian-cart/lib/auth/auth";
-import PacksSection from "@/components/landing/Packs";
+import PacksSection from "@canadian-cart/ui/landing/Packs";
 
 export default async function PacksSectionWrapper() {
   let isLoggedIn = false;

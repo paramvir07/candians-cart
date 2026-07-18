@@ -3,16 +3,16 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
-import Logo from "@/components/shared/Logo";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Spinner } from "@canadian-cart/ui/ui/spinner";
+import Logo from "@canadian-cart/ui/shared/Logo";
 import { cn } from "@/packages/ui/src/utils";
 import {
   sendForgotPasswordOTPAction,
   verifyForgotPasswordOTPAction,
   resetPasswordWithPhoneAction,
-} from "@/actions/auth/forgotPassword.actions";
+} from "@canadian-cart/actions/auth/forgotPassword.actions";
 import {
   Phone,
   ShieldCheck,

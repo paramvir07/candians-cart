@@ -8,24 +8,24 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetFooter,
-} from "@/components/ui/sheet";
+} from "@canadian-cart/ui/ui/sheet";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
+} from "@canadian-cart/ui/ui/select";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Slider } from "@canadian-cart/ui/ui/slider";
+import { Separator } from "@canadian-cart/ui/ui/separator";
+import { Input } from "@canadian-cart/ui/ui/input";
 import { SlidersHorizontal, Check, AlertCircle, RotateCcw } from "lucide-react";
 import { cn } from "@/packages/ui/src/utils";
-import { ProductCategory, TaxRate } from "@/types/store/products.types";
-import { ProductFilters } from "@/actions/admin/products/getProductsFiltered.action";
-import { getCategoryCounts } from "@/actions/admin/products/getProductCategoryNumber";
+import { ProductCategory, TaxRate } from "@canadian-cart/types/store/products.types";
+import { ProductFilters } from "@canadian-cart/actions/admin/products/getProductsFiltered.action";
+import { getCategoryCounts } from "@canadian-cart/actions/admin/products/getProductCategoryNumber";
 
 // ── Constants ─────────────────────────────────────────────────────
 const CATEGORIES: { label: ProductCategory; emoji: string }[] = [

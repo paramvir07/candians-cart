@@ -4,10 +4,10 @@ import { useEffect, useState, useRef } from "react";
 import Logo from "../shared/Logo";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { cn } from "@/packages/ui/src/utils";
 import { ChevronDown, MapPin, Menu, X, Home, LogOut } from "lucide-react";
-import { logoutAction } from "@/actions/auth/login-logout.actions";
+import { logoutAction } from "@canadian-cart/actions/auth/login-logout.actions";
 
 type TNavLink =
   | { label: string; href: string; scrollTo?: string; children?: never }

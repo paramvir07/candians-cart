@@ -1,7 +1,7 @@
 import { Banknote, TrendingUp, TrendingDown, Wallet, CalendarCheck } from "lucide-react";
-import { getPayoutAnalyticsAction } from "@/actions/store/payouts/getStorePayouts";
+import { getPayoutAnalyticsAction } from "@canadian-cart/actions/store/payouts/getStorePayouts";
 import { fmt } from "@canadian-cart/lib/fomatPrice";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
 
 export default async function PayoutStatsCards({ storeId }: { storeId: string }) {
   const result = await getPayoutAnalyticsAction(storeId);

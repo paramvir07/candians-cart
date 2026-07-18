@@ -1,4 +1,4 @@
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import Store from "@canadian-cart/db/models/store/store.model";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import InvoicePageClient from "@canadian-cart/ui/store/invoice/InvoicePageClient"; // Adjust path if needed

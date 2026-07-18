@@ -1,6 +1,6 @@
 "use client";
 
-import { SubsidyItem } from "@/types/admin/subsidyList.types";
+import { SubsidyItem } from "@canadian-cart/types/admin/subsidyList.types";
 import { useState, useMemo } from "react";
 
 interface SubsidyListViewProps {

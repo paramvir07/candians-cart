@@ -1,4 +1,4 @@
-import { StoreDashboardStats } from "@/actions/store/getStoreDashboard.actions";
+import { StoreDashboardStats } from "@canadian-cart/actions/store/getStoreDashboard.actions";
 import {
   TrendingUp,
   TrendingDown,

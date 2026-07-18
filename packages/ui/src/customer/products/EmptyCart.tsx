@@ -1,5 +1,5 @@
-import Navbar from "@/components/customer/landing/Navbar";
-import { Button } from "@/components/ui/button";
+import Navbar from "@canadian-cart/ui/customer/landing/Navbar";
+import { Button } from "@canadian-cart/ui/ui/button";
 import Link from "next/link";
 import { AnimatedEmptyCart } from "./emptyCartAnimation";
 

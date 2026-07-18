@@ -12,19 +12,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { getVendorPayoutsAction, SerializedStorePayout } from "@/actions/store/payouts/getStorePayouts";
+} from "@canadian-cart/ui/ui/table";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@canadian-cart/ui/ui/select";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { getVendorPayoutsAction, SerializedStorePayout } from "@canadian-cart/actions/store/payouts/getStorePayouts";
 import { Loader2, ReceiptText, ArrowRight, Download, Info } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@canadian-cart/ui/ui/tooltip";
 
 const formatCurrency = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 

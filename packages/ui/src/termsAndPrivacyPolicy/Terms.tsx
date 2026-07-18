@@ -1,15 +1,15 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@canadian-cart/ui/ui/scroll-area";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from "@canadian-cart/ui/ui/sheet";
 import {
   ShieldCheck,
   FileText,

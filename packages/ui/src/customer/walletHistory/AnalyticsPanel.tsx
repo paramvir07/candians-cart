@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { TrendingUp, Wifi, Store, Gift } from "lucide-react";
-import { UnifiedTransaction } from "@/types/customer/WalletHistory";
+import { UnifiedTransaction } from "@canadian-cart/types/customer/WalletHistory";
 import { formatCurrency, getAnalytics } from "@canadian-cart/lib/walletHistory";
 
 interface AnalyticsPanelProps {

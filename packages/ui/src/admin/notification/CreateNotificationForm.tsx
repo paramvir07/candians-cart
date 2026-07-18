@@ -6,11 +6,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Textarea } from "@canadian-cart/ui/ui/textarea";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   Form,
   FormControl,
@@ -19,13 +19,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@canadian-cart/ui/ui/form";
 
 import {
   createPublicNotificationSchema,
   type CreatePublicNotificationInput,
 } from "@canadian-cart/types/schemas/notification/notification";
-import { createGlobalNotification } from "@/actions/common/notification.action";
+import { createGlobalNotification } from "@canadian-cart/actions/common/notification.action";
 
 import { Bell, Globe, Send, Loader2, Info } from "lucide-react";
 

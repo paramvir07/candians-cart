@@ -1,6 +1,6 @@
 "use server";
 
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import Product from "@canadian-cart/db/models/store/products.model";
 import Store from "@canadian-cart/db/models/store/store.model";
@@ -47,7 +47,7 @@ export async function getSingleProduct(
       createdAt: safeIsoDate(product.createdAt),
       updatedAt: safeIsoDate(product.updatedAt),
       // Fix for the previous images.map error
-      images: (product.images || []).map((img) => ({
+      images: (product.images || []).map((img: { url: string; fileId: string; _id?: string }) => ({
         url: img.url,
         fileId: img.fileId,
         _id: img._id?.toString(),

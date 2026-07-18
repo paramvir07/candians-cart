@@ -7,7 +7,7 @@ import ProductInvoice from "@canadian-cart/db/models/store/invoice.model";
 import { InvoiceFormSchema } from "@canadian-cart/types/schemas/store/addProductsValidation";
 import { z } from "zod";
 import { zodErrorResponse } from "@canadian-cart/types/validation/error";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import ImageKit from "@imagekit/nodejs";
 import ProductsModel from "@canadian-cart/db/models/store/products.model";
 import { GetInvoiceResponse } from "@canadian-cart/types/store/invoice.types";

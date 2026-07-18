@@ -12,29 +12,29 @@ import {
   X,
   Upload,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Label } from "@canadian-cart/ui/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@canadian-cart/ui/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
+} from "@canadian-cart/ui/ui/dialog";
+import { Switch } from "@canadian-cart/ui/ui/switch";
 import { toast } from "sonner";
 import { categories as CATEGORIES } from "@canadian-cart/lib/categories";
-import { createCashierProduct } from "@/actions/cashier/CashierProduct";
+import { createCashierProduct } from "@canadian-cart/actions/cashier/CashierProduct";
 import { CashierCreateProductSchema } from "@canadian-cart/types/schemas/cashier/cashierProductSchema";
-import { AddtoCart } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { AddtoCart } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 
 // ── types ─────────────────────────────────────────────────────────────────────
 

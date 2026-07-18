@@ -23,28 +23,28 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from "@canadian-cart/ui/ui/collapsible";
+import { Avatar, AvatarFallback, AvatarImage } from "@canadian-cart/ui/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { setReferralInvites } from "@/actions/customer/ReferralAction";
+} from "@canadian-cart/ui/ui/tooltip";
+import { setReferralInvites } from "@canadian-cart/actions/customer/ReferralAction";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/ui/ui/dialog";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
+} from "@canadian-cart/ui/ui/popover";
+import { Switch } from "@canadian-cart/ui/ui/switch";
 import Link from "next/link";
 import { getReferralShareMessage, getReferralUrl } from "@canadian-cart/lib/shareMessage";
 import { QRCodeSVG } from "qrcode.react";

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
+import { Input } from "@canadian-cart/ui/ui/input";
 import { toast } from "sonner";
 import { Search, PackageOpen, CirclePlus, Store, X } from "lucide-react";
 import Link from "next/link";
@@ -16,26 +16,26 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@canadian-cart/ui/ui/pagination";
 import { ProductCard, ProductCardRole } from "./ProductCard";
-import { IProduct } from "@/types/store/products.types";
-import { Button } from "@/components/ui/button";
+import { IProduct } from "@canadian-cart/types/store/products.types";
+import { Button } from "@canadian-cart/ui/ui/button";
 
 // Server Actions
 import {
   AdminProduct,
   getStoreProductsPaginated,
-} from "@/actions/admin/products/getProducts.action";
-import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
+} from "@canadian-cart/actions/admin/products/getProducts.action";
+import { searchProductsByUPC } from "@canadian-cart/actions/common/searchProducts.action";
 import {
   getStoreProductsFiltered,
   ProductFilters,
   searchProductsWithFilters,
-} from "@/actions/admin/products/getProductsFiltered.action";
+} from "@canadian-cart/actions/admin/products/getProductsFiltered.action";
 
 // UI Components
-import QrScannerButton from "@/components/shared/users/QrScannerButton";
-import { ProductFiltersSheet } from "@/components/shared/filters/ProductFilterSheet";
+import QrScannerButton from "@canadian-cart/ui/shared/users/QrScannerButton";
+import { ProductFiltersSheet } from "@canadian-cart/ui/shared/filters/ProductFilterSheet";
 
 const ProductCardSkeleton = () => (
   <div className="bg-card rounded-2xl border border-border shadow-sm flex flex-col overflow-hidden">

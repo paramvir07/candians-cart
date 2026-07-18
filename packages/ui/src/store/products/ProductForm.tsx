@@ -5,7 +5,7 @@ import { Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@canadian-cart/ui/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,13 +24,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@canadian-cart/ui/ui/alert-dialog";
+import { ScrollArea } from "@canadian-cart/ui/ui/scroll-area";
 
 // Server actions
-import { createProduct } from "@/actions/store/products/addProducts";
-import { updateProduct } from "@/actions/store/products/editProduct";
-import { searchProducts } from "@/actions/common/searchProducts.action";
+import { createProduct } from "@canadian-cart/actions/store/products/addProducts";
+import { updateProduct } from "@canadian-cart/actions/store/products/editProduct";
+import { searchProducts } from "@canadian-cart/actions/common/searchProducts.action";
 import {
   createProductFormSchema,
   ProductFormValues,
@@ -38,14 +38,14 @@ import {
 import { zodErrorResponse } from "@canadian-cart/types/validation/error";
 
 // Types
-import { IProduct } from "@/types/store/products.types";
+import { IProduct } from "@canadian-cart/types/store/products.types";
 
 // Child components — pure UI, no logic
 import { FormTopBar } from "./Formtopbar";
 import { BasicInfoSection } from "./Basicinfosection";
 import { FinancialsSection } from "./Financialssection";
 import { RightSidebar } from "./Rightsidebar";
-import { deleteProduct } from "@/actions/store/products/deleteProduct";
+import { deleteProduct } from "@canadian-cart/actions/store/products/deleteProduct";
 
 interface ProductFormProps {
   initialData?: IProduct | null;

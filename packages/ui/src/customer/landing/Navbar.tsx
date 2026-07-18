@@ -1,15 +1,15 @@
-import Logo from "@/components/shared/Logo";
+import Logo from "@canadian-cart/ui/shared/Logo";
 import SearchBar from "./searchBar";
 import { Search, ShoppingCartIcon, Wallet } from "lucide-react";
 import Link from "next/link";
-import { getCustomerDataAction } from "@/actions/customer/User.action";
-import { Customer } from "@/types/customer/customer";
-import { getCartItemsCount } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { getCustomerDataAction } from "@canadian-cart/actions/customer/User.action";
+import { Customer } from "@canadian-cart/types/customer/customer";
+import { getCartItemsCount } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 import { NavAvatarMenu } from "./NavMenu";
 import {
   getCustomerNotifications,
   getUnreadNotificationCount,
-} from "@/actions/common/notification.action";
+} from "@canadian-cart/actions/common/notification.action";
 import { NotificationDropdown } from "../notification/NotificationDropdown";
 
 const Navbar = async () => {

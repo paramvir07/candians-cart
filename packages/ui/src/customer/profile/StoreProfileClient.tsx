@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Clock } from "lucide-react";
-import { StoreInfoDialog } from "@/components/customer/signup/StoreInfoDialog";
-import { StoreDocument } from "@/types/store/store";
+import { StoreInfoDialog } from "@canadian-cart/ui/customer/signup/StoreInfoDialog";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 import { FormattedDay } from "@canadian-cart/lib/storeInfoUtils";
 import { cn } from "@/packages/ui/src/utils";
 

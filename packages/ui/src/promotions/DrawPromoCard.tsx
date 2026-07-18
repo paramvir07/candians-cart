@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Users, ArrowRight, Sparkles, Clock, Trophy } from "lucide-react";
-import { DrawStats } from "@/types/promotions/draw";
+import { DrawStats } from "@canadian-cart/types/promotions/draw";
 
 interface DrawPromoCardProps {
   initialStats: DrawStats;

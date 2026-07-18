@@ -1,8 +1,8 @@
 "use client";
 
-import { AddtoCart } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { AddtoCart } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 import ProductCard from "./ProductCard";
-import { IProduct } from "@/types/store/products.types"; // Adjust import path
+import { IProduct } from "@canadian-cart/types/store/products.types"; // Adjust import path
 
 interface ProductGridProps {
   products: IProduct[];

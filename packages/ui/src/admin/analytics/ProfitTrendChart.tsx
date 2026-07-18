@@ -14,14 +14,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@canadian-cart/ui/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart";
-import type { ProfitTrendPoint } from "@/actions/admin/analytics/analytics.action";
+} from "@canadian-cart/ui/ui/chart";
+import type { ProfitTrendPoint } from "@canadian-cart/actions/admin/analytics/analytics.action";
 
 const chartConfig: ChartConfig = {
   profit: { label: "Platform Profit ($)", color: "var(--chart-1)" },

@@ -1,6 +1,6 @@
 "use client";
 
-import { RecentPayoutReceipt } from "@/actions/admin/analytics/store/allStoresData.action";
+import { RecentPayoutReceipt } from "@canadian-cart/actions/admin/analytics/store/allStoresData.action";
 import { Receipt } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation"; // Changed from "next/router"

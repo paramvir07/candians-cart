@@ -1,9 +1,9 @@
 import { Suspense } from "react";
-import Navbar from "@/components/customer/landing/Navbar";
-import { getAllOrders, getOrders } from "@/actions/customer/ProductAndStore/Order.Action";
-import { OrderWithProductsClient } from "@/types/customer/OrdersClient";
-import NoOrdersScreen from "@/components/customer/orderHistory/NoOrdersScreen";
-import OrdersHistorySkeleton from "@/components/skeletons/OrderHistorySkeleton";
+import Navbar from "@canadian-cart/ui/customer/landing/Navbar";
+import { getAllOrders, getOrders } from "@canadian-cart/actions/customer/ProductAndStore/Order.Action";
+import { OrderWithProductsClient } from "@canadian-cart/types/customer/OrdersClient";
+import NoOrdersScreen from "@canadian-cart/ui/customer/orderHistory/NoOrdersScreen";
+import OrdersHistorySkeleton from "@canadian-cart/ui/skeletons/OrderHistorySkeleton";
 import OrdersHistoryClient from "./OrdersHistoryClient";
 
 async function OrdersLoader({

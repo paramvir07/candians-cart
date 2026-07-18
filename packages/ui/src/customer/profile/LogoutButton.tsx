@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { LogOut } from "lucide-react";
-import { logoutAction } from "@/actions/auth/login-logout.actions";
+import { logoutAction } from "@canadian-cart/actions/auth/login-logout.actions";
 import { useRouter } from "next/navigation";
 
 type Props = {

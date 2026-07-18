@@ -11,7 +11,7 @@
 //   User,
 // } from "lucide-react";
 
-// import { Button } from "@/components/ui/button";
+// import { Button } from "@canadian-cart/ui/ui/button";
 // import {
 //   Command,
 //   CommandEmpty,
@@ -19,13 +19,13 @@
 //   CommandInput,
 //   CommandItem,
 //   CommandList,
-// } from "@/components/ui/command";
+// } from "@canadian-cart/ui/ui/command";
 // import {
 //   Popover,
 //   PopoverContent,
 //   PopoverTrigger,
-// } from "@/components/ui/popover";
-// import { Input } from "@/components/ui/input";
+// } from "@canadian-cart/ui/ui/popover";
+// import { Input } from "@canadian-cart/ui/ui/input";
 // import {
 //   Table,
 //   TableBody,
@@ -33,9 +33,9 @@
 //   TableHead,
 //   TableHeader,
 //   TableRow,
-// } from "@/components/ui/table";
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { IProduct } from "@/types/store/products.types";
+// } from "@canadian-cart/ui/ui/table";
+// import { Card, CardContent, CardHeader, CardTitle } from "@canadian-cart/ui/ui/card";
+// import { IProduct } from "@canadian-cart/types/store/products.types";
 
 // // --- TYPES ---
 // // These should ideally match what's in your page.tsx or a shared types file

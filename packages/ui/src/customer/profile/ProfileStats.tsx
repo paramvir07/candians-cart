@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { getMemberSince, getMemberYear } from "@canadian-cart/lib/memberSince";
-import { Customer } from "@/types/customer/customer";
+import { Customer } from "@canadian-cart/types/customer/customer";
 import { DollarSign, ShoppingBag, CalendarDays, TrendingUp, ChartSpline } from "lucide-react";
 import Link from "next/link";
 

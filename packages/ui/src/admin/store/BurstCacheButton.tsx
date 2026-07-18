@@ -1,9 +1,9 @@
 "use client";
 
 import { useTransition } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { toast } from "sonner";
-import { burstStoreProductsCache } from "@/actions/admin/products/revalidateCacheForStore";
+import { burstStoreProductsCache } from "@canadian-cart/actions/admin/products/revalidateCacheForStore";
 import { RefreshCw } from "lucide-react";
 
 interface BurstCacheButtonProps {

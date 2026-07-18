@@ -8,15 +8,15 @@ import { useDebounce } from "use-debounce";
 import {
   getRecieptDataByDateRange,
   AggregatedReciept,
-} from "@/actions/admin/reciept/generateReciept";
+} from "@canadian-cart/actions/admin/reciept/generateReciept";
 import {
   getStores,
   GetStoresResponse,
-} from "@/actions/store/getStores.actions";
-import { StoreDocument } from "@/types/store/store";
+} from "@canadian-cart/actions/store/getStores.actions";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 import { DownloadButton } from "./DownloadButton";
 import { DatePickerWithRange } from "./DatePickerWithRange";
-import { saveStorePayoutAction } from "@/actions/admin/reciept/saveStorePayout";
+import { saveStorePayoutAction } from "@canadian-cart/actions/admin/reciept/saveStorePayout";
 import { toast } from "sonner";
 
 // Utility Imports
@@ -29,19 +29,19 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@canadian-cart/ui/ui/select";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/ui/ui/card";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
+import { Separator } from "@canadian-cart/ui/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@canadian-cart/ui/ui/alert";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   AlertCircle,
   Store,

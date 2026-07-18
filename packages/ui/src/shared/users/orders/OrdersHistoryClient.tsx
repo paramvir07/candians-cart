@@ -4,12 +4,12 @@ import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, Package, Search } from "lucide-react";
 import { type DateRange } from "react-day-picker";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { OrderWithProductsClient } from "@/types/customer/OrdersClient";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { OrderWithProductsClient } from "@canadian-cart/types/customer/OrdersClient";
 import OrderCard from "./OrderCard";
-import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
-import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange"; // adjust path to wherever this actually lives
+import CustomerAdvertisements from "@canadian-cart/ui/customer/shared/CustomerAdvertisements";
+import { DatePickerWithRange } from "@canadian-cart/ui/admin/analytics/reciept/DatePickerWithRange"; // adjust path to wherever this actually lives
 import { useDebounce } from "use-debounce";
 
 import {
@@ -20,14 +20,14 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@canadian-cart/ui/ui/pagination";
 
 import {
   getAllOrders,
   getOrders,
   searchAllOrders,
   searchOrders,
-} from "@/actions/customer/ProductAndStore/Order.Action";
+} from "@canadian-cart/actions/customer/ProductAndStore/Order.Action";
 
 const norm = (v: unknown) =>
   String(v ?? "")

@@ -1,18 +1,18 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Textarea } from "@canadian-cart/ui/ui/textarea";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { FormState } from "@/types/customer/helpForm";
-import { ContactSubmit } from "@/actions/customer/Contact";
+} from "@canadian-cart/ui/ui/select";
+import { FormState } from "@canadian-cart/types/customer/helpForm";
+import { ContactSubmit } from "@canadian-cart/actions/customer/Contact";
 import { ReferCodeModal } from "./ReferCodeModal";
 
 const TOPICS = [

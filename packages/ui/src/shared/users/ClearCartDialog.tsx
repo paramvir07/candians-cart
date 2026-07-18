@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +12,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogClose,
-} from "@/components/ui/dialog";
-import { ClearCart } from "@/actions/customer/ProductAndStore/Cart.Action";
+} from "@canadian-cart/ui/ui/dialog";
+import { ClearCart } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 
 export default function ClearCartDialog({
   customerId,

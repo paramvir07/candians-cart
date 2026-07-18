@@ -5,17 +5,17 @@ import { Button } from "../../ui/button";
 import Link from "next/link";
 import { stepAtom } from "@/atoms/customer/signUp";
 import { useAtom } from "jotai";
-import { StoreDocument } from "@/types/store/store";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 import Location from "./Location";
 import Terms from "./Terms";
 import StoreSelected from "./StoreSelected";
 import Budget from "./Budget";
 import SelectStore from "./SelectStore";
-import { SignupForm } from "@/components/auth/signup-form";
+import { SignupForm } from "@canadian-cart/ui/auth/signup-form";
 import { SignupCarousel } from "./SignupCarousel";
 import { ReferralCodeForm } from "./ReferralCodeForm";
 import Image from "next/image";
-import Logo from "@/components/shared/Logo";
+import Logo from "@canadian-cart/ui/shared/Logo";
 
 const STEPS = ["code", "location", "terms", "budget", "selectStore"] as const;
 

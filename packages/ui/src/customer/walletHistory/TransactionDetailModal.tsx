@@ -6,8 +6,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/ui/ui/dialog";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   CheckCircle2,
   Clock,
@@ -21,7 +21,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/packages/ui/src/utils";
-import { UnifiedTransaction } from "@/types/customer/WalletHistory";
+import { UnifiedTransaction } from "@canadian-cart/types/customer/WalletHistory";
 import { formatCurrency, formatDate, formatTime } from "@canadian-cart/lib/walletHistory";
 import { downloadTransactionPDF } from "./DownloadPdf";
 

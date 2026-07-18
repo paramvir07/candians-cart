@@ -3,7 +3,7 @@
 import { useState } from "react";
 import appIcon from "@/app/icon.jpg";
 import { QRCodeSVG } from "qrcode.react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,7 +13,7 @@ import {
   DialogOverlay,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@canadian-cart/ui/ui/dialog";
 import { Check, Copy, QrCode, ReceiptText, X } from "lucide-react";
 
 type QrCodeButtonProps = {

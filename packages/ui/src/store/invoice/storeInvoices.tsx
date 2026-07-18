@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import InvoiceCard, { InvoiceProps } from "@/components/store/invoice/InvoiceCard";
+import InvoiceCard, { InvoiceProps } from "@canadian-cart/ui/store/invoice/InvoiceCard";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
 import { CirclePlus, Receipt } from "lucide-react";
 import { toast } from "sonner";
-import { getInvoices } from "@/actions/store/invoice/getInvoices"; // Adjust path based on your folder structure
+import { getInvoices } from "@canadian-cart/actions/store/invoice/getInvoices"; // Adjust path based on your folder structure
 
 // Reusable Skeleton for loading state
 const InvoiceSkeleton = () => (

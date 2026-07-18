@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Gift, Loader2, Sparkles, Share2, Wallet } from "lucide-react";
-import { GenerateReferralCode } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { GenerateReferralCode } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 
 const perks = [
   {

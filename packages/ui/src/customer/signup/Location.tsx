@@ -9,7 +9,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@canadian-cart/ui/ui/popover";
 import { cn } from "@/packages/ui/src/utils";
 
 const CITIES = [

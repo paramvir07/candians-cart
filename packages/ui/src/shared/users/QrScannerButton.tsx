@@ -2,13 +2,13 @@
 
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@canadian-cart/ui/ui/dialog";
 import { QrCode, X, ScanLine, Barcode } from "lucide-react";
 
 const Scanner = dynamic(

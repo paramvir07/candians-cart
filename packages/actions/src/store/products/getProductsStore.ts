@@ -8,7 +8,7 @@ import {
   ProductImage,
   IProductDB,
 } from "@canadian-cart/types/store/products.types";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import Store from "@canadian-cart/db/models/store/store.model";
 
 function serializeProduct(product: IProductDB): IProduct {

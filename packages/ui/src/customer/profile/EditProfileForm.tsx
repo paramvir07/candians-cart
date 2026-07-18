@@ -11,11 +11,11 @@ import {
 import {
   editUserProfile,
   type ProfileState,
-} from "@/actions/customer/userEdit.action";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
+} from "@canadian-cart/actions/customer/userEdit.action";
+import { Avatar, AvatarFallback, AvatarImage } from "@canadian-cart/ui/ui/avatar";
+import { Input } from "@canadian-cart/ui/ui/input";
 import { toast } from "sonner";
-import { Spinner } from "@/components/ui/spinner";
+import { Spinner } from "@canadian-cart/ui/ui/spinner";
 import {
   User,
   Mail,
@@ -32,17 +32,17 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-import { Customer } from "@/types/customer/customer";
+import { Customer } from "@canadian-cart/types/customer/customer";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CUSTOMER_PROVINCE } from "@canadian-cart/lib/customer/location";
 import { authClient } from "@canadian-cart/lib/auth/auth-client";
 import { cn } from "@/packages/ui/src/utils";
-import { sendPhoneOTPAction } from "@/actions/auth/verifiyPhone.actions";
+import { sendPhoneOTPAction } from "@canadian-cart/actions/auth/verifiyPhone.actions";
 import {
   AddressAutocomplete,
   ParsedAddress,
-} from "@/components/shared/AddressAutocomplete";
+} from "@canadian-cart/ui/shared/AddressAutocomplete";
 
 type FormUserData = Pick<
   Customer,

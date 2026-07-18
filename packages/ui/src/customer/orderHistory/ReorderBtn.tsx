@@ -5,8 +5,8 @@ import {
   cancelPendingOrder,
   completePendingOrder,
   ReOrder,
-} from "@/actions/customer/ProductAndStore/Order.Action";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/actions/customer/ProductAndStore/Order.Action";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,8 +14,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
+} from "@canadian-cart/ui/ui/dialog";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   CircleX,
   Download,

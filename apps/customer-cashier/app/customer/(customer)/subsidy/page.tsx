@@ -3,7 +3,7 @@ import Navbar from "@canadian-cart/ui/customer/landing/Navbar";
 import { ProductsSection } from "@canadian-cart/ui/customer/products/ProductsSection";
 import { getCachedStoreProducts } from "@canadian-cart/actions/cache/product.cache";
 import getStoreAndProduct from "@canadian-cart/actions/customer/ProductAndStore/getAssociatedStore";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {

@@ -12,14 +12,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@canadian-cart/ui/ui/table";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
+} from "@canadian-cart/ui/ui/sheet";
 import {
   Dialog,
   DialogContent,
@@ -27,11 +27,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@canadian-cart/ui/ui/dialog";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Label } from "@canadian-cart/ui/ui/label";
 import {
   Eye,
   Receipt,
@@ -50,11 +50,11 @@ import {
 import {
   resolvePriceChange,
   SerializedGlobalInvoiceWithChanges,
-} from "@/actions/admin/invoice/getPriceChange";
+} from "@canadian-cart/actions/admin/invoice/getPriceChange";
 import {
   deleteInvoice,
   getProductsLinkedToInvoice,
-} from "@/actions/store/invoice/createInvoice";
+} from "@canadian-cart/actions/store/invoice/createInvoice";
 
 interface AllPriceChangesTableProps {
   invoices: SerializedGlobalInvoiceWithChanges[];

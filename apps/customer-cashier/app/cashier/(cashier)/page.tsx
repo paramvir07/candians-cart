@@ -1,6 +1,6 @@
 import CashierSidebar from "@canadian-cart/ui/cashier/CashierSlidebar";
 import UserList from "@canadian-cart/ui/shared/users/UserList";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import { Cashier } from "@canadian-cart/db/models/cashier/cashier.model";
 
 const page = async () => {

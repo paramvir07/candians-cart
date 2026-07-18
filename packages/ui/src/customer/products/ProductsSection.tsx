@@ -3,26 +3,26 @@
 
 import { useState, useRef, useEffect } from "react";
 import useSWR from "swr";
-import { CustomerProductCard } from "@/components/customer/products/CustomerProductCard";
-import { getCartQuantities } from "@/actions/customer/ProductAndStore/Cart.Action";
+import { CustomerProductCard } from "@canadian-cart/ui/customer/products/CustomerProductCard";
+import { getCartQuantities } from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 import {
   getCachedStoreProducts,
   PaginatedProductsResponse,
-} from "@/actions/cache/product.cache";
+} from "@canadian-cart/actions/cache/product.cache";
 import {
   FilterPanel,
   FilterTriggerButton,
   FilterState,
   DEFAULT_FILTERS,
   getActiveFilterCount,
-} from "@/components/customer/shared/FilterPanel";
-import { CategoryPillsBar } from "@/components/customer/landing/CategoryPillsBar";
+} from "@canadian-cart/ui/customer/shared/FilterPanel";
+import { CategoryPillsBar } from "@canadian-cart/ui/customer/landing/CategoryPillsBar";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
+} from "@canadian-cart/ui/ui/sheet";
 import {
   Pagination,
   PaginationContent,
@@ -31,7 +31,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@canadian-cart/ui/ui/pagination";
 import { PackageOpen, Filter, Loader2 } from "lucide-react";
 import { startTransition } from "react";
 

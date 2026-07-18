@@ -1,6 +1,6 @@
 "use server";
 
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import Product from "@canadian-cart/db/models/store/products.model";
 import { revalidateTag, revalidatePath } from "next/cache";

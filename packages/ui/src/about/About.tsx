@@ -2,10 +2,10 @@
 
 import { useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Card, CardContent } from "@canadian-cart/ui/ui/card";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import Image from "next/image";
 import Link from "next/link";
 

@@ -1,5 +1,5 @@
 import { formatCurrency } from "@canadian-cart/lib/walletHistory";
-import { UnifiedTransaction } from "@/types/customer/WalletHistory";
+import { UnifiedTransaction } from "@canadian-cart/types/customer/WalletHistory";
 import { Wallet, TrendingUp, ArrowUpRight, Gift } from "lucide-react";
 
 interface WalletStatsHeaderProps {

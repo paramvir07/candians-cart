@@ -1,7 +1,7 @@
 // components/customer/landing/HeroBanner.tsx
 "use client";
 import { useState } from "react";
-import { StoreDocument } from "@/types/store/store";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -14,7 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/packages/ui/src/utils";
-import { StoreInfoDialog } from "@/components/customer/signup/StoreInfoDialog";
+import { StoreInfoDialog } from "@canadian-cart/ui/customer/signup/StoreInfoDialog";
 
 interface HeroBannerProps {
   store: StoreDocument;

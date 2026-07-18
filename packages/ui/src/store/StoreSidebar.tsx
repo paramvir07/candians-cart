@@ -20,7 +20,7 @@ import LogoutButton from "../shared/LogoutButton";
 import { usePathname } from "next/navigation";
 import { cn } from "@/packages/ui/src/utils";
 import { useState, useEffect } from "react";
-import { getPendingPriceChangesCount } from "@/actions/admin/invoice/getPriceChange";
+import { getPendingPriceChangesCount } from "@canadian-cart/actions/admin/invoice/getPriceChange";
 import Logo from "../shared/Logo";
 
 const NAV_GROUPS = [

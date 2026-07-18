@@ -2,11 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { TrendingDown, Loader2, Package, Tag, Scale, Receipt, Leaf } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { createPriceDropItem } from "@/actions/cashier/PriceDrop";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { createPriceDropItem } from "@canadian-cart/actions/cashier/PriceDrop";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 

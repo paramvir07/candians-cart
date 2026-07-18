@@ -18,24 +18,24 @@ import {
   ListFilter,
 } from "lucide-react";
 import Link from "next/link";
-import SubsidyItemsClient from "@/components/customer/budgetpacks/subsidyItemsClient";
+import SubsidyItemsClient from "@canadian-cart/ui/customer/budgetpacks/subsidyItemsClient";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
+} from "@canadian-cart/ui/ui/card";
+import { Progress } from "@canadian-cart/ui/ui/progress";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@canadian-cart/ui/ui/tooltip";
 import { cn } from "@/packages/ui/src/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

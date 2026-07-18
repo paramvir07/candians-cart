@@ -1,5 +1,5 @@
 import InvoiceForm from "@canadian-cart/ui/store/invoice/InvoiceForm";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import Store from "@canadian-cart/db/models/store/store.model";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import { redirect } from "next/navigation";

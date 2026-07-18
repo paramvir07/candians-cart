@@ -2,7 +2,7 @@
 
 import { LogOut } from "lucide-react";
 import { Button } from "../ui/button";
-import { logoutAction } from "@/actions/auth/login-logout.actions";
+import { logoutAction } from "@canadian-cart/actions/auth/login-logout.actions";
 import { useRouter } from "next/navigation";
 
 const LogoutButton = () => {

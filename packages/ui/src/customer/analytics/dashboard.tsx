@@ -33,13 +33,13 @@ import {
 } from "@/app/customer/(customer)/analytics/page";
 
 // ── shadcn/ui imports
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+import { Card, CardContent, CardHeader, CardTitle } from "@canadian-cart/ui/ui/card";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Separator } from "@canadian-cart/ui/ui/separator";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { Slider } from "@canadian-cart/ui/ui/slider";
 import CustomerAdvertisements from "../shared/CustomerAdvertisements";
 
 type Period = "7d" | "30d" | "3m" | "6m" | "1y" | "all";

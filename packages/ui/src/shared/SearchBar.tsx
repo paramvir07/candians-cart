@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { Search, Loader2, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { toast } from "sonner";
 
 // Define a generic type for the expected server action response

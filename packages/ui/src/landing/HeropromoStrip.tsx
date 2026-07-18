@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { PromotionBannerSkeleton } from "@/components/skeletons/PromotionBannerSkeleton";
+import { PromotionBannerSkeleton } from "@canadian-cart/ui/skeletons/PromotionBannerSkeleton";
 import { DrawPromoCardSkeleton } from "../skeletons/DrawpromoSkeleton";
 import { DrawPromoCardLoader } from "../promotions/DrawpromocardLoader";
 import { PromotionBannerLoader } from "../promotions/PromotionbannerLoader";

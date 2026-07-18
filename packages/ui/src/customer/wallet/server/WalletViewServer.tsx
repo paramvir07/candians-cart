@@ -1,4 +1,4 @@
-import { getCustomerDataAction } from "@/actions/customer/User.action";
+import { getCustomerDataAction } from "@canadian-cart/actions/customer/User.action";
 import WalletView from "../WalletView";
 
 

@@ -2,9 +2,9 @@
 
 import { useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+import { Avatar, AvatarFallback, AvatarImage } from "@canadian-cart/ui/ui/avatar";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Switch } from "@canadian-cart/ui/ui/switch";
 import {
   Store,
   Mail,
@@ -20,9 +20,9 @@ import {
   KeyRound,
 } from "lucide-react";
 import { IStore, ITimeRange } from "@canadian-cart/db/models/store/store.model";
-import { editStoreProfile } from "@/actions/store/EditStore.action";
+import { editStoreProfile } from "@canadian-cart/actions/store/EditStore.action";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 

@@ -1,7 +1,7 @@
 // components/customer/analytics/AnalyticsSkeleton.tsx
 
 import { cn } from "@/packages/ui/src/utils";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@canadian-cart/ui/ui/card";
 
 function Bone({ className }: { className?: string }) {
   return <div className={cn("rounded-lg bg-muted animate-pulse", className)} />;

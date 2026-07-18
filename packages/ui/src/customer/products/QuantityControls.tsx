@@ -4,7 +4,7 @@ import { Minus, Plus } from "lucide-react";
 import {
   UpdateItemQuantity,
   RemoveItem,
-} from "@/actions/customer/ProductAndStore/Cart.Action";
+} from "@canadian-cart/actions/customer/ProductAndStore/Cart.Action";
 
 interface Props {
   productId: string;

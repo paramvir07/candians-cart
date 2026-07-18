@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Users, MapPin, Store, ArrowRight } from "lucide-react";
-import type { RecentCustomer } from "@/actions/admin/analytics/getRecentCustomers.action";
+import type { RecentCustomer } from "@canadian-cart/actions/admin/analytics/getRecentCustomers.action";
 
 interface RecentCustomersProps {
   customers: RecentCustomer[];

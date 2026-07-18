@@ -10,11 +10,11 @@ import {
   CalendarDays,
   Clock3,
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ReorderBtn from "@/components/customer/orderHistory/ReorderBtn";
-import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
+import { Separator } from "@canadian-cart/ui/ui/separator";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { ScrollArea } from "@canadian-cart/ui/ui/scroll-area";
+import ReorderBtn from "@canadian-cart/ui/customer/orderHistory/ReorderBtn";
+import { CategoryIllustration } from "@canadian-cart/ui/customer/shared/CategoryIllustration";
 import QrCodeButton from "./QrCodeButton";
 import { formatVancouverDate, formatVancouverTime } from "@canadian-cart/lib/timezone";
 

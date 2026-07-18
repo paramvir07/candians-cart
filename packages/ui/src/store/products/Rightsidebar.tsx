@@ -14,19 +14,19 @@ import {
   FolderOpen,
 } from "lucide-react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@canadian-cart/ui/ui/card";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { getTop5Invoices } from "@/actions/store/invoice/getInvoices";
+} from "@canadian-cart/ui/ui/select";
+import { getTop5Invoices } from "@canadian-cart/actions/store/invoice/getInvoices";
 
 const CATEGORIES = [
   "Fruits",

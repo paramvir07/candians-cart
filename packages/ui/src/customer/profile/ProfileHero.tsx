@@ -1,6 +1,6 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Customer } from "@/types/customer/customer";
+import { Avatar, AvatarFallback, AvatarImage } from "@canadian-cart/ui/ui/avatar";
+import { Button, buttonVariants } from "@canadian-cart/ui/ui/button";
+import { Customer } from "@canadian-cart/types/customer/customer";
 import { Edit, QrCode, MapPin, CalendarDays, X } from "lucide-react";
 import Link from "next/link";
 import {
@@ -12,9 +12,9 @@ import {
   DialogOverlay,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@canadian-cart/ui/ui/dialog";
 import { getMemberSince } from "@canadian-cart/lib/memberSince";
-import ShareButton from "@/components/shared/share/ShareButton";
+import ShareButton from "@canadian-cart/ui/shared/share/ShareButton";
 import { IReferralCode } from "@canadian-cart/db/models/admin/referralCode.model";
 import logoIcon from "@/app/icon.jpg";
 import { QRCodeSVG } from "qrcode.react";

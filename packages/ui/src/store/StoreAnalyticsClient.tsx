@@ -28,7 +28,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
-import type { StoreAnalyticsData } from "@/actions/store/getStoreAnalytics.action";
+import type { StoreAnalyticsData } from "@canadian-cart/actions/store/getStoreAnalytics.action";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 

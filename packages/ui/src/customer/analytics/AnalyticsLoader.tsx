@@ -1,6 +1,6 @@
-import { getWalletTopUpHistory } from "@/actions/common/getWalletRechargeHistory.action";
-import { getOrders } from "@/actions/customer/ProductAndStore/Order.Action";
-import AnalyticsDashboard from "@/components/customer/analytics/dashboard";
+import { getWalletTopUpHistory } from "@canadian-cart/actions/common/getWalletRechargeHistory.action";
+import { getOrders } from "@canadian-cart/actions/customer/ProductAndStore/Order.Action";
+import AnalyticsDashboard from "@canadian-cart/ui/customer/analytics/dashboard";
 import {
   SerializedOrder,
   SerializedWalletPayment,

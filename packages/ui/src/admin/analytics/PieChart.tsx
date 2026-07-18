@@ -14,7 +14,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@canadian-cart/ui/ui/card";
 import { fmt } from "@canadian-cart/lib/fomatPrice";
 
 const CHART_COLORS = [

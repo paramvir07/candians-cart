@@ -6,11 +6,11 @@ import {
   CarouselContent,
   CarouselItem,
   type CarouselApi,
-} from "@/components/ui/carousel";
+} from "@canadian-cart/ui/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { ShoppingCart } from "lucide-react";
 import Image from "next/image";
-import Logo from "@/components/shared/Logo";
+import Logo from "@canadian-cart/ui/shared/Logo";
 
 const slides = [
   {

@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import {
   downloadSavedPayoutPdfAction,
   SavedPayoutData,
-} from "@/actions/admin/reciept/DownloadReciept";
+} from "@canadian-cart/actions/admin/reciept/DownloadReciept";
 import { toast } from "sonner";
 
 interface Props {

@@ -2,20 +2,20 @@
 
 import { useState, useTransition, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-import Logo from "@/components/shared/Logo";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import Logo from "@canadian-cart/ui/shared/Logo";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import { ArrowLeft, X, ShoppingCart, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Customer } from "@/types/customer/customer";
+import { Customer } from "@canadian-cart/types/customer/customer";
 import { fmtShort } from "@canadian-cart/lib/fomatPrice";
 import { NavAvatarMenu } from "../landing/NavMenu";
 
 const QrScannerButton = dynamic(
-  () => import("@/components/shared/users/QrScannerButton"),
+  () => import("@canadian-cart/ui/shared/users/QrScannerButton"),
   { ssr: false },
 );
 

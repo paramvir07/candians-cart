@@ -1,14 +1,14 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Spinner } from "@canadian-cart/ui/ui/spinner";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { signupAction } from "@/actions/auth/signup.actions";
+import { signupAction } from "@canadian-cart/actions/auth/signup.actions";
 import { Eye, EyeOff } from "lucide-react";
-import { UserRole } from "@/types/auth";
+import { UserRole } from "@canadian-cart/types/auth";
 import { useAtom } from "jotai";
 import {
   budgetAtom,
@@ -17,7 +17,7 @@ import {
 } from "@/atoms/customer/signUp";
 import SelectStore from "../customer/signup/SelectStore";
 import StoreSelected from "../customer/signup/StoreSelected";
-import { StoreDocument } from "@/types/store/store";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 import { cn } from "@/packages/ui/src/utils";
 import Image from "next/image";
 import Link from "next/link";

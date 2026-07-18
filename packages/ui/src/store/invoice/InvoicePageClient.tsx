@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import InvoiceCard, { InvoiceProps } from "@/components/store/invoice/InvoiceCard";
+import InvoiceCard, { InvoiceProps } from "@canadian-cart/ui/store/invoice/InvoiceCard";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
 import { CirclePlus, ArrowLeft, Search, Receipt } from "lucide-react";
 import { toast } from "sonner";
-import { getInvoices } from "@/actions/store/invoice/getInvoices";
+import { getInvoices } from "@canadian-cart/actions/store/invoice/getInvoices";
 
 // Reusable Skeleton for loading state
 const InvoiceSkeleton = () => (

@@ -5,12 +5,12 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Textarea } from "@canadian-cart/ui/ui/textarea";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@canadian-cart/ui/ui/card";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   FileDown,
   UploadCloud,
@@ -23,8 +23,8 @@ import {
   TrendingUp,
   PanelsTopLeft,
 } from "lucide-react";
-import { updateStorePayoutAction } from "@/actions/admin/reciept/managePayout";
-import { downloadSavedPayoutPdfAction } from "@/actions/admin/reciept/DownloadReciept";
+import { updateStorePayoutAction } from "@canadian-cart/actions/admin/reciept/managePayout";
+import { downloadSavedPayoutPdfAction } from "@canadian-cart/actions/admin/reciept/DownloadReciept";
 
 type SerializedPayoutDetail = any;
 

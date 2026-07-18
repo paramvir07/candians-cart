@@ -6,10 +6,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Textarea } from "@canadian-cart/ui/ui/textarea";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   Form,
   FormControl,
@@ -18,11 +18,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@canadian-cart/ui/ui/form";
 import {
   searchCustomersForNotification,
   createPrivateNotification,
-} from "@/actions/common/notification.action";
+} from "@canadian-cart/actions/common/notification.action";
 import { Bell, Send, Loader2, X, User, Search } from "lucide-react";
 
 const schema = z.object({

@@ -2,10 +2,10 @@
 "use client";
 
 import { useTransition } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
-import { BurstCacheResponse } from "@/types/cache/ProductCache";
+import { BurstCacheResponse } from "@canadian-cart/types/cache/ProductCache";
 interface BurstCacheButtonProps {
   // Pass the server action dynamically
   action: () => Promise<BurstCacheResponse>;

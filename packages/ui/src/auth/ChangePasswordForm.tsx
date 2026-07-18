@@ -11,9 +11,9 @@ import {
   CheckCircle2,
   Circle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import Link from "next/link";
-import { changePasswordAction } from "@/actions/auth/changePassword.actions";
+import { changePasswordAction } from "@canadian-cart/actions/auth/changePassword.actions";
 import { toast } from "sonner";
 import { getPasswordChecks } from "@canadian-cart/types/schemas/customer/customerSignup";
 

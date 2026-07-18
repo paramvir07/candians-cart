@@ -1,18 +1,18 @@
 "use client";
 
 import { cn } from "@/packages/ui/src/utils";
-import { Input } from "@/components/ui/input";
+import { Input } from "@canadian-cart/ui/ui/input";
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { loginAction } from "@/actions/auth/login-logout.actions";
+import { loginAction } from "@canadian-cart/actions/auth/login-logout.actions";
 import { Spinner } from "../ui/spinner";
-import { UserRole } from "@/types/auth";
+import { UserRole } from "@canadian-cart/types/auth";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import Image from "next/image";
-import { IFormActionResponse } from "@/types/form";
+import { IFormActionResponse } from "@canadian-cart/types/form";
 import Logo from "../shared/Logo";
 
 const initialState: IFormActionResponse = {

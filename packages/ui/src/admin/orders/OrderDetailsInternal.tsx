@@ -3,11 +3,11 @@
 
 import Image from "next/image";
 import { Sparkles, Package, Receipt, Tag, Store, User, CreditCard, Wallet, Clock, CheckCircle2 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@canadian-cart/ui/ui/separator";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { ScrollArea } from "@canadian-cart/ui/ui/scroll-area";
 import Link from "next/link";
-import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
+import { CategoryIllustration } from "@canadian-cart/ui/customer/shared/CategoryIllustration";
 
 const fmt = (cents: number) => `CA$${(cents / 100).toFixed(2)}`;
 

@@ -5,10 +5,10 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { type DateRange } from "react-day-picker";
 
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Field } from "@/components/ui/field";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Calendar } from "@canadian-cart/ui/ui/calendar";
+import { Field } from "@canadian-cart/ui/ui/field";
+import { Popover, PopoverContent, PopoverTrigger } from "@canadian-cart/ui/ui/popover";
 
 interface DatePickerProps {
   date: DateRange | undefined;

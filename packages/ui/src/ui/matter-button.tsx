@@ -6,7 +6,7 @@ import type { VariantProps } from "class-variance-authority";
 
 import { cn } from "@/packages/ui/src/utils";
 
-import { Button, type buttonVariants } from "@/components/ui/button";
+import { Button, type buttonVariants } from "@canadian-cart/ui/ui/button";
 
 interface MatterButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: VariantProps<typeof buttonVariants>["size"];

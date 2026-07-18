@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { Share2, QrCode, X, ChevronLeft, Check, Copy } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@canadian-cart/ui/ui/dialog";
 import { QRCodeSVG } from "qrcode.react";
 import { getReferralShareMessage, getReferralUrl } from "@canadian-cart/lib/shareMessage";
 import logoIcon from "@/app/icon.jpg";

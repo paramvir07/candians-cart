@@ -3,24 +3,24 @@
 // import * as React from "react";
 // import { Loader2, CreditCard, Send, CheckCircle2 } from "lucide-react";
 
-// import { Button } from "@/components/ui/button";
+// import { Button } from "@canadian-cart/ui/ui/button";
 // import {
 //   Card,
 //   CardContent,
 //   CardFooter,
 //   CardHeader,
 //   CardTitle,
-// } from "@/components/ui/card";
-// import { Separator } from "@/components/ui/separator";
-// import { Textarea } from "@/components/ui/textarea";
-// import { Label } from "@/components/ui/label";
+// } from "@canadian-cart/ui/ui/card";
+// import { Separator } from "@canadian-cart/ui/ui/separator";
+// import { Textarea } from "@canadian-cart/ui/ui/textarea";
+// import { Label } from "@canadian-cart/ui/ui/label";
 // import {
 //   Select,
 //   SelectContent,
 //   SelectItem,
 //   SelectTrigger,
 //   SelectValue,
-// } from "@/components/ui/select";
+// } from "@canadian-cart/ui/ui/select";
 
 // // --- TYPES (Match your main page types) ---
 // interface CartItem {

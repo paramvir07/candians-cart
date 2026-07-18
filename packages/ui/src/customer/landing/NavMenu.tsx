@@ -6,8 +6,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from "@canadian-cart/ui/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@canadian-cart/ui/ui/avatar";
 import {
   User,
   HelpCircle,
@@ -18,7 +18,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { logoutAction } from "@/actions/auth/login-logout.actions";
+import { logoutAction } from "@canadian-cart/actions/auth/login-logout.actions";
 
 interface NavAvatarMenuProps {
   name: string;

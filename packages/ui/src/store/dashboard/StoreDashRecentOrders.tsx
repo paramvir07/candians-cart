@@ -1,6 +1,6 @@
 "use client";
 
-import { StoreRecentOrder } from "@/actions/store/getStoreDashboard.actions";
+import { StoreRecentOrder } from "@canadian-cart/actions/store/getStoreDashboard.actions";
 import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 

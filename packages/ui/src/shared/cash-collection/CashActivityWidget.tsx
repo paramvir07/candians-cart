@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Banknote, Wallet } from "lucide-react";
-import { CashActivity } from "@/actions/common/getCashActivities.action";
+import { CashActivity } from "@canadian-cart/actions/common/getCashActivities.action";
 
 interface CashActivityWidgetProps {
   activities: CashActivity[];

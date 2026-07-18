@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Play, Loader2, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@canadian-cart/ui/ui/button";
+import { Badge } from "@canadian-cart/ui/ui/badge";
 import { toast } from "sonner";
 
 interface TriggerResult {

@@ -1,16 +1,16 @@
 import { Package, Sparkles, HeartHandshake } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@canadian-cart/ui/ui/card";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Textarea } from "@canadian-cart/ui/ui/textarea";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { Separator } from "@canadian-cart/ui/ui/separator";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@canadian-cart/ui/ui/select";
 
 interface BasicInfoSectionProps {
   name: string;

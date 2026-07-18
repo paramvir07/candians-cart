@@ -1,7 +1,7 @@
 import { Wallet, Banknote, Landmark, BarChart3 } from "lucide-react";
-import { getOverviewStats } from "@/actions/admin/analytics/analytics.action";
+import { getOverviewStats } from "@canadian-cart/actions/admin/analytics/analytics.action";
 import { fmt } from "@canadian-cart/lib/fomatPrice";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
 
 export default async function GlobalPayoutStatsCards() {
   const stats = await getOverviewStats();

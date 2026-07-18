@@ -1,4 +1,4 @@
-import { createSubsidyListItemAction, deleteSubsidyListItemAction, getSubsidisedList, updateSubsidyListItemAction } from "@canadian-cart/actions/admin/subsidyList/subsidyList.actions";
+import { createSubsidyListItemAction, deleteSubsidyListItemAction, getSubsidisedList, updateSubsidyListItemAction } from "@canadian-cart/actions/admin/subsidyList/subsidyList";
 import AdminSubsidyManager from "@canadian-cart/ui/admin/subsidisedList/SubsidyManager";
 
 

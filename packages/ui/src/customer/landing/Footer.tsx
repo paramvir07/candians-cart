@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Logo from "@/components/shared/Logo";
+import Logo from "@canadian-cart/ui/shared/Logo";
 
 const LINKS = {
   Shop: [

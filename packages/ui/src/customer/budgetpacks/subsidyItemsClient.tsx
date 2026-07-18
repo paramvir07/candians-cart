@@ -24,9 +24,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { Card, CardContent } from "@canadian-cart/ui/ui/card";
+import { Input } from "@canadian-cart/ui/ui/input";
 import { cn } from "@/packages/ui/src/utils";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────

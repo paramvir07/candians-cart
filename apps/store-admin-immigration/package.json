@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@canadian-cart/types": "workspace:*",
+    "@canadian-cart/actions": "workspace:*",
     "@canadian-cart/db": "workspace:*",
     "@canadian-cart/lib": "workspace:*",
+    "@canadian-cart/types": "workspace:*",
+    "@canadian-cart/ui": "workspace:*",
     "next": "^16.2.4",
     "react": "^19.2.5"
   }

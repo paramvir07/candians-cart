@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { importLibrary, setOptions } from "@googlemaps/js-api-loader";
-import { Input } from "@/components/ui/input";
+import { Input } from "@canadian-cart/ui/ui/input";
 
 export interface ParsedAddress {
   formattedAddress: string;

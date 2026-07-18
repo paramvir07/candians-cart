@@ -7,7 +7,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@canadian-cart/ui/ui/popover";
 import Link from "next/link";
 import { toast } from "sonner";
 import { authClient } from "@canadian-cart/lib/auth/auth-client";

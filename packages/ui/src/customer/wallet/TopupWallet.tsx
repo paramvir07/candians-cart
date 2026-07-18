@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import { TopUpDialog } from "./TopupDialog";
 import { WalletInfo } from "./WalletInfo";
 import Link from "next/link";

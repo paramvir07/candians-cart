@@ -4,10 +4,10 @@ import { useState, useMemo } from "react";
 import { TransactionItem } from "./TransactionItem";
 import { TransactionDetailModal } from "./TransactionDetailModal";
 import { AnalyticsPanel } from "./AnalyticsPanel";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@canadian-cart/ui/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@canadian-cart/ui/ui/tabs";
 import { Search, Inbox } from "lucide-react";
-import { UnifiedTransaction } from "@/types/customer/WalletHistory";
+import { UnifiedTransaction } from "@canadian-cart/types/customer/WalletHistory";
 
 interface WalletHistoryClientProps {
   transactions: UnifiedTransaction[];

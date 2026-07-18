@@ -1,5 +1,5 @@
 "use client";
-import PlaceOrderBtn from "@/components/customer/products/PlaceOrderBtn";
+import PlaceOrderBtn from "@canadian-cart/ui/customer/products/PlaceOrderBtn";
 
 export interface CartTotals {
   subtotal: number;

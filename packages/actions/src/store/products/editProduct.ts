@@ -8,7 +8,7 @@ import {
   createProductFormSchema,
   ProductFormValues,
 } from "@canadian-cart/types/schemas/store/addProductsValidation";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
 import Store from "@canadian-cart/db/models/store/store.model";
 import { zodErrorResponse } from "@canadian-cart/types/validation/error";
 import ImageKit from "@imagekit/nodejs";

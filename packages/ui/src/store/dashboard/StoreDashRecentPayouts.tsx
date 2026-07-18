@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Receipt } from "lucide-react";
-import { StoreRecentPayout } from "@/actions/store/getStoreDashboard.actions";
+import { StoreRecentPayout } from "@canadian-cart/actions/store/getStoreDashboard.actions";
 
 interface StoreDashRecentPayoutsProps {
   payouts: StoreRecentPayout[];

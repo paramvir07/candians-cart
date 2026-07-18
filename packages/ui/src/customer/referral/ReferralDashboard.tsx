@@ -2,12 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { Check, X, Clock, Users, ChevronLeft } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@canadian-cart/ui/ui/avatar";
 import Link from "next/link";
 import {
   respondToReferralRequest,
   SerializedReferralRequest,
-} from "@/actions/customer/ReferralRequest.Action";
+} from "@canadian-cart/actions/customer/ReferralRequest.Action";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();

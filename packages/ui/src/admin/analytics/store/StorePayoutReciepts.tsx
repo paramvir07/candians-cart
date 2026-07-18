@@ -1,6 +1,6 @@
 "use client";
 
-import { StorePayoutReceipt } from "@/actions/admin/analytics/store/getStoreDetail.action";
+import { StorePayoutReceipt } from "@canadian-cart/actions/admin/analytics/store/getStoreDetail.action";
 import Link from "next/link";
 
 interface StorePayoutReceiptsProps {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Customer } from "@/types/customer/customer";
+import { Customer } from "@canadian-cart/types/customer/customer";
 import {
   Mail,
   MapPin,

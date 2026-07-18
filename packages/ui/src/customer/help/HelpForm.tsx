@@ -8,7 +8,7 @@ import {
   Bug, HelpCircle, Sparkles, MessageCircle,
   CheckCircle2, ChevronLeft, Wallet,
 } from "lucide-react"
-import { ReportSubmit } from "@/actions/customer/Reportaction"
+import { ReportSubmit } from "@canadian-cart/actions/customer/Reportaction"
 import CustomerAdvertisements from "../shared/CustomerAdvertisements"
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] })

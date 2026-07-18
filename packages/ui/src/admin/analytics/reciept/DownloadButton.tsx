@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { downloadReceiptPdfAction } from "@/actions/admin/reciept/DownloadReciept";
+import { downloadReceiptPdfAction } from "@canadian-cart/actions/admin/reciept/DownloadReciept";
 
 interface DownloadButtonProps {
   storeId: string;

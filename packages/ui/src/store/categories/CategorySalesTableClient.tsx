@@ -6,9 +6,9 @@ import { type DateRange } from "react-day-picker";
 import {
   ICategorySales,
   ICategorySaleDetail,
-} from "@/types/store/categorySales.types";
-import { getCategorySales } from "@/actions/store/categories/categorySales.action";
-import { StoreDocument } from "@/types/store/store";
+} from "@canadian-cart/types/store/categorySales.types";
+import { getCategorySales } from "@canadian-cart/actions/store/categories/categorySales.action";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 
 import {
   Table,
@@ -17,26 +17,26 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+} from "@canadian-cart/ui/ui/table";
+import { Button } from "@canadian-cart/ui/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@canadian-cart/ui/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { DatePickerWithRange } from "@/components/admin/analytics/reciept/DatePickerWithRange";
-import { Spinner } from "@/components/ui/spinner";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@canadian-cart/ui/ui/dialog";
+import { Label } from "@canadian-cart/ui/ui/label";
+import { DatePickerWithRange } from "@canadian-cart/ui/admin/analytics/reciept/DatePickerWithRange";
+import { Spinner } from "@canadian-cart/ui/ui/spinner";
+import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
 import {
   getTodayVancouverBoundsUTC,
   getVancouverDayBoundsUTC,

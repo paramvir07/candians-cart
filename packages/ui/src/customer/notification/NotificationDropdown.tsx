@@ -11,9 +11,9 @@ import {
   XCircle,
   Zap,
 } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { markNotificationsAsRead } from "@/actions/common/notification.action";
+import { Popover, PopoverContent, PopoverTrigger } from "@canadian-cart/ui/ui/popover";
+import { ScrollArea } from "@canadian-cart/ui/ui/scroll-area";
+import { markNotificationsAsRead } from "@canadian-cart/actions/common/notification.action";
 
 export interface DropdownNotification {
   _id: string;

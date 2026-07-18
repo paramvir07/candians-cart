@@ -8,26 +8,26 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import { getStoreProductsFiltered } from "@/actions/admin/products/getProductsFiltered.action";
+} from "@canadian-cart/ui/ui/pagination";
+import { getStoreProductsFiltered } from "@canadian-cart/actions/admin/products/getProductsFiltered.action";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { IProduct } from "@/types/store/products.types";
-import { searchProductsWithFilters } from "@/actions/admin/products/getProductsFiltered.action";
-import { CustomerProductCard } from "@/components/customer/products/CustomerProductCard";
+import { IProduct } from "@canadian-cart/types/store/products.types";
+import { searchProductsWithFilters } from "@canadian-cart/actions/admin/products/getProductsFiltered.action";
+import { CustomerProductCard } from "@canadian-cart/ui/customer/products/CustomerProductCard";
 import {
   FilterPanel,
   FilterTriggerButton,
   FilterState,
   DEFAULT_FILTERS,
   getActiveFilterCount,
-} from "@/components/customer/shared/FilterPanel";
-import { SearchNav } from "@/components/customer/search/SearchNav";
+} from "@canadian-cart/ui/customer/shared/FilterPanel";
+import { SearchNav } from "@canadian-cart/ui/customer/search/SearchNav";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
+} from "@canadian-cart/ui/ui/sheet";
 import {
   Loader2,
   PackageOpen,
@@ -36,11 +36,11 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { Customer } from "@/types/customer/customer";
+import { Customer } from "@canadian-cart/types/customer/customer";
 import { useDebounce } from "use-debounce";
-import { searchProductsByUPC } from "@/actions/common/searchProducts.action";
+import { searchProductsByUPC } from "@canadian-cart/actions/common/searchProducts.action";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@canadian-cart/ui/ui/button";
 import Link from "next/link";
 
 interface SearchResultsClientProps {

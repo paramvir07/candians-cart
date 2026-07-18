@@ -1,8 +1,8 @@
 // components/customer/landing/HeroBannerLoader.tsx
-import getStoreAndProduct from "@/actions/customer/ProductAndStore/getAssociatedStore";
+import getStoreAndProduct from "@canadian-cart/actions/customer/ProductAndStore/getAssociatedStore";
 import Store from "@canadian-cart/db/models/store/store.model";
 import { HeroBanner } from "./HeroBanner";
-import { StoreDocument } from "@/types/store/store";
+import { StoreDocument } from "@canadian-cart/types/store/store";
 
 export async function HeroBannerLoader() {
   const storeResponse = await getStoreAndProduct();

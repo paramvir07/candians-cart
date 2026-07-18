@@ -7,8 +7,8 @@ import {
   Gift,
 } from "lucide-react";
 import { cn } from "@/packages/ui/src/utils";
-import { Badge } from "@/components/ui/badge";
-import { UnifiedTransaction } from "@/types/customer/WalletHistory";
+import { Badge } from "@canadian-cart/ui/ui/badge";
+import { UnifiedTransaction } from "@canadian-cart/types/customer/WalletHistory";
 import { formatTime, formatCurrency, formatDate } from "@canadian-cart/lib/walletHistory";
 
 interface TransactionItemProps {
