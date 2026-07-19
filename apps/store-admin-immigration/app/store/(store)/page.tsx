@@ -1,5 +1,5 @@
 import { getRecentCashActivities } from "@canadian-cart/actions/common/getCashActivities.action";
-import { getStoreDashboardData } from "@canadian-cart/actions/store/getStoreDashboard";
+import { getStoreDashboardData } from "@canadian-cart/actions/store/getStoreDashboard.actions";
 import CashActivityWidget from "@canadian-cart/ui/shared/cash-collection/CashActivityWidget";
 import StoreDashRecentOrders from "@canadian-cart/ui/store/dashboard/StoreDashRecentOrders";
 import StoreDashRecentPayouts from "@canadian-cart/ui/store/dashboard/StoreDashRecentPayouts";

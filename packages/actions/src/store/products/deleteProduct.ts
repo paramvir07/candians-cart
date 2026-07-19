@@ -70,7 +70,10 @@ export async function deleteProduct(
     }
 
     // 🚨 BUST THE CACHE GLOBALLY!
-    revalidateTag(`products-${deletedProduct.storeId.toString()}`, "default" as any);
+    revalidateTag(
+      `products-${deletedProduct.storeId.toString()}`,
+      "default" as any,
+    );
 
     revalidatePath("/store/products");
 

@@ -1,4 +1,4 @@
-import { getReferalCodesAction } from "@canadian-cart/actions/admin/referalCode";
+import { getReferalCodesAction } from "@canadian-cart/actions/admin/referalCode.actions";
 import { ReferralCodeDialogForm } from "@canadian-cart/ui/admin/referral-codes/ReferralCodeDialogForm";
 import { ReferralCodes } from "@canadian-cart/ui/admin/referral-codes/ReferralCodes";
 

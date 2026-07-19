@@ -1,4 +1,4 @@
-import { getStores } from "@canadian-cart/actions/store/getStores";
+import { getStores } from "@canadian-cart/actions/store/getStores.actions";
 import SignupClient from "@canadian-cart/ui/customer/signup/SignUpClient";
 import { auth } from "@canadian-cart/lib/auth/auth";
 import { StoreDocument } from "@canadian-cart/types/store/store";

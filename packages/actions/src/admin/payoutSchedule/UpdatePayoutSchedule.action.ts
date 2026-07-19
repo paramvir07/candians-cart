@@ -1,7 +1,9 @@
 "use server";
 
 import { dbConnect } from "@canadian-cart/db/dbConnect";
-import Store, { PayoutFrequency } from "@canadian-cart/db/models/store/store.model";
+import Store, {
+  PayoutFrequency,
+} from "@canadian-cart/db/models/store/store.model";
 import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import { revalidatePath } from "next/cache";
 import { computeNextPayoutDate } from "@canadian-cart/lib/PayoutSchedule";
@@ -10,7 +12,7 @@ export interface UpdatePayoutScheduleInput {
   enabled: boolean;
   frequency: PayoutFrequency;
   dayOfMonth?: number; // 1–28, used when frequency = "monthly"
-  dayOfWeek?: number;  // 0–6, used when frequency = "biweekly"
+  dayOfWeek?: number; // 0–6, used when frequency = "biweekly"
 }
 
 export interface UpdatePayoutScheduleResult {
@@ -136,6 +138,10 @@ export async function getPayoutScheduleAction(storeId: string) {
     };
   } catch (error) {
     console.error("[getPayoutScheduleAction] Error:", error);
-    return { success: false, message: "Failed to fetch payout schedule", data: null };
+    return {
+      success: false,
+      message: "Failed to fetch payout schedule",
+      data: null,
+    };
   }
 }

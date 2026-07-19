@@ -1,4 +1,4 @@
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 

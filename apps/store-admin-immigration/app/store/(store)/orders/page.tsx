@@ -1,4 +1,4 @@
-import { getMyStoreData } from "@canadian-cart/actions/store/getStores";
+import { getMyStoreData } from "@canadian-cart/actions/store/getStores.actions";
 import { StoreDocument } from "@canadian-cart/types/store/store";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";

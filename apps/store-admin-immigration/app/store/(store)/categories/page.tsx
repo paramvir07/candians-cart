@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getCategorySales } from "@canadian-cart/actions/store/categories/categorySales.action";
 import CategorySalesTableClient from "@canadian-cart/ui/store/categories/CategorySalesTableClient";
 import CategorySalesSkeleton from "@canadian-cart/ui/skeletons/CategorySalesSkeleton";
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import Store from "@canadian-cart/db/models/store/store.model";
 import { getTodayVancouverBoundsUTC } from "@canadian-cart/lib/timezone";
 
@@ -15,8 +15,8 @@ async function CategorySalesWrapper({ storeId }: { storeId: string }) {
   const initialData = await getCategorySales(storeId, start, end);
 
   return (
-    <CategorySalesTableClient 
-      initialData={initialData} 
+    <CategorySalesTableClient
+      initialData={initialData}
       initialStoreId={storeId}
     />
   );
@@ -43,7 +43,7 @@ export default async function StoreCategoriesPage() {
   }
 
   const storeIdString = store._id.toString();
-  
+
   return (
     <div className="p-6 space-y-6 flex-1 w-full">
       {/* Static Header */}

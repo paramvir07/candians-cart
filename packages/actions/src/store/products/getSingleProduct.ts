@@ -4,7 +4,10 @@ import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actio
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import Product from "@canadian-cart/db/models/store/products.model";
 import Store from "@canadian-cart/db/models/store/store.model";
-import { IProduct, IProductDB } from "@canadian-cart/types/store/products.types";
+import {
+  IProduct,
+  IProductDB,
+} from "@canadian-cart/types/store/products.types";
 
 export async function getSingleProduct(
   productId: string,
@@ -47,11 +50,13 @@ export async function getSingleProduct(
       createdAt: safeIsoDate(product.createdAt),
       updatedAt: safeIsoDate(product.updatedAt),
       // Fix for the previous images.map error
-      images: (product.images || []).map((img: { url: string; fileId: string; _id?: string }) => ({
-        url: img.url,
-        fileId: img.fileId,
-        _id: img._id?.toString(),
-      })),
+      images: (product.images || []).map(
+        (img: { url: string; fileId: string; _id?: string }) => ({
+          url: img.url,
+          fileId: img.fileId,
+          _id: img._id?.toString(),
+        }),
+      ),
       primaryUPC: product.primaryUPC,
       isMeasuredInWeight: product.isMeasuredInWeight,
       UOM: product.UOM,

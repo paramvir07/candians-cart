@@ -15,33 +15,37 @@ export interface AssociatedStoreResponse {
   error?: string;
 }
 
-const getStoreAndProduct = cache(async (customerId?: string): Promise<AssociatedStoreResponse> => {
-  try {
-    const session = await getUserSession();
-    const userId = session.user.id;
-    const isCashier = session.user.role === "cashier";
+const getStoreAndProduct = cache(
+  async (customerId?: string): Promise<AssociatedStoreResponse> => {
+    try {
+      const session = await getUserSession();
+      const userId = session.user.id;
+      const isCashier = session.user.role === "cashier";
 
-    await dbConnect();
+      await dbConnect();
 
-    const customer = isCashier
-      ? await Customer.findById(customerId).select("associatedStoreId").lean()
-      : await Customer.findOne({ userId }).select("associatedStoreId").lean();
+      const customer = isCashier
+        ? await Customer.findById(customerId).select("associatedStoreId").lean()
+        : await Customer.findOne({ userId }).select("associatedStoreId").lean();
 
-    if (!customer) throw new Error("Customer not found");
+      if (!customer) throw new Error("Customer not found");
 
-    const serializedCustomer: CustomerType = JSON.parse(JSON.stringify(customer));
-    const storeId = serializedCustomer.associatedStoreId?.toString();
+      const serializedCustomer: CustomerType = JSON.parse(
+        JSON.stringify(customer),
+      );
+      const storeId = serializedCustomer.associatedStoreId?.toString();
 
-    return {
-      success: true,
-      customer: serializedCustomer,
-      storeId,         
-      products: [],
-    };
-  } catch (error) {
-    console.error("Error fetching store:", error);
-    return { success: false, error: String(error) };
-  }
-});
+      return {
+        success: true,
+        customer: serializedCustomer,
+        storeId,
+        products: [],
+      };
+    } catch (error) {
+      console.error("Error fetching store:", error);
+      return { success: false, error: String(error) };
+    }
+  },
+);
 
 export default getStoreAndProduct;

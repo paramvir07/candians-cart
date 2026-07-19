@@ -97,7 +97,9 @@ export async function getVendorPayoutsAction(
       startDate: p.startDate.toISOString(),
       endDate: p.endDate.toISOString(),
       createdAt: p.createdAt.toISOString(),
-      updatedAt: p.updatedAt ? p.updatedAt.toISOString() : p.createdAt.toISOString(),
+      updatedAt: p.updatedAt
+        ? p.updatedAt.toISOString()
+        : p.createdAt.toISOString(),
       totalNumberofOrders: p.totalNumberofOrders || 0,
       totalCustomerPaid: p.totalCustomerPaid || 0,
       totalBasePrice: p.totalBasePrice || 0,
@@ -169,7 +171,9 @@ export async function getSingleVendorPayoutAction(
       startDate: payout.startDate.toISOString(),
       endDate: payout.endDate.toISOString(),
       createdAt: payout.createdAt.toISOString(),
-      updatedAt: payout.updatedAt ? payout.updatedAt.toISOString() : payout.createdAt.toISOString(),
+      updatedAt: payout.updatedAt
+        ? payout.updatedAt.toISOString()
+        : payout.createdAt.toISOString(),
       totalNumberofOrders: payout.totalNumberofOrders || 0,
       totalCustomerPaid: payout.totalCustomerPaid || 0,
       totalBasePrice: payout.totalBasePrice || 0,

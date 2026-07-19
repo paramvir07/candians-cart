@@ -1,4 +1,4 @@
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import Store from "@canadian-cart/db/models/store/store.model";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import InvoicePageClient from "@canadian-cart/ui/store/invoice/InvoicePageClient"; // Adjust path if needed
@@ -25,7 +25,8 @@ export default async function InvoicePage() {
   if (!store) {
     return (
       <div className="flex h-screen items-center justify-center text-red-500 font-semibold text-center px-4">
-        Error: Store ID could not be determined. Please make sure you have an active store associated with your account.
+        Error: Store ID could not be determined. Please make sure you have an
+        active store associated with your account.
       </div>
     );
   }

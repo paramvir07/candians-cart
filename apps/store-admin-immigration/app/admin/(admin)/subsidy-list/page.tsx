@@ -1,12 +1,16 @@
-import { createSubsidyListItemAction, deleteSubsidyListItemAction, getSubsidisedList, updateSubsidyListItemAction } from "@canadian-cart/actions/admin/subsidyList/subsidyList";
+import {
+  createSubsidyListItemAction,
+  deleteSubsidyListItemAction,
+  getSubsidisedList,
+  updateSubsidyListItemAction,
+} from "@canadian-cart/actions/admin/subsidyList/subsidyList.actions";
 import AdminSubsidyManager from "@canadian-cart/ui/admin/subsidisedList/SubsidyManager";
-
 
 const adminSubsidyList = async () => {
   const result = await getSubsidisedList();
- const items = Array.isArray(result.subsidisedList)
-   ? result.subsidisedList
-   : [];
+  const items = Array.isArray(result.subsidisedList)
+    ? result.subsidisedList
+    : [];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

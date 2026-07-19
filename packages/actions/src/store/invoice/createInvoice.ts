@@ -179,7 +179,9 @@ export async function getProductsLinkedToInvoice(invoiceId: string) {
   }
 }
 
-export async function getInvoiceById(invoiceId: string): Promise<GetInvoiceResponse> {
+export async function getInvoiceById(
+  invoiceId: string,
+): Promise<GetInvoiceResponse> {
   try {
     const session = await getUserSession();
     if (!session?.user?.id) {

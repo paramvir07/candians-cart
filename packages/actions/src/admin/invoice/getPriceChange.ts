@@ -214,21 +214,20 @@ export async function resolvePriceChange(
   }
 }
 
-
 export async function getPendingPriceChangesCount() {
   try {
     const session = await getUserSession();
     if (session?.user?.role !== "admin") {
       return 0;
     }
-    
+
     await dbConnect();
 
     // We use aggregate to unwind the products array and count the exact number of pending items
     const result = await ProductInvoice.aggregate([
       { $unwind: "$products" },
       { $match: { "products.status": "PENDING" } },
-      { $count: "totalPending" }
+      { $count: "totalPending" },
     ]);
 
     return result.length > 0 ? result[0].totalPending : 0;

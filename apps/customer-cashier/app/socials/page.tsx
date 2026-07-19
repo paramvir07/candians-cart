@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Bell, Sparkles } from "lucide-react";
 import Logo from "@canadian-cart/ui/shared/Logo";
-import { cn } from "@/packages/ui/src/utils";
+import { cn } from "@canadian-cart/ui/utils";
 import FooterWrapper from "@canadian-cart/ui/landing/FooterWrapper";
 
 const socials = [

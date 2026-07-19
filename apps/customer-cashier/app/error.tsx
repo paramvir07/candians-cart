@@ -1,7 +1,7 @@
 "use client";
 
 import Lottie from "lottie-react";
-import ErrorAnimation from "@/public/animations/503Error.json";
+import ErrorAnimation from "@canadian-cart/ui/assets/503Error.json";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import Logo from "@canadian-cart/ui/shared/Logo";

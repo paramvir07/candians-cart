@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { getCategorySales } from "@canadian-cart/actions/store/categories/categorySales.action";
-import { getStores } from "@canadian-cart/actions/store/getStores";
+import { getStores } from "@canadian-cart/actions/store/getStores.actions";
 import CategorySalesTableClient from "@canadian-cart/ui/store/categories/CategorySalesTableClient";
 import CategorySalesSkeleton from "@canadian-cart/ui/skeletons/CategorySalesSkeleton";
 import { getTodayVancouverBoundsUTC } from "@canadian-cart/lib/timezone";

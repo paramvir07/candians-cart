@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "types": ["node", "react", "google.maps"],
     "plugins": [
       {
         "name": "next"
@@ -27,6 +28,12 @@
       "@canadian-cart/actions/*": ["../../packages/actions/src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "../../packages/ui/src/global.d.ts"
+  ],
   "exclude": ["node_modules"]
 }

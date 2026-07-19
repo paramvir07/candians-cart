@@ -1,4 +1,4 @@
-import { getUserSession } from "@canadian-cart/actions/auth/getUserSession";
+import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";
 import AdminSidebar from "@canadian-cart/ui/admin/AdminSidebar";
 import { TooltipProvider } from "@canadian-cart/ui/ui/tooltip";
 import { Metadata } from "next";

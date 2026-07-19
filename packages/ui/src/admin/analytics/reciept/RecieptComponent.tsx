@@ -40,7 +40,11 @@ import {
 import { Label } from "@canadian-cart/ui/ui/label";
 import { Skeleton } from "@canadian-cart/ui/ui/skeleton";
 import { Separator } from "@canadian-cart/ui/ui/separator";
-import { Alert, AlertDescription, AlertTitle } from "@canadian-cart/ui/ui/alert";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@canadian-cart/ui/ui/alert";
 import { Button } from "@canadian-cart/ui/ui/button";
 import {
   AlertCircle,
@@ -259,8 +263,8 @@ export default function RecieptComponent({
                 {debouncedStoreId === "all"
                   ? "Platform-wide Aggregation"
                   : storeRole
-                  ? "Your store Data"
-                  : "Store-specific Data"}
+                    ? "Your store Data"
+                    : "Store-specific Data"}
               </h2>
               <DownloadButton
                 storeId={debouncedStoreId === "all" ? "" : debouncedStoreId}
@@ -437,7 +441,7 @@ export default function RecieptComponent({
                                 )}
                               </span>
                             </div>
-                            <Separator/>
+                            <Separator />
                             <div className="flex justify-between items-center text-black font-medium">
                               <span>Total Cash Collected</span>
                               <span>
@@ -560,4 +564,3 @@ export default function RecieptComponent({
     </Card>
   );
 }
-

@@ -1,4 +1,4 @@
-import { getStores } from "@canadian-cart/actions/store/getStores";
+import { getStores } from "@canadian-cart/actions/store/getStores.actions";
 import { SignupForm } from "@canadian-cart/ui/auth/signup-form";
 import { StoreDocument } from "@canadian-cart/types/store/store";
 import { ArrowLeft } from "lucide-react";

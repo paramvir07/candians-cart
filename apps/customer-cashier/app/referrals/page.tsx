@@ -1,10 +1,10 @@
-import FooterWrapper from "@canadian-cart/ui/landing/FooterWrapper"
-import NavbarWrapper from "@canadian-cart/ui/landing/NavbarWrapper"
-import ReferralsLanding from "@canadian-cart/ui/landing/ReferralsLanding"
-import { getRandom10Referrals } from "@canadian-cart/actions/customer/ReferralRequest.Action"
-import { Suspense } from "react"
-import {  isLoggedIn } from "@canadian-cart/actions/auth/getUserSession"
-import { redirect } from "next/navigation"
+import FooterWrapper from "@canadian-cart/ui/landing/FooterWrapper";
+import NavbarWrapper from "@canadian-cart/ui/landing/NavbarWrapper";
+import ReferralsLanding from "@canadian-cart/ui/landing/ReferralsLanding";
+import { getRandom10Referrals } from "@canadian-cart/actions/customer/ReferralRequest.Action";
+import { Suspense } from "react";
+import { isLoggedIn } from "@canadian-cart/actions/auth/getUserSession.actions";
+import { redirect } from "next/navigation";
 
 function MemberListSkeleton() {
   return (
@@ -32,15 +32,15 @@ function MemberListSkeleton() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 async function MemberListServer() {
   const LoggedIn = await isLoggedIn();
-  if (LoggedIn) redirect('/customer')
-  const result = await getRandom10Referrals()
-  const members = result.success && result.data ? result.data : []
-  return <ReferralsLanding initialMembers={members} />
+  if (LoggedIn) redirect("/customer");
+  const result = await getRandom10Referrals();
+  const members = result.success && result.data ? result.data : [];
+  return <ReferralsLanding initialMembers={members} />;
 }
 
 const page = () => {
@@ -51,8 +51,8 @@ const page = () => {
         <MemberListServer />
       </Suspense>
       <FooterWrapper />
-      </>
-  )
-}
+    </>
+  );
+};
 
-export default page
+export default page;
