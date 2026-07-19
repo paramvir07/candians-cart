@@ -4,6 +4,20 @@ import type { NextConfig } from "next";
 // This is the main root Next.js configuration file for the customer-cashier app. It is used to configure various aspects of the Next.js framework, such as rewrites, redirects, and other settings.
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "ik.imagekit.io",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+    ],
+  },
   async rewrites() {
     return [
       {
@@ -24,7 +38,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  transpilePackages: ["@canadian-cart/ui", "@canadian-cart/db", "@canadian-cart/types", "@canadian-cart/lib"], // Ensures that the shared UI, DB, and types packages are transpiled for compatibility with this Next.js app.
+  transpilePackages: [
+    "@canadian-cart/ui",
+    "@canadian-cart/db",
+    "@canadian-cart/types",
+    "@canadian-cart/lib",
+  ], // Ensures that the shared UI, DB, and types packages are transpiled for compatibility with this Next.js app.
 };
 
 export default nextConfig;

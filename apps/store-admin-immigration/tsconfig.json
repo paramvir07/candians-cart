@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -11,21 +15,37 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
-    "types": ["node", "react", "google.maps"],
+    "types": [
+      "node",
+      "react",
+      "google.maps"
+    ],
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@canadian-cart/ui/*": ["../../packages/ui/src/*"],
-      "@canadian-cart/db/*": ["../../packages/db/src/*"],
-      "@canadian-cart/types/*": ["../../packages/types/src/*"],
-      "@canadian-cart/lib/*": ["../../packages/lib/src/*"],
-      "@canadian-cart/actions/*": ["../../packages/actions/src/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@canadian-cart/ui/*": [
+        "../../packages/ui/src/*"
+      ],
+      "@canadian-cart/db/*": [
+        "../../packages/db/src/*"
+      ],
+      "@canadian-cart/types/*": [
+        "../../packages/types/src/*"
+      ],
+      "@canadian-cart/lib/*": [
+        "../../packages/lib/src/*"
+      ],
+      "@canadian-cart/actions/*": [
+        "../../packages/actions/src/*"
+      ]
     }
   },
   "include": [
@@ -33,7 +53,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "../../packages/ui/src/global.d.ts"
+    "../../packages/ui/src/global.d.ts",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
