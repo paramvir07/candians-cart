@@ -758,7 +758,7 @@ const CheckUserReferral = async (
         { $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }] },
       ],
     },
-    { $inc: { uses: 1 } },
+    {},
     { session, new: true },
   );
 
@@ -787,6 +787,17 @@ const CheckUserReferral = async (
     customerId,
     { $inc: { walletBalance: ReferralValue } },
     { session, runValidators: true },
+  );
+
+  const actualUses = await Customer.countDocuments(
+    { referralCodeId: referralCodeId, placedFirstOrder: true },
+    { session },
+  );
+
+  await ReferralCode.findByIdAndUpdate(
+    referralCodeId,
+    { $set: { uses: actualUses } },
+    { session },
   );
 
   return { success: true, message: "Referral topup created" };
