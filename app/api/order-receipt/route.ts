@@ -38,6 +38,8 @@ interface ReceiptItem {
     price?: number;
     images?: Array<ProductImage | string>;
     subsidised?: boolean;
+    UOM?: string;
+    isMeasuredInWeight?: boolean;
   };
   productName?: string;
   quantity?: number;
@@ -69,6 +71,12 @@ function fmtCurrency(cents: number) {
 
 function fmtBefore(cents: number) {
   return `$${((cents ?? 0) / 100).toFixed(2)}`;
+}
+
+function formatQuantity(value: number) {
+  return Number.isInteger(value)
+    ? value.toString()
+    : value.toFixed(2).replace(/\.?0+$/, "");
 }
 
 function safeDate(value: string) {
@@ -655,7 +663,7 @@ export async function POST(req: Request) {
     for (const [index, item] of allProducts.entries()) {
       // Misc row - same information shown by OrderDetail.
       if (item.__type === "misc") {
-        const quantity = Math.max(Number(item.quantity) || 1, 1);
+        const quantityText = item.quantity == null ? "" : String(item.quantity);
         const rowHeight = 51;
         ensureSpace(rowHeight + 7);
 
@@ -731,7 +739,7 @@ export async function POST(req: Request) {
           borderColor: rgb(0.86, 0.84, 0.8),
         });
 
-        const unitText = `${fmtCurrency(item.price ?? 0)} × ${quantity}`;
+        const unitText = `${fmtCurrency(item.price ?? 0)} × ${quantityText}`;
         const unitWidth = font.widthOfTextAtSize(unitText, 7.1);
         page.drawText(unitText, {
           x: rightX - unitWidth,
@@ -764,7 +772,16 @@ export async function POST(req: Request) {
         item.__type === "subsidy" ||
         product.subsidised === true;
       const originalLineTotal = lineTotal + itemSubsidy;
-      const quantity = Math.max(Number(item.quantity) || 1, 1);
+      const rawQuantity = Number(item.quantity);
+      const quantity =
+        Number.isFinite(rawQuantity) && rawQuantity > 0 ? rawQuantity : 1;
+      const isMeasuredInWeight = product.isMeasuredInWeight === true;
+      const productName = product.name ?? "Unknown product";
+      const unitOfMeasure = isMeasuredInWeight ? (product.UOM ?? "") : "";
+      const displayedProductName = isMeasuredInWeight
+        ? `${productName}/${unitOfMeasure}`
+        : productName;
+      const displayedQuantity = formatQuantity(quantity);
       const paidUnitPrice = Math.round(lineTotal / quantity);
       const originalUnitPrice = Math.round(originalLineTotal / quantity);
       const hasItemSaving = itemSubsidy > 0 && originalLineTotal > lineTotal;
@@ -858,12 +875,7 @@ export async function POST(req: Request) {
       const nameMaxWidth = Math.max(90, priorityX - contentX - 8);
 
       page.drawText(
-        trimText(
-          product.name ?? "Unknown product",
-          boldFont,
-          8.7,
-          nameMaxWidth,
-        ),
+        trimText(displayedProductName, boldFont, 8.7, nameMaxWidth),
         {
           x: contentX,
           y: rowTop - 15,
@@ -909,8 +921,18 @@ export async function POST(req: Request) {
         });
       }
 
-      const finalUnitText = `${fmtCurrency(paidUnitPrice)} × ${quantity}`;
-      const finalUnitWidth = font.widthOfTextAtSize(finalUnitText, 7.1);
+      const finalUnitFont = hasItemSaving ? boldFont : font;
+      const finalUnitColor = hasItemSaving ? AMBER : GREEN_DARK;
+      const finalUnitPrefix = `${fmtCurrency(paidUnitPrice)} × ${displayedQuantity}`;
+      const finalUnitPrefixWidth = finalUnitFont.widthOfTextAtSize(
+        finalUnitPrefix,
+        7.1,
+      );
+      const uomGap = unitOfMeasure ? 0.45 : 0;
+      const uomWidth = unitOfMeasure
+        ? finalUnitFont.widthOfTextAtSize(unitOfMeasure, 7.1)
+        : 0;
+      const finalUnitWidth = finalUnitPrefixWidth + uomGap + uomWidth;
       const originalUnitText = fmtCurrency(originalUnitPrice);
       const originalUnitWidth = hasItemSaving
         ? font.widthOfTextAtSize(originalUnitText, 7.1)
@@ -924,13 +946,23 @@ export async function POST(req: Request) {
         unitX += originalUnitWidth + 6;
       }
 
-      page.drawText(finalUnitText, {
+      page.drawText(finalUnitPrefix, {
         x: unitX,
         y: rowTop - 31,
-        font: hasItemSaving ? boldFont : font,
+        font: finalUnitFont,
         size: 7.1,
-        color: hasItemSaving ? AMBER : GREEN_DARK,
+        color: finalUnitColor,
       });
+
+      if (unitOfMeasure) {
+        page.drawText(unitOfMeasure, {
+          x: unitX + finalUnitPrefixWidth + uomGap,
+          y: rowTop - 31,
+          font: finalUnitFont,
+          size: 7.1,
+          color: finalUnitColor,
+        });
+      }
 
       // No orange circle/plus is drawn over the product image.
       if (isSubsidizedItem) {
@@ -1028,7 +1060,7 @@ export async function POST(req: Request) {
       drawSummaryRow("Price before savings", fmtCurrency(priceBeforeSavings), {
         strike: true,
       });
-      drawSummaryRow("You saved today", fmtCurrency(subsidyUsed), {
+      drawSummaryRow("You saved today", `-${fmtCurrency(subsidyUsed)}`, {
         strong: true,
       });
     }
@@ -1052,7 +1084,7 @@ export async function POST(req: Request) {
       ...(usedFromOldWallet > 0
         ? [
             {
-              label: "Used from Gift Wallet balance",
+              label: "Used from Gift Wallet",
               value: fmtCurrency(usedFromOldWallet),
               amber: false,
             },
@@ -1187,8 +1219,8 @@ export async function POST(req: Request) {
     );
 
     const pdfBytes = await pdfDoc.save();
-    const filename = `invoice-${String(order._id)
-      .slice(-8)
+    const filename = `CC-Receipt-${String(order._id)
+      .slice(-7)
       .toUpperCase()}-${safeDate(order.createdAt).replace(/\s/g, "-")}.pdf`;
 
     const pdfBuffer = new ArrayBuffer(pdfBytes.byteLength);
