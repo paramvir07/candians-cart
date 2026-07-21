@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import QrCodeButton from "@/components/shared/users/orders/QrCodeButton";
 
 type ModalState = "none" | "reorder" | "complete" | "cancel";
 
@@ -276,65 +277,47 @@ const ReorderBtn = ({
       </Dialog>
 
       {/* ── Action Buttons ──────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex w-full flex-wrap items-center gap-2">
         <Button
           variant="outline"
           size="icon"
-          className="sm:w-auto sm:px-3 sm:gap-1.5 shrink-0"
+          className="h-9 w-9 shrink-0 gap-1.5 px-0 text-sm font-medium sm:w-auto sm:px-3"
           onClick={handleDownloadInvoice}
           disabled={loading}
         >
           {loading ? (
-            <Loader2 size={14} className="animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Download size={14} />
+            <Download className="h-4 w-4" />
           )}
-          <span className="hidden sm:inline text-sm">
+
+          <span className="hidden sm:inline">
             {loading ? "Generating..." : "Invoice"}
           </span>
         </Button>
 
+        {!customerId && !allOrders && order && <QrCodeButton id={order._id} />}
+        {allOrders && (
+          <Button
+            asChild
+            size="icon"
+            className="h-9 w-9 shrink-0 gap-1.5 px-0 text-sm font-medium sm:w-auto sm:px-3"
+          >
+            <Link href={`/cashier/customer/${orderCustomerId}/cart`}>
+              <User2 className="h-4 w-4" />
+              <span className="hidden sm:inline">View Customer</span>
+            </Link>
+          </Button>
+        )}
+
         <Button
-          size="icon"
-          className="sm:w-auto sm:px-3 sm:gap-1.5 shrink-0"
+          size="sm"
+          className="ml-auto h-9 shrink-0 gap-1.5 px-3 text-sm font-medium"
           onClick={() => setModal("reorder")}
         >
-          <RotateCw size={14} />
-          <span className="hidden sm:inline text-sm">Reorder</span>
+          <RotateCw className="h-4 w-4" />
+          <span>Reorder</span>
         </Button>
-
-        {allOrders && (
-          <Link href={`/cashier/customer/${orderCustomerId}/cart`}>
-            <Button
-              size="icon"
-              className="sm:w-auto sm:px-3 sm:gap-1.5 shrink-0"
-            >
-              <User2 size={14} />
-              <span className="hidden sm:inline text-sm">View Customer</span>
-            </Button>
-          </Link>
-        )}
-
-        {orderStatus === "pending" && (customerId || allOrders) && (
-          <Button
-            size="icon"
-            className="sm:w-auto sm:px-3 sm:gap-1.5 shrink-0"
-            onClick={openComplete}
-          >
-            <PackageCheck size={14} />
-            <span className="hidden sm:inline text-sm">Complete order</span>
-          </Button>
-        )}
-
-        {orderStatus === "pending" && (
-          <Button
-            className="sm:w-auto sm:px-3 sm:gap-1.5 shrink-0 bg-red-500/90 hover:bg-red-500/80"
-            onClick={() => setModal("cancel")}
-          >
-            <CircleX size={14} />
-            <span className="hidden sm:inline text-sm">Cancel</span>
-          </Button>
-        )}
       </div>
     </>
   );

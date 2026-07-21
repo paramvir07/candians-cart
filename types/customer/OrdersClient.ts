@@ -13,6 +13,8 @@ export interface OrderWithProductsClient {
       markup: number;
       tax: number;
       disposableFee: number;
+      UOM?: string;
+      isMeasuredInWeight?: boolean;
     };
     quantity: number;
     total: number;
@@ -30,6 +32,8 @@ export interface OrderWithProductsClient {
       markup: number;
       tax: number;
       disposableFee: number;
+      UOM?: string;
+      isMeasuredInWeight?: boolean;
     };
     quantity: number;
     total: number;
@@ -55,7 +59,7 @@ export interface OrderWithProductsClient {
   subsidyUsed?: number;
   userId: string;
   storeId: string;
-  status: "pending" | "completed";          
+  status: "pending" | "completed";
   paymentMode: "wallet" | "pending" | "cash" | "card";
   cashierId?: string;
   createdAt: string;

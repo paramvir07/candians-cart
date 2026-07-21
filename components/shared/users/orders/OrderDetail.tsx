@@ -15,11 +15,15 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReorderBtn from "@/components/customer/orderHistory/ReorderBtn";
 import { CategoryIllustration } from "@/components/customer/shared/CategoryIllustration";
-import QrCodeButton from "./QrCodeButton";
 import { formatVancouverDate, formatVancouverTime } from "@/lib/timezone";
 
 const fmt = (cents: number) => `CA$${(cents / 100).toFixed(2)}`;
 const fmtBefore = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+const formatQuantity = (value: number) =>
+  Number.isInteger(value)
+    ? value.toString()
+    : value.toFixed(2).replace(/\.?0+$/, "");
 
 interface OrderDetailProps {
   order: any;
@@ -201,6 +205,12 @@ export default function OrderDetail({
 
                   const p = item.productId;
                   if (!p) return null;
+                  console.log("ORDER PRODUCT DEBUG:", {
+                    name: p.name,
+                    isMeasuredInWeight: p.isMeasuredInWeight,
+                    UOM: p.UOM,
+                    fullProduct: p,
+                  });
                   const imgUrl = p?.images?.[0]?.url;
                   const itemSub = item.subsidy ?? 0;
                   const markup = item.markup ?? 0;
@@ -210,7 +220,19 @@ export default function OrderDetail({
                   const isSubsidizedItem =
                     itemSub > 0 || item.__type === "subsidy" || p?.subsidised;
                   const originalLineTotal = lineTotal + itemSub;
-                  const quantity = Math.max(Number(item.quantity) || 1, 1);
+                  const rawQuantity = Number(item.quantity);
+                  const quantity =
+                    Number.isFinite(rawQuantity) && rawQuantity > 0
+                      ? rawQuantity
+                      : 1;
+                  const isMeasuredInWeight = p.isMeasuredInWeight === true;
+                  const productName = p.name ?? "Unknown product";
+                  const displayedProductName = isMeasuredInWeight
+                    ? `${productName}/${p.UOM}`
+                    : productName;
+                  const displayedQuantity = isMeasuredInWeight
+                    ? `${formatQuantity(quantity)}\u200A${p.UOM}`
+                    : formatQuantity(quantity);
                   const paidUnitPrice = Math.round(lineTotal / quantity);
                   const originalUnitPrice = Math.round(
                     originalLineTotal / quantity,
@@ -243,7 +265,7 @@ export default function OrderDetail({
                         {/* Top: name + total price */}
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2 flex-1 min-w-0">
-                            {p?.name ?? "Unknown product"}
+                            {displayedProductName}
                           </p>
                           {!item.productId.subsidised && (
                             <span
@@ -299,7 +321,7 @@ export default function OrderDetail({
                                   : "text-foreground"
                               }
                             >
-                              {fmt(paidUnitPrice)} × {quantity}
+                              {fmt(paidUnitPrice)} × {displayedQuantity}
                             </span>
                           </div>
                         </div>
@@ -391,7 +413,7 @@ export default function OrderDetail({
                         You saved today
                       </span>
                       <span className="text-sm font-bold text-emerald-700 tabular-nums">
-                        {fmt(subsidyUsed)}
+                        -{fmt(subsidyUsed)}
                       </span>
                     </div>
                   </>
@@ -437,7 +459,7 @@ export default function OrderDetail({
                         {oldWalletUsed > 0 && (
                           <div className="flex items-center justify-between gap-3">
                             <span className="text-muted-foreground">
-                              Used from Gift Wallet balance
+                              Used from Gift Wallet 
                             </span>
                             <span className="font-semibold text-foreground tabular-nums">
                               {fmt(oldWalletUsed)}
@@ -498,7 +520,7 @@ export default function OrderDetail({
               order={order}
             />
           </div>
-          {!customerId && !allOrders && <QrCodeButton id={order._id} />}
+          
         </div>
       </div>
     </div>

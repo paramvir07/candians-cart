@@ -48,7 +48,7 @@ export async function downloadOrderInvoicePDF(order: any) {
         .replaceAll("/", "-");
 
   const orderId = String(order._id ?? "unknown");
-  const filename = `invoice-${orderId.slice(-8).toUpperCase()}-${safeDate}.pdf`;
+  const filename = `CC-Receipt-${orderId.slice(-7).toUpperCase()}-${safeDate}.pdf`;
 
   const a = document.createElement("a");
   a.href = url;
