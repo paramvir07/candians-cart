@@ -1206,7 +1206,7 @@ export function ReferralPageClient({
           <EarningsHero
             completeCount={completedCount}
             earned={earnedDisplay}
-            uses={referralData.uses}
+            uses={referralData.usedBy.length}
             pending={pendingCount}
             code={referralData.code}
             maxUses={referralData.maxUses}
@@ -1221,7 +1221,7 @@ export function ReferralPageClient({
         <div className="mb-3">
           <UsageStats
             pending={pendingCount}
-            uses={referralData.uses}
+            uses={referralData.usedBy.length} 
             maxUses={referralData.maxUses}
             expiresAt={referralData.expiresAt}
           />
