@@ -2,16 +2,19 @@
   "name": "candians-cart",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.16.0",
   "engines": {
     "node": ">=18.17.0",
     "pnpm": ">=8.0.0"
   },
   "scripts": {
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev": "turbo run dev"
   },
   "devDependencies": {
     "eslint": "^10.0.0",
     "eslint-config-next": "^0.2.4",
+    "turbo": "^2.10.5",
     "typescript": "^5"
   }
 }
