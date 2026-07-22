@@ -296,7 +296,6 @@ const ReorderBtn = ({
         </Button>
 
         {!customerId && !allOrders && order && <QrCodeButton id={order._id} />}
-
         {allOrders && (
           <Button
             asChild

@@ -149,47 +149,46 @@ export default function OrderCard({
                       </span>
                     </div>
                   </div>
-                </div>
 
-                {/* Date/time on the left, savings summary on the right. */}
-                <div className="mt-1.5 flex min-h-[34px] items-start justify-between gap-3">
-                  <div className="min-w-0 text-[10px] font-medium leading-[1.35] text-stone-400">
-                    <p className="truncate">{date}</p>
-                    <p className="truncate text-stone-400/80">{time}</p>
-                  </div>
-
-                  {/* Row 3: savings */}
-                  {hasSavingsInfo && (
-                    <div className="min-w-0 shrink-0 space-y-0.5 text-right tabular-nums">
-                      {hasSubsidyUsed && (
-                        <div
-                          className="flex items-center justify-end gap-1.5 whitespace-nowrap"
-                          title={`Order savings: ${fmt(subsidyUsed)}`}
-                        >
-                          <span className="text-[9px] font-semibold text-stone-400">
-                            Order savings
-                          </span>
-                          <span className="text-[10px] font-bold text-emerald-700">
-                            -{fmt(subsidyUsed)}
-                          </span>
-                        </div>
-                      )}
-
-                      {hasSavedToWallet && (
-                        <div
-                          className="flex items-center justify-end gap-1.5 whitespace-nowrap"
-                          title={`Gift Wallet credit: ${fmt(savedToWallet)}`}
-                        >
-                          <span className="text-[9px] font-semibold text-stone-400">
-                            Gift Wallet credit
-                          </span>
-                          <span className="text-[10px] font-bold text-violet-700">
-                            +{fmt(savedToWallet)}
-                          </span>
-                        </div>
-                      )}
+                  {/* Date/time on the left, savings summary on the right. */}
+                  <div className="mt-1.5 flex min-h-[34px] items-start justify-between gap-3">
+                    <div className="min-w-0 text-[10px] font-medium leading-[1.35] text-stone-400">
+                      <p className="truncate">{date}</p>
+                      <p className="truncate text-stone-400/80">{time}</p>
                     </div>
-                  )}
+
+                    {hasSavingsInfo && (
+                      <div className="min-w-0 shrink-0 space-y-0.5 text-right tabular-nums">
+                        {hasSubsidyUsed && (
+                          <div
+                            className="flex items-center justify-end gap-1.5 whitespace-nowrap"
+                            title={`Order savings: ${fmt(subsidyUsed)}`}
+                          >
+                            <span className="text-[9px] font-semibold text-stone-400">
+                              Order savings
+                            </span>
+                            <span className="text-[10px] font-bold text-emerald-700">
+                              -{fmt(subsidyUsed)}
+                            </span>
+                          </div>
+                        )}
+
+                        {hasSavedToWallet && (
+                          <div
+                            className="flex items-center justify-end gap-1.5 whitespace-nowrap"
+                            title={`Gift Wallet credit: ${fmt(savedToWallet)}`}
+                          >
+                            <span className="text-[9px] font-semibold text-stone-400">
+                              Gift Wallet credit
+                            </span>
+                            <span className="text-[10px] font-bold text-violet-700">
+                              +{fmt(savedToWallet)}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -268,7 +267,7 @@ export default function OrderCard({
                   </div>
                 </div>
 
-                {/* Savings */}
+                {/* Keep this grid cell even when empty so every desktop order aligns. */}
                 <div className="min-w-0">
                   {hasSavingsInfo && (
                     <>

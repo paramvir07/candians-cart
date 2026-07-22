@@ -1238,7 +1238,7 @@ export function ReferralPageClient({
         <div className="mb-3">
           <UsageStats
             pending={pendingCount}
-            uses={referralData.usedBy.length}
+            uses={referralData.usedBy.length} 
             maxUses={referralData.maxUses}
             expiresAt={referralData.expiresAt}
           />

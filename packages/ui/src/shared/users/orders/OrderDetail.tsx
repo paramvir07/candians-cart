@@ -207,6 +207,7 @@ export default function OrderDetail({
                   }
 
                   const p = item.productId;
+                  if (!p) return null;
 
                   console.log("ORDER PRODUCT DEBUG:", {
                     name: p.name,

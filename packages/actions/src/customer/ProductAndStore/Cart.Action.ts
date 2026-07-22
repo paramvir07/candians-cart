@@ -801,8 +801,15 @@ const CheckUserReferral = async (
     { $inc: { walletBalance: ReferralValue } },
     { session, runValidators: true },
   );
+
   const actualUses = await Customer.countDocuments(
     { referralCodeId: referralCodeId, placedFirstOrder: true },
+    { session },
+  );
+
+  await ReferralCode.findByIdAndUpdate(
+    referralCodeId,
+    { $set: { uses: actualUses } },
     { session },
   );
 

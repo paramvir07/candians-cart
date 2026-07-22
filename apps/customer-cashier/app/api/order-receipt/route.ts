@@ -772,7 +772,6 @@ export async function POST(req: Request) {
         item.__type === "subsidy" ||
         product.subsidised === true;
       const originalLineTotal = lineTotal + itemSubsidy;
-
       const rawQuantity = Number(item.quantity);
       const quantity =
         Number.isFinite(rawQuantity) && rawQuantity > 0 ? rawQuantity : 1;
@@ -783,7 +782,6 @@ export async function POST(req: Request) {
         ? `${productName}/${unitOfMeasure}`
         : productName;
       const displayedQuantity = formatQuantity(quantity);
-
       const paidUnitPrice = Math.round(lineTotal / quantity);
       const originalUnitPrice = Math.round(originalLineTotal / quantity);
       const hasItemSaving = itemSubsidy > 0 && originalLineTotal > lineTotal;
