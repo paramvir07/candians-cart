@@ -61,9 +61,9 @@ const formatToPST = (utcDateString: string) => {
     .replace(/\//g, "-");
 };
 
-const formatSales = (sales: number, isMeasuredByWeight?: boolean) => {
+const formatSales = (sales: number, isMeasuredInWeight?: boolean) => {
   const n = Number(sales);
-  return isMeasuredByWeight ? n.toFixed(2) : Math.round(n).toString();
+  return isMeasuredInWeight ? n.toFixed(2) : Math.round(n).toString();
 };
 
 export default function CategorySalesTableClient({

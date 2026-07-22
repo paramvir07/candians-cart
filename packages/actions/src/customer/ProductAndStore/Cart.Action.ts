@@ -583,13 +583,16 @@ export const PlaceOrder = async ({
 
     await OrderModel.create([OrderData], { session });
     await CartModel.deleteOne({ customerId: User._id }, { session });
-    await EnableUserReferralFlag(
+    const referralResult = await EnableUserReferralFlag(
       OrderData.subsidy,
       User._id.toString(),
       User.name,
       User.referralCodeId.toString(),
       session,
     );
+    if (!referralResult.success) {
+      console.error("Referral processing issue:", referralResult.message);
+    }
     await session.commitTransaction();
     await revalidateCustomerCache();
     await ReloadCartpusher("Order Placed Successfully");
@@ -738,16 +741,16 @@ const CheckUserReferral = async (
     };
   if (!cashier) return { success: false, message: "Failed to get cashierId" };
 
-  const maxUsesReached =
-    referral.maxUses != null && referral.uses >= referral.maxUses;
-  const isExpired =
-    referral.expiresAt != null && Date.now() >= referral.expiresAt.getTime();
-  if (maxUsesReached || isExpired) {
-    return {
-      success: false,
-      message: "Referral code is expired or has reached its maximum uses",
-    };
-  }
+  // const maxUsesReached =
+  //   referral.maxUses != null && referral.uses >= referral.maxUses;
+  // const isExpired =
+  //   referral.expiresAt != null && Date.now() >= referral.expiresAt.getTime();
+  // if (maxUsesReached || isExpired) {
+  //   return {
+  //     success: false,
+  //     message: "Referral code is expired or has reached its maximum uses",
+  //   };
+  // }
 
   const ReferralValue = Math.round(perReferAmount * 100);
   if (
@@ -756,6 +759,27 @@ const CheckUserReferral = async (
     ReferralValue <= 0
   ) {
     return { success: false, message: "Invalid referral value" };
+  }
+
+  const updatedReferral = await ReferralCode.findOneAndUpdate(
+    {
+      _id: referralCodeId,
+      isActive: true,
+      $and: [
+        { $or: [{ maxUses: null }, { $expr: { $lt: ["$uses", "$maxUses"] } }] },
+        { $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }] },
+      ],
+    },
+    {},
+    { session, new: true },
+  );
+
+  if (!updatedReferral) {
+    return {
+      success: false,
+      message:
+        "Referral code is expired, inactive, or has reached its maximum uses",
+    };
   }
 
   const customerId = referral.customerId.toString();
@@ -777,11 +801,22 @@ const CheckUserReferral = async (
     { $inc: { walletBalance: ReferralValue } },
     { session, runValidators: true },
   );
-  await ReferralCode.findByIdAndUpdate(
-    referralCodeId,
-    { $inc: { uses: 1 } },
+  const actualUses = await Customer.countDocuments(
+    { referralCodeId: referralCodeId, placedFirstOrder: true },
     { session },
   );
+
+  await ReferralCode.findByIdAndUpdate(
+    referralCodeId,
+    { $set: { uses: actualUses } },
+    { session },
+  );
+
+  // await ReferralCode.findByIdAndUpdate(
+  //   referralCodeId,
+  //   { $inc: { uses: 1 } },
+  //   { session },
+  // );
 
   return { success: true, message: "Referral topup created" };
 };

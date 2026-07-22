@@ -43,11 +43,11 @@ const QrCodeButton = ({ id }: QrCodeButtonProps) => {
       <DialogTrigger asChild>
         <Button
           id={`qr-code-button-${id}`}
-          size="sm"
-          className="h-9 w-auto shrink-0 gap-2 rounded-full px-3 shadow-sm transition hover:shadow-md sm:px-4"
+          size="icon"
+          className="h-9 w-9 shrink-0 gap-1.5 px-0 text-sm font-medium sm:w-auto sm:px-3"
         >
           <QrCode className="h-4 w-4" />
-          <span className="text-sm font-medium">QR Code</span>
+          <span className="hidden sm:inline">QR Code</span>
         </Button>
       </DialogTrigger>
 

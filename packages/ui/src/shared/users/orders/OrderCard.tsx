@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Sparkles, X, Package } from "lucide-react";
+import { Sparkles, X, Package, Wallet } from "lucide-react";
 import { CategoryIllustration } from "@canadian-cart/ui/customer/shared/CategoryIllustration";
 import OrderDetail from "./OrderDetail";
 import {
@@ -11,7 +11,10 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@canadian-cart/ui/ui/dialog";
-import { formatVancouverDate, formatVancouverTime } from "@canadian-cart/lib/timezone";
+import {
+  formatVancouverDate,
+  formatVancouverTime,
+} from "@canadian-cart/lib/timezone";
 
 const fmt = (cents: number) => `CA$${(cents / 100).toFixed(2)}`;
 const fmtBefore = (cents: number) => `$${(cents / 100).toFixed(2)}`;
@@ -40,6 +43,9 @@ export default function OrderCard({
   const subsidyGenerated = order.subsidy ?? 0;
   const hasSubsidyUsed = subsidyUsed > 0;
   const hasSubsidyGenerated = subsidyGenerated > 0;
+  const savedToWallet = Math.max(subsidyGenerated - subsidyUsed, 0);
+  const hasSavedToWallet = savedToWallet > 0;
+  const hasSavingsInfo = hasSubsidyUsed || hasSavedToWallet;
   const originalTotal = (order.cartTotal ?? 0) + subsidyUsed;
 
   // ✅ miscItems included in count
@@ -92,90 +98,99 @@ export default function OrderCard({
             {/* ══════════════════════════════════
                 MOBILE  (hidden on lg+)
             ══════════════════════════════════ */}
-            <div className="lg:hidden pl-4 pr-4 py-3.5 flex items-center gap-3">
-              {/* Thumbnail */}
-              <div
-                className="relative shrink-0 rounded-xl overflow-hidden"
-                style={{
-                  width: 52,
-                  height: 52,
-                  border: "1.5px solid rgba(0,0,0,0.07)",
-                  background: "#f8f8f6",
-                }}
-              >
-                {thumbUrl ? (
-                  <Image
-                    src={thumbUrl}
-                    alt="Order"
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <CategoryIllustration category={firstCat} />
-                )}
-                {(hasSubsidyUsed || hasSubsidyGenerated) && (
-                  <div
-                    className="absolute bottom-0 right-0 p-0.5 rounded-tl-lg"
-                    style={{ background: "#f59e0b" }}
-                  >
-                    <Sparkles className="w-2.5 h-2.5 text-white" />
-                  </div>
-                )}
-              </div>
+            <div className="lg:hidden px-4 py-3">
+              <div className="flex items-center gap-3">
+                {/* Thumbnail */}
+                <div
+                  className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-stone-50"
+                  style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}
+                >
+                  {thumbUrl ? (
+                    <Image
+                      src={thumbUrl}
+                      alt="Order"
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <CategoryIllustration category={firstCat} />
+                  )}
+                  {(hasSubsidyUsed || hasSubsidyGenerated) && (
+                    <div className="absolute bottom-0 right-0 rounded-tl-lg bg-amber-500 p-0.5">
+                      <Sparkles className="h-2.5 w-2.5 text-white" />
+                    </div>
+                  )}
+                </div>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                {/* Row 1: ID + total */}
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-mono font-bold text-[13px] text-stone-800 tracking-wider">
-                    #{orderId}
-                  </p>
-                  <div className="shrink-0 text-right tabular-nums">
-                    {hasSubsidyUsed && (
-                      <div className="mb-1 flex items-center justify-end gap-1.5">
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">
-                          Total
-                        </span>
-                        <span className="text-[11px] font-medium leading-none text-stone-500 line-through decoration-1 decoration-current/70">
+                {/* Main information */}
+                <div className="min-w-0 flex-1">
+                  {/* Order number, item count, and total */}
+                  <div className="grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-2">
+                    <p className="whitespace-nowrap font-mono text-[13px] font-bold tracking-wider text-stone-800">
+                      #{orderId}
+                    </p>
+
+                    <span
+                      className="inline-flex items-center justify-center gap-1 whitespace-nowrap text-[10px] font-semibold text-stone-500"
+                      aria-label={`${totalItems} item${totalItems !== 1 ? "s" : ""}`}
+                    >
+                      <Package className="h-3 w-3 shrink-0 text-stone-400" />
+                      {totalItems}
+                    </span>
+
+                    <div className="flex min-w-0 items-baseline justify-end gap-1.5 text-right tabular-nums">
+                      {hasSubsidyUsed && (
+                        <span className="shrink-0 text-[10px] font-medium leading-none text-stone-400 line-through decoration-1 decoration-current/70">
                           {fmtBefore(originalTotal)}
                         </span>
-                      </div>
-                    )}
-                    <p
-                      className="text-[16px] font-bold leading-none"
-                      style={{ color: "#16a34a" }}
-                    >
-                      {fmt(order.cartTotal)}
-                    </p>
+                      )}
+                      <span className="shrink-0 text-[17px] font-bold leading-none text-green-700">
+                        {fmt(order.cartTotal)}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Row 2: date + item count */}
-                <div className="flex items-center justify-between gap-2 mt-0.5">
-                  <div className="flex flex-col leading-tight">
-                    <p className="text-[11px] text-stone-400 font-medium">
-                      {date}
-                    </p>
-                    <p className="text-[10px] text-stone-400/80 font-medium">
-                      {time}
-                    </p>
+                {/* Date/time on the left, savings summary on the right. */}
+                <div className="mt-1.5 flex min-h-[34px] items-start justify-between gap-3">
+                  <div className="min-w-0 text-[10px] font-medium leading-[1.35] text-stone-400">
+                    <p className="truncate">{date}</p>
+                    <p className="truncate text-stone-400/80">{time}</p>
                   </div>
-                  <p className="text-[11px] text-stone-400 font-medium">
-                    {totalItems} item{totalItems !== 1 ? "s" : ""}
-                  </p>
-                </div>
 
-                {/* Row 3: savings */}
-                {hasSubsidyUsed && (
-                  <div className="mt-2 flex items-center gap-1.5">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">
-                      Savings
-                    </span>
-                    <span className="text-[11px] font-bold tabular-nums text-amber-600">
-                      {fmt(subsidyUsed)}
-                    </span>
-                  </div>
-                )}
+                  {/* Row 3: savings */}
+                  {hasSavingsInfo && (
+                    <div className="min-w-0 shrink-0 space-y-0.5 text-right tabular-nums">
+                      {hasSubsidyUsed && (
+                        <div
+                          className="flex items-center justify-end gap-1.5 whitespace-nowrap"
+                          title={`Order savings: ${fmt(subsidyUsed)}`}
+                        >
+                          <span className="text-[9px] font-semibold text-stone-400">
+                            Order savings
+                          </span>
+                          <span className="text-[10px] font-bold text-emerald-700">
+                            -{fmt(subsidyUsed)}
+                          </span>
+                        </div>
+                      )}
+
+                      {hasSavedToWallet && (
+                        <div
+                          className="flex items-center justify-end gap-1.5 whitespace-nowrap"
+                          title={`Gift Wallet credit: ${fmt(savedToWallet)}`}
+                        >
+                          <span className="text-[9px] font-semibold text-stone-400">
+                            Gift Wallet credit
+                          </span>
+                          <span className="text-[10px] font-bold text-violet-700">
+                            +{fmt(savedToWallet)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -216,7 +231,7 @@ export default function OrderCard({
               </div>
 
               {/* Data columns */}
-              <div className="flex-1 grid grid-cols-[1.45fr_1.35fr_0.55fr_1fr_1.15fr] items-center gap-x-4 min-w-0">
+              <div className="grid min-w-0 flex-1 grid-cols-[1.3fr_1.2fr_0.5fr_1.45fr_1.05fr] items-center gap-x-4">
                 {/* Order # */}
                 <div className="min-w-0">
                   <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">
@@ -255,14 +270,29 @@ export default function OrderCard({
 
                 {/* Savings */}
                 <div className="min-w-0">
-                  {hasSubsidyUsed && (
+                  {hasSavingsInfo && (
                     <>
-                      <p className="mb-0.5 text-[9px] font-bold uppercase tracking-widest text-stone-400">
+                      <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-stone-400">
                         Savings
                       </p>
-                      <p className="text-[13px] font-bold tabular-nums text-amber-600">
-                        {fmt(subsidyUsed)}
-                      </p>
+                      <div className="space-y-0.5">
+                        {hasSubsidyUsed && (
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold tabular-nums text-emerald-700">
+                            <Sparkles className="h-3 w-3 shrink-0" />
+                            <span className="truncate">
+                              -{fmt(subsidyUsed)} today
+                            </span>
+                          </div>
+                        )}
+                        {hasSavedToWallet && (
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold tabular-nums text-violet-700">
+                            <Wallet className="h-3 w-3 shrink-0" />
+                            <span className="truncate">
+                              +{fmt(savedToWallet)} wallet
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </>
                   )}
                 </div>

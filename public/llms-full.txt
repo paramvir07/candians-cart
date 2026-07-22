@@ -240,4 +240,4 @@ Store assignments are permanent and cannot be changed after account creation.
 - Expanded store coverage
 - Receipt scanning
 - Subsidy on food orders in Resuraunt
-- Subsidized Oil and Fuel
+- Subsidised Oil and Fuel

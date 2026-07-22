@@ -345,9 +345,9 @@ export async function updateProduct(
     const imageHasChanged =
       newPrimaryFileId && newPrimaryFileId !== oldPrimaryFileId;
 
-    if (imageHasChanged && images?.[0]) {
-      await triggerImageGeneration(productId, images[0], targetStoreId);
-    }
+    // if (imageHasChanged && images?.[0]) {
+    //   await triggerImageGeneration(productId, images[0], targetStoreId);
+    // }
 
     const tagToBust = `products-${targetStoreId}`;
 

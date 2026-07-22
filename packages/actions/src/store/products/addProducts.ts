@@ -225,13 +225,13 @@ export async function createProduct(
       revalidatePath(`/admin/store/${recievedStoreId}/products`);
     }
 
-    if (createdProductId && dbPayload.images?.[0]) {
-      await triggerImageGeneration(
-        createdProductId,
-        dbPayload.images[0],
-        storeId,
-      );
-    }
+    // if (createdProductId && dbPayload.images?.[0]) {
+    //   await triggerImageGeneration(
+    //     createdProductId,
+    //     dbPayload.images[0],
+    //     storeId,
+    //   );
+    // }
     return {
       success: true,
       message: "Product created successfully",
