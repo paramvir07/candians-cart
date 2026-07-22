@@ -127,182 +127,6 @@ function groupByMonth(
     .map(([label, items]) => ({ label, items }));
 }
 
-// ─── Share apps config ────────────────────────────────────────────────────────
-
-interface AppConfig {
-  label: string;
-  bg: string;
-  icon: React.ReactNode;
-  href: (url: string, message: string) => string;
-}
-
-const SHARE_APPS: AppConfig[] = [
-  {
-    label: "WhatsApp",
-    bg: "#25D366",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.561 4.14 1.535 5.877L.057 23.887l6.197-1.455A11.937 11.937 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.937 0-3.748-.5-5.325-1.373l-.38-.224-3.938.924.966-3.834-.245-.396A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
-      </svg>
-    ),
-    href: (_url, message) =>
-      `https://wa.me/?text=${encodeURIComponent(message)}`,
-  },
-  {
-    label: "X",
-    bg: "#000000",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-      </svg>
-    ),
-    href: (_url, message) =>
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`,
-  },
-  {
-    label: "Email",
-    bg: "#007AFF",
-    icon: (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="white"
-        strokeWidth="2"
-      >
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-        <polyline points="22,6 12,13 2,6" />
-      </svg>
-    ),
-    href: (_url, message) =>
-      `mailto:?subject=${encodeURIComponent(
-        "Join Candian's Cart",
-      )}&body=${encodeURIComponent(message)}`,
-  },
-  {
-    label: "Messages",
-    bg: "#34C759",
-    icon: (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="white"
-        strokeWidth="2"
-      >
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
-    ),
-    href: (_url, message) => `sms:?body=${encodeURIComponent(message)}`,
-  },
-];
-
-// ─── Share Sheet Dialog ───────────────────────────────────────────────────────
-// Shown only on desktop as fallback when navigator.share is unavailable
-
-function ShareSheetDialog({
-  open,
-  onClose,
-  code,
-}: {
-  open: boolean;
-  onClose: () => void;
-  code: string;
-}) {
-  const url = getReferralUrl(code);
-  const shareMessage = getReferralShareMessage(code);
-  const [urlCopied, setUrlCopied] = useState(false);
-
-  async function copyUrl() {
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      const el = document.createElement("textarea");
-      el.value = url;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
-    }
-    setUrlCopied(true);
-    setTimeout(() => setUrlCopied(false), 2000);
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="w-full max-w-sm rounded-2xl border border-border bg-background p-0 overflow-hidden gap-0">
-        <DialogHeader className="flex flex-row items-center justify-between px-5 pt-5 pb-3 space-y-0">
-          <button
-            onClick={onClose}
-            className="-ml-1 p-1 text-muted-foreground transition-colors hover:text-foreground"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <DialogTitle className="text-sm font-semibold text-foreground">
-            Share via
-          </DialogTitle>
-          <div className="w-7" />
-        </DialogHeader>
-
-        <div className="px-5 pb-8 flex flex-col gap-5">
-          <div className="flex justify-around">
-            {SHARE_APPS.map((app) => (
-              <a
-                key={app.label}
-                href={app.href(url, shareMessage)}
-                target="_blank"
-                rel="noreferrer"
-                className="group flex flex-col items-center gap-1.5"
-              >
-                <span
-                  className="flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110 active:scale-95"
-                  style={{ background: app.bg }}
-                >
-                  {app.icon}
-                </span>
-                <span className="text-[11px] text-muted-foreground">
-                  {app.label}
-                </span>
-              </a>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 py-2">
-            <span className="flex-1 truncate font-mono text-xs text-muted-foreground">
-              {url}
-            </span>
-            <Button
-              size="sm"
-              variant={urlCopied ? "outline" : "default"}
-              className={
-                urlCopied
-                  ? "shrink-0 rounded-lg border-primary/40 text-xs text-primary hover:bg-transparent"
-                  : "shrink-0 rounded-lg text-xs"
-              }
-              onClick={copyUrl}
-            >
-              {urlCopied ? (
-                <span className="flex items-center gap-1">
-                  <Check size={11} /> Copied
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <Copy size={11} /> Copy
-                </span>
-              )}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ─── QR Dialog ────────────────────────────────────────────────────────────────
 
 function QRDialog({
   open,
@@ -451,7 +275,7 @@ function EarningsHero({
             className="text-5xl font-black tracking-tight text-white leading-none"
             style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
           >
-            ${earned}
+            ${perReferAmount * (uses - pending)}/{perReferAmount * maxUses}
           </span>
           <span className="text-sm text-white/50 mb-1.5">CAD</span>
         </div>
@@ -474,7 +298,16 @@ function EarningsHero({
               className="text-sm font-bold text-white"
               style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
             >
-              {uses - pending}/{maxUses}
+              {completeCount}/{maxUses}
+            </p>
+          </div>
+          <div className="rounded-xl bg-white/10 border border-white/10 px-2 py-2.5">
+            <p className="text-[9px] text-white/50 mb-1 truncate">Completed</p>
+            <p
+              className="text-sm font-bold text-white"
+              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
+            >
+              {uses - pending}/{uses}
             </p>
           </div>
           <div className="rounded-xl bg-white/10 border border-white/10 px-2 py-2.5">
@@ -484,19 +317,6 @@ function EarningsHero({
               style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
             >
               {pending}/{uses}
-            </p>
-          </div>
-          <div className="rounded-xl bg-white/10 border border-white/10 px-2 py-2.5">
-            <p className="text-[9px] text-white/50 mb-1 truncate">Left</p>
-            <p
-              className="text-sm font-bold text-white"
-              style={{ fontFamily: "'Sora', system-ui, sans-serif" }}
-            >
-              $
-              {maxUses - completeCount > 0
-                ? (maxUses - completeCount) * perReferAmount
-                : 0}
-              /{maxUses * perReferAmount}
             </p>
           </div>
         </div>
@@ -541,8 +361,8 @@ function EarningsHero({
 // ─── Share Row ────────────────────────────────────────────────────────────────
 
 function ShareRow({ code }: { code: string }) {
-  const [sheetOpen, setSheetOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const url = getReferralUrl(code);
   const shareMessage = getReferralShareMessage(code);
@@ -559,11 +379,22 @@ function ShareRow({ code }: { code: string }) {
           url,
         });
         return;
-      } catch {
-        // user cancelled or native share failed — fall through
-      }
+      } catch {}
+      return;
     }
-    setSheetOpen(true);
+
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   }
 
   return (
@@ -573,8 +404,8 @@ function ShareRow({ code }: { code: string }) {
           onClick={handleShare}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-xs font-semibold text-muted-foreground bg-background transition-all active:scale-95 hover:bg-primary/5 hover:border-primary/40 hover:text-primary"
         >
-          <Share2 size={13} />
-          Share
+          {copied ? <Check size={13} /> : <Share2 size={13} />}
+          {copied ? "Copied" : "Share"}
         </button>
 
         <button
@@ -585,12 +416,6 @@ function ShareRow({ code }: { code: string }) {
           QR Code
         </button>
       </div>
-
-      <ShareSheetDialog
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        code={code}
-      />
 
       <QRDialog open={qrOpen} onClose={() => setQrOpen(false)} code={code} />
     </>
@@ -975,7 +800,9 @@ export function ReferralInviteModal({
   perReferAmount: number;
 }) {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<"enable" | "later" | null>(
+    null,
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -984,10 +811,10 @@ export function ReferralInviteModal({
   }, []);
 
   async function handle(enabled: boolean) {
-    setLoading(true);
+    setLoadingAction(enabled ? "enable" : "later");
     await setReferralInvites(enabled);
     localStorage.setItem(PROMPTED_KEY, "1");
-    setLoading(false);
+    setLoadingAction(null);
     setTimeout(() => setOpen(false), 0);
   }
 
@@ -1048,18 +875,18 @@ export function ReferralInviteModal({
           <div className="mt-6 flex gap-3">
             <Button
               variant="outline"
-              disabled={loading}
+              disabled={loadingAction !== null}
               onClick={() => handle(false)}
               className="flex-1 h-11"
             >
-              Maybe later
+              {loadingAction === "later" ? "..." : "Maybe later"}
             </Button>
             <Button
-              disabled={loading}
+              disabled={loadingAction !== null}
               onClick={() => handle(true)}
               className="flex-1 h-11"
             >
-              {loading ? "Enabling..." : "Enable Invites"}
+              {loadingAction === "enable" ? "Enabling..." : "Enable Invites"}
             </Button>
           </div>
 
@@ -1238,7 +1065,7 @@ export function ReferralPageClient({
         <div className="mb-3">
           <UsageStats
             pending={pendingCount}
-            uses={referralData.usedBy.length} 
+            uses={referralData.usedBy.length}
             maxUses={referralData.maxUses}
             expiresAt={referralData.expiresAt}
           />
