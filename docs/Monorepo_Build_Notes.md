@@ -296,4 +296,4 @@ since the fixes were mostly mechanical:
 - **Pin the package manager version explicitly** (`packageManager` field in
   root `package.json` + `ENABLE_EXPERIMENTAL_COREPACK=1` in Vercel) rather than
   relying on Vercel's default — this was the root cause of two of the four
-  early build failures.
+  early build failures
