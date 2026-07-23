@@ -545,7 +545,7 @@ export const PlaceOrder = async ({
       storeProfit: ProfitFields.StoreProfit,
       platformProfit: ProfitFields.PlatformProfit + PlatformFee,
       paymentMode,
-      status: (receivedCustomerId ? "completed" : "pending") as const,
+      status: receivedCustomerId ? ("completed" as const) : ("pending" as const),
       ...(receivedCustomerId && { cashierId }),
     };
 
