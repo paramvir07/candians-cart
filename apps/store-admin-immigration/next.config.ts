@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
     "@canadian-cart/ui",
     "@canadian-cart/db",
     "@canadian-cart/types",
+    "@canadian-cart/actions",
+    "@canadian-cart/lib",
   ],
 
   // CRITICAL: Prevents chunk file collisions between your two servers in production

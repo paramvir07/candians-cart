@@ -42,6 +42,7 @@ const nextConfig: NextConfig = {
     "@canadian-cart/ui",
     "@canadian-cart/db",
     "@canadian-cart/types",
+    "@canadian-cart/actions",
     "@canadian-cart/lib",
   ], // Ensures that the shared UI, DB, and types packages are transpiled for compatibility with this Next.js app.
 };
