@@ -16,7 +16,9 @@ export const SubsidyItemsSection = ({
 }) => {
   if (!subItems || subItems.length === 0) return null;
 
+  // console.log(subItems)
   const totalSubsidy = subItems.reduce((sum, item) => sum + item.subsidy, 0);
+  console.log("Total Subsidy : ",totalSubsidy)
   let leftOffSubsidy = 0;
 
   return (
@@ -214,7 +216,7 @@ export const SubsidyItemsSection = ({
               border: "1px solid oklch(0.6271 0.1699 149.2138 / 0.2)",
             }}
           >
-            CA${fmt(leftOffSubsidy)} saved
+            CA${fmt(totalSubsidy)} saved
           </span>
         </div>
 
