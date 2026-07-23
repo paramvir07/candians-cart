@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  transpilePackages: [
+    "@canadian-cart/ui",
+    "@canadian-cart/actions",
+    "@canadian-cart/types",
+    "@canadian-cart/lib",
+    "@canadian-cart/db",
+  ],
   allowedDevOrigins: ["http://192.168.40.10:3000"],
   images: {
     remotePatterns: [
@@ -89,7 +96,6 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
-      
     ],
   },
 };
