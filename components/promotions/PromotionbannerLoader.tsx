@@ -1,5 +1,5 @@
 import { getPromoStats } from "@/actions/promotions/getPromoStats.action";
-import PromotionBanner from "@/components/promotions/PromotionsBanner";
+import PromotionBanner from "@/components/promotions/PromotionBanner";
 
 export async function PromotionBannerLoader() {
   const promoStats = await getPromoStats();

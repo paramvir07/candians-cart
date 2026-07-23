@@ -1,12 +1,15 @@
 "use server";
 
 import { dbConnect } from "@/db/dbConnect";
-import OrderModel from "@/db/models/customer/Orders.Model";
+import Customer from "@/db/models/customer/customer.model";
 import { PromoStats } from "@/types/promotions/promo.types";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 // Promotion config — single source of truth
 const PROMO_CONFIG = {
-  startDate: new Date("2026-06-23T07:00:00.000Z"),
+  // Reset: timer now counts 15 days forward from today, not from the original launch date.
+  startDate: new Date("2026-07-22T00:00:00.000Z"),
   minDays: 15,
   minCustomers: 200,
   minOrders: 1,
@@ -40,6 +43,7 @@ function getFallbackPromoStats(): PromoStats {
     secondsRemaining: seconds,
     isReadyToDraw: false,
     startDate: PROMO_CONFIG.startDate.toISOString(),
+    myStatus: null,
   };
 }
 
@@ -49,16 +53,11 @@ export async function getPromoStats(): Promise<PromoStats> {
 
     const targetCount = PROMO_CONFIG.minCustomers;
 
-    const eligibleAgg = await OrderModel.aggregate(
-      [
-        { $match: { status: "completed" } },
-        { $group: { _id: "$userId" } },
-        { $count: "total" },
-      ],
-      { maxTimeMS: 5000 },
-    );
-
-    const eligibleCount = eligibleAgg[0]?.total ?? 0;
+    // Eligibility = customer has placed their first order and unlocked their
+    // subsidy on it. This is tracked directly on the Customer model.
+    const eligibleCount = await Customer.countDocuments({
+      placedFirstOrder: true,
+    });
 
     const minDeadline = new Date(PROMO_CONFIG.startDate);
     minDeadline.setDate(minDeadline.getDate() + PROMO_CONFIG.minDays);
@@ -80,6 +79,27 @@ export async function getPromoStats(): Promise<PromoStats> {
     const minutes = Math.floor((totalSec % 3600) / 60);
     const seconds = totalSec % 60;
 
+    // Current customer's own eligibility status — best-effort, no redirect on failure
+    let myStatus: PromoStats["myStatus"] = null;
+    try {
+      const session = await auth.api.getSession({ headers: await headers() });
+      if (session?.user?.id) {
+        const customer = await Customer.findOne(
+          { userId: session.user.id },
+          { placedFirstOrder: 1 },
+        ).lean();
+
+        if (!customer) {
+          myStatus = null;
+        } else {
+          const c = customer as { placedFirstOrder?: boolean };
+          myStatus = c.placedFirstOrder ? "eligible" : "not_eligible";
+        }
+      }
+    } catch {
+      myStatus = null;
+    }
+
     return {
       eligibleCount,
       targetCount,
@@ -94,6 +114,7 @@ export async function getPromoStats(): Promise<PromoStats> {
       secondsRemaining: seconds,
       isReadyToDraw: bothConditionsMet,
       startDate: PROMO_CONFIG.startDate.toISOString(),
+      myStatus,
     };
   } catch (error) {
     console.error("Failed to fetch promotion stats:", error);

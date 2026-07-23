@@ -230,14 +230,14 @@ export const SubsidyCart = ({ subsidy,total }: { subsidy: number,total:number })
       <div className="flex items-center gap-2 px-4 py-3 border-b border-emerald-200/70 bg-emerald-100/50">
         <Gift className="w-4 h-4 text-emerald-700" />
         <span className="text-sm font-semibold text-emerald-800 tracking-wide">
-          Subsidy Breakdown
+          Savings Breakdown
         </span>
       </div>
 
       <div className="divide-y divide-emerald-100">
         {safeSubsidy > 0 && (
         <Row
-          label="Order Subsidy"
+          label="Order Savings"
           description="On this order"
           value={orderSubsidy}
           icon={<Tag className="w-4 h-4 text-emerald-600" />}
@@ -246,8 +246,8 @@ export const SubsidyCart = ({ subsidy,total }: { subsidy: number,total:number })
 
         {safeTotal > 0 && (
           <Row
-            label="Total Subsidy"
-            description="Gift + Order"
+            label="Total Savings"
+            description="Gift Balance + Savings"
             value={walletBalance}
             icon={<Wallet className="w-4 h-4 text-emerald-600" />}
           />
@@ -256,7 +256,7 @@ export const SubsidyCart = ({ subsidy,total }: { subsidy: number,total:number })
         {safeUsed > 0 && (
           <Row
             label="Total left"
-            description="Subsidy left"
+            description="Savings left"
             value={totalUsed}
             icon={<MinusCircle className="w-4 h-4 text-rose-500" />}
             variant="used"

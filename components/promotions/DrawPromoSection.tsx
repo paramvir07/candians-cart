@@ -32,13 +32,13 @@ function TikTokIcon({ className }: { className?: string }) {
 function CountdownTile({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm relative">
-        <span className="text-2xl sm:text-3xl font-black tabular-nums text-foreground">
+      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border-2 border-amber-300 flex items-center justify-center shadow-sm relative">
+        <span className="text-2xl sm:text-3xl font-black tabular-nums bg-gradient-to-b from-amber-500 to-amber-600 bg-clip-text text-transparent">
           {String(value).padStart(2, "0")}
         </span>
-        <div className="absolute inset-x-0 top-1/2 h-px bg-border pointer-events-none" />
+        <div className="absolute inset-x-0 top-1/2 h-px bg-amber-200 pointer-events-none" />
       </div>
-      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+      <span className="text-[9px] font-bold text-stone-500 uppercase tracking-widest mt-1">
         {label}
       </span>
     </div>
@@ -156,14 +156,22 @@ function JoinSuccessModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─── Winner celebration (winner POV) ─────────────────────────────────────────
-function WinnerCelebration({ winners }: { winners: DrawWinner[] }) {
+function WinnerCelebration({
+  winners,
+  hasRedeemed,
+}: {
+  winners: DrawWinner[];
+  hasRedeemed?: boolean | null;
+}) {
+  const alreadyRedeemed = hasRedeemed === true;
+
   return (
     <div className="space-y-8">
       <div
-        className="relative overflow-hidden rounded-3xl border border-amber-300/30 p-8 text-center"
+        className="relative overflow-hidden rounded-3xl border-2 border-amber-300 p-8 text-center shadow-[0_4px_24px_rgba(180,140,40,0.2)]"
         style={{
           background:
-            "linear-gradient(135deg, oklch(0.22 0.08 80) 0%, oklch(0.16 0.05 60) 100%)",
+            "linear-gradient(155deg, #fffaf0 0%, #fdf3dd 45%, #fbeecb 100%)",
         }}
       >
         <div className="absolute inset-0 pointer-events-none">
@@ -171,39 +179,52 @@ function WinnerCelebration({ winners }: { winners: DrawWinner[] }) {
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full"
             style={{
               background:
-                "radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%)",
+                "radial-gradient(circle, rgba(217,160,60,0.2) 0%, transparent 70%)",
             }}
           />
         </div>
         <div className="relative z-10 space-y-4">
           <div className="text-6xl">🎉</div>
           <div>
-            <p className="text-amber-300/80 text-sm font-semibold uppercase tracking-widest">
+            <p className="text-amber-700/70 text-sm font-semibold uppercase tracking-widest">
               Grocery Gift Card Draw
             </p>
-            <h2 className="text-4xl sm:text-5xl font-black text-amber-300 tracking-tight leading-none mt-1">
+            <h2 className="text-4xl sm:text-5xl font-black bg-gradient-to-b from-amber-500 to-amber-600 bg-clip-text text-transparent tracking-tight leading-none mt-1">
               You Won!
             </h2>
-            <p className="text-amber-100/60 text-base mt-2">
+            <p className="text-stone-600 text-base mt-2">
               You're one of our 6 lucky winners — your{" "}
-              <span className="text-amber-300 font-bold">
+              <span className="text-amber-600 font-bold">
                 $50 grocery gift card
               </span>{" "}
-              is ready to use.
+              {alreadyRedeemed ? "has been redeemed." : "is ready to use."}
             </p>
           </div>
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 bg-amber-400 text-amber-950 font-black px-5 py-2 rounded-full text-sm">
-              <Gift className="w-4 h-4" />
-              You won a $50 Grocery Gift Card!
+
+          {alreadyRedeemed ? (
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 bg-stone-100 text-stone-600 font-black px-5 py-2 rounded-full text-sm border border-stone-200">
+                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                Gift card already redeemed
+              </div>
+              <p className="text-stone-500 text-xs">
+                Thanks for shopping with your prize! No further action needed.
+              </p>
             </div>
-            <p className="text-amber-200/60 text-xs">
-              Redeem it at{" "}
-              <span className="text-amber-300 font-bold">
-                Sunfarm Produce — Abbotsford
-              </span>
-            </p>
-          </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 text-white font-black px-5 py-2 rounded-full text-sm shadow-sm">
+                <Gift className="w-4 h-4" />
+                You won a $50 Grocery Gift Card!
+              </div>
+              <p className="text-stone-500 text-xs">
+                Not redeemed yet — use it anytime at{" "}
+                <span className="text-amber-700 font-bold">
+                  Sunfarm Produce — Abbotsford
+                </span>
+              </p>
+            </div>
+          )}
         </div>
       </div>
       <WinnersList winners={winners} highlightSelf />
@@ -215,42 +236,102 @@ function WinnerCelebration({ winners }: { winners: DrawWinner[] }) {
 function WinnersList({
   winners,
   highlightSelf = false,
+  compact = false,
 }: {
   winners: DrawWinner[];
   highlightSelf?: boolean;
+  compact?: boolean;
 }) {
-  const trophyColors = ["text-amber-400", "text-slate-400", "text-amber-700"];
+  const [expanded, setExpanded] = useState(false);
+  const trophyColors = ["text-amber-500", "text-stone-400", "text-amber-600"];
+  const visibleWinners = expanded ? winners : winners.slice(0, 2);
+  const hiddenCount = winners.length - visibleWinners.length;
+
   return (
     <div className="space-y-4">
-      <div className="text-center">
-        <h3 className="text-xl font-black text-foreground tracking-tight">
-          🏆 Our 6 Lucky Winners
-        </h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          $50 Grocery Gift Card each — Grand Launch 2026
-        </p>
-      </div>
-      <div className="grid sm:grid-cols-2 gap-3">
-        {winners.map((w, i) => (
-          <div
-            key={i}
-            className={`flex items-center gap-3 p-4 rounded-2xl border ${
-              highlightSelf && i === 0
-                ? "bg-amber-400/10 border-amber-400/30"
-                : "bg-muted/30 border-border"
-            }`}
+      {!compact && (
+        <div className="text-center">
+          <h3 className="text-xl font-black text-foreground tracking-tight">
+            🏆 Our 6 Lucky Winners
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            $50 Grocery Gift Card each — Grand Launch 2026
+          </p>
+        </div>
+      )}
+      <div
+        className={
+          compact ? "" : "rounded-3xl p-4 sm:p-5 border border-amber-300/50"
+        }
+        style={
+          compact
+            ? undefined
+            : {
+                background:
+                  "linear-gradient(155deg, #fffaf0 0%, #fdf3dd 45%, #fbeecb 100%)",
+              }
+        }
+      >
+        <div className="grid sm:grid-cols-2 gap-3">
+          {visibleWinners.map((w, i) => (
+            <div
+              key={i}
+              className={`flex items-center gap-3 p-3.5 rounded-2xl border ${
+                highlightSelf && i === 0
+                  ? "bg-amber-100/60 border-amber-300"
+                  : "bg-white/70 border-amber-200/50"
+              }`}
+            >
+              <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+                <Trophy
+                  className={`w-4 h-4 ${trophyColors[i] ?? "text-stone-400"}`}
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-stone-800 text-sm truncate">
+                  {w.name}
+                </p>
+                <p className="text-xs text-stone-400">Winner #{i + 1}</p>
+              </div>
+              {typeof w.hasRedeemed === "boolean" && (
+                <span
+                  className={`shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full ${
+                    w.hasRedeemed
+                      ? "bg-stone-100 text-stone-400"
+                      : "bg-amber-100 text-amber-700 border border-amber-300"
+                  }`}
+                >
+                  {w.hasRedeemed ? (
+                    <>
+                      <CheckCircle2 className="w-2.5 h-2.5" /> Redeemed
+                    </>
+                  ) : (
+                    <>
+                      <Gift className="w-2.5 h-2.5" /> Available
+                    </>
+                  )}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {hiddenCount > 0 && (
+          <button
+            onClick={() => setExpanded(true)}
+            className="mt-3 w-full text-center text-xs font-bold text-amber-600 hover:text-amber-700 transition-colors py-1.5"
           >
-            <div className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center shrink-0">
-              <Trophy
-                className={`w-4 h-4 ${trophyColors[i] ?? "text-muted-foreground"}`}
-              />
-            </div>
-            <div>
-              <p className="font-bold text-foreground text-sm">{w.name}</p>
-              <p className="text-xs text-muted-foreground">Winner #{i + 1}</p>
-            </div>
-          </div>
-        ))}
+            + Show {hiddenCount} more winner{hiddenCount !== 1 ? "s" : ""}
+          </button>
+        )}
+        {expanded && winners.length > 2 && (
+          <button
+            onClick={() => setExpanded(false)}
+            className="mt-2 w-full text-center text-xs font-bold text-stone-400 hover:text-stone-600 transition-colors py-1"
+          >
+            Show less
+          </button>
+        )}
       </div>
     </div>
   );
@@ -572,133 +653,202 @@ export default function DrawPromoSection({
   const secs = secondsLeft % 60;
 
   return (
-    <section className="py-10 px-4 bg-background">
+    <section id="grocery-gift-draw" className="py-10 px-4 bg-background">
       <div className="max-w-3xl mx-auto space-y-8">
-        {/* ── Hero header ─────────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-3xl bg-primary pt-10 pb-12 px-6 text-center">
-          <div
-            className="absolute inset-0 pointer-events-none opacity-10"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 25% 50%, white 1px, transparent 1px), radial-gradient(circle at 75% 50%, white 1px, transparent 1px)",
-              backgroundSize: "32px 32px",
-            }}
-          />
-          <div className="absolute -top-6 -left-6 w-24 h-24 rounded-full bg-amber-400/20 blur-xl pointer-events-none" />
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-amber-300/10 blur-lg pointer-events-none" />
-
-          <div className="relative z-10 space-y-3">
-            {initialStats.phase === "announced" ? (
-              <div className="inline-flex items-center gap-2 bg-amber-400 text-amber-950 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow">
-                <Trophy className="w-3 h-3" /> Winners Announced{" "}
-                <Trophy className="w-3 h-3" />
-              </div>
-            ) : initialStats.phase === "live_event" ? (
-              <div className="inline-flex items-center gap-2 bg-red-500 text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-white" /> Live Now
-              </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 bg-amber-400 text-amber-950 text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow">
-                <Sparkles className="w-3 h-3" /> Free Grocery Draw{" "}
-                <Sparkles className="w-3 h-3" />
-              </div>
-            )}
-
-            <div>
-              <p className="text-primary-foreground/70 text-sm font-medium uppercase tracking-wide">
-                Grand Launch — 6 winners
-              </p>
-              <h2 className="text-5xl sm:text-6xl font-black text-primary-foreground leading-none tracking-tighter mt-1">
-                WIN
-              </h2>
-              <p className="text-3xl sm:text-4xl font-black text-amber-300 leading-none">
-                $50 Grocery Gift Cards
-              </p>
-              <p className="text-primary-foreground/50 text-sm font-medium mt-1">
-                $50 each · 6 lucky winners
-              </p>
-            </div>
-
-            <p className="text-primary-foreground/60 text-sm max-w-sm mx-auto">
-              Follow us on Facebook & TikTok, join the draw, and be one of 6
-              lucky winners.
-            </p>
-
-            {initialStats.myStatus === "participant" &&
-              initialStats.phase !== "announced" && (
-                <div className="inline-flex items-center gap-2 bg-green-500/20 text-green-300 border border-green-500/30 text-xs font-bold px-3 py-1.5 rounded-full">
-                  <CheckCircle2 className="w-3 h-3" /> You're in the draw — good
-                  luck!
-                </div>
-              )}
-          </div>
-        </div>
-
-        {/* ── Phase content ────────────────────────────────────────────────── */}
         {initialStats.phase === "announced" &&
-        initialStats.myStatus === "winner" ? (
-          <WinnerCelebration winners={initialStats.winners} />
-        ) : initialStats.phase === "announced" ? (
-          <div className="space-y-6">
-            <WinnersList winners={initialStats.winners} />
-            <div className="bg-muted/30 rounded-2xl p-4 text-center space-y-1">
-              <p className="text-sm font-semibold text-foreground">
-                Each winner receives a{" "}
-                <span className="text-amber-500">$50 Grocery Gift Card</span> 🎁
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Thank you to everyone who participated in our Grand Launch Draw!
-                🎉
-              </p>
+        initialStats.myStatus !== "winner" ? (
+          // ── Announced (non-winner): ONE unified light card, header + winners ──
+          <div
+            className="relative overflow-hidden rounded-3xl border-2 border-amber-300 shadow-[0_6px_28px_rgba(180,140,40,0.18)]"
+            style={{
+              background:
+                "linear-gradient(160deg, #fffaf0 0%, #fdf3dd 45%, #fbeecb 100%)",
+            }}
+          >
+            <div
+              className="absolute inset-0 pointer-events-none opacity-[0.5]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 25% 30%, rgba(217,160,60,0.15) 1px, transparent 1px), radial-gradient(circle at 75% 30%, rgba(217,160,60,0.15) 1px, transparent 1px)",
+                backgroundSize: "32px 32px",
+              }}
+            />
+            <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-amber-300/25 blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-amber-200/25 blur-2xl pointer-events-none" />
+
+            <div className="relative z-10 pt-10 pb-8 px-6 sm:px-8 space-y-8">
+              {/* Header */}
+              <div className="text-center space-y-3">
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm">
+                  <Trophy className="w-3 h-3" /> Winners Announced{" "}
+                  <Trophy className="w-3 h-3" />
+                </div>
+
+                <div>
+                  <p className="text-amber-700/70 text-sm font-bold uppercase tracking-wide">
+                    Grand Launch — 6 Winners
+                  </p>
+                  <h2 className="text-4xl sm:text-5xl font-black text-stone-800 leading-none tracking-tighter mt-1">
+                    WIN
+                  </h2>
+                  <p className="text-2xl sm:text-3xl font-black bg-gradient-to-b from-amber-500 to-amber-600 bg-clip-text text-transparent leading-none mt-1">
+                    $50 Grocery Gift Cards
+                  </p>
+                  <p className="text-stone-500 text-sm font-medium mt-1.5">
+                    $50 each · 6 lucky winners
+                  </p>
+                </div>
+              </div>
+
+              <div className="h-px bg-amber-200" />
+
+              {/* Winners */}
+              <WinnersList winners={initialStats.winners} compact />
+
+              {/* Footer note */}
+              <div className="bg-white/60 border border-amber-200 rounded-2xl p-4 text-center space-y-1">
+                <p className="text-sm font-bold text-stone-800">
+                  Each winner receives a{" "}
+                  <span className="text-amber-600">$50 Grocery Gift Card</span>{" "}
+                  🎁
+                </p>
+                <p className="text-xs text-stone-500">
+                  Thank you to everyone who participated! Winners can redeem
+                  their gift card anytime — there's no deadline.
+                </p>
+              </div>
             </div>
           </div>
-        ) : initialStats.phase === "live_event" ? (
-          <LiveEventBanner
-            myStatus={initialStats.myStatus}
-            participantCount={initialStats.participantCount}
-          />
         ) : (
-          // pre_event — countdown + entry steps
-          <div className="space-y-8">
-            <Card className="p-6 space-y-4">
-              <div className="text-center space-y-1">
-                <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                  <Clock className="w-3.5 h-3.5" /> Event goes live
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  June 27, 2026 · 2:00 PM Pacific Time
-                </p>
-                <p className="text-xs text-muted-foreground/60">
-                  Winners announced live at the event — could be any time after
-                  2 PM
-                </p>
-              </div>
-              <div className="flex items-start justify-center gap-2 sm:gap-3">
-                <CountdownTile value={days} label="Days" />
-                <div className="text-2xl font-black text-primary mt-3">:</div>
-                <CountdownTile value={hours} label="Hours" />
-                <div className="text-2xl font-black text-primary mt-3">:</div>
-                <CountdownTile value={minutes} label="Mins" />
-                <div className="text-2xl font-black text-primary mt-3">:</div>
-                <CountdownTile value={secs} label="Secs" />
-              </div>
-            </Card>
+          <>
+            {/* ── Hero header (winner / pre_event / live_event) ────────────── */}
+            <div
+              className="relative overflow-hidden rounded-3xl pt-10 pb-12 px-6 text-center border-2 border-amber-300 shadow-[0_6px_28px_rgba(180,140,40,0.18)]"
+              style={{
+                background:
+                  "linear-gradient(160deg, #fffaf0 0%, #fdf3dd 45%, #fbeecb 100%)",
+              }}
+            >
+              <div
+                className="absolute inset-0 pointer-events-none opacity-[0.5]"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle at 25% 50%, rgba(217,160,60,0.15) 1px, transparent 1px), radial-gradient(circle at 75% 50%, rgba(217,160,60,0.15) 1px, transparent 1px)",
+                  backgroundSize: "32px 32px",
+                }}
+              />
+              <div className="absolute -top-6 -left-6 w-24 h-24 rounded-full bg-amber-300/25 blur-xl pointer-events-none" />
+              <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-amber-200/25 blur-lg pointer-events-none" />
 
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-xl font-black text-foreground tracking-tight">
-                  How to enter
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  3 easy steps — completely free
+              <div className="relative z-10 space-y-3">
+                {initialStats.phase === "announced" ? (
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm">
+                    <Trophy className="w-3 h-3" /> Winners Announced{" "}
+                    <Trophy className="w-3 h-3" />
+                  </div>
+                ) : initialStats.phase === "live_event" ? (
+                  <div className="inline-flex items-center gap-2 bg-red-500 text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-white" /> Live Now
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 text-white text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm">
+                    <Sparkles className="w-3 h-3" /> Free Grocery Draw{" "}
+                    <Sparkles className="w-3 h-3" />
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-amber-700/70 text-sm font-medium uppercase tracking-wide">
+                    Grand Launch — 6 winners
+                  </p>
+                  <h2 className="text-5xl sm:text-6xl font-black text-stone-800 leading-none tracking-tighter mt-1">
+                    WIN
+                  </h2>
+                  <p className="text-3xl sm:text-4xl font-black bg-gradient-to-b from-amber-500 to-amber-600 bg-clip-text text-transparent leading-none">
+                    $50 Grocery Gift Cards
+                  </p>
+                  <p className="text-stone-500 text-sm font-medium mt-1">
+                    $50 each · 6 lucky winners
+                  </p>
+                </div>
+
+                <p className="text-stone-600 text-sm max-w-sm mx-auto">
+                  Follow us on Facebook & TikTok, join the draw, and be one of 6
+                  lucky winners.
                 </p>
+
+                {initialStats.myStatus === "participant" &&
+                  initialStats.phase !== "announced" && (
+                    <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 border border-green-200 text-xs font-bold px-3 py-1.5 rounded-full">
+                      <CheckCircle2 className="w-3 h-3" /> You're in the draw —
+                      good luck!
+                    </div>
+                  )}
               </div>
-              <EntrySteps
+            </div>
+
+            {/* ── Phase content ─────────────────────────────────────────────── */}
+            {initialStats.phase === "announced" &&
+            initialStats.myStatus === "winner" ? (
+              <WinnerCelebration
+                winners={initialStats.winners}
+                hasRedeemed={initialStats.myHasRedeemed}
+              />
+            ) : initialStats.phase === "live_event" ? (
+              <LiveEventBanner
                 myStatus={initialStats.myStatus}
                 participantCount={initialStats.participantCount}
               />
-            </div>
-          </div>
+            ) : (
+              // pre_event — countdown + entry steps
+              <div className="space-y-8">
+                <Card className="p-6 space-y-4 border-amber-300/50">
+                  <div className="text-center space-y-1">
+                    <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                      <Clock className="w-3.5 h-3.5" /> Event goes live
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      June 27, 2026 · 2:00 PM Pacific Time
+                    </p>
+                    <p className="text-xs text-muted-foreground/60">
+                      Winners announced live at the event — could be any time
+                      after 2 PM
+                    </p>
+                  </div>
+                  <div className="flex items-start justify-center gap-2 sm:gap-3">
+                    <CountdownTile value={days} label="Days" />
+                    <div className="text-2xl font-black text-amber-500 mt-3">
+                      :
+                    </div>
+                    <CountdownTile value={hours} label="Hours" />
+                    <div className="text-2xl font-black text-amber-500 mt-3">
+                      :
+                    </div>
+                    <CountdownTile value={minutes} label="Mins" />
+                    <div className="text-2xl font-black text-amber-500 mt-3">
+                      :
+                    </div>
+                    <CountdownTile value={secs} label="Secs" />
+                  </div>
+                </Card>
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-black text-foreground tracking-tight">
+                      How to enter
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      3 easy steps — completely free
+                    </p>
+                  </div>
+                  <EntrySteps
+                    myStatus={initialStats.myStatus}
+                    participantCount={initialStats.participantCount}
+                  />
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

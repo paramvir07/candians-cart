@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, ShieldAlert, Mail, Pencil, Loader2 } from "lucide-react";
+import {
+  BadgeCheck,
+  MailWarning,
+  Mail,
+  Pencil,
+  Loader2,
+  ChevronRight,
+} from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -25,83 +32,119 @@ export default function EmailVerificationBadge({
 
   if (verified) {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-1">
-        <ShieldCheck className="h-3 w-3" />
-        Verified
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+        <BadgeCheck className="h-3.5 w-3.5" />
+        Email verified
       </span>
     );
   }
 
   const handleResend = async () => {
-    setSending(true);
-    const { error } = await authClient.sendVerificationEmail({
-      email,
-      callbackURL: "/email-verified?type=signup",
-    });
-    setSending(false);
-    setOpen(false);
+    try {
+      setSending(true);
 
-    if (error) {
-      toast.error(error.message ?? "Couldn't send verification email.");
-    } else {
+      const { error } = await authClient.sendVerificationEmail({
+        email,
+        callbackURL: "/email-verified?type=signup",
+      });
+
+      if (error) {
+        toast.error(error.message ?? "Couldn't send verification email.");
+        return;
+      }
+
       toast.success("Verification email sent! Check your inbox.");
+      setOpen(false);
       router.refresh();
+    } finally {
+      setSending(false);
     }
   };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-full px-2.5 py-1 hover:bg-amber-500/20 transition-colors">
-          <ShieldAlert className="h-3 w-3" />
-          Not verified
+        <button
+          type="button"
+          aria-label="Verify your email address"
+          className="group inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-700 transition-colors hover:bg-amber-500/20 dark:text-amber-400"
+        >
+          <MailWarning className="h-3.5 w-3.5" />
+          Verify email
+          <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
         </button>
       </PopoverTrigger>
 
-      <PopoverContent align="start" className="w-72 rounded-2xl p-0 overflow-hidden">
-        <div className="px-4 py-3 border-b border-border/60 bg-secondary/40">
-          <p className="text-xs font-bold text-foreground">Email not verified</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5 break-all">
+      <PopoverContent
+        align="start"
+        className="w-80 overflow-hidden rounded-2xl p-0"
+      >
+        <div className="border-b border-border/60 bg-amber-500/5 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/10">
+              <MailWarning className="h-4 w-4 text-amber-600" />
+            </div>
+
+            <div>
+              <p className="text-sm font-bold text-foreground">
+                Verify your email address
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Confirm that this email belongs to you and keep your account
+                secure.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-3">
+          <p className="text-[11px] font-medium text-muted-foreground">
+            Verification email will be sent to
+          </p>
+          <p className="mt-0.5 break-all text-xs font-semibold text-foreground">
             {email}
           </p>
         </div>
 
-        <div className="p-2 space-y-1">
+        <div className="space-y-1 border-t border-border/60 p-2">
           <button
+            type="button"
             onClick={handleResend}
             disabled={sending}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-secondary/60 transition-colors disabled:opacity-60"
+            className="flex w-full items-center gap-2.5 rounded-xl bg-primary px-3 py-2.5 text-left text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/15">
               {sending ? (
-                <Loader2 className="h-3.5 w-3.5 text-primary animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <Mail className="h-3.5 w-3.5 text-primary" />
+                <Mail className="h-3.5 w-3.5" />
               )}
             </div>
+
             <div>
-              <p className="text-xs font-semibold text-foreground leading-none">
-                {sending ? "Sending…" : "Resend verification email"}
+              <p className="text-xs font-semibold leading-none">
+                {sending ? "Sending email…" : "Send verification email"}
               </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                Sends a new link to this address
+              <p className="mt-1 text-[10px] text-primary-foreground/75">
+                We’ll send you a secure verification link
               </p>
             </div>
           </button>
 
           <Link
             href="/customer/change-email"
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left hover:bg-secondary/60 transition-colors"
+            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-secondary/60"
           >
-            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-secondary">
               <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
+
             <div>
-              <p className="text-xs font-semibold text-foreground leading-none">
-                Change email address
+              <p className="text-xs font-semibold leading-none text-foreground">
+                Use a different email
               </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                Wrong email? Update it instead
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Change the address before verifying
               </p>
             </div>
           </Link>

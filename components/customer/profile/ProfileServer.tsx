@@ -20,20 +20,24 @@ import Link from "next/link";
 import { getOrderCount } from "@/actions/customer/ProductAndStore/Order.Action";
 import { Metadata } from "next";
 import CustomerAdvertisements from "@/components/customer/shared/CustomerAdvertisements";
-import PromotionBanner from "@/components/promotions/PromotionsBanner";
+import DrawPromoCard from "@/components/promotions/DrawPromoCard";
+import PromoCarousel from "@/components/promotions/PromoCarousel";
 import { getPromoStats } from "@/actions/promotions/getPromoStats.action";
+import { getDrawStats } from "@/actions/promotions/getDrawStats.action";
 import { getReferral } from "@/actions/customer/ReferralAction";
+import PromotionBanner from "@/components/promotions/PromotionBanner";
 
 export const metadata: Metadata = {
   title: "Profile",
 };
 
 export default async function ProfileServer() {
-  const [customerRes, orderRes] = await Promise.all([
+  const [customerRes, orderRes, promoStats, drawStats] = await Promise.all([
     getCustomerAndStoreDataAction(),
     getOrderCount(),
+    getPromoStats(),
+    getDrawStats(),
   ]);
-  const promoStats = await getPromoStats();
   const { customerData } = customerRes;
   const referralCodeData = await getReferral(customerData.myreferralCodeId);
   const { orderCount } = orderRes;
@@ -120,6 +124,13 @@ export default async function ProfileServer() {
     </div>
   );
 
+  const PromoCards = () => (
+    <PromoCarousel intervalMs={5000}>
+      <PromotionBanner initialStats={promoStats} variant="card" />
+      <DrawPromoCard initialStats={drawStats} />
+    </PromoCarousel>
+  );
+
   return (
     <>
       <div className="min-h-screen bg-background">
@@ -156,7 +167,7 @@ export default async function ProfileServer() {
                 referralCode={referralCodeData.data}
               />
               <div className="mx-auto w-full max-w-[360px] sm:max-w-[420px]">
-                <PromotionBanner initialStats={promoStats} variant="card" />
+                <PromoCards />
               </div>
               <CustomerAdvertisements />
               <ProfileStats
@@ -178,7 +189,7 @@ export default async function ProfileServer() {
                   referralCode={referralCodeData.data}
                 />
                 <div className="mx-auto w-full max-w-[420px]">
-                  <PromotionBanner initialStats={promoStats} variant="card" />
+                  <PromoCards />
                 </div>
                 <CustomerAdvertisements />
                 <ProfileStore store={customerData.associatedStoreId} />

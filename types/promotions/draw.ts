@@ -1,27 +1,25 @@
-// ─── Draw Promotion Types ──────────────────────────────────────────────────────
+export type DrawPhase = "pre_event" | "live_event" | "announced";
 
-export type DrawPhase =
-  | "pre_event"   // Before June 27 2pm PT — countdown, entry open
-  | "live_event"  // June 27 2pm–4pm PT — event is live, entry still open
-  | "announced";  // Winners set in DB by admin — show winners list
+export type DrawMyStatus = "not_joined" | "participant" | "winner" | null;
 
 export interface DrawWinner {
-  name: string; // First name + last initial only e.g. "Sarah M."
+  name: string;
+  /** true if this winner has spent any of their $50 gift card balance */
+  hasRedeemed?: boolean;
 }
 
 export interface DrawStats {
   phase: DrawPhase;
-
-  // Countdown to event start (pre_event only, 0 once live)
-  eventStartsAt: string; // ISO — June 27 2pm PT
+  eventStartsAt: string;
   secondsUntilEvent: number;
-
-  // Participant count (always shown)
   participantCount: number;
-
-  // Winners (only populated in "announced" phase)
   winners: DrawWinner[];
-
-  // Current customer's draw status (null = not logged in / no customer record)
-  myStatus: "not_joined" | "participant" | "winner" | null;
+  myStatus: DrawMyStatus;
+  /**
+   * Only meaningful when myStatus === "winner".
+   * true  = winner has already redeemed / spent some of the $50 card
+   * false = walletBalance is still exactly $50 — card is untouched, can redeem anytime
+   * null  = not applicable / unknown (not a winner, or lookup failed)
+   */
+  myHasRedeemed?: boolean | null;
 }

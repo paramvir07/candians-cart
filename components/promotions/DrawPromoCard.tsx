@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Users, ArrowRight, Sparkles, Clock, Trophy } from "lucide-react";
+import {
+  Users,
+  ArrowRight,
+  Sparkles,
+  Clock,
+  Trophy,
+  Gift,
+  CheckCircle2,
+} from "lucide-react";
 import { DrawStats } from "@/types/promotions/draw";
 
 interface DrawPromoCardProps {
@@ -12,7 +20,7 @@ interface DrawPromoCardProps {
 
 export default function DrawPromoCard({
   initialStats,
-  href = "/promotions",
+  href = "/promotions#grocery-gift-draw",
 }: DrawPromoCardProps) {
   const [secondsLeft, setSecondsLeft] = useState(
     initialStats.secondsUntilEvent,
@@ -44,42 +52,59 @@ export default function DrawPromoCard({
     const isWinner = initialStats.myStatus === "winner";
 
     if (isWinner) {
+      const hasRedeemed = initialStats.myHasRedeemed === true;
+
       return (
         <Link
           href={href}
-          className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
+          className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-2xl"
         >
           <div
-            className="relative overflow-hidden rounded-2xl p-5 shadow-lg hover:shadow-xl transition-shadow border border-amber-300/40"
+            className="relative overflow-hidden rounded-2xl p-5 shadow-[0_4px_20px_rgba(180,140,40,0.2)] hover:shadow-[0_8px_28px_rgba(180,140,40,0.3)] hover:-translate-y-0.5 transition-all duration-300 border-2 border-amber-300"
             style={{
               background:
-                "linear-gradient(135deg, oklch(0.25 0.08 85) 0%, oklch(0.18 0.06 60) 100%)",
+                "linear-gradient(155deg, #fffaf0 0%, #fdf3dd 45%, #fbeecb 100%)",
             }}
           >
-            {/* Glow */}
-            <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-amber-400/40 blur-xl pointer-events-none" />
-            <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-amber-300/20 blur-lg pointer-events-none" />
+            <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-amber-300/25 blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-amber-200/25 blur-xl pointer-events-none" />
 
             <div className="relative z-10 space-y-3">
-              <div className="inline-flex items-center gap-1.5 bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
-                <Trophy className="w-2.5 h-2.5" />
-                You Won!
+              <div className="flex items-center justify-between">
+                <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm">
+                  <Trophy className="w-2.5 h-2.5" />
+                  Winner
+                </div>
+                <Sparkles className="w-4 h-4 text-amber-500" />
               </div>
 
               <div>
-                <p className="text-amber-200/80 text-xs font-medium">
+                <p className="text-amber-700/70 text-xs font-bold uppercase tracking-wider">
                   Grocery Gift Card Draw
                 </p>
-                <p className="text-2xl font-black text-amber-300 leading-tight tracking-tight">
+                <p className="text-3xl font-black leading-tight tracking-tight bg-gradient-to-b from-amber-500 to-amber-600 bg-clip-text text-transparent">
                   🎉 You Won $50!
                 </p>
-                <p className="text-amber-100/70 text-xs font-medium mt-0.5">
-                  You're one of our 6 lucky winners
+                <p className="text-stone-500 text-xs font-medium mt-0.5">
+                  One of 6 lucky winners in our Grand Launch draw
                 </p>
               </div>
 
-              <div className="flex items-center gap-1 text-amber-400 text-xs font-bold group-hover:gap-2 transition-all">
-                See your prize <ArrowRight className="w-3 h-3" />
+              {hasRedeemed ? (
+                <div className="inline-flex items-center gap-1.5 bg-stone-100 text-stone-500 text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-stone-200 w-fit">
+                  <CheckCircle2 className="w-3 h-3 text-green-600" />
+                  Gift card already redeemed
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 text-[11px] font-black px-3 py-1.5 rounded-full border border-amber-300 w-fit">
+                  <Gift className="w-3 h-3" />
+                  Not redeemed — claim anytime
+                </div>
+              )}
+
+              <div className="flex items-center gap-1 text-amber-600 text-xs font-black group-hover:gap-2 transition-all">
+                {hasRedeemed ? "View details" : "Redeem your prize"}{" "}
+                <ArrowRight className="w-3 h-3" />
               </div>
             </div>
           </div>
@@ -88,49 +113,68 @@ export default function DrawPromoCard({
     }
 
     // Non-winner — show winners list card
+    const previewWinners = initialStats.winners.slice(0, 2);
+    const hiddenCount = initialStats.winners.length - previewWinners.length;
+
     return (
       <Link
         href={href}
-        className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
+        className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-2xl"
       >
-        <div className="relative overflow-hidden rounded-2xl bg-primary p-5 shadow-lg hover:shadow-xl transition-shadow">
-          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-amber-400/20 pointer-events-none" />
+        <div
+          className="relative overflow-hidden rounded-2xl shadow-[0_4px_20px_rgba(180,140,40,0.18)] hover:shadow-[0_8px_28px_rgba(180,140,40,0.28)] hover:-translate-y-0.5 transition-all duration-300 border border-amber-300/50"
+          style={{
+            background:
+              "linear-gradient(155deg, #fffaf0 0%, #fdf3dd 45%, #fbeecb 100%)",
+          }}
+        >
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-amber-300/20 blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-8 -left-4 w-20 h-20 rounded-full bg-amber-200/25 blur-xl pointer-events-none" />
 
-          <div className="relative z-10 space-y-3">
-            <div className="inline-flex items-center gap-1.5 bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
-              <Trophy className="w-2.5 h-2.5" />
-              Winners Announced
+          <div className="relative z-10 p-5">
+            {/* Label */}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm">
+                <Trophy className="w-2.5 h-2.5" />
+                Winners Announced
+              </div>
             </div>
 
-            <div>
-              <p className="text-primary-foreground/70 text-xs font-medium">
+            {/* Headline */}
+            <div className="mb-3">
+              <p className="text-amber-700/70 text-xs font-bold uppercase tracking-wider">
                 Grocery Gift Card Draw
               </p>
-              <p className="text-xl font-black text-primary-foreground leading-tight tracking-tight">
-                6 Winners · $50 Each!
+              <p className="text-4xl font-black leading-tight tracking-tighter bg-gradient-to-b from-amber-500 to-amber-600 bg-clip-text text-transparent">
+                6 × $50
+              </p>
+              <p className="text-stone-700 text-xs font-bold uppercase tracking-wider">
+                Winners Each
               </p>
             </div>
 
-            <div className="space-y-1">
-              {initialStats.winners.slice(0, 3).map((w, i) => (
+            {/* Winner preview row */}
+            <div className="flex flex-wrap items-center gap-1.5 mb-3">
+              {previewWinners.map((w, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-1.5 text-xs text-primary-foreground/80"
+                  className="inline-flex items-center gap-1.5 text-xs text-stone-700 bg-white/70 border border-amber-200/60 rounded-full pl-1 pr-2.5 py-1"
                 >
-                  <span className="w-4 h-4 rounded-full bg-amber-400/20 flex items-center justify-center text-[9px] font-black text-amber-300">
+                  <span className="flex items-center justify-center rounded-full bg-amber-400 text-[9px] font-black text-white shrink-0 w-[18px] h-[18px]">
                     {i + 1}
                   </span>
-                  {w.name}
+                  <span className="font-bold">{w.name}</span>
                 </div>
               ))}
-              {initialStats.winners.length > 3 && (
-                <p className="text-xs text-primary-foreground/50 pl-5">
-                  +{initialStats.winners.length - 3} more
-                </p>
+              {hiddenCount > 0 && (
+                <div className="inline-flex items-center text-xs text-stone-500 font-bold bg-white/50 rounded-full px-2.5 py-1">
+                  +{hiddenCount} more
+                </div>
               )}
             </div>
 
-            <div className="flex items-center gap-1 text-amber-300 text-xs font-bold group-hover:gap-2 transition-all">
+            {/* CTA */}
+            <div className="flex items-center gap-1 text-amber-600 text-xs font-black group-hover:gap-2 transition-all">
               See all winners <ArrowRight className="w-3 h-3" />
             </div>
           </div>
@@ -144,33 +188,35 @@ export default function DrawPromoCard({
     return (
       <Link
         href={href}
-        className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
+        className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-2xl"
       >
-        <div className="relative overflow-hidden rounded-2xl bg-primary p-5 shadow-lg hover:shadow-xl transition-shadow">
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse at top right, rgba(251,191,36,0.2) 0%, transparent 60%)",
-            }}
-          />
-          <div className="relative z-10 space-y-3">
-            <div className="inline-flex items-center gap-1.5 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full animate-pulse">
-              <span className="w-1.5 h-1.5 rounded-full bg-white" />
-              Draw Live Now
+        <div
+          className="relative overflow-hidden rounded-2xl shadow-[0_4px_20px_rgba(180,140,40,0.18)] hover:shadow-[0_8px_28px_rgba(180,140,40,0.28)] hover:-translate-y-0.5 transition-all duration-300 border border-amber-300/50"
+          style={{
+            background:
+              "linear-gradient(155deg, #fffaf0 0%, #fdf3dd 45%, #fbeecb 100%)",
+          }}
+        >
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-amber-300/20 blur-2xl pointer-events-none" />
+          <div className="relative z-10 p-5">
+            <div className="mb-3">
+              <div className="inline-flex items-center gap-1.5 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                Draw Live Now
+              </div>
             </div>
-            <div>
-              <p className="text-primary-foreground/70 text-xs font-medium">
+            <div className="mb-3">
+              <p className="text-amber-700/70 text-xs font-bold uppercase tracking-wider">
                 Grocery Gift Card Draw
               </p>
-              <p className="text-2xl font-black text-primary-foreground leading-tight tracking-tight">
+              <p className="text-2xl font-black text-stone-800 leading-tight tracking-tight">
                 Picking winners...
               </p>
-              <p className="text-primary-foreground/60 text-xs mt-0.5">
+              <p className="text-stone-500 text-xs mt-0.5">
                 Entry still open — winners announced live
               </p>
             </div>
-            <div className="flex items-center gap-1 text-amber-300 text-xs font-bold group-hover:gap-2 transition-all">
+            <div className="flex items-center gap-1 text-amber-600 text-xs font-bold group-hover:gap-2 transition-all">
               Enter now or see results <ArrowRight className="w-3 h-3" />
             </div>
           </div>
@@ -185,60 +231,67 @@ export default function DrawPromoCard({
   return (
     <Link
       href={href}
-      className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
+      className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded-2xl"
     >
-      <div className="relative overflow-hidden rounded-2xl bg-primary p-5 shadow-lg hover:shadow-xl transition-shadow">
-        <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-amber-400/30 pointer-events-none" />
+      <div
+        className="relative overflow-hidden rounded-2xl shadow-[0_4px_20px_rgba(180,140,40,0.18)] hover:shadow-[0_8px_28px_rgba(180,140,40,0.28)] hover:-translate-y-0.5 transition-all duration-300 border border-amber-300/50"
+        style={{
+          background:
+            "linear-gradient(155deg, #fffaf0 0%, #fdf3dd 45%, #fbeecb 100%)",
+        }}
+      >
+        <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-amber-300/20 blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-8 -left-4 w-20 h-20 rounded-full bg-amber-200/25 blur-xl pointer-events-none" />
 
-        <div className="relative z-10 space-y-3">
+        <div className="relative z-10 p-5">
           {/* Label */}
-          <div className="flex items-center justify-between">
-            <div className="inline-flex items-center gap-1.5 bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-sm">
               <Sparkles className="w-2.5 h-2.5" />
               Free Draw
             </div>
             {isParticipant && (
-              <div className="inline-flex items-center gap-1 bg-green-500/20 text-green-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-green-500/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+              <div className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 You're in!
               </div>
             )}
           </div>
 
           {/* Prize */}
-          <div>
-            <p className="text-primary-foreground/70 text-xs font-medium">
+          <div className="mb-3">
+            <p className="text-amber-700/70 text-xs font-bold uppercase tracking-wider">
               Win a grocery gift card
             </p>
-            <p className="text-3xl font-black text-primary-foreground leading-tight tracking-tighter">
+            <p className="text-4xl font-black leading-tight tracking-tighter bg-gradient-to-b from-amber-500 to-amber-600 bg-clip-text text-transparent">
               6 × $50
             </p>
-            <p className="text-primary-foreground/80 text-xs font-bold uppercase tracking-wider">
+            <p className="text-stone-700 text-xs font-bold uppercase tracking-wider">
               Grocery Gift Cards
             </p>
           </div>
 
           {/* Stats row */}
-          <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1 text-primary-foreground/70">
+          <div className="flex items-center gap-3 text-xs mb-3">
+            <div className="flex items-center gap-1 text-stone-500">
               <Users className="w-3 h-3" />
               <span>
-                <span className="text-primary-foreground font-bold">
+                <span className="text-stone-800 font-bold">
                   {initialStats.participantCount}
                 </span>
                 <span> entered</span>
               </span>
             </div>
-            <div className="flex items-center gap-1 text-primary-foreground/70">
+            <div className="flex items-center gap-1 text-stone-500">
               <Clock className="w-3 h-3" />
-              <span className="text-primary-foreground font-bold tabular-nums">
+              <span className="text-stone-800 font-bold tabular-nums">
                 {timeStr}
               </span>
             </div>
           </div>
 
           {/* CTA */}
-          <div className="flex items-center gap-1 text-amber-300 text-xs font-bold group-hover:gap-2 transition-all">
+          <div className="flex items-center gap-1 text-amber-600 text-xs font-black group-hover:gap-2 transition-all">
             {isParticipant ? "View draw details" : "Enter for free"}{" "}
             <ArrowRight className="w-3 h-3" />
           </div>

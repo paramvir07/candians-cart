@@ -368,7 +368,7 @@ const CustomerCart = async ({ customerId }: { customerId?: string }) => {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-foreground leading-tight truncate">
-                Main Wallet
+                CC Wallet
               </p>
               <p className="text-[11px] text-muted-foreground leading-tight truncate">
                 Available balance

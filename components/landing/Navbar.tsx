@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Logo from "../shared/Logo";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -72,7 +72,8 @@ export default function Navbar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [loggingOut, setLoggingOut] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLElement>(null);
+  const pendingSectionRef = useRef<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -116,26 +117,75 @@ export default function Navbar({
     setLoggingOut(false);
   };
 
+  const scrollToSection = useCallback((sectionId: string) => {
+    const target = document.getElementById(sectionId);
+    if (!target) return;
+
+    // Use only the visible header height. The mobile drawer is fixed and
+    // should never be included in the offset.
+    const navbarHeight = menuRef.current?.offsetHeight ?? 64;
+    const extraGap = 12;
+    const targetTop = target.getBoundingClientRect().top + window.scrollY;
+
+    window.scrollTo({
+      top: Math.max(0, targetTop - navbarHeight - extraGap),
+      behavior: "smooth",
+    });
+  }, []);
+
+  // On mobile, scrolling while body overflow is still locked is unreliable.
+  // Wait until the drawer has closed and the body has been unlocked first.
+  useEffect(() => {
+    if (mobileOpen || pathname !== "/" || !pendingSectionRef.current) return;
+
+    const sectionId = pendingSectionRef.current;
+    pendingSectionRef.current = null;
+
+    const timeoutId = window.setTimeout(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollToSection(sectionId);
+        });
+      });
+    }, 320);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [mobileOpen, pathname, scrollToSection]);
+
   const handleSectionClick = (e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
-    closeMobile();
 
     if (isLoggedIn && sectionId === "grocery-packs") {
+      closeMobile();
       router.push("/customer/budget-packs");
       return;
     }
 
     if (pathname === "/") {
-      const navbarHeight = 72;
-      const el = document.getElementById(sectionId);
-      if (el) {
-        const top =
-          el.getBoundingClientRect().top + window.scrollY - navbarHeight;
-        window.scrollTo({ top, behavior: "smooth" });
+      // Update the URL without invoking the browser's automatic hash scroll.
+      window.history.pushState(null, "", `/#${sectionId}`);
+
+      if (mobileOpen) {
+        // The effect above scrolls after the 300ms drawer transition and body
+        // overflow lock have both finished.
+        pendingSectionRef.current = sectionId;
+        closeMobile();
+      } else {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            scrollToSection(sectionId);
+          });
+        });
       }
-    } else {
-      router.push(`/?scrollTo=${sectionId}`);
+
+      return;
     }
+
+    closeMobile();
+
+    // ScrollToHash handles the target after the home page renders.
+    // scroll:false prevents Next.js from performing a competing scroll.
+    router.push(`/#${sectionId}`, { scroll: false });
   };
 
   return (
@@ -150,6 +200,7 @@ export default function Navbar({
 
       <nav
         ref={menuRef}
+        data-site-navbar
         className={cn(
           "sticky top-0 z-50 w-full transition-all duration-300",
           scrolled

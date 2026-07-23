@@ -7,10 +7,8 @@ import { HeroBannerSkeleton } from "@/components/skeletons/HeroBannerSkeleton";
 import { ProductsSkeleton } from "@/components/skeletons/ProductsSkeleton";
 import { HeroBannerLoader } from "@/components/customer/landing/HeroBannerLoader";
 import { ProductsSectionLoader } from "@/components/customer/products/ProductsSectionLoader";
-import { PromotionBannerSkeleton } from "@/components/skeletons/PromotionBannerSkeleton";
-import { DrawPromoCardSkeleton } from "@/components/skeletons/DrawpromoSkeleton";
-import { DrawPromoCardLoader } from "@/components/promotions/DrawpromocardLoader";
-import { PromotionBannerLoader } from "@/components/promotions/PromotionbannerLoader";
+import { PromoCarouselSkeleton } from "@/components/skeletons/PromoCarouselSkeleton";
+import { PromoCardsCarouselLoader } from "@/components/promotions/PromoCardsCarouselLoader";
 import { AddressCheckLoader } from "@/components/customer/shared/AddressCheckLoader";
 
 export const metadata: Metadata = {
@@ -30,11 +28,8 @@ export default async function CustomerPage() {
         <HeroBannerLoader />
       </Suspense>
       <div className="flex flex-col gap-3 mx-auto mb-6 w-full max-w-[min(92vw,760px)] sm:mt-7 lg:mt-8">
-        <Suspense fallback={<DrawPromoCardSkeleton />}>
-          <DrawPromoCardLoader />
-        </Suspense>
-        <Suspense fallback={<PromotionBannerSkeleton />}>
-          <PromotionBannerLoader />
+        <Suspense fallback={<PromoCarouselSkeleton />}>
+          <PromoCardsCarouselLoader />
         </Suspense>
       </div>
       <CustomerAdvertisements maxHeight={250} />
