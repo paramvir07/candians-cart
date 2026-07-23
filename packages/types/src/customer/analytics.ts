@@ -1,8 +1,8 @@
 import {
   PlaceOrderProduct,
   PlaceOrderI,
-} from "@canadian-cart/db/models/customer/Orders.Model";
-import { IWalletPayment } from "@canadian-cart/db/models/customer/WalletPayment.model";
+} from "@canadian-cart/types/customer/orders";
+import { IWalletPayment } from "@canadian-cart/types/customer/walletPayment";
 
 export type SerializedProduct = Omit<PlaceOrderProduct, "productId"> & {
   productId: {

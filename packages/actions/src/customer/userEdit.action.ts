@@ -4,7 +4,8 @@ import { editProfileSchema } from "@canadian-cart/types/schemas/customer/custome
 import { getUserSession } from "../auth/getUserSession.actions";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import mongoose from "mongoose";
-import Customer, { ICustomer } from "@canadian-cart/db/models/customer/customer.model";
+import Customer from "@canadian-cart/db/models/customer/customer.model";
+import { ICustomer } from "@canadian-cart/types/customer/customer"
 import { zodErrorResponse } from "@canadian-cart/types/validation/error";
 import { formDataToObject } from "@canadian-cart/types/validation/form";
 import { revalidateCustomerCache } from "../cache/user.cache";

@@ -1,34 +1,7 @@
 import { HEARD_ABOUT_US_VALUES } from "@canadian-cart/types/customer/heardAboutUs";
 import { model, Model, models, Schema, Types } from "mongoose";
+import { ICustomer } from "@canadian-cart/types/customer/customer";
 
-export type EventParticipantStatus = "participant" | "winner";
-``
-export interface ICustomer {
-  userId: Types.ObjectId;
-  name: string;
-  email: string;
-  address: string;
-  aptUnit?: string;
-  mobile?: string;
-  city: string;
-  province: string;
-  postalCode: string;
-  monthlyBudget: number;
-  associatedStoreId: Types.ObjectId;
-  referralCodeId: Types.ObjectId;
-  referralCodeEnabled: boolean;
-  myreferralCodeId?: Types.ObjectId;
-  perReferAmount: 5 | 2;
-  recieveReferralInvites: boolean;
-  placedFirstOrder: boolean;
-  subsidy: number;
-  walletBalance: number;
-  giftWalletBalance: number;
-  heardAboutUs: string;
-  eventParticipant?: EventParticipantStatus;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
 
 const customerSchema = new Schema<ICustomer>(
   {

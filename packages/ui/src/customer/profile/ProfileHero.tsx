@@ -1,4 +1,8 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@canadian-cart/ui/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@canadian-cart/ui/ui/avatar";
 import { Button, buttonVariants } from "@canadian-cart/ui/ui/button";
 import { Customer } from "@canadian-cart/types/customer/customer";
 import { Edit, QrCode, MapPin, CalendarDays, X } from "lucide-react";
@@ -15,7 +19,7 @@ import {
 } from "@canadian-cart/ui/ui/dialog";
 import { getMemberSince } from "@canadian-cart/lib/memberSince";
 import ShareButton from "@canadian-cart/ui/shared/share/ShareButton";
-import { IReferralCode } from "@canadian-cart/db/models/admin/referralCode.model";
+import { IReferralCode } from "@canadian-cart/types/admin/referralCode";
 import logoIcon from "@canadian-cart/ui/assets/logo.jpg";
 import { QRCodeSVG } from "qrcode.react";
 import EmailVerificationBadge from "./EmailVerificationBadge";

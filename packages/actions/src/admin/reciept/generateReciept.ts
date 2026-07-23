@@ -10,10 +10,11 @@ round any intermediate value (totalGST, totalBasePrice, basePercent, etc.) befor
 that point -- doing so was the source of the mismatch against tests/test-payout.js.
 */
 import mongoose, { PipelineStage, Types } from "mongoose";
-import OrderModel, {
-  PlaceOrderI,
-  PlaceOrderMiscItem,
-} from "@canadian-cart/db/models/customer/Orders.Model";
+import {
+  type PlaceOrderI,
+  type PlaceOrderMiscItem,
+} from "@canadian-cart/types/customer/orders";
+import OrderModel from "@canadian-cart/db/models/customer/Orders.Model";
 import { WalletTopUp } from "@canadian-cart/db/models/cashier/walletTopUp.model";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import { getUserSession } from "@canadian-cart/actions/auth/getUserSession.actions";

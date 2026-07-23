@@ -1,10 +1,6 @@
 import { categories } from "@canadian-cart/types/categories";
 import { model, Model, models, Schema } from "mongoose";
-
-export interface ISubsidisedList {
-  name: string;
-  category: string;
-}
+import { ISubsidisedList } from "@canadian-cart/types/admin/subsidyList.types";
 
 const subsidisedListSchema = new Schema<ISubsidisedList>(
   {

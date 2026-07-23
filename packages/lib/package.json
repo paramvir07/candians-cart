@@ -21,6 +21,7 @@
     "jotai": "^2.19.0",
     "stripe": "^20.4.1",
     "@imagekit/nodejs": "^7.3.0",
+    "@react-email/components": "^1.0.11",
     "@canadian-cart/types": "workspace:*",
     "@canadian-cart/db": "workspace:*"
   },

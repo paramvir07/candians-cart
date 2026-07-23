@@ -1,6 +1,6 @@
 import { LoginForm } from "@canadian-cart/ui/auth/login-form";
 import { LoginCarousel } from "@canadian-cart/ui/customer/login/LoginCarousel";
-import { auth } from "@/lib/auth";
+import { auth } from "@canadian-cart/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

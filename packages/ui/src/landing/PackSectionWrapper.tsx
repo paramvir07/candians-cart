@@ -2,7 +2,7 @@
 // Server Component — checks auth, passes result to client PacksSection
 
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { auth } from "@canadian-cart/lib/auth/auth";
 import PacksSection from "@canadian-cart/ui/landing/Packs";
 
 export default async function PacksSectionWrapper() {

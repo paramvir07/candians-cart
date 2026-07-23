@@ -1,4 +1,7 @@
-import { ISubsidisedList } from "@canadian-cart/db/models/admin/subsidisedList.model";
+export interface ISubsidisedList {
+  name: string;
+  category: string;
+}
 
 export interface SubsidyItem extends ISubsidisedList {
   _id: string;

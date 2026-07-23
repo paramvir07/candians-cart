@@ -1,4 +1,4 @@
-import { IStoreHours, ITimeRange } from "@canadian-cart/db/models/store/store.model";
+import { IStoreHours, ITimeRange } from "@canadian-cart/types/store/store";
 
 
 export type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";

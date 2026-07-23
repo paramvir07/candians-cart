@@ -1,4 +1,14 @@
-import { IWalletTopUp } from "@canadian-cart/db/models/cashier/walletTopUp.model";
+import { Types } from "mongoose";
+
+export interface IWalletTopUp {
+  customerId: Types.ObjectId;
+  userId: string;
+  userRole: "admin" | "cashier";
+  value: number; // in  cents
+  cashPaid:number;
+  cashDue:number;
+  paymentMode: "cash" | "card" | "gift" | "referral"
+}
 
 export type WalletTopUp = IWalletTopUp & {
   _id: string;

@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { auth } from "@canadian-cart/lib/auth/auth";
 import HeroSection from "./hero-section";
 import { HeroPromoStrip } from "./HeropromoStrip";
 

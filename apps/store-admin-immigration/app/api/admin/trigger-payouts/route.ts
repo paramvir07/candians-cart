@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { runAutoPayouts } from "@canadian-cart/actions/admin/payoutSchedule/runAutoPayouts.action";
-import { auth } from "@/lib/auth";
+import { auth } from "@canadian-cart/lib/auth/auth";
 import { headers } from "next/headers";
 
 /**

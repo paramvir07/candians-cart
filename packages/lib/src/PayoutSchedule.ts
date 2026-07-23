@@ -1,4 +1,4 @@
-import { PayoutFrequency } from "@canadian-cart/db/models/store/store.model";
+import { PayoutFrequency } from "@canadian-cart/types/store/store";
 
 interface ComputeNextPayoutDateParams {
   frequency: PayoutFrequency;

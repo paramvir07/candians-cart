@@ -19,7 +19,7 @@ import {
   Loader2,
   KeyRound,
 } from "lucide-react";
-import { IStore, ITimeRange } from "@canadian-cart/db/models/store/store.model";
+import { IStore, ITimeRange } from "@canadian-cart/types/store/store";
 import { editStoreProfile } from "@canadian-cart/actions/store/EditStore.action";
 import { toast } from "sonner";
 import { Button } from "@canadian-cart/ui/ui/button";

@@ -22,7 +22,7 @@ import {
 import { SlidersHorizontal } from "lucide-react";
 import { StoreDocument } from "@canadian-cart/types/store/store";
 import { CustomerFilters } from "@canadian-cart/actions/admin/customers/getCustomers.action";
-import type { EventParticipantStatus } from "@canadian-cart/db/models/customer/customer.model";
+import type { EventParticipantStatus } from "@canadian-cart/types/customer/customer";
 
 const THREE_STATE = ["any", "yes", "no"] as const;
 type ThreeState = (typeof THREE_STATE)[number];

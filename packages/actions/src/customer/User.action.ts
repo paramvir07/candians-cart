@@ -1,6 +1,7 @@
 "use server";
 import { dbConnect } from "@canadian-cart/db/dbConnect";
-import Customer, { ICustomer } from "@canadian-cart/db/models/customer/customer.model";
+import Customer from "@canadian-cart/db/models/customer/customer.model";
+import { ICustomer } from "@canadian-cart/types/customer/customer"
 import { NextResponse } from "next/server";
 import { getUserSession } from "../auth/getUserSession.actions";
 import Store from "@canadian-cart/db/models/store/store.model";

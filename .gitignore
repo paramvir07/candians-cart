@@ -50,3 +50,5 @@ public/robots.txt
 **/.next/
 
 **package-lock.json
+
+.turbo

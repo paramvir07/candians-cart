@@ -36,7 +36,7 @@ import {
   CustomerFiltersSheet,
   countActiveCustomerFilters,
 } from "@canadian-cart/ui/admin/customers/CustomerFilterSheet";
-import type { EventParticipantStatus } from "@canadian-cart/db/models/customer/customer.model";
+import type { EventParticipantStatus } from "@canadian-cart/types/customer/customer";
 
 const CustomerCardSkeleton = () => (
   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3 animate-pulse">

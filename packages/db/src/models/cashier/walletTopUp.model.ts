@@ -1,14 +1,5 @@
 import { model, Model, models, Schema, Types } from "mongoose";
-
-export interface IWalletTopUp {
-  customerId: Types.ObjectId;
-  userId: string;
-  userRole: "admin" | "cashier";
-  value: number; // in  cents
-  cashPaid:number;
-  cashDue:number;
-  paymentMode: "cash" | "card" | "gift" | "referral"
-}
+import { IWalletTopUp } from "@canadian-cart/types/cashier/walletTopUp";
 
 const walletTopUpSchema = new Schema<IWalletTopUp>(
   {

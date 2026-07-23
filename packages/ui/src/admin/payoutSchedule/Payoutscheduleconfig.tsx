@@ -27,7 +27,7 @@ import {
   getPayoutScheduleAction,
   updatePayoutScheduleAction,
 } from "@canadian-cart/actions/admin/payoutSchedule/UpdatePayoutSchedule.action";
-import { PayoutFrequency } from "@canadian-cart/db/models/store/store.model";
+import { PayoutFrequency } from "@canadian-cart/types/store/store";
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 

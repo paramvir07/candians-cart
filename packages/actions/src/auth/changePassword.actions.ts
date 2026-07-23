@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { auth } from "@canadian-cart/lib/auth/auth";
 import { passwordSchema } from "@canadian-cart/types/schemas/customer/customerSignup";
 
 const changePasswordSchema = z

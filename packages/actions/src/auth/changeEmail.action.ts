@@ -1,7 +1,7 @@
 // actions/customer/changeEmail.action.ts
 "use server";
 
-import { auth, db } from "@/lib/auth";
+import { auth, db } from "@canadian-cart/lib/auth/auth";
 import { headers } from "next/headers";
 
 export async function changeEmailAction(

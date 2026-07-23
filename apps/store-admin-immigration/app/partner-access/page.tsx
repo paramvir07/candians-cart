@@ -7,7 +7,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { auth } from "@canadian-cart/lib/auth/auth";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { LoginCarousel } from "@canadian-cart/ui/customer/login/LoginCarousel";

@@ -1,6 +1,6 @@
 "use server";
 
-import { auth, db } from "@/lib/auth";
+import { auth, db } from "@canadian-cart/lib/auth/auth";
 import { passwordSchema } from "@canadian-cart/types/schemas/customer/customerSignup";
 import crypto from "crypto";
 
