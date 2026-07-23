@@ -1,4 +1,25 @@
 {
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalEnv": [
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "RESEND_API_KEY",
+    "MONGODB_URI",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_WEBHOOK_SECRET",
+    "IMAGEKIT_PUBLIC_KEY",
+    "IMAGEKIT_PRIVATE_KEY",
+    "IMAGEKIT_URL_ENDPOINT",
+    "CRON_SECRET",
+    "TWILIO_ACCOUNT_SID",
+    "TWILIO_AUTH_TOKEN",
+    "TWILIO_PHONE_NUMBER",
+    "PUSHER_APP_ID",
+    "PUSHER_APP_SECRET",
+    "PUSHER_APP_CLUSTER",
+    "SERVER_1_URL",
+    "ENABLE_EXPERIMENTAL_COREPACK"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
