@@ -3,7 +3,7 @@
 import { dbConnect } from "@canadian-cart/db/dbConnect";
 import Customer from "@canadian-cart/db/models/customer/customer.model";
 import { DrawStats, DrawWinner } from "@canadian-cart/types/promotions/draw";
-import { auth } from "@canadian-cart/lib/auth/auth";
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
 // ─── Event config ──────────────────────────────────────────────────────────────

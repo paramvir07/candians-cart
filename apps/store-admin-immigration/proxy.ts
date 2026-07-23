@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { auth } from "@canadian-cart/lib/auth/auth";
+import { auth } from "@/lib/auth";
 
 const ROLE_HOME: Record<string, string> = {
   customer: "/customer",
@@ -42,7 +42,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(home, request.url));
   if (pathname.startsWith("/immigration") && role !== "immigration")
     return NextResponse.redirect(new URL(home, request.url));
-  
+
   // Gate unverified customers
   if (
     role === "customer" &&

@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@canadian-cart/lib/auth/auth";
+import { auth } from "@/lib/auth";
 import { IFormActionResponse } from "@canadian-cart/types/form";
 import { loginSchema } from "@canadian-cart/types/schemas/login";
 import { zodErrorResponse } from "@canadian-cart/types/validation/error";

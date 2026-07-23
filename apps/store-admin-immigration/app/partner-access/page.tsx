@@ -1,7 +1,13 @@
 import Link from "next/link";
-import { Shield, Store, UserCog, ChevronRight, ShoppingCart } from "lucide-react";
+import {
+  Shield,
+  Store,
+  UserCog,
+  ChevronRight,
+  ShoppingCart,
+} from "lucide-react";
 import { headers } from "next/headers";
-import { auth } from "@canadian-cart/lib/auth/auth";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { LoginCarousel } from "@canadian-cart/ui/customer/login/LoginCarousel";
@@ -62,8 +68,13 @@ function SelectorContent() {
               href={option.href}
               className="group flex items-center gap-3 px-4 py-3.5 rounded-2xl border border-border/60 bg-card hover:bg-secondary/60 hover:border-border transition-all"
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${option.iconBg}`}>
-                <Icon className={`h-[18px] w-[18px] ${option.iconColor}`} strokeWidth={1.75} />
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${option.iconBg}`}
+              >
+                <Icon
+                  className={`h-[18px] w-[18px] ${option.iconColor}`}
+                  strokeWidth={1.75}
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-none">
@@ -85,7 +96,10 @@ function SelectorContent() {
       <div className="mt-6">
         <p className="text-sm text-muted-foreground">
           Are you a customer?{" "}
-          <Link href="/customer/login" className="text-primary hover:underline underline-offset-2">
+          <Link
+            href="/customer/login"
+            className="text-primary hover:underline underline-offset-2"
+          >
             Login here
           </Link>
         </p>

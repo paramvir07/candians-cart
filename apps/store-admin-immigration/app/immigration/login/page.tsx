@@ -1,6 +1,6 @@
 import { LoginForm } from "@canadian-cart/ui/auth/login-form";
 import { LoginCarousel } from "@canadian-cart/ui/customer/login/LoginCarousel";
-import { auth } from "@canadian-cart/lib/auth/auth";
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
@@ -26,7 +26,10 @@ export default async function ImmigrationLoginPage() {
           </div>
         </div>
         <div className="flex-1 lg:flex lg:items-center lg:justify-center lg:px-14 lg:py-12">
-          <LoginForm userRole="immigration" className="w-full lg:max-w-[380px]" />
+          <LoginForm
+            userRole="immigration"
+            className="w-full lg:max-w-[380px]"
+          />
         </div>
       </div>
     </div>

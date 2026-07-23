@@ -1,6 +1,6 @@
 import StoreSidebar from "@canadian-cart/ui/store/StoreSidebar";
 import { TooltipProvider } from "@canadian-cart/ui/ui/tooltip";
-import { auth } from "@canadian-cart/lib/auth/auth";
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";

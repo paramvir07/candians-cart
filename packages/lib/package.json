@@ -22,9 +22,7 @@
     "stripe": "^20.4.1",
     "@imagekit/nodejs": "^7.3.0",
     "@canadian-cart/types": "workspace:*",
-    "@canadian-cart/db": "workspace:*",
-    "@canadian-cart/ui": "workspace:*",
-    "@canadian-cart/actions": "workspace:*"
+    "@canadian-cart/db": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.2.5"

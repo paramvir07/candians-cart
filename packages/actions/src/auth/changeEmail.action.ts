@@ -1,7 +1,7 @@
 // actions/customer/changeEmail.action.ts
 "use server";
 
-import { auth, db } from "@canadian-cart/lib/auth/auth";
+import { auth, db } from "@/lib/auth";
 import { headers } from "next/headers";
 
 export async function changeEmailAction(
@@ -46,7 +46,8 @@ export async function changeEmailAction(
     console.error("[changeEmailAction]", error);
     return {
       success: false,
-      message: error?.body?.message ?? "Something went wrong. Please try again.",
+      message:
+        error?.body?.message ?? "Something went wrong. Please try again.",
     };
   }
 }

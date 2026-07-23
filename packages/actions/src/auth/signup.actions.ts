@@ -5,7 +5,7 @@ import ReferralCode from "@canadian-cart/db/models/admin/referralCode.model";
 import { Cashier } from "@canadian-cart/db/models/cashier/cashier.model";
 import Customer from "@canadian-cart/db/models/customer/customer.model";
 import Store from "@canadian-cart/db/models/store/store.model";
-import { auth } from "@canadian-cart/lib/auth/auth";
+import { auth } from "@/lib/auth";
 import { UserRole } from "@canadian-cart/types/auth";
 import { IFormActionResponse } from "@canadian-cart/types/form";
 import { adminSignupSchema } from "@canadian-cart/types/schemas/admin/adminSignup";
@@ -191,7 +191,7 @@ export const signupAction = async (
         await session.abortTransaction();
 
         try {
-          const { db } = await import("@canadian-cart/lib/auth/auth");
+          const { db } = await import("@/lib/auth");
 
           const authUserObjectId = new ObjectId(newCustomerUser.user.id);
 
@@ -199,14 +199,13 @@ export const signupAction = async (
             _id: authUserObjectId,
           });
 
-         await db.collection("account").deleteMany({
+          await db.collection("account").deleteMany({
             userId: authUserObjectId,
           });
 
           await db.collection("session").deleteMany({
             userId: authUserObjectId,
           });
-
         } catch (deleteErr) {
           console.error("Failed to delete orphan auth user:", deleteErr);
         }

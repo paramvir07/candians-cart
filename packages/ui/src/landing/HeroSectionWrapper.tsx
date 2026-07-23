@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { auth } from "@canadian-cart/lib/auth/auth";
+import { auth } from "@/lib/auth";
 import HeroSection from "./hero-section";
 import { HeroPromoStrip } from "./HeropromoStrip";
 
@@ -20,6 +20,10 @@ export default async function HeroSectionWrapper() {
   }
 
   return (
-    <HeroSection isLoggedIn={isLoggedIn} promoSlot={<HeroPromoStrip />} role={role}/>
+    <HeroSection
+      isLoggedIn={isLoggedIn}
+      promoSlot={<HeroPromoStrip />}
+      role={role}
+    />
   );
 }
