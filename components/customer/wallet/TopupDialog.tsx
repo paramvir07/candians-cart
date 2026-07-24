@@ -46,7 +46,9 @@ export function TopUpDialog({
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState<number | null>(0);
   const [inputVal, setInputVal] = useState("0");
-  const [paymentMode, setPaymentMode] = useState<"cash" | "card" | "gift">("card");
+  const [paymentMode, setPaymentMode] = useState<"cash" | "card" | "gift">(
+    "card",
+  );
   const [cashReceived, setCashReceived] = useState<number | null>(null);
   const [cashReceivedInput, setCashReceivedInput] = useState("");
 
@@ -115,9 +117,17 @@ export function TopUpDialog({
     setCashReceivedInput("");
   };
 
+  const resetAndClose = () => {
+    setLoading(false);
+    setOpen(false);
+    setStep("amount");
+    handleClear();
+  };
+
   const handleClose = () => {
     if (loading) return;
     setOpen(false);
+    setStep("amount");
     handleClear();
   };
 
@@ -130,15 +140,29 @@ export function TopUpDialog({
     if (needsConfirmation) {
       setStep("confirm");
     } else {
-      handleCheckout();
+      void handleCheckout();
     }
   };
 
-  let cashDue:number;
-  if (amount && cashReceived !== null && changeDue !== null) {
-    cashDue  = Math.round(Math.round(changeDue * 100) / 5) * 5 / 100;
-    // console.log("Cash Due : ", cashDue);
-  }
+  const cashDue =
+    amount && cashReceived !== null && changeDue !== null
+      ? (Math.round(Math.round(changeDue * 100) / 5) * 5) / 100
+      : 0;
+
+  const checkCloverAttempt = async (externalPaymentId: string) => {
+    const response = await fetch(
+      `/api/clover/top-up/${encodeURIComponent(externalPaymentId)}`,
+      { method: "GET", cache: "no-store" },
+    );
+    const data = (await response.json().catch(() => ({}))) as {
+      success?: boolean;
+      status?: string;
+      message?: string;
+    };
+
+    return { response, data };
+  };
+
   const handleCheckout = async () => {
     if (!amount) return;
     if (!cashReceivedIsValid) {
@@ -153,15 +177,91 @@ export function TopUpDialog({
           customerId,
           "gift",
           Math.round(amount * 100),
-          Math.round((cashReceived ?? 0) * 100),
-          Math.round((cashDue ?? 0) * 100),
-          "admin",
+          0,
+          0,
         );
+
         if (response.success) {
           toast.success(response.message);
-          handleClose();
-        } else toast.error(response.message);
+          resetAndClose();
+        } else {
+          toast.error(response.message);
+        }
         return;
+      }
+
+      if (customerId && !adminRole && paymentMode === "card") {
+        const topUpAmountCents = Math.round(amount * 100);
+        const externalPaymentId = crypto
+          .randomUUID()
+          .replaceAll("-", "")
+          .slice(0, 32);
+
+        try {
+          const response = await fetch("/api/clover/top-up", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              customerId,
+              amount: topUpAmountCents,
+              externalPaymentId,
+            }),
+          });
+
+          const data = (await response.json().catch(() => ({}))) as {
+            success?: boolean;
+            status?: string;
+            message?: string;
+          };
+
+          if (response.ok && data.success) {
+            toast.success(data.message ?? "Card payment successful.");
+            resetAndClose();
+            return;
+          }
+
+          if (data.status === "unknown" || response.status >= 500) {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            const checked = await checkCloverAttempt(externalPaymentId);
+
+            if (checked.response.ok && checked.data.success) {
+              toast.success(
+                checked.data.message ??
+                  "Card payment confirmed and wallet topped up.",
+              );
+              resetAndClose();
+              return;
+            }
+          }
+
+          toast.error(
+            data.message ??
+              "Clover payment failed. The wallet was not topped up.",
+          );
+          return;
+        } catch (error) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+
+          try {
+            const checked = await checkCloverAttempt(externalPaymentId);
+            if (checked.response.ok && checked.data.success) {
+              toast.success(
+                checked.data.message ??
+                  "Card payment confirmed and wallet topped up.",
+              );
+              resetAndClose();
+              return;
+            }
+          } catch {
+            // The status endpoint may also be temporarily unavailable.
+          }
+
+          console.error("Clover card top-up failed:", error);
+          toast.error(
+            "The card payment could not be confirmed. Do not start another card payment until you check Clover.",
+          );
+          return;
+        }
       }
 
       if (customerId && !adminRole) {
@@ -170,22 +270,24 @@ export function TopUpDialog({
           paymentMode,
           Math.round(amount * 100),
           Math.round((cashReceived ?? 0) * 100),
-          Math.round((cashDue ?? 0) * 100),
-          "cashier",
+          Math.round(cashDue * 100),
         );
+
         if (response.success) {
           toast.success(response.message);
-          handleClose();
-        } else toast.error(response.message);
+          resetAndClose();
+        } else {
+          toast.error(response.message);
+        }
         return;
       }
 
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: amount * 100 }),
+        body: JSON.stringify({ amount: Math.round(amount * 100) }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as { url?: string };
       if (data.url) window.location.href = data.url;
     } finally {
       setLoading(false);
@@ -227,7 +329,10 @@ export function TopUpDialog({
                 className="w-7 h-7 rounded-lg flex items-center justify-center hover:opacity-70 transition-opacity"
                 style={{ background: "var(--color-secondary)" }}
               >
-                <ArrowLeft size={13} style={{ color: "var(--color-primary)" }} />
+                <ArrowLeft
+                  size={13}
+                  style={{ color: "var(--color-primary)" }}
+                />
               </button>
             )}
             <div
@@ -274,12 +379,18 @@ export function TopUpDialog({
                 onClick={handleClear}
                 className="w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95"
                 style={{
-                  background: inputVal ? "var(--color-primary)" : "rgba(0,0,0,0.06)",
+                  background: inputVal
+                    ? "var(--color-primary)"
+                    : "rgba(0,0,0,0.06)",
                 }}
               >
                 <Delete
                   size={14}
-                  style={{ color: inputVal ? "var(--color-primary-foreground)" : "#aaa" }}
+                  style={{
+                    color: inputVal
+                      ? "var(--color-primary-foreground)"
+                      : "#aaa",
+                  }}
                 />
               </button>
             </div>
@@ -290,18 +401,25 @@ export function TopUpDialog({
               </p>
               <div className="grid grid-cols-4 gap-2">
                 {PRESETS.filter((p) => p !== 250).map((preset) => {
-                  const isSelected = amount === preset && inputVal === String(preset);
+                  const isSelected =
+                    amount === preset && inputVal === String(preset);
                   return (
                     <button
                       key={preset}
                       onClick={() => handlePreset(preset)}
                       className="rounded-xl py-2.5 text-sm transition-all active:scale-95"
                       style={{
-                        background: isSelected ? "var(--color-primary)" : "var(--color-secondary)",
-                        color: isSelected ? "var(--color-primary-foreground)" : "var(--color-secondary-foreground)",
+                        background: isSelected
+                          ? "var(--color-primary)"
+                          : "var(--color-secondary)",
+                        color: isSelected
+                          ? "var(--color-primary-foreground)"
+                          : "var(--color-secondary-foreground)",
                         fontWeight: isSelected ? 700 : 500,
                         transform: isSelected ? "scale(1.04)" : "scale(1)",
-                        boxShadow: isSelected ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+                        boxShadow: isSelected
+                          ? "0 4px 12px rgba(0,0,0,0.15)"
+                          : "none",
                       }}
                     >
                       ${preset}
@@ -309,57 +427,82 @@ export function TopUpDialog({
                   );
                 })}
 
-                {exactOwedCents > 0 ? (() => {
-                  const isExactSelected =
-                    amount !== null &&
-                    Math.round(amount * 100) === adjustedOwedCents;
-                  return (
-                    <button
-                      onClick={handleExactPreset}
-                      className="rounded-xl py-2.5 transition-all active:scale-95 flex flex-col items-center justify-center gap-0.5 relative overflow-hidden"
-                      style={{
-                        background: isExactSelected
-                          ? "var(--color-primary)"
-                          : "color-mix(in srgb, var(--color-primary) 10%, transparent)",
-                        color: isExactSelected
-                          ? "var(--color-primary-foreground)"
-                          : "var(--color-primary)",
-                        fontWeight: 700,
-                        fontSize: "11px",
-                        lineHeight: 1.2,
-                        border: isExactSelected
-                          ? "1.5px solid var(--color-primary)"
-                          : "1.5px solid color-mix(in srgb, var(--color-primary) 35%, transparent)",
-                        transform: isExactSelected ? "scale(1.04)" : "scale(1)",
-                        boxShadow: isExactSelected ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
-                      }}
-                    >
-                      <span style={{ fontSize: "12px", fontWeight: 800, letterSpacing: "-0.3px" }}>
-                        ${exactOwedDollars.toFixed(2)}
-                      </span>
-                      <span
+                {exactOwedCents > 0 ? (
+                  (() => {
+                    const isExactSelected =
+                      amount !== null &&
+                      Math.round(amount * 100) === adjustedOwedCents;
+                    return (
+                      <button
+                        onClick={handleExactPreset}
+                        className="rounded-xl py-2.5 transition-all active:scale-95 flex flex-col items-center justify-center gap-0.5 relative overflow-hidden"
                         style={{
-                          fontSize: "9px",
-                          fontWeight: 600,
-                          letterSpacing: "0.04em",
-                          textTransform: "uppercase",
-                          opacity: isExactSelected ? 0.75 : 0.55,
+                          background: isExactSelected
+                            ? "var(--color-primary)"
+                            : "color-mix(in srgb, var(--color-primary) 10%, transparent)",
+                          color: isExactSelected
+                            ? "var(--color-primary-foreground)"
+                            : "var(--color-primary)",
+                          fontWeight: 700,
+                          fontSize: "11px",
+                          lineHeight: 1.2,
+                          border: isExactSelected
+                            ? "1.5px solid var(--color-primary)"
+                            : "1.5px solid color-mix(in srgb, var(--color-primary) 35%, transparent)",
+                          transform: isExactSelected
+                            ? "scale(1.04)"
+                            : "scale(1)",
+                          boxShadow: isExactSelected
+                            ? "0 4px 12px rgba(0,0,0,0.15)"
+                            : "none",
                         }}
                       >
-                        exact
-                      </span>
-                    </button>
-                  );
-                })() : (
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: 800,
+                            letterSpacing: "-0.3px",
+                          }}
+                        >
+                          ${exactOwedDollars.toFixed(2)}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "9px",
+                            fontWeight: 600,
+                            letterSpacing: "0.04em",
+                            textTransform: "uppercase",
+                            opacity: isExactSelected ? 0.75 : 0.55,
+                          }}
+                        >
+                          exact
+                        </span>
+                      </button>
+                    );
+                  })()
+                ) : (
                   <button
                     onClick={() => handlePreset(250)}
                     className="rounded-xl py-2.5 text-sm transition-all active:scale-95"
                     style={{
-                      background: amount === 250 && inputVal === "250" ? "var(--color-primary)" : "var(--color-secondary)",
-                      color: amount === 250 && inputVal === "250" ? "var(--color-primary-foreground)" : "var(--color-secondary-foreground)",
-                      fontWeight: amount === 250 && inputVal === "250" ? 700 : 500,
-                      transform: amount === 250 && inputVal === "250" ? "scale(1.04)" : "scale(1)",
-                      boxShadow: amount === 250 && inputVal === "250" ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+                      background:
+                        amount === 250 && inputVal === "250"
+                          ? "var(--color-primary)"
+                          : "var(--color-secondary)",
+                      color:
+                        amount === 250 && inputVal === "250"
+                          ? "var(--color-primary-foreground)"
+                          : "var(--color-secondary-foreground)",
+                      fontWeight:
+                        amount === 250 && inputVal === "250" ? 700 : 500,
+                      transform:
+                        amount === 250 && inputVal === "250"
+                          ? "scale(1.04)"
+                          : "scale(1)",
+                      boxShadow:
+                        amount === 250 && inputVal === "250"
+                          ? "0 4px 12px rgba(0,0,0,0.15)"
+                          : "none",
                     }}
                   >
                     $250
@@ -381,7 +524,9 @@ export function TopUpDialog({
                 style={{ background: "var(--color-secondary)" }}
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-gray-700">Cash Received</p>
+                  <p className="text-sm font-semibold text-gray-700">
+                    Cash Received
+                  </p>
                   <Button
                     variant="default"
                     onClick={handleCashReceivedPreset}
@@ -424,13 +569,24 @@ export function TopUpDialog({
 
                 {amount && cashReceived !== null && (
                   <div className="flex items-center justify-between text-sm">
-                    <span style={{ color: "var(--color-muted-foreground)" }}>Change due</span>
+                    <span style={{ color: "var(--color-muted-foreground)" }}>
+                      Change due
+                    </span>
                     {changeDue !== null && changeDue >= 0 ? (
-                      <span className="font-bold tabular-nums" style={{ color: "var(--color-primary)" }}>
-                        ${(Math.round(Math.round(changeDue * 100) / 5) * 5 / 100).toFixed(2)}
+                      <span
+                        className="font-bold tabular-nums"
+                        style={{ color: "var(--color-primary)" }}
+                      >
+                        $
+                        {(
+                          (Math.round(Math.round(changeDue * 100) / 5) * 5) /
+                          100
+                        ).toFixed(2)}
                       </span>
                     ) : (
-                      <span className="font-bold" style={{ color: "#ef4444" }}>Insufficient cash</span>
+                      <span className="font-bold" style={{ color: "#ef4444" }}>
+                        Insufficient cash
+                      </span>
                     )}
                   </div>
                 )}
@@ -471,10 +627,16 @@ export function TopUpDialog({
               style={{ background: "var(--color-secondary)" }}
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: "var(--color-muted-foreground)" }}>
+                <span
+                  className="text-sm"
+                  style={{ color: "var(--color-muted-foreground)" }}
+                >
                   Amount
                 </span>
-                <span className="text-2xl font-bold" style={{ color: "var(--color-primary)" }}>
+                <span
+                  className="text-2xl font-bold"
+                  style={{ color: "var(--color-primary)" }}
+                >
                   ${amount.toFixed(2)} CAD
                 </span>
               </div>
@@ -483,24 +645,51 @@ export function TopUpDialog({
                 <>
                   <Separator style={{ opacity: 0.15 }} />
                   <div className="flex items-center justify-between">
-                    <span className="text-sm" style={{ color: "var(--color-muted-foreground)" }}>
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--color-muted-foreground)" }}
+                    >
                       Payment method
                     </span>
                     <div className="flex items-center gap-2">
                       {paymentMode === "card" ? (
                         <>
-                          <CreditCard size={15} style={{ color: "var(--color-primary)" }} />
-                          <span className="text-sm font-semibold" style={{ color: "var(--color-foreground)" }}>Card</span>
+                          <CreditCard
+                            size={15}
+                            style={{ color: "var(--color-primary)" }}
+                          />
+                          <span
+                            className="text-sm font-semibold"
+                            style={{ color: "var(--color-foreground)" }}
+                          >
+                            Card
+                          </span>
                         </>
                       ) : paymentMode === "gift" ? (
                         <>
-                          <Gift size={15} style={{ color: "var(--color-primary)" }} />
-                          <span className="text-sm font-semibold" style={{ color: "var(--color-foreground)" }}>Gift</span>
+                          <Gift
+                            size={15}
+                            style={{ color: "var(--color-primary)" }}
+                          />
+                          <span
+                            className="text-sm font-semibold"
+                            style={{ color: "var(--color-foreground)" }}
+                          >
+                            Gift
+                          </span>
                         </>
                       ) : (
                         <>
-                          <Banknote size={15} style={{ color: "var(--color-primary)" }} />
-                          <span className="text-sm font-semibold" style={{ color: "var(--color-foreground)" }}>Cash</span>
+                          <Banknote
+                            size={15}
+                            style={{ color: "var(--color-primary)" }}
+                          />
+                          <span
+                            className="text-sm font-semibold"
+                            style={{ color: "var(--color-foreground)" }}
+                          >
+                            Cash
+                          </span>
                         </>
                       )}
                     </div>
@@ -512,19 +701,36 @@ export function TopUpDialog({
                 <>
                   <Separator style={{ opacity: 0.15 }} />
                   <div className="flex items-center justify-between">
-                    <span className="text-sm" style={{ color: "var(--color-muted-foreground)" }}>
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--color-muted-foreground)" }}
+                    >
                       Cash received
                     </span>
-                    <span className="text-sm font-semibold" style={{ color: "var(--color-foreground)" }}>
+                    <span
+                      className="text-sm font-semibold"
+                      style={{ color: "var(--color-foreground)" }}
+                    >
                       ${cashReceived?.toFixed(2)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm" style={{ color: "var(--color-muted-foreground)" }}>
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--color-muted-foreground)" }}
+                    >
                       Change due
                     </span>
-                    <span className="text-lg font-bold" style={{ color: "var(--color-primary)" }}>
-                      ${(Math.round(Math.round((changeDue ?? 0) * 100) / 5) * 5 / 100).toFixed(2)}
+                    <span
+                      className="text-lg font-bold"
+                      style={{ color: "var(--color-primary)" }}
+                    >
+                      $
+                      {(
+                        (Math.round(Math.round((changeDue ?? 0) * 100) / 5) *
+                          5) /
+                        100
+                      ).toFixed(2)}
                     </span>
                   </div>
                 </>
@@ -534,12 +740,21 @@ export function TopUpDialog({
                 <>
                   <Separator style={{ opacity: 0.15 }} />
                   <div className="flex items-center justify-between">
-                    <span className="text-sm" style={{ color: "var(--color-muted-foreground)" }}>
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--color-muted-foreground)" }}
+                    >
                       Type
                     </span>
                     <div className="flex items-center gap-2">
-                      <Gift size={15} style={{ color: "var(--color-primary)" }} />
-                      <span className="text-sm font-semibold" style={{ color: "var(--color-foreground)" }}>
+                      <Gift
+                        size={15}
+                        style={{ color: "var(--color-primary)" }}
+                      />
+                      <span
+                        className="text-sm font-semibold"
+                        style={{ color: "var(--color-foreground)" }}
+                      >
                         Gift top-up
                       </span>
                     </div>
@@ -549,7 +764,10 @@ export function TopUpDialog({
             </div>
 
             {customerId && !adminRole && (
-              <p className="text-xs text-center" style={{ color: "var(--color-muted-foreground)" }}>
+              <p
+                className="text-xs text-center"
+                style={{ color: "var(--color-muted-foreground)" }}
+              >
                 Wrong method?{" "}
                 <button
                   onClick={() => setStep("amount")}
@@ -574,7 +792,9 @@ export function TopUpDialog({
               {loading ? (
                 <span className="flex items-center gap-2">
                   <Loader2 size={16} className="animate-spin" />
-                  Processing…
+                  {!adminRole && paymentMode === "card"
+                    ? "Waiting for Clover…"
+                    : "Processing…"}
                 </span>
               ) : (
                 <span className="flex items-center gap-2">

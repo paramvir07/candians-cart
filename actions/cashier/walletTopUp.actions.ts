@@ -2,7 +2,6 @@
 
 import { dbConnect } from "@/db/dbConnect";
 import { getUserSession } from "../auth/getUserSession.actions";
-import { Cashier } from "@/db/models/cashier/cashier.model";
 import Customer from "@/db/models/customer/customer.model";
 import { walletTopUpZodSchema } from "@/zod/schemas/cashier/cashierTopUpSchema";
 import { zodErrorResponse } from "@/zod/validation/error";
@@ -10,25 +9,18 @@ import mongoose from "mongoose";
 import { WalletTopUp } from "@/db/models/cashier/walletTopUp.model";
 import { revalidatePath } from "next/cache";
 import { ReloadCartpusher } from "../pusher/pusherAction";
+import { resolveTopUpActor } from "@/lib/wallet/top-up-auth";
 
 export const walletTopUpAction = async (
   customerId: string,
-  paymentMode: "cash" | "card" | "gift",
+  paymentMode: "cash" | "card" | "gift" | "referral",
   value: number,
-  cashReceived:number,
-  cashDue:number,
-  userRole: "admin" | "cashier",
-): Promise<{
-  success: boolean;
-  message: string;
-}> => {
-  const adminRole = userRole === "admin";
-  const cashierRole = userRole === "cashier";
-
-  let session: mongoose.ClientSession | null = null;
+  cashReceived: number,
+  cashDue: number,
+): Promise<{ success: boolean; message: string }> => {
+  let mongoSession: mongoose.ClientSession | null = null;
 
   try {
-    // ✅ Zod validation
     const result = walletTopUpZodSchema.safeParse({
       customerId,
       paymentMode,
@@ -38,72 +30,78 @@ export const walletTopUpAction = async (
     });
 
     if (!result.success) {
-      const errorMessage = zodErrorResponse(result);
-      return { success: false, message: errorMessage || "Validation error" };
+      return {
+        success: false,
+        message: zodErrorResponse(result) || "Validation error",
+      };
     }
 
-    const data = result.data;
+    if (result.data.paymentMode === "card") {
+      return {
+        success: false,
+        message: "Card top-ups must be completed on the Clover terminal.",
+      };
+    }
 
     const userData = await getUserSession();
+    const actor = await resolveTopUpActor({
+      id: userData.user.id,
+      role: (userData.user as { role?: string }).role,
+    });
+
+    if (
+      actor.userRole === "admin" &&
+      !["gift", "referral"].includes(result.data.paymentMode)
+    ) {
+      return {
+        success: false,
+        message: "Admin top-ups must use gift or referral mode.",
+      };
+    }
+
     await dbConnect();
-    
-    let userId;
+    mongoSession = await mongoose.startSession();
 
-    if (cashierRole) {
-      const cashier = await Cashier.findOne({ userId: userData.user.id })
-        .lean()
-        .select("_id");
-      userId = cashier?._id;
-    } else if (adminRole) {
-      userId = userData.user.id;
-    }
-
-    if (!userId) {
-      return { success: false, message: "Authenticated User not found" };
-    }
-
-    // ✅ Transaction start
-    session = await mongoose.startSession();
-
-    await session.withTransaction(async () => {
+    await mongoSession.withTransaction(async () => {
       await WalletTopUp.create(
         [
           {
-            userId,
-            userRole,
-            customerId: data.customerId,
-            paymentMode: data.paymentMode,
-            cashPaid: data.paymentMode === "cash" ? data.cashReceived : 0,
-            cashDue: data.paymentMode === "cash" ?  data.cashDue : 0,
-            value: data.value,
+            userId: actor.userId,
+            userRole: actor.userRole,
+            customerId: result.data.customerId,
+            paymentMode: result.data.paymentMode,
+            cashPaid:
+              result.data.paymentMode === "cash" ? result.data.cashReceived : 0,
+            cashDue:
+              result.data.paymentMode === "cash" ? result.data.cashDue : 0,
+            value: result.data.value,
+            paymentStatus: "completed",
           },
         ],
-        { session },
+        { session: mongoSession },
       );
 
       const updatedCustomer = await Customer.findByIdAndUpdate(
-        data.customerId,
-        { $inc: { walletBalance: data.value } },
-        { session, returnDocument: "after" },
+        result.data.customerId,
+        { $inc: { walletBalance: result.data.value } },
+        { session: mongoSession, new: true },
       );
 
-      if (!updatedCustomer) {
-        // causes transaction to abort
-        throw new Error("Customer not found");
-      }
+      if (!updatedCustomer) throw new Error("Customer not found");
     });
+
     await ReloadCartpusher("Wallet topped up successfully!!");
-    revalidatePath(`/cashier/customer/${userData.user.id}/wallet`)
+    revalidatePath(`/cashier/customer/${customerId}/wallet`);
+    revalidatePath(`/cashier/customer/${userData.user.id}/wallet`);
+
     return { success: true, message: "Wallet topped up successfully!!" };
   } catch (error) {
-    console.log("Error while topping up customer's wallet: ", error);
-
-    // if transaction throws, it’s already aborted automatically by withTransaction
+    console.error("Error while topping up customer's wallet:", error);
     return {
       success: false,
       message: error instanceof Error ? error.message : "Something went wrong",
     };
   } finally {
-    if (session) session.endSession();
+    if (mongoSession) await mongoSession.endSession();
   }
 };
